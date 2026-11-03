@@ -64,11 +64,22 @@ const checkParams = (data: GameData, report: Report): void => {
     if (setup.plannedCityRevealed > data.plannedCityCards.length) {
       report(`${path}.plannedCityRevealed`, '計画都市カードの枚数を超えている');
     }
-    if (setup.bonusTilesOnBoard > data.bonusTiles.length) {
-      report(`${path}.bonusTilesOnBoard`, 'ボーナスタイルの種類数を超えている');
-    }
     if (setup.plannedCityMaxDeclarers > params.scoring.plannedCityPointsByRank.length) {
       report(`${path}.plannedCityMaxDeclarers`, '先着順位の得点表（scoring.plannedCityPointsByRank）より多い');
+    }
+    // ドラフトの候補はプレイ人数より多く、収録数以下でなければならない（rules.md 2-6-2）。
+    const candidates = [
+      ['draftBoardCandidates', setup.draftBoardCandidates, data.boards.length, '個人ボード'],
+      ['draftCharacterCandidates', setup.draftCharacterCandidates, data.characters.length, 'キャラクター'],
+      ['bonusTilesOnBoard', setup.bonusTilesOnBoard, data.bonusTiles.length, 'ボーナスタイル'],
+    ] as const;
+    for (const [key, count, available, label] of candidates) {
+      if (count <= n) {
+        report(`${path}.${key}`, `${label}の候補がプレイ人数（${n}）以下である`);
+      }
+      if (count > available) {
+        report(`${path}.${key}`, `${label}の収録数（${available}）を超えている`);
+      }
     }
   }
   // ドラフトでは各種類についてプレイ人数より多い候補を用意する（rules.md 2-6-2）。

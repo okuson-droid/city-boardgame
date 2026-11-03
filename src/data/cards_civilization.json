@@ -450,6 +450,11 @@
           "text": "「軍事トークン」は軍事力トークンである。",
           "source": "rules.md v0.8 19-6-4（表記の読み替え）",
           "provisional": false
+        },
+        {
+          "text": "遠征報酬の獲得では目標値の宣言と軍事力トークンの消費を行わない。同じ報酬を重ねて取ることはできず、異なる報酬を4つ獲得する。",
+          "source": "ユーザー決定（2026-11-03）",
+          "provisional": false
         }
       ],
       "provisional": true,
@@ -473,7 +478,13 @@
       "effectCondition": null,
       "points": 1,
       "text": "常時：学術タグを持つカードをプレイする度に文明カードを1枚引く。",
-      "clarifications": [],
+      "clarifications": [
+        {
+          "text": "018 自身をプレイしたときには、この常時効果でカードを引かない。",
+          "source": "ユーザー決定（2026-11-03）",
+          "provisional": false
+        }
+      ],
       "provisional": true,
       "provisionalFields": [
         "name",
@@ -811,7 +822,13 @@
       "effectCondition": null,
       "points": 1,
       "text": "住宅が4軒以上なら、3資材を得る。通常ワーカーが8人以上なら、もう2資材を得る。",
-      "clarifications": [],
+      "clarifications": [
+        {
+          "text": "2段目は通常ワーカーが8人以上であれば満たし、1段目（住宅4軒以上）の成否を問わない。",
+          "source": "ユーザー決定（2026-11-03）",
+          "provisional": false
+        }
+      ],
       "provisional": true,
       "provisionalFields": [
         "name",
@@ -866,6 +883,11 @@
           "text": "「軍事力」は軍事レベルである。",
           "source": "指示書_2026-11-03_初期実装.md 2-1（仮置き）",
           "provisional": true
+        },
+        {
+          "text": "撃退ライン・防衛ラインは、そのラウンドまでに累積した値である（026 と同じ扱い）。",
+          "source": "ユーザー決定（2026-11-03）",
+          "provisional": false
         }
       ],
       "provisional": true,
@@ -1005,7 +1027,13 @@
       "effectCondition": null,
       "points": 1,
       "text": "住宅が4軒以上なら、文明カードを1枚引く。通常ワーカーが8人以上なら、もう1枚引く。",
-      "clarifications": [],
+      "clarifications": [
+        {
+          "text": "2段目は通常ワーカーが8人以上であれば満たし、1段目（住宅4軒以上）の成否を問わない。",
+          "source": "ユーザー決定（2026-11-03）",
+          "provisional": false
+        }
+      ],
       "provisional": true,
       "provisionalFields": [
         "name",
@@ -1060,6 +1088,11 @@
           "text": "「軍事力」は軍事レベルである。",
           "source": "指示書_2026-11-03_初期実装.md 2-1（仮置き）",
           "provisional": true
+        },
+        {
+          "text": "撃退ライン・防衛ラインは、そのラウンドまでに累積した値である（026 と同じ扱い）。",
+          "source": "ユーザー決定（2026-11-03）",
+          "provisional": false
         }
       ],
       "provisional": true,

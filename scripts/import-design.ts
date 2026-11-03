@@ -138,6 +138,24 @@ const civClarifications = (id: string, text: string): ClarificationJson[] => {
   if (['006', '007', '008', '009'].includes(id)) {
     list.push(provisional('資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。'));
   }
+  const USER_DECISION = 'ユーザー決定（2026-11-03）';
+  if (id === '017') {
+    list.push(
+      decided(
+        '遠征報酬の獲得では目標値の宣言と軍事力トークンの消費を行わない。同じ報酬を重ねて取ることはできず、異なる報酬を4つ獲得する。',
+        USER_DECISION,
+      ),
+    );
+  }
+  if (id === '018') {
+    list.push(decided('018 自身をプレイしたときには、この常時効果でカードを引かない。', USER_DECISION));
+  }
+  if (id === '032' || id === '040') {
+    list.push(decided('2段目は通常ワーカーが8人以上であれば満たし、1段目（住宅4軒以上）の成否を問わない。', USER_DECISION));
+  }
+  if (id === '034' || id === '042') {
+    list.push(decided('撃退ライン・防衛ラインは、そのラウンドまでに累積した値である（026 と同じ扱い）。', USER_DECISION));
+  }
   if (id === '002') {
     list.push(decided('資材は支払わず、4-2 に従って配置する。', 'rules.md v0.8 19-1-1'));
   }

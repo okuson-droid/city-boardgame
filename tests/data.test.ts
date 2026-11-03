@@ -249,6 +249,59 @@ describe('文明カード', () => {
   });
 });
 
+describe('文明カードの解釈（ユーザー決定 2026-11-03）', () => {
+  const textsOf = (id: string): string =>
+    GAME_DATA.civilizationCards
+      .find((c) => c.id === id)
+      ?.clarifications.filter((c) => !c.provisional && c.source.includes('ユーザー決定'))
+      .map((c) => c.text)
+      .join() ?? '';
+
+  it('017 は目標値の宣言とトークンの消費なしに、異なる遠征報酬を4つ獲得する', () => {
+    // rules.md v0.8 6-3-6-3、6-3-6-4（017 には適用しない）
+    expect(textsOf('017')).toContain('軍事力トークンの消費を行わない');
+    expect(textsOf('017')).toContain('異なる報酬を4つ');
+  });
+
+  it('018 は自身のプレイでは引かない', () => {
+    // rules.md v0.8 9-2-4、9-2-9
+    expect(textsOf('018')).toContain('018 自身をプレイしたときには');
+  });
+
+  it('032・040 の2段目は通常ワーカー8人以上だけで満たす', () => {
+    // rules.md v0.8 9-2-7（各効果の適用条件を個別に判定する）
+    expect(textsOf('032')).toContain('1段目（住宅4軒以上）の成否を問わない');
+    expect(textsOf('040')).toContain('1段目（住宅4軒以上）の成否を問わない');
+  });
+
+  it('034・042 のラインは 026 と同じく、そのラウンドまでの累積値である', () => {
+    // rules.md v0.8 7-4-2
+    expect(textsOf('034')).toContain('累積した値');
+    expect(textsOf('042')).toContain('累積した値');
+  });
+});
+
+describe('ドラフトの候補数（ユーザー決定 2026-11-03）', () => {
+  it('3人・4人とも、個人ボード5枚・キャラクター10人をすべて候補にする', () => {
+    // rules.md v0.8 2-6-2
+    for (const n of ['3', '4']) {
+      expect(GAME_DATA.params.setupByPlayerCount[n]?.draftBoardCandidates).toBe(GAME_DATA.boards.length);
+      expect(GAME_DATA.params.setupByPlayerCount[n]?.draftCharacterCandidates).toBe(GAME_DATA.characters.length);
+    }
+  });
+
+  it('候補がプレイ人数以下、または収録数を超えると検出する', () => {
+    // rules.md v0.8 2-6-2
+    const raw = mutateRaw((r) => {
+      at(r, 'params', 'setupByPlayerCount', '4')['draftCharacterCandidates'] = 4;
+      at(r, 'params', 'setupByPlayerCount', '3')['draftBoardCandidates'] = 6;
+    });
+    const issues = issuesOf(parseGameData(raw)).join('\n');
+    expect(issues).toContain('setupByPlayerCount.4.draftCharacterCandidates：キャラクターの候補がプレイ人数（4）以下');
+    expect(issues).toContain('setupByPlayerCount.3.draftBoardCandidates：個人ボードの収録数（5）を超えている');
+  });
+});
+
 describe('計画都市カード・自然公園カード', () => {
   it('計画都市カードは8枚で、建物数は3〜5軒、条件は3種類を組み合わせる', () => {
     // rules.md v0.8 13-2-1、13-2-2、指示書 2-3
@@ -333,6 +386,8 @@ describe('params.json の値', () => {
         plannedCityRevealed: n - 1,
         bonusTilesOnBoard: n + 3,
         plannedCityMaxDeclarers: n - 1,
+        draftBoardCandidates: 5,
+        draftCharacterCandidates: 10,
       });
     }
   });

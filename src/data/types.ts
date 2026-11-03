@@ -97,6 +97,10 @@ export type SetupForPlayerCount = {
   readonly bonusTilesOnBoard: number;
   /** 計画都市カード1枚に達成を宣言できる人数（rules.md 13-3-5）。 */
   readonly plannedCityMaxDeclarers: number;
+  /** ドラフトで提示する個人ボードの候補数（rules.md 2-6-2。ユーザー決定 2026-11-03：3人でも5枚すべて）。 */
+  readonly draftBoardCandidates: number;
+  /** ドラフトで提示するキャラクターの候補数（rules.md 2-6-2。ユーザー決定 2026-11-03：10人すべて）。 */
+  readonly draftCharacterCandidates: number;
 };
 
 export type InitialResources = {

@@ -4,8 +4,8 @@
   "rounds": 5,
   "playerCount": { "min": 3, "max": 4 },
   "setupByPlayerCount": {
-    "3": { "specialCitizensRevealed": 4, "plannedCityRevealed": 2, "bonusTilesOnBoard": 6, "plannedCityMaxDeclarers": 2 },
-    "4": { "specialCitizensRevealed": 5, "plannedCityRevealed": 3, "bonusTilesOnBoard": 7, "plannedCityMaxDeclarers": 3 }
+    "3": { "specialCitizensRevealed": 4, "plannedCityRevealed": 2, "bonusTilesOnBoard": 6, "plannedCityMaxDeclarers": 2, "draftBoardCandidates": 5, "draftCharacterCandidates": 10 },
+    "4": { "specialCitizensRevealed": 5, "plannedCityRevealed": 3, "bonusTilesOnBoard": 7, "plannedCityMaxDeclarers": 3, "draftBoardCandidates": 5, "draftCharacterCandidates": 10 }
   },
   "board": {
     "terrainCounts": { "water": 7, "mountain": 7, "plains": 16, "forest": 15 },

@@ -248,7 +248,7 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
     Object.entries(setupObj).map(([count, v]) => [
       count,
       readIntFields(
-        ['specialCitizensRevealed', 'plannedCityRevealed', 'bonusTilesOnBoard', 'plannedCityMaxDeclarers'] as const,
+        ['specialCitizensRevealed', 'plannedCityRevealed', 'bonusTilesOnBoard', 'plannedCityMaxDeclarers', 'draftBoardCandidates', 'draftCharacterCandidates'] as const,
         v,
         `${p('setupByPlayerCount')}.${count}`,
       ),

@@ -58,6 +58,16 @@ npm run gen:data      # 仮置きの個人ボードを生成し直す
 - 形状（計画都市・自然公園）はアキシャル座標 `(q, r)` の相対位置で書く。`r` は行番号（A＝0）、`q＝x − r/2`（x は decisions.md 2-1 の横位置）。6方向の隣接は `(±1,0)`・`(0,±1)`・`(1,−1)`・`(−1,1)`。
 - `design/` 由来の JSON（characters・special_citizens・raid_cards）は原本の構造と文言のまま持ち、`provisional` だけを加える。襲撃カードには rules.md 第19章に基づく `clarifications` を加える。テストで原本との一致を確かめている。
 
+## ユーザー決定のうち design/ に未反映のもの
+
+`design/` は変更しないため、3-1 の報告に対するユーザーの回答（2026-11-03）は `src/data/` に記録している。decisions.md への転記はユーザーが行う。
+
+- ドラフトの候補は、3人・4人とも個人ボード5枚・キャラクター10人のすべて（`params.setupByPlayerCount.*.draft*Candidates`）。
+- 文明カード 017：遠征報酬の獲得で目標値の宣言と軍事力トークンの消費を行わない。同じ報酬は重ねて取れず、異なる報酬を4つ得る。
+- 文明カード 018：自身をプレイしたときには引かない。
+- 文明カード 032・040：2段目は通常ワーカー8人以上だけで満たす。
+- 文明カード 034・042：撃退ライン・防衛ラインは 026 と同じく、そのラウンドまでの累積値。
+
 ## 既知の制約・落とし穴
 
 - `scripts/` は Node 22 の `--experimental-strip-types` で直接実行する。そのため `src/` 内の import は拡張子 `.ts` を付ける（`allowImportingTsExtensions`）。`scripts/` から読む `src/` のモジュールは JSON を import しないこと（Node では import 属性が要るため）。
