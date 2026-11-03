@@ -25,7 +25,14 @@ export const me = (state: GameState): PlayerState => {
 
 const AVOID = new Set(['draft:bonus:1', 'draft:bonus:4']);
 
+/** 骨格のテストに効果が混ざりにくいキャラクター（準備時と最初の手番開始時の効果を持たない順）。 */
+const NEUTRAL_CHARACTERS = ['commander', 'spirit_caller', 'bureaucrat', 'capitalist'];
+
 const preferred = (options: readonly Option[]): Option => {
+  for (const id of NEUTRAL_CHARACTERS) {
+    const option = options.find((o) => o.id === `draft:character:${id}`);
+    if (option !== undefined) return option;
+  }
   const option = options.find((o) => !AVOID.has(o.id)) ?? options[0];
   if (option === undefined) throw new Error('選択肢がない');
   return option;
@@ -41,6 +48,13 @@ export const untilTurn = (state: GameState): GameState => {
 };
 
 export const firstTurn = (playerCount = 3, seed = 1): GameState => untilTurn(createGame({ playerCount }, seed));
+
+/** キャラクターを外した状態の写し。骨格（段階2）のテストで、キャラクターの効果を混ぜないために使う。 */
+export const withoutCharacters = (state: GameState): GameState => {
+  const copy = structuredClone(state);
+  for (const p of copy.players) p.characterId = null;
+  return copy;
+};
 
 /** 状態の写しを作り、変更を加える（テストの局面づくり用）。 */
 export const edit = (state: GameState, mutate: (s: GameState, p: PlayerState) => void): GameState => {

@@ -5,13 +5,13 @@ import { buildingCount, landCount, placeableCells, playerOf, terrainOf, usableRe
 import { applyMove, createGame, decider, getOptions, isGameOver } from '../src/game/engine.ts';
 import { finalScores } from '../src/game/scoring.ts';
 import type { GameState, PlayerState } from '../src/game/types.ts';
-import { edit, firstTurn, ids, me, play, top, untilTurn } from './helpers/game.ts';
+import { edit, firstTurn, withoutCharacters, ids, me, play, top, untilTurn } from './helpers/game.ts';
 
 const d = GAME_DATA;
 
 /** 最初の手番。ワーカーの組み合わせの選択が挟まらないよう、全員の臨時ワーカーを0にする。 */
 const base = (playerCount = 3, seed = 1): GameState =>
-  edit(firstTurn(playerCount, seed), (state) => {
+  edit(withoutCharacters(firstTurn(playerCount, seed)), (state) => {
     for (const p of state.players) p.tempWorkers = 0;
   });
 
@@ -471,7 +471,7 @@ describe('建設（第5章・6-3-2）', () => {
       p.gold = 20;
       p.materials = 20;
     });
-    s = play(s, 'act:build:upper', 'build:house:E1', 'build:shop:F1', 'done');
+    s = play(s, 'act:build:upper', 'build:house:E1', 'build:shop:F1');
     expect(me(s).gold).toBe(20 - 7 + 1 + 0);
     expect(me(s).materials).toBe(20 - 5 + 1);
   });
@@ -545,7 +545,7 @@ describe('建設（第5章・6-3-2）', () => {
       p.gold = 100;
       p.materials = 3;
     });
-    s = play(s, 'act:build:normal', 'build:camp:E1', 'done');
+    s = play(s, 'act:build:normal', 'build:camp:E1');
     expect(top(s).t).toBe('placeTiles');
     expect(ids(s).every((id) => {
       const [, cell, tile] = id.split(':');

@@ -3,6 +3,7 @@
 // JSON の読み込み直後の値は unknown として扱い、validate.ts の検査を通して以下の型にする。
 
 import type { CellId } from '../game/board.ts';
+import type { Script } from './script.ts';
 
 // ---------------------------------------------------------------------------
 // 列挙
@@ -266,6 +267,10 @@ export type Params = ProvisionalMark & {
   readonly bonusTiles: {
     readonly kinds: number;
   };
+  readonly characters: {
+    /** 精霊チップを回収するラウンド。そのラウンドの襲撃の後に回収する（19-5-7）。 */
+    readonly spiritChipReturnRound: number;
+  };
   readonly scoring: {
     readonly base: {
       readonly landTilesPerPoint: number;
@@ -322,6 +327,8 @@ export type CivilizationCard = ProvisionalMark & {
   /** 原本の効果の文言。 */
   readonly text: string;
   readonly clarifications: readonly Clarification[];
+  /** 効果スクリプト（docs/effect-commands.md）。 */
+  readonly script: Script;
 };
 
 /** 文言の解釈。provisional なら仮置きの解釈（指示書 2-1）、そうでなければ決定済みの解釈である。 */
@@ -401,6 +408,7 @@ export type Character = ProvisionalMark & {
   readonly effects: readonly CharacterEffect[];
   readonly open_issues: readonly string[];
   readonly clarifications?: readonly string[];
+  readonly script: Script;
 };
 
 export type SpecialCitizenEffect = {
@@ -414,6 +422,7 @@ export type SpecialCitizen = ProvisionalMark & {
   readonly effects: readonly SpecialCitizenEffect[];
   readonly open_issues: readonly string[];
   readonly clarifications?: readonly string[];
+  readonly script: Script;
 };
 
 /** 襲撃カードの固有効果の単位（rules.md 7-6-1）。 */

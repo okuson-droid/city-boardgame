@@ -1,0 +1,461 @@
+{
+  "provisional": true,
+  "notes": [
+    "アイコンの識別子と、補足表示の文章に使う語の対応表である（ui_design.md 0-1、指示書 3-3）。",
+    "アイコンの文法（styleguide.md 4）が未定のため、識別子は仮置きである。素材の差し替えは識別子に対応する素材の入れ替えで行う。"
+  ],
+  "abilities": {
+    "onPlay": {
+      "icon": "ability.onPlay",
+      "label": "プレイ時"
+    },
+    "onAcquire": {
+      "icon": "ability.onAcquire",
+      "label": "獲得時"
+    },
+    "setup": {
+      "icon": "ability.setup",
+      "label": "準備時"
+    },
+    "firstTurnStart": {
+      "icon": "ability.firstTurnStart",
+      "label": "最初の手番開始時"
+    },
+    "gameEnd": {
+      "icon": "ability.gameEnd",
+      "label": "ゲーム終了時"
+    },
+    "on": {
+      "icon": "ability.on",
+      "label": "常時"
+    },
+    "freeAction": {
+      "icon": "ability.freeAction",
+      "label": "フリーアクション"
+    },
+    "actionSpace": {
+      "icon": "ability.actionSpace",
+      "label": "専用スペース"
+    },
+    "modifier": {
+      "icon": "ability.modifier",
+      "label": "常時"
+    }
+  },
+  "commands": {
+    "gain": {
+      "icon": "cmd.gain",
+      "label": "得る"
+    },
+    "raise": {
+      "icon": "cmd.raise",
+      "label": "上げる"
+    },
+    "placeTiles": {
+      "icon": "cmd.placeTiles",
+      "label": "土地タイルを置く"
+    },
+    "build": {
+      "icon": "cmd.build",
+      "label": "建物を建てる"
+    },
+    "playCard": {
+      "icon": "cmd.playCard",
+      "label": "文明カードをプレイする"
+    },
+    "expeditionRewards": {
+      "icon": "cmd.expeditionRewards",
+      "label": "遠征の報酬を得る"
+    },
+    "chooseOne": {
+      "icon": "cmd.chooseOne",
+      "label": "いずれか1つを選ぶ"
+    },
+    "if": {
+      "icon": "cmd.if",
+      "label": "条件"
+    },
+    "copyAction": {
+      "icon": "cmd.copyAction",
+      "label": "任意のアクションの効果を使う"
+    },
+    "drawPlannedCity": {
+      "icon": "cmd.drawPlannedCity",
+      "label": "専用の計画都市カードを引く"
+    },
+    "spiritPlace": {
+      "icon": "cmd.spiritPlace",
+      "label": "精霊チップと土地タイルを置く"
+    },
+    "heroStart": {
+      "icon": "cmd.heroStart",
+      "label": "山岳に土地タイルと砦を置く"
+    }
+  },
+  "resources": {
+    "gold": {
+      "icon": "res.gold",
+      "label": "金"
+    },
+    "materials": {
+      "icon": "res.materials",
+      "label": "資材"
+    },
+    "militaryTokens": {
+      "icon": "res.militaryTokens",
+      "label": "軍事力トークン"
+    },
+    "tempWorkers": {
+      "icon": "res.tempWorkers",
+      "label": "臨時ワーカー"
+    },
+    "regularWorkers": {
+      "icon": "res.regularWorkers",
+      "label": "通常ワーカー"
+    },
+    "goldProduction": {
+      "icon": "res.goldProduction",
+      "label": "金の生産力"
+    },
+    "materialProduction": {
+      "icon": "res.materialProduction",
+      "label": "資材の生産力"
+    },
+    "drawCivCards": {
+      "icon": "res.civCard",
+      "label": "文明カード"
+    },
+    "specialCitizen": {
+      "icon": "res.specialCitizen",
+      "label": "特別な市民カード"
+    },
+    "points": {
+      "icon": "res.points",
+      "label": "点"
+    }
+  },
+  "tracks": {
+    "military": {
+      "icon": "track.military",
+      "label": "軍事レベル"
+    },
+    "infra": {
+      "icon": "track.infra",
+      "label": "インフラレベル"
+    }
+  },
+  "buildings": {
+    "shop": {
+      "icon": "bld.shop",
+      "label": "商店"
+    },
+    "workshop": {
+      "icon": "bld.workshop",
+      "label": "工房"
+    },
+    "fort": {
+      "icon": "bld.fort",
+      "label": "砦"
+    },
+    "office": {
+      "icon": "bld.office",
+      "label": "役所"
+    },
+    "university": {
+      "icon": "bld.university",
+      "label": "大学"
+    },
+    "house": {
+      "icon": "bld.house",
+      "label": "住宅"
+    },
+    "camp": {
+      "icon": "bld.camp",
+      "label": "飯場"
+    }
+  },
+  "terrains": {
+    "water": {
+      "icon": "ter.water",
+      "label": "水場"
+    },
+    "mountain": {
+      "icon": "ter.mountain",
+      "label": "山岳"
+    },
+    "plains": {
+      "icon": "ter.plains",
+      "label": "平原"
+    },
+    "forest": {
+      "icon": "ter.forest",
+      "label": "森林"
+    },
+    "match": {
+      "icon": "ter.match",
+      "label": "地形と同じ種類"
+    },
+    "any": {
+      "icon": "ter.any",
+      "label": "任意の種類"
+    }
+  },
+  "tags": {
+    "military": {
+      "icon": "tag.military",
+      "label": "軍事"
+    },
+    "economy": {
+      "icon": "tag.economy",
+      "label": "経済"
+    },
+    "academic": {
+      "icon": "tag.academic",
+      "label": "学術"
+    },
+    "life": {
+      "icon": "tag.life",
+      "label": "生活"
+    },
+    "environment": {
+      "icon": "tag.environment",
+      "label": "環境"
+    },
+    "literature": {
+      "icon": "tag.literature",
+      "label": "文学"
+    },
+    "art": {
+      "icon": "tag.art",
+      "label": "美術"
+    },
+    "music": {
+      "icon": "tag.music",
+      "label": "音楽"
+    }
+  },
+  "metrics": {
+    "regularWorkers": {
+      "icon": "res.regularWorkers",
+      "label": "通常ワーカー"
+    },
+    "tempWorkers": {
+      "icon": "res.tempWorkers",
+      "label": "臨時ワーカー"
+    },
+    "landTiles": {
+      "icon": "met.landTiles",
+      "label": "土地タイル"
+    },
+    "freeLandTiles": {
+      "icon": "met.freeLandTiles",
+      "label": "建物のない土地タイル"
+    },
+    "buildings": {
+      "icon": "met.buildings",
+      "label": "建物"
+    },
+    "maxedBuildingTypes": {
+      "icon": "met.maxedBuildingTypes",
+      "label": "上限まで建てた建物の種類"
+    },
+    "houses": {
+      "icon": "bld.house",
+      "label": "住宅"
+    },
+    "militaryLevel": {
+      "icon": "track.military",
+      "label": "軍事レベル"
+    },
+    "infraLevel": {
+      "icon": "track.infra",
+      "label": "インフラレベル"
+    },
+    "militaryTokens": {
+      "icon": "res.militaryTokens",
+      "label": "軍事力トークン"
+    },
+    "goldProduction": {
+      "icon": "res.goldProduction",
+      "label": "金の生産力"
+    },
+    "materialProduction": {
+      "icon": "res.materialProduction",
+      "label": "資材の生産力"
+    },
+    "repelLine": {
+      "icon": "met.repelLine",
+      "label": "撃退ライン"
+    },
+    "defenseLine": {
+      "icon": "met.defenseLine",
+      "label": "防衛ライン"
+    },
+    "repelShortfall": {
+      "icon": "met.repelShortfall",
+      "label": "撃退に必要な軍事力"
+    },
+    "playedCivCards": {
+      "icon": "met.playedCivCards",
+      "label": "プレイ済みの文明カード"
+    },
+    "spiritAdjacency": {
+      "icon": "met.spiritAdjacency",
+      "label": "精霊チップの土地に隣接する同種の土地タイル"
+    },
+    "buildingsOfType": {
+      "icon": "met.buildingsOfType",
+      "label": "の数"
+    },
+    "buildingsOnTerrain": {
+      "icon": "met.buildingsOnTerrain",
+      "label": "に建てた建物"
+    }
+  },
+  "events": {
+    "tilePlaced": {
+      "icon": "evt.tilePlaced",
+      "label": "の土地タイルを置く度に"
+    },
+    "cardPlayed": {
+      "icon": "evt.cardPlayed",
+      "label": "の文明カードをプレイする度に"
+    },
+    "actionExecuted": {
+      "icon": "evt.actionExecuted",
+      "label": "のアクションを実行する度に"
+    },
+    "built": {
+      "icon": "evt.built",
+      "label": "を建設する度に"
+    },
+    "workerGained": {
+      "icon": "evt.workerGained",
+      "label": "を獲得する度に"
+    },
+    "raid": {
+      "icon": "evt.raid",
+      "label": "した時"
+    }
+  },
+  "modifiers": {
+    "buildCost": {
+      "icon": "mod.buildCost",
+      "label": "建設コスト"
+    },
+    "pioneerMismatchExtra": {
+      "icon": "mod.pioneerMismatchExtra",
+      "label": "地形と異なる土地タイルの追加コスト"
+    },
+    "regularWorkersImmediate": {
+      "icon": "mod.regularWorkersImmediate",
+      "label": "通常ワーカーを獲得したラウンドから使える"
+    },
+    "goldPointsMultiplier": {
+      "icon": "mod.goldPointsMultiplier",
+      "label": "金から得る点数"
+    },
+    "natureParkPoints": {
+      "icon": "mod.natureParkPoints",
+      "label": "自然公園の得点"
+    },
+    "expeditionRewards": {
+      "icon": "mod.expeditionRewards",
+      "label": "遠征の報酬に追加"
+    },
+    "noBuildOnSpiritLand": {
+      "icon": "mod.noBuildOnSpiritLand",
+      "label": "精霊チップのある土地に建設できない"
+    }
+  },
+  "results": {
+    "defenseFailed": {
+      "icon": "raid.defenseFailed",
+      "label": "防衛失敗"
+    },
+    "defended": {
+      "icon": "raid.defended",
+      "label": "防衛成功"
+    },
+    "repelled": {
+      "icon": "raid.repelled",
+      "label": "撃退成功"
+    }
+  },
+  "tiers": {
+    "normal": {
+      "icon": "tier.normal",
+      "label": "通常"
+    },
+    "upper": {
+      "icon": "tier.upper",
+      "label": "上位"
+    },
+    "top": {
+      "icon": "tier.top",
+      "label": "最上位"
+    }
+  },
+  "symbols": {
+    "per": {
+      "icon": "sym.per",
+      "label": "につき"
+    },
+    "ge": {
+      "icon": "sym.ge",
+      "label": "以上"
+    },
+    "lt": {
+      "icon": "sym.lt",
+      "label": "より低い"
+    },
+    "free": {
+      "icon": "sym.free",
+      "label": "無料"
+    },
+    "noGold": {
+      "icon": "sym.noGold",
+      "label": "金を払わない"
+    },
+    "upTo": {
+      "icon": "sym.upTo",
+      "label": "まで"
+    },
+    "oncePerRound": {
+      "icon": "sym.oncePerRound",
+      "label": "1ラウンドに1回"
+    },
+    "pay": {
+      "icon": "sym.pay",
+      "label": "支払う"
+    },
+    "workers": {
+      "icon": "sym.workers",
+      "label": "ワーカー"
+    },
+    "every": {
+      "icon": "sym.every",
+      "label": "回ごとに"
+    },
+    "once": {
+      "icon": "sym.once",
+      "label": "1回のみ"
+    },
+    "or": {
+      "icon": "sym.or",
+      "label": "または"
+    },
+    "then": {
+      "icon": "sym.then",
+      "label": "なら"
+    },
+    "excludeSelf": {
+      "icon": "sym.excludeSelf",
+      "label": "このカード自身を除く"
+    },
+    "axis": {
+      "icon": "sym.axis",
+      "label": "評価軸"
+    }
+  }
+}

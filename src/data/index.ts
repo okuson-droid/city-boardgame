@@ -84,3 +84,5 @@ export const loadGameData = (raw: RawGameData): GameData => {
 
 /** 同梱のデータ一式。 */
 export const GAME_DATA: GameData = loadGameData(RAW_GAME_DATA);
+export * from './script.ts';
+export { ICON_KEYS, checkIconKeys, type IconEntry, type IconKeys } from './icon-keys.ts';

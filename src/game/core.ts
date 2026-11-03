@@ -4,7 +4,9 @@
 import { CELL_IDS, neighborsOf, type CellId } from './board.ts';
 import { shuffle } from './rng.ts';
 import type { Building, GameData, Grant, ScoreAxis, Terrain } from '../data/types.ts';
-import type { ChoiceEffect, GameEvent, GameState, PlayerState, Task } from './types.ts';
+import type { BuildSpec, ChoiceEffect, GameEvent, GameState, PlayerState, Task } from './types.ts';
+import type { Command } from '../data/script.ts';
+import { buildCostMaterialsModifier, hasModifier } from './abilities.ts';
 
 // ---------------------------------------------------------------------------
 // 読み取り
@@ -82,16 +84,28 @@ export const baseBuildCost = (
   cell: CellId,
 ): { gold: number; materials: number } => {
   const cost = d.params.buildings.cost[building];
-  return { gold: cost.gold, materials: Math.max(d.params.buildings.minCost, cost.materials - campDiscountAt(d, player, cell)) };
+  // 飯場の軽減と、キャラクター・特別な市民カードの資材の補正（19-1-3）。
+  const materials = cost.materials - campDiscountAt(d, player, cell) + buildCostMaterialsModifier(d, player, building);
+  return { gold: cost.gold, materials: Math.max(d.params.buildings.minCost, materials) };
 };
 
 export const remainingBuildingStock = (d: GameData, player: PlayerState, building: Building): number =>
   d.params.buildings.limits[building] - buildingCount(player, building);
 
+/** タスクをスタックから取り除く。処理中に反応（常時効果）が上に積んだタスクを誤って取り除かないため、参照で探す。 */
+export const removeTask = (state: GameState, task: Task): void => {
+  const index = state.stack.lastIndexOf(task);
+  if (index < 0) {
+    throw new Error(`スタックにないタスクである：${task.t}`);
+  }
+  state.stack.splice(index, 1);
+};
+
 export const currentTurnPlayer = (state: GameState): number | null => {
   for (let i = state.stack.length - 1; i >= 0; i -= 1) {
     const task = state.stack[i];
-    if (task?.t === 'turn') {
+    // 手番開始時の効果（芸術家・聖女・デザイナー）を処理している間は、まだ手番中としない。
+    if (task?.t === 'turn' && task.started) {
       return task.player;
     }
   }
@@ -171,9 +185,13 @@ export const drawCivCards = (state: GameState, d: GameData, player: PlayerState,
 export const gainRegularWorkers = (state: GameState, d: GameData, player: PlayerState, count: number): void => {
   const room = Math.max(0, regularWorkerCap(d, player) - player.regularWorkers);
   const gained = Math.min(room, count);
+  // 特別市民13：獲得したラウンドから使える。
+  const immediate = hasModifier(d, player, 'regularWorkersImmediate');
   for (let i = 0; i < gained; i += 1) {
     player.regularWorkers += 1;
-    player.regularNewThisRound += 1;
+    if (!immediate) {
+      player.regularNewThisRound += 1;
+    }
     emit(state, d, { type: 'workerGained', player: player.index, kind: 'regular' });
   }
 };
@@ -204,14 +222,55 @@ export type Effect =
   | { readonly k: 'goldProduction'; readonly n: number }
   | { readonly k: 'materialProduction'; readonly n: number };
 
+const buildTask = (player: number, spec: BuildSpec): Task => ({ t: 'build', player, spec, picks: [] });
+
+const commandTask = (player: number, command: Command, source: string): Task => {
+  switch (command.op) {
+    case 'placeTiles':
+      return { t: 'placeTiles', player, remaining: command.count, placed: [], mode: 'effect', tier: null, mismatches: 0, tile: command.tile };
+    case 'build':
+      return buildTask(player, {
+        min: command.upTo ? 0 : command.max,
+        max: command.max,
+        tier: null,
+        buildings: command.buildings,
+        terrain: command.terrain,
+        payGold: command.payGold,
+        payMaterials: command.payMaterials,
+      });
+    case 'playCard':
+      return { t: 'playCard', player, remaining: command.count, free: command.free };
+    case 'expeditionRewards':
+      return { t: 'expeditionPick', player, tier: 'normal', picks: [], mode: 'card', count: command.count };
+    case 'chooseOne':
+      return { t: 'chooseOne', player, options: command.options, source };
+    case 'copyAction':
+      return { t: 'copyAction', player };
+    case 'spiritPlace':
+      return { t: 'spiritPlace', player };
+    case 'heroStart':
+      return { t: 'heroStart', player };
+    case 'gain':
+      if (command.res === 'specialCitizen') {
+        return { t: 'chooseSpecialCitizen', player };
+      }
+      break;
+    default:
+      break;
+  }
+  throw new Error(`選択を伴わない命令である：${command.op}`);
+};
+
 const choiceTask = (player: number, effect: ChoiceEffect): Task => {
   switch (effect.k) {
+    case 'command':
+      return commandTask(player, effect.command, effect.source);
     case 'landTiles':
-      return { t: 'placeTiles', player, remaining: effect.n, placed: [], mode: 'effect', tier: null, mismatches: 0 };
+      return { t: 'placeTiles', player, remaining: effect.n, placed: [], mode: 'effect', tier: null, mismatches: 0, tile: 'match' };
     case 'buildRight':
-      return { t: 'buildRight', player };
+      return buildTask(player, { min: 1, max: 1, tier: null, buildings: null, terrain: null, payGold: true, payMaterials: true });
     case 'freeBuild':
-      return { t: 'freeBuild', player, terrain: effect.terrain };
+      return buildTask(player, { min: 1, max: 1, tier: null, buildings: null, terrain: effect.terrain, payGold: false, payMaterials: false });
     case 'specialCitizen':
       return { t: 'chooseSpecialCitizen', player };
     case 'discard':
@@ -271,9 +330,16 @@ const trackRewards = (
  * 効果の列を処理する。資源を得るだけの効果は尋ねずに処理し、選択を伴う効果だけを
  * タスクとして積む（decisions.md 3-4）。到達報酬は 16-2-6 により、実行できなければ失われる。
  */
-export const processEffects = (state: GameState, d: GameData, player: PlayerState, effects: readonly Effect[]): void => {
+export const processEffects = (
+  state: GameState,
+  d: GameData,
+  player: PlayerState,
+  effects: readonly Effect[],
+  /** 指定すると、選択を伴う効果を積まずにここへ集める（呼び出し側がまとめて順番を尋ねる）。 */
+  collect?: ChoiceEffect[],
+): void => {
   const queue: Effect[] = [...effects];
-  const choices: ChoiceEffect[] = [];
+  const choices: ChoiceEffect[] = collect ?? [];
   while (queue.length > 0) {
     const effect = queue.shift();
     if (effect === undefined) {
@@ -312,7 +378,9 @@ export const processEffects = (state: GameState, d: GameData, player: PlayerStat
         break;
     }
   }
-  scheduleChoices(state, player.index, choices);
+  if (collect === undefined) {
+    scheduleChoices(state, player.index, choices);
+  }
 };
 
 const applyGrant = (

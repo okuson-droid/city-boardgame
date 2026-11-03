@@ -7,7 +7,8 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 - 指示書：`design/指示書_2026-11-03_初期実装.md`
 - 完了：3-1 データ層（`src/data/`、`src/game/board.ts`）。main に取り込み済み。
 - 完了：3-2 ゲームロジックの骨格（`src/game/`）。main に取り込み済み。
-- 作業中：3-3 効果。命令セットの設計方針を報告し、ユーザーの承認を待っている。
+- 完了：3-3 効果（命令セットは `docs/effect-commands.md`）。ユーザーの確認待ち。
+- 次：3-4 ローカル UI（claude/ui_design.md の承認後に着手する。承認前なら止めて報告する）
 
 ## 構成
 
@@ -27,7 +28,15 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `src/game/core.ts` | 数え上げ、資源・トラック・カードの変化、効果の処理（`processEffects`）、出来事（`emit`） |
 | `src/game/scoring.ts` | `finalScores`（第17章、同点判定 17-7-2） |
 | `src/game/history.ts` | `replay`・`isCheckpoint`・`undoLast` |
+| `src/game/abilities.ts` | プレイヤーが持つ能力（キャラクター・特別な市民カード・プレイ済みの文明カード）と補正（modifier） |
+| `src/game/effects.ts` | 効果スクリプトの実行（`runCommands`）、指標、常時効果の反応 |
+| `src/game/effect-tasks.ts` | 効果由来の選択タスク、能力のフリーアクション・専用スペース、計画都市の達成宣言 |
+| `src/game/planned.ts` | 計画都市の形状の判定と自然公園の得点（最大の割り当て） |
+| `src/game/icons.ts` | `iconSequence`（アイコンと数字の並び）・`describeScript`（補足の文章） |
 | `src/game/index.ts` | `src/game/` の公開窓口 |
+| `src/data/script.ts` | 効果スクリプト（能力と命令）の型と検査 |
+| `src/data/icon_keys.json`・`icon-keys.ts` | アイコンの対応表と検査 |
+| `scripts/effect-scripts.ts` | 文明カード・特別な市民カード・キャラクターの効果スクリプト（取り込みで JSON に埋め込む） |
 | `src/ui/` | 画面。現在はデータ層の確認ページのみ |
 | `scripts/import-design.ts` | `design/` から characters・special_citizens・raid_cards・cards_civilization を取り込む |
 | `scripts/generate-boards.ts` | 仮置きの個人ボードをシード付きで生成する |
@@ -63,7 +72,11 @@ npm run gen:data      # 仮置きの個人ボードを生成し直す
 - `applyMove` は状態を `structuredClone` した写しを変更して返す。元の状態は変更しない。
 - 選択肢の識別子は `act:<action>:<tier>`・`pass`・`end`・`free:<id>[:<card>]`・`temp:<n>`・`count:<n>`・`tile:<cell>:<terrain>`・`build:<building>:<cell>`・`done`・`reward:<i>`・`convert:<0|1>`・`card:<id>`・`sc:<id>`・`order:<i>`・`bonus:<n>`・`raid:<none|defense|repel>`・`draft:<board|bonus|character>:<id>` である。
 - 資源を得るだけの効果は `processEffects` が尋ねずに処理し、選択を伴う効果（土地タイル・建設の権利・無料建設・特別な市民カード・捨て札）はタスクにする。2つ以上あれば `chooseOrder` で順番を尋ねる（decisions.md 3-4）。
-- 「〜した時」の効果（16-1-4）は、`emit` が記録する1単位ごとの出来事に `registerReactor` で反応させる。段階2では反応は空である。
+- 「〜した時」の効果（16-1-4）は、`emit` が記録する1単位ごとの出来事に反応させる（`effects.ts` の `react`）。
+- 効果スクリプトの編集は `scripts/effect-scripts.ts` で行い、`npm run import:design` で JSON に埋め込む。`src/data/` の JSON を直接書き換えても、次の取り込みで上書きされる。
+- タスクをスタックから取り除くときは `removeTask(state, task)` を使う。処理中に常時効果が上にタスクを積むため、`pop()` では誤って別のタスクを取り除く。
+- 能力の識別子は「出どころ#添字」（例：`sc:09#0`、`char:merchant#1`）。選択肢は `ability:<識別子>`（フリーアクション）・`space:<識別子>`（専用スペース）・`plan:<id>`（計画都市の宣言）・`choose:<i>`・`copy:<action>:<tier>`・`spirit:<terrain>:<cell>`・`hero:<E1|F1>:<cell>`。
+- 骨格のテストは `withoutCharacters` でキャラクターを外して局面を作る。キャラクターの効果がテストに混ざらないようにするためである。
 - 得点は `addScore` で得点トラックに加え、評価軸を付けた `score` 出来事を残す（17-0-3）。評価軸の指定がない得点は `other`（17-0-2）。
 - 巻き戻しは記録（`state.log`）の再生で行う。テストで局面を直接書き換えた状態は再生できないため、巻き戻しのテストは実際の選択だけで組み立てる。
 - 乱択プレイアウトの性質テスト（3人・4人で各100局）は約30秒かかる。
@@ -97,6 +110,8 @@ npm run gen:data      # 仮置きの個人ボードを生成し直す
   - 軍事レベル12を超えた上昇の2点（6-3-5-6、7-1-5）は教練の上昇処理にだけ与える。砦の建設やボーナスタイル9による超過分は得点なしで破棄する。
   - 襲撃の宣言は手番順に1人ずつ公開で行い、宣言のたびに判定する。
   - 初期手札の文明カード3枚はドラフトの前に配る。
+
+- 3-3 の設計に対する承認（2026-11-03）：命令セットは docs/effect-commands.md のとおり。得点の評価軸は、特別な市民カードを生活・福祉（17-4-3）、特別市民08 を自然・環境（17-5-2）、英雄を軍事・防衛（17-6-2-2）、他のキャラクターを「その他」（17-0-2）とする。特別市民11 が写せるのは10アクション×3段階に限る。学者の「3枚ごと」は無料プレイも数える。003 は資材の軽減（飯場・特別市民12・指揮官・官僚）を適用し、建築アクションの割引は適用しない。精霊使いの終了時得点は1枚を1回だけ数える。
 
 ## 既知の制約・落とし穴
 

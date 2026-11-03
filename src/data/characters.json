@@ -34,7 +34,37 @@
         "2-32",
         "2-23"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": 1
+            },
+            {
+              "op": "heroStart"
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "raid",
+          "filter": {
+            "result": "repelled"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 2,
+              "axis": "military"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "commander",
@@ -62,7 +92,55 @@
         "2-24",
         "2-35"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "buildCost",
+            "building": "fort",
+            "materials": -1
+          }
+        },
+        {
+          "ability": "on",
+          "event": "built",
+          "filter": {
+            "building": "fort"
+          },
+          "do": [
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "expeditionRewards",
+            "add": [
+              {
+                "level": 6,
+                "command": {
+                  "op": "gain",
+                  "res": "drawCivCards",
+                  "amount": 1
+                }
+              },
+              {
+                "level": 9,
+                "command": {
+                  "op": "gain",
+                  "res": "tempWorkers",
+                  "amount": 1
+                }
+              }
+            ]
+          }
+        }
+      ]
     },
     {
       "id": "merchant",
@@ -84,7 +162,51 @@
       "open_issues": [
         "3-11"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 5
+            }
+          ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": {
+            "res": "gold",
+            "amount": 10
+          },
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": {
+            "res": "gold",
+            "amount": 5
+          },
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 2
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "capitalist",
@@ -106,7 +228,47 @@
         "2-23",
         "2-37"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materialProduction",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "tilePlaced",
+          "filter": {
+            "terrain": "mountain"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": {
+                "count": "buildings",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "scholar",
@@ -130,7 +292,53 @@
         "2-7",
         "2-22"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "cardPlayed",
+          "filter": {},
+          "every": 3,
+          "do": [
+            {
+              "op": "chooseOne",
+              "options": [
+                [
+                  {
+                    "op": "raise",
+                    "track": "infra",
+                    "amount": 1
+                  }
+                ],
+                [
+                  {
+                    "op": "placeTiles",
+                    "count": 1,
+                    "tile": "match"
+                  }
+                ],
+                [
+                  {
+                    "op": "gain",
+                    "res": "tempWorkers",
+                    "amount": 1
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "artist",
@@ -150,7 +358,37 @@
         "2-7",
         "3-14"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "firstTurnStart",
+          "do": [
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": true
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "cardPlayed",
+          "filter": {},
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 2
+            },
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 1,
+              "axis": "other"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "saint",
@@ -174,7 +412,53 @@
       "clarifications": [
         "追加初期資源の特別な住民カード1枚は、最初の手番開始時に公開カードから選んで獲得し、山札から1枚補充する（rules.md 9-3-2-2）。"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "firstTurnStart",
+          "do": [
+            {
+              "op": "gain",
+              "res": "specialCitizen",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "workerGained",
+          "filter": {
+            "kind": "regular"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "workerGained",
+          "filter": {
+            "kind": "regular",
+            "cond": {
+              "left": "regularWorkers",
+              "op": ">=",
+              "right": 10
+            }
+          },
+          "once": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "specialCitizen",
+              "amount": 1
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "bureaucrat",
@@ -205,7 +489,92 @@
         "2-35",
         "3-11"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "raise",
+              "track": "infra",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "buildCost",
+            "building": "office",
+            "materials": -1
+          }
+        },
+        {
+          "ability": "on",
+          "event": "built",
+          "filter": {
+            "building": "office"
+          },
+          "do": [
+            {
+              "op": "raise",
+              "track": "infra",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": {
+            "left": "infraLevel",
+            "op": ">=",
+            "right": 3
+          },
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 3
+            }
+          ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": {
+            "left": "infraLevel",
+            "op": ">=",
+            "right": 6
+          },
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": {
+            "left": "infraLevel",
+            "op": ">=",
+            "right": 9
+          },
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "spirit_caller",
@@ -235,7 +604,41 @@
         "3-10",
         "2-23"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": false,
+          "do": [
+            {
+              "op": "spiritPlace"
+            }
+          ]
+        },
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "noBuildOnSpiritLand"
+          }
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "spiritAdjacency",
+                "per": 1,
+                "times": 1
+              },
+              "axis": "other"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "designer",
@@ -258,7 +661,35 @@
         "2-33",
         "2-38"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 2,
+              "tile": "match"
+            }
+          ]
+        },
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "pioneerMismatchExtra",
+            "value": 0
+          }
+        },
+        {
+          "ability": "firstTurnStart",
+          "do": [
+            {
+              "op": "drawPlannedCity",
+              "count": 2
+            }
+          ]
+        }
+      ]
     }
   ]
 }

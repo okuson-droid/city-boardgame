@@ -1,10 +1,12 @@
 // ゲーム終了時の得点計算（第17章）と同点判定（17-7-2）。
 // ゲーム中の得点は1本の得点トラック（player.score）に記録し、評価軸の区分は出来事から集計する（17-0-3）。
-// 自然公園・計画都市・特別な市民カード・キャラクターの終了時得点は段階3で加える。
+// 特別な市民カード・キャラクターの終了時の得点は、ゲーム終了時の能力（17-0-1 手順4）が得点トラックに加える。
 
 import { GAME_DATA } from '../data/index.ts';
 import { SCORE_AXES, type GameData, type ScoreAxis } from '../data/types.ts';
 import { buildingCount, landCount } from './core.ts';
+import { modifiersOf } from './abilities.ts';
+import { natureParkScore } from './planned.ts';
 import type { GameState, PlayerState } from './types.ts';
 
 export type FinalScore = {
@@ -48,7 +50,12 @@ const scorePlayer = (state: GameState, d: GameData, player: PlayerState): Omit<F
   // 経済・産業（17-2）。
   const goldRate = tableAt(s.goldPerPointByShops, buildingCount(player, 'shop'));
   const materialRate = tableAt(s.materialsPerPointByWorkshops, buildingCount(player, 'workshop'));
-  axes.economy += Math.floor(player.gold / goldRate) + Math.floor(player.materials / materialRate);
+  // 特別市民04：商店の件数によって金から得る点数が2倍になる。
+  const goldMultiplier = modifiersOf(d, player).reduce(
+    (value, m) => (m.kind === 'goldPointsMultiplier' ? value * m.value : value),
+    1,
+  );
+  axes.economy += Math.floor(player.gold / goldRate) * goldMultiplier + Math.floor(player.materials / materialRate);
   const leftoverGold = player.gold % goldRate;
 
   // 文化・学術（17-3）。
@@ -64,6 +71,9 @@ const scorePlayer = (state: GameState, d: GameData, player: PlayerState): Omit<F
   if (divisor !== null) {
     axes.welfare += Math.floor(player.regularWorkers / divisor);
   }
+
+  // 自然・環境（17-5）：自然公園カード（計画都市の得点はゲーム中の得点として記録済み）。
+  axes.nature += natureParkScore(d, player);
 
   const total = base + SCORE_AXES.reduce((sum, axis) => sum + axes[axis], 0);
   return { player: player.index, total, base, axes, leftoverGold };

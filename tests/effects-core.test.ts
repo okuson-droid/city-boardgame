@@ -3,12 +3,12 @@ import { GAME_DATA } from '../src/data/index.ts';
 import { placeableCells, playerOf, terrainOf } from '../src/game/core.ts';
 import { applyMove, isGameOver } from '../src/game/engine.ts';
 import type { GameState } from '../src/game/types.ts';
-import { edit, firstTurn, ids, me, play, top } from './helpers/game.ts';
+import { edit, firstTurn, withoutCharacters, ids, me, play, top } from './helpers/game.ts';
 
 const d = GAME_DATA;
 
 const base = (): GameState =>
-  edit(firstTurn(), (state) => {
+  edit(withoutCharacters(firstTurn()), (state) => {
     for (const p of state.players) p.tempWorkers = 0;
   });
 
@@ -50,7 +50,7 @@ describe('到達報酬と同時発生効果', () => {
     s = play(s, 'act:drill:normal', 'count:1');
     expect(me(s).militaryRewardsClaimed).toContain(12);
     expect(top(s).t).toBe('turn');
-    expect(s.events.some((e) => e.type === 'fizzle' && e.what === 'freeBuild')).toBe(true);
+    expect(s.events.some((e) => e.type === 'fizzle' && e.what === 'build')).toBe(true);
   });
 
   it('軍事レベル12の報酬は、開拓済みの山岳の土地に建物1軒を無料で建てる', () => {
@@ -64,7 +64,7 @@ describe('到達報酬と同時発生効果', () => {
       p.land.E1 = 'mountain';
     });
     s = play(s, 'act:drill:normal', 'count:1');
-    expect(top(s).t).toBe('freeBuild');
+    expect(top(s).t).toBe('build');
     expect(ids(s).every((id) => id.endsWith(':E1'))).toBe(true);
     s = applyMove(s, 'build:workshop:E1');
     expect(me(s).buildings.E1).toBe('workshop');
@@ -143,7 +143,7 @@ describe('建設の権利（6-3-6-7、19-1-3）', () => {
       p.buildings.E1 = 'camp';
     });
     s = play(s, 'act:expedition:normal', 'reward:3', 'done');
-    expect(top(s).t).toBe('buildRight');
+    expect(top(s).t).toBe('build');
     s = applyMove(s, 'build:fort:F1');
     expect(me(s).gold).toBe(0);
     expect(me(s).materials).toBe(1);

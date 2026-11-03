@@ -26,7 +26,24 @@
       "open_issues": [
         "2-23"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "on",
+          "event": "tilePlaced",
+          "filter": {
+            "terrain": "forest"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 2,
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "02",
@@ -39,7 +56,24 @@
       "open_issues": [
         "3-7"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "on",
+          "event": "actionExecuted",
+          "filter": {
+            "tier": "top"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 2,
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "03",
@@ -50,7 +84,22 @@
         }
       ],
       "open_issues": [],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "on",
+          "event": "cardPlayed",
+          "filter": {},
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 1,
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "04",
@@ -61,7 +110,16 @@
         }
       ],
       "open_issues": [],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "goldPointsMultiplier",
+            "value": 2
+          }
+        }
+      ]
     },
     {
       "id": "05",
@@ -72,7 +130,24 @@
         }
       ],
       "open_issues": [],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "maxedBuildingTypes",
+                "per": 1,
+                "times": 4
+              },
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "06",
@@ -85,7 +160,24 @@
       "open_issues": [
         "2-23"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingsOnTerrain:water",
+                "per": 1,
+                "times": 2
+              },
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "07",
@@ -98,7 +190,24 @@
       "open_issues": [
         "2-23"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingsOnTerrain:mountain",
+                "per": 1,
+                "times": 2
+              },
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "08",
@@ -109,7 +218,20 @@
         }
       ],
       "open_issues": [],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "natureParkPoints",
+            "table": {
+              "2": 10,
+              "3": 15,
+              "4": 20
+            }
+          }
+        }
+      ]
     },
     {
       "id": "09",
@@ -124,7 +246,24 @@
       "clarifications": [
         "アクションスペースは獲得したプレイヤー専用の占有型で、1ラウンドに1回だけ使用できる（rules.md 6-2-4、6-2-5）。"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "actionSpace",
+          "workers": 1,
+          "do": [
+            {
+              "op": "build",
+              "max": 1,
+              "upTo": false,
+              "buildings": null,
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "10",
@@ -141,7 +280,20 @@
       "clarifications": [
         "アクションスペースは獲得したプレイヤー専用の占有型で、1ラウンドに1回だけ使用できる（rules.md 6-2-4、6-2-5）。"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "actionSpace",
+          "workers": 1,
+          "do": [
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": true
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "11",
@@ -159,7 +311,18 @@
       "clarifications": [
         "アクションスペースは獲得したプレイヤー専用の占有型で、1ラウンドに1回だけ使用できる（rules.md 6-2-4、6-2-5）。"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "actionSpace",
+          "workers": 3,
+          "do": [
+            {
+              "op": "copyAction"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "12",
@@ -170,7 +333,17 @@
         }
       ],
       "open_issues": [],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "buildCost",
+            "building": "house",
+            "materials": -1
+          }
+        }
+      ]
     },
     {
       "id": "13",
@@ -188,7 +361,31 @@
       "clarifications": [
         "「獲得したターン」の「ターン」はラウンドを指す。獲得した通常ワーカーを獲得したラウンド中から使用できる（decisions.md 2-13、2026-11-03）。"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "build",
+              "max": 2,
+              "upTo": true,
+              "buildings": [
+                "house"
+              ],
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            }
+          ]
+        },
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "regularWorkersImmediate"
+          }
+        }
+      ]
     },
     {
       "id": "14",
@@ -207,7 +404,30 @@
       "clarifications": [
         "アクションスペースは獲得したプレイヤー専用の占有型で、1ラウンドに1回だけ使用できる（rules.md 6-2-4、6-2-5）。"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 2,
+              "tile": "any"
+            }
+          ]
+        },
+        {
+          "ability": "actionSpace",
+          "workers": 1,
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 1,
+              "tile": "any"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "15",
@@ -218,7 +438,22 @@
         }
       ],
       "open_issues": [],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": 2
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "16",
@@ -229,7 +464,26 @@
         }
       ],
       "open_issues": [],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "regularWorkers",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "17",
@@ -240,7 +494,22 @@
         }
       ],
       "open_issues": [],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "18",
@@ -251,7 +520,26 @@
         }
       ],
       "open_issues": [],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": {
+                "count": "tempWorkers",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "19",
@@ -264,7 +552,24 @@
       "open_issues": [
         "5"
       ],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": 3
+            },
+            {
+              "op": "gain",
+              "res": "militaryTokens",
+              "amount": 4
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "20",
@@ -275,7 +580,24 @@
         }
       ],
       "open_issues": [],
-      "provisional": false
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 4
+            },
+            {
+              "op": "gain",
+              "res": "materialProduction",
+              "amount": 2
+            }
+          ]
+        }
+      ]
     }
   ]
 }

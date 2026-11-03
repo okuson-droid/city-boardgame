@@ -3,7 +3,7 @@
 // 問題はすべて集めて返す。チューナーの保存前検査（指示書 3-5）でも用いる。
 
 import { CELL_IDS, isConnectedAxial } from '../game/board.ts';
-import { BUILDINGS, TERRAINS, type GameData, type LevelReward } from './types.ts';
+import { BUILDINGS, CIV_TAGS, TERRAINS, type GameData, type LevelReward } from './types.ts';
 
 export type DataIssue = { readonly path: string; readonly message: string };
 
@@ -273,6 +273,20 @@ const checkCards = (data: GameData, report: Report): void => {
       }
     });
   });
+
+  // 効果スクリプトの絞り込みで参照するタグは文明カードのタグでなければならない。
+  const scripts = [
+    ...data.civilizationCards.map((c, i) => ({ path: `civilizationCards[${i}].script`, script: c.script })),
+    ...data.specialCitizens.map((c, i) => ({ path: `specialCitizens[${i}].script`, script: c.script })),
+    ...data.characters.map((c, i) => ({ path: `characters[${i}].script`, script: c.script })),
+  ];
+  for (const { path, script } of scripts) {
+    script.forEach((ability, k) => {
+      if (ability.ability === 'on' && ability.filter.tag !== undefined && !CIV_TAGS.some((t) => t === ability.filter.tag)) {
+        report(`${path}[${k}].filter.tag`, `存在しないタグである（${ability.filter.tag}）`);
+      }
+    });
+  }
 
   checkUniqueIds(data.specialCitizens.map((c) => c.id), 'specialCitizens', report);
   checkUniqueIds(data.characters.map((c) => c.id), 'characters', report);

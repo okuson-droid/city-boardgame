@@ -1,7 +1,7 @@
 # 効果の命令セット 設計方針（案）
 
 作成日：2026-11-03
-状態：ユーザーの承認待ち（指示書 3-3「設計方針（命令の一覧と引数）を実装前に報告する」）
+状態：承認済み（2026-11-03）。実装は `src/data/script.ts`（型と検査）、`scripts/effect-scripts.ts`（各カードのスクリプト）、`src/game/effects.ts`・`src/game/effect-tasks.ts`（実行）、`src/game/icons.ts`（アイコンと補足の文章）
 準拠するルール：rules.md v0.8
 
 ## 0. 方針

@@ -340,7 +340,7 @@ describe('計画都市カード・自然公園カード', () => {
 
 describe('設計文書からの取り込み', () => {
   const stripAdded = (item: unknown): unknown => {
-    const { provisional: _p, ...rest } = item as Record<string, unknown>;
+    const { provisional: _p, script: _s, ...rest } = item as Record<string, unknown>;
     return rest;
   };
 

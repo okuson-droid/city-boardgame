@@ -7,6 +7,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { CHARACTER_SCRIPTS, CIV_SCRIPTS, SPECIAL_CITIZEN_SCRIPTS } from './effect-scripts.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const designDir = join(root, 'design');
@@ -31,9 +32,21 @@ const asRecords = (value: unknown): Record<string, unknown>[] => {
 // キャラクター・特別な市民カード：原本の構造のまま provisional を加える
 // ---------------------------------------------------------------------------
 
-const importPlain = (source: string, target: string, listKey: string): void => {
+const scriptOf = (scripts: Record<string, unknown[]>, id: string): unknown[] => {
+  const script = scripts[id];
+  if (script === undefined) {
+    throw new Error(`効果スクリプトがない：${id}`);
+  }
+  return script;
+};
+
+const importPlain = (source: string, target: string, listKey: string, scripts: Record<string, unknown[]>): void => {
   const original = readJson(source);
-  const items = asRecords(original[listKey]).map((item) => ({ ...item, provisional: false }));
+  const items = asRecords(original[listKey]).map((item) => ({
+    ...item,
+    provisional: false,
+    script: scriptOf(scripts, String(item['id'])),
+  }));
   writeJson(target, {
     importedFrom: `design/${source}`,
     provisional: false,
@@ -42,8 +55,9 @@ const importPlain = (source: string, target: string, listKey: string): void => {
   });
 };
 
-importPlain('data_characters.json', 'characters.json', 'characters');
-importPlain('data_special_citizens.json', 'special_citizens.json', 'cards');
+// script は原本の文言を命令セットに書き直したもの（scripts/effect-scripts.ts）。
+importPlain('data_characters.json', 'characters.json', 'characters', CHARACTER_SCRIPTS);
+importPlain('data_special_citizens.json', 'special_citizens.json', 'cards', SPECIAL_CITIZEN_SCRIPTS);
 
 // ---------------------------------------------------------------------------
 // 襲撃カード：rules.md 第19章の暫定規定を clarifications として加える
@@ -230,6 +244,7 @@ const civClarifications = (id: string, text: string): ClarificationJson[] => {
       points: 1,
       text,
       clarifications: civClarifications(id, text),
+      script: scriptOf(CIV_SCRIPTS, id),
       provisional: true,
       provisionalFields: ['name', 'playCondition', 'effectCondition', 'points'],
     };

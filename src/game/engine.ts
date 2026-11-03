@@ -5,28 +5,24 @@
 import { GAME_DATA } from '../data/index.ts';
 import { ACTIONS, BUILDINGS, TIERS, type Action, type GameData, type Tier } from '../data/types.ts';
 import {
-  applyBuildRight,
-  applyBuildSelect,
+  applyBuild,
   applyDiscard,
   applyDrillRaise,
   applyExpedition,
   applyExportCount,
-  applyFreeBuild,
   applyImportCount,
   applyMigrationCount,
   applyPioneerCount,
   applyPlaceTile,
   applySpread,
   applyWelfareConvert,
-  buildRightOptions,
-  buildSelectOptions,
+  buildOptions,
   canExecute,
   discardOptions,
   drillRaiseOptions,
   expeditionOptions,
   exportCountOptions,
   finishPlaceTiles,
-  freeBuildOptions,
   importCountOptions,
   migrationCountOptions,
   pioneerCountOptions,
@@ -52,6 +48,26 @@ import {
   type Effect,
 } from './core.ts';
 import { isCheckpoint } from './history.ts';
+import { onSpecialCitizenAcquired, runAbilities } from './effects.ts';
+import {
+  abilityFreeOptions,
+  applyAbilityFree,
+  applyChooseOne,
+  applyCopyAction,
+  applyHeroStart,
+  applyPlan,
+  applyPlayCard,
+  applySpiritPlace,
+  chooseOneOptions,
+  copyActionOptions,
+  heroStartOptions,
+  planOptions,
+  playCardOptions,
+  spaceOptions,
+  spaceWorkerCost,
+  spiritPlaceOptions,
+  startSpace,
+} from './effect-tasks.ts';
 import { createRng, shuffle } from './rng.ts';
 import type { ChoiceEffect, GameConfig, GameState, Option, PlayerState, RaidDeclaration, RaidResult, Task } from './types.ts';
 
@@ -95,6 +111,13 @@ const newPlayer = (d: GameData, index: number, name: string): PlayerState => {
     passed: false,
     score: 0,
     pendingLosses: [],
+    firstTurnDone: false,
+    usedThisRound: [],
+    abilityCounters: {},
+    onceFired: [],
+    lockedSources: [],
+    spiritChips: {},
+    privatePlannedCities: [],
   };
 };
 
@@ -142,6 +165,8 @@ export const createGame = (config: GameConfig, seed: number, d: GameData = GAME_
     scDeck: sc.slice(setup.specialCitizensRevealed),
     scRevealed: sc.slice(0, setup.specialCitizensRevealed),
     plannedCityRevealed: planned.slice(0, setup.plannedCityRevealed),
+    plannedCityDeck: planned.slice(setup.plannedCityRevealed),
+    plannedCityClaims: {},
     raidOrder,
     defenseLine: 0,
     repelLine: 0,
@@ -209,7 +234,7 @@ const applyDraft = (state: GameState, d: GameData, task: TaskOf<'draftPick'>, id
 };
 
 const setupFinish = (state: GameState, d: GameData): void => {
-  // 初期開拓済みマスに土地タイルを置く（2-1-4、2-7-1）。キャラクターの追加初期資源は段階3で扱う。
+  // 初期開拓済みマスに土地タイルを置く（2-1-4、2-7-1）。
   for (const player of state.players) {
     const board = boardOf(d, player);
     for (const cell of d.params.board.initialCells) {
@@ -218,6 +243,10 @@ const setupFinish = (state: GameState, d: GameData): void => {
   }
   state.round = 1;
   state.stack.push({ t: 'roundStart' });
+  // キャラクターの追加初期資源（2-5-3、2-7-2）。手番順の最初のプレイヤーの選択が先に来るよう逆順に処理する。
+  for (const p of [...state.turnOrder].reverse()) {
+    runAbilities(state, d, playerOf(state, p), 'setup');
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -314,7 +343,8 @@ const nextTurn = (state: GameState, task: TaskOf<'nextTurn'>): void => {
   for (let i = 1; i <= order.length; i += 1) {
     const candidate = order[(from + i) % order.length];
     if (candidate !== undefined && !playerOf(state, candidate).passed) {
-      state.stack.push({ t: 'turn', player: candidate, acted: false });
+      state.stack.push({ t: 'turn', player: candidate, acted: false, started: false });
+      state.stack.push({ t: 'turnStart', player: candidate });
       return;
     }
   }
@@ -326,12 +356,26 @@ const nextTurn = (state: GameState, task: TaskOf<'nextTurn'>): void => {
   }
 };
 
+/** 手番の開始。最初の手番なら手番開始時の効果を処理する（芸術家・聖女・デザイナー）。 */
+const turnStart = (state: GameState, d: GameData, task: TaskOf<'turnStart'>): void => {
+  const player = playerOf(state, task.player);
+  if (!player.firstTurnDone) {
+    player.firstTurnDone = true;
+    runAbilities(state, d, player, 'firstTurnStart');
+  }
+};
+
 const roundEnd = (state: GameState, d: GameData): void => {
   // ワーカーの回収と占有の解除（3-3-2、6-2-3）。次のラウンドの手番順はパスした順（12-0-5）。
   for (const player of state.players) {
     player.regularPlaced = 0;
     player.regularNewThisRound = 0;
     player.passed = false;
+    player.usedThisRound = [];
+    // 精霊チップは3ラウンド目の襲撃の後に回収し、再び使えるようにする（19-5-7）。
+    if (state.round === d.params.characters.spiritChipReturnRound) {
+      player.spiritChips = {};
+    }
   }
   state.occupied = [];
   state.turnOrder = [...state.passOrder];
@@ -343,6 +387,10 @@ const roundEnd = (state: GameState, d: GameData): void => {
 const gameEnd = (state: GameState, d: GameData): void => {
   // 最終収入と、最終ラウンドの襲撃による損失（3-2-5、7-6-3、12-2-1、17-0-1）。
   income(state);
+  // ゲーム終了時判定のカード・目標の処理（17-0-1 手順4、19-5-5）。
+  for (const p of state.turnOrder) {
+    runAbilities(state, d, playerOf(state, p), 'gameEnd');
+  }
   state.round = d.params.rounds;
   state.phase = 'over';
   emit(state, d, { type: 'gameOver' });
@@ -449,17 +497,20 @@ const turnOptions = (state: GameState, d: GameData, task: TaskOf<'turn'>): Optio
         }
       }
     }
+    options.push(...spaceOptions(state, d, player, usableRegular(player) + usableTemp(player)));
     // パスは常に選べる（12-1-1）。自動では行わない（12-0-7）。
     options.push(opt(task.player, 'pass', 'パスする'));
   } else {
     options.push(opt(task.player, 'end', '手番を終える'));
   }
+  // フリーアクションと計画都市の達成宣言は、アクションの前後に行える（12-0-6、13-3-2）。
   options.push(...freeActionOptions(state, d, player));
+  options.push(...abilityFreeOptions(state, d, player));
+  options.push(...planOptions(state, d, player));
   return options;
 };
 
-const payWorkersRange = (d: GameData, player: PlayerState, tier: Tier): number[] => {
-  const cost = d.params.actions.workerCost[tier];
+const payWorkersRange = (player: PlayerState, cost: number): number[] => {
   const min = Math.max(0, cost - usableRegular(player));
   const max = Math.min(cost, usableTemp(player));
   const result: number[] = [];
@@ -469,11 +520,18 @@ const payWorkersRange = (d: GameData, player: PlayerState, tier: Tier): number[]
   return result;
 };
 
-const placeWorkers = (state: GameState, d: GameData, player: PlayerState, action: Action, tier: Tier, temps: number): void => {
-  const cost = d.params.actions.workerCost[tier];
+/** ワーカーを置き、対象（"act:<action>:<tier>" または "space:<能力>"）を始める。 */
+const placeWorkers = (state: GameState, d: GameData, player: PlayerState, target: string, cost: number, temps: number): void => {
   player.regularPlaced += cost - temps;
   // 臨時ワーカーは使用すると失われる（3-4-2）。
   player.tempWorkers -= temps;
+  if (target.startsWith('space:')) {
+    startSpace(state, d, player, target.slice('space:'.length));
+    return;
+  }
+  const [, a = '', b = ''] = target.split(':');
+  const action = a as Action;
+  const tier = b as Tier;
   if (!isShared(d, action, tier)) {
     state.occupied.push(spaceKey(action, tier));
   }
@@ -495,16 +553,23 @@ const applyTurn = (state: GameState, d: GameData, task: TaskOf<'turn'>, id: stri
     applyFreeAction(state, d, player, a, b);
     return;
   }
-  const action = a as Action;
-  const tier = b as Tier;
+  if (kind === 'ability') {
+    applyAbilityFree(state, d, player, id.slice('ability:'.length));
+    return;
+  }
+  if (kind === 'plan') {
+    applyPlan(state, d, player, a);
+    return;
+  }
+  const cost = kind === 'space' ? spaceWorkerCost(d, player, id.slice('space:'.length)) : d.params.actions.workerCost[b as Tier];
   task.acted = true;
-  const temps = payWorkersRange(d, player, tier);
+  const temps = payWorkersRange(player, cost);
   const [only] = temps;
   if (temps.length === 1 && only !== undefined) {
-    placeWorkers(state, d, player, action, tier, only);
+    placeWorkers(state, d, player, id, cost, only);
   } else {
     // 通常ワーカーと臨時ワーカーの組み合わせを尋ねる（3-4-6）。
-    state.stack.push({ t: 'payWorkers', player: task.player, action, tier });
+    state.stack.push({ t: 'payWorkers', player: task.player, cost, target: id });
   }
 };
 
@@ -538,6 +603,7 @@ const applyFreeAction = (state: GameState, d: GameData, player: PlayerState, id:
 const endTurn = (state: GameState, player: PlayerState): void => {
   state.stack.pop();
   player.tempLocked = 0;
+  player.lockedSources = [];
   state.stack.push({ t: 'nextTurn', from: player.index });
 };
 
@@ -555,6 +621,7 @@ const passCount = (d: GameData, player: PlayerState, count: 'houses' | 'building
 const pass = (state: GameState, d: GameData, player: PlayerState): void => {
   state.stack.pop();
   player.tempLocked = 0;
+  player.lockedSources = [];
   // パス時効果を先に処理し、パス宣言時点の状態を参照する（11-2-5、12-1-2）。
   const tile = d.bonusTiles.find((t) => t.id === player.bonusTile);
   if (tile?.passScore) {
@@ -677,10 +744,13 @@ const applySpecialCitizen = (state: GameState, d: GameData, task: TaskOf<'choose
     state.revealCount += 1;
   }
   emit(state, d, { type: 'specialCitizen', player: task.player, card });
+  onSpecialCitizenAcquired(state, d, player, card);
 };
 
 const choiceLabel = (effect: ChoiceEffect): string => {
   switch (effect.k) {
+    case 'command':
+      return `${effect.source} の ${effect.command.op}`;
     case 'landTiles':
       return `土地タイル${effect.n}枚を置く`;
     case 'buildRight':
@@ -698,7 +768,16 @@ const choiceLabel = (effect: ChoiceEffect): string => {
 // 選択待ちの振り分け
 // ---------------------------------------------------------------------------
 
-const AUTO_TASKS = new Set<Task['t']>(['setupFinish', 'roundStart', 'bonusTileStart', 'income', 'nextTurn', 'roundEnd', 'gameEnd']);
+const AUTO_TASKS = new Set<Task['t']>([
+  'setupFinish',
+  'roundStart',
+  'bonusTileStart',
+  'income',
+  'nextTurn',
+  'turnStart',
+  'roundEnd',
+  'gameEnd',
+]);
 
 const topOf = (state: GameState): Task | undefined => state.stack[state.stack.length - 1];
 
@@ -709,19 +788,25 @@ const optionsFor = (state: GameState, d: GameData, task: Task): Option[] => {
     case 'turn':
       return turnOptions(state, d, task);
     case 'payWorkers':
-      return payWorkersRange(d, playerOf(state, task.player), task.tier).map((k) =>
+      return payWorkersRange(playerOf(state, task.player), task.cost).map((k) =>
         opt(task.player, `temp:${k}`, `臨時ワーカーを${k}人使う`),
       );
     case 'pioneerCount':
       return pioneerCountOptions(d, state, task);
     case 'placeTiles':
       return placeTilesOptions(d, state, task);
-    case 'buildSelect':
-      return buildSelectOptions(d, state, task);
-    case 'buildRight':
-      return buildRightOptions(d, state, task);
-    case 'freeBuild':
-      return freeBuildOptions(d, state, task);
+    case 'build':
+      return buildOptions(d, state, task);
+    case 'playCard':
+      return playCardOptions(d, state, task);
+    case 'chooseOne':
+      return chooseOneOptions(task);
+    case 'copyAction':
+      return copyActionOptions(d, state, task);
+    case 'spiritPlace':
+      return spiritPlaceOptions(d, state, task);
+    case 'heroStart':
+      return heroStartOptions(d, state, task);
     case 'importCount':
       return importCountOptions(d, state, task);
     case 'exportCount':
@@ -759,17 +844,23 @@ const applyTask = (state: GameState, d: GameData, task: Task, id: string): void 
       return applyTurn(state, d, task, id);
     case 'payWorkers':
       state.stack.pop();
-      return placeWorkers(state, d, playerOf(state, task.player), task.action, task.tier, Number(id.slice('temp:'.length)));
+      return placeWorkers(state, d, playerOf(state, task.player), task.target, task.cost, Number(id.slice('temp:'.length)));
     case 'pioneerCount':
       return applyPioneerCount(state, task, id);
     case 'placeTiles':
       return applyPlaceTile(state, d, task, id);
-    case 'buildSelect':
-      return applyBuildSelect(state, d, task, id);
-    case 'buildRight':
-      return applyBuildRight(state, d, task, id);
-    case 'freeBuild':
-      return applyFreeBuild(state, d, task, id);
+    case 'build':
+      return applyBuild(state, d, task, id);
+    case 'playCard':
+      return applyPlayCard(state, d, task, id);
+    case 'chooseOne':
+      return applyChooseOne(state, d, task, id);
+    case 'copyAction':
+      return applyCopyAction(state, d, task, id);
+    case 'spiritPlace':
+      return applySpiritPlace(state, d, task, id);
+    case 'heroStart':
+      return applyHeroStart(state, d, task, id);
     case 'importCount':
       return applyImportCount(state, d, task, id);
     case 'exportCount':
@@ -815,6 +906,8 @@ const runAuto = (state: GameState, d: GameData, task: Task): void => {
       return income(state);
     case 'nextTurn':
       return nextTurn(state, task);
+    case 'turnStart':
+      return turnStart(state, d, task);
     case 'roundEnd':
       return roundEnd(state, d);
     case 'gameEnd':
@@ -848,6 +941,7 @@ const advance = (state: GameState, d: GameData): void => {
       continue;
     }
     if (task.t === 'turn') {
+      task.started = true;
       recordUnlocks(d, state);
     }
     if (optionsFor(state, d, task).length === 0) {

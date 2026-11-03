@@ -37,6 +37,7 @@ import {
   type TierTable,
   type UnlockCondition,
 } from './types.ts';
+import { readScript, ScriptError } from './script.ts';
 
 export class DataValidationError extends Error {
   readonly path: string;
@@ -241,6 +242,17 @@ const readRaidEffect = (value: unknown, path: string) => {
     perRound: readBoolean(field(obj, 'perRound', path), `${path}.perRound`),
     afterNextIncome: readBoolean(field(obj, 'afterNextIncome', path), `${path}.afterNextIncome`),
   };
+};
+
+const readScriptField = (obj: Obj, path: string) => {
+  try {
+    return readScript(field(obj, 'script', path), `${path}.script`);
+  } catch (error) {
+    if (error instanceof ScriptError) {
+      return fail(`${path}.script`, error.message);
+    }
+    throw error;
+  }
 };
 
 const readIntArray = (value: unknown, path: string): number[] => readArray(value, path, (v, p) => readInt(v, p));
@@ -484,6 +496,12 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
         `${p('civCards')}.emptyDeckFallbackMaterials`,
       ),
     },
+    characters: {
+      spiritChipReturnRound: readPositiveInt(
+        field(readObject(at('characters'), p('characters')), 'spiritChipReturnRound', p('characters')),
+        `${p('characters')}.spiritChipReturnRound`,
+      ),
+    },
     bonusTiles: {
       kinds: readPositiveInt(field(bonusObj, 'kinds', p('bonusTiles')), `${p('bonusTiles')}.kinds`),
     },
@@ -571,6 +589,7 @@ export const parseCivilizationCards = (value: unknown, path = 'cards_civilizatio
       points: readInt(field(o, 'points', q), `${q}.points`, true),
       text: readString(field(o, 'text', q), `${q}.text`),
       clarifications: readArray(field(o, 'clarifications', q), `${q}.clarifications`, readClarification),
+      script: readScriptField(o, q),
     };
   });
 
@@ -662,6 +681,7 @@ export const parseCharacters = (value: unknown, path = 'characters'): Character[
       }),
       open_issues: readStringArray(field(o, 'open_issues', q), `${q}.open_issues`),
       ...readOptionalStringArray(o, 'clarifications', q),
+      script: readScriptField(o, q),
     };
   });
 
@@ -681,6 +701,7 @@ export const parseSpecialCitizens = (value: unknown, path = 'special_citizens'):
       }),
       open_issues: readStringArray(field(o, 'open_issues', q), `${q}.open_issues`),
       ...readOptionalStringArray(o, 'clarifications', q),
+      script: readScriptField(o, q),
     };
   });
 
