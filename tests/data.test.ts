@@ -261,6 +261,8 @@ describe('文明カードの解釈（ユーザー決定 2026-11-03）', () => {
     // rules.md v0.8 6-3-6-3、6-3-6-4（017 には適用しない）
     expect(textsOf('017')).toContain('軍事力トークンの消費を行わない');
     expect(textsOf('017')).toContain('異なる報酬を4つ');
+    expect(textsOf('017')).toContain('現在の軍事レベル以下の報酬に限る');
+    expect(textsOf('017')).toContain('指揮官の追加報酬（19-2-6）も選べる');
   });
 
   it('018 は自身のプレイでは引かない', () => {
