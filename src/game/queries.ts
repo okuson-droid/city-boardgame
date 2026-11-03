@@ -17,6 +17,8 @@ const tok = (section: keyof typeof ICON_KEYS, key: string, value?: number | stri
   return value === undefined ? { icon: entry.icon, label: entry.label } : { icon: entry.icon, value, label: entry.label };
 };
 
+const THEN: IconToken = { icon: 'sym.then', label: '→' };
+
 const topTask = (state: GameState): Task | undefined => state.stack[state.stack.length - 1];
 
 // ---------------------------------------------------------------------------
@@ -72,18 +74,19 @@ export const actionSpaceIcons = (action: Action, tier: Tier, d: GameData = GAME_
         ...(a.build[tier].goldDiscount > 0 ? [tok('resources', 'gold', -a.build[tier].goldDiscount)] : []),
         ...(a.build[tier].materialDiscount > 0 ? [tok('resources', 'materials', -a.build[tier].materialDiscount)] : []),
       ];
+    // 支払いは矢の左、獲得は右（docs/styleguide-icons.md 4-3-1）。回数の上限は ≤。
     case 'import':
-      return [tok('resources', 'gold', -a.import[tier].payGold), tok('resources', 'materials', a.import[tier].gainMaterials), tok('symbols', 'upTo', `×${a.import[tier].maxTimes}`)];
+      return [tok('resources', 'gold', a.import[tier].payGold), THEN, tok('resources', 'materials', a.import[tier].gainMaterials), tok('symbols', 'upTo', `×${a.import[tier].maxTimes}`)];
     case 'export':
-      return [tok('resources', 'materials', -a.export[tier].payMaterials), tok('resources', 'gold', a.export[tier].gainGold), tok('symbols', 'upTo', `×${a.export[tier].maxTimes}`)];
+      return [tok('resources', 'materials', a.export[tier].payMaterials), THEN, tok('resources', 'gold', a.export[tier].gainGold), tok('symbols', 'upTo', `×${a.export[tier].maxTimes}`)];
     case 'drill':
-      return [tok('resources', 'gold', -a.drill[tier].payGold), tok('resources', 'militaryTokens', a.drill[tier].gainTokens), tok('tracks', 'military', `×${a.drill[tier].maxRaises}`)];
+      return [tok('resources', 'gold', a.drill[tier].payGold), THEN, tok('resources', 'militaryTokens', a.drill[tier].gainTokens), tok('tracks', 'military', `≤${a.drill[tier].maxRaises}`)];
     case 'expedition': {
       const selection = a.expedition.selection[tier];
       return [tok('commands', 'expeditionRewards', selection.mode === 'distinct' ? selection.max : selection.total)];
     }
     case 'welfare':
-      return [tok('resources', 'materials', -a.welfare[tier].payMaterials), tok('tracks', 'infra', a.welfare[tier].infra), ...(a.welfare[tier].tempWorkers > 0 ? [tok('resources', 'tempWorkers', a.welfare[tier].tempWorkers)] : [])];
+      return [tok('resources', 'materials', a.welfare[tier].payMaterials), THEN, tok('tracks', 'infra', `+${a.welfare[tier].infra}`), ...(a.welfare[tier].tempWorkers > 0 ? [tok('resources', 'tempWorkers', a.welfare[tier].tempWorkers)] : [])];
     case 'migration':
       return [...(a.migration[tier].tempWorkers > 0 ? [tok('resources', 'tempWorkers', a.migration[tier].tempWorkers)] : []), tok('resources', 'regularWorkers', a.migration[tier].regularWorkers)];
     case 'research':

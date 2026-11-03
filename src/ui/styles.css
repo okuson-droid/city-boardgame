@@ -329,7 +329,74 @@ h3 {
 
 .icon-value {
   font-weight: 700;
-  font-size: 0.9em;
+  font-size: 0.85em;
+  background: #fff;
+  border: 1px solid #555;
+  border-radius: 7px;
+  padding: 0 3px;
+  line-height: 1.2;
+  margin-left: -0.5em;
+  margin-top: 0.9em;
+  position: relative;
+}
+
+.icon {
+  position: relative;
+}
+
+.icon-art {
+  display: block;
+}
+
+.icon-md .icon-art {
+  width: 1.9em;
+  height: 1.9em;
+}
+
+.icon-sm .icon-art {
+  width: 1.55em;
+  height: 1.55em;
+}
+
+.icon-num {
+  font-weight: 700;
+  padding: 0 1px;
+}
+
+.icon-inside {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8em;
+  color: #2d7a46;
+}
+
+/* 文法の区切り（docs/styleguide-icons.md 4-3） */
+.icon-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.group-cond {
+  background: #e3e0d8;
+  border-radius: 1em;
+  padding: 0 0.5em;
+}
+
+.group-loop {
+  border: 1.5px solid #2f5d8a;
+  border-radius: 1em;
+  padding: 0 0.4em;
+}
+
+.group-choice {
+  border-left: 2px solid #444;
+  border-right: 2px solid #444;
+  padding: 0 0.3em;
 }
 
 .tip-bubble {

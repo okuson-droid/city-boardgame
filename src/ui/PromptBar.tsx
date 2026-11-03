@@ -34,7 +34,7 @@ const panelTokens = (state: GameState, choice: Choice): IconToken[] => {
     case 'count':
       return [{ icon: 'num', value: Number(t.value), label: t.value }];
     case 'convert':
-      return t.value === '1' ? [tok('resources', 'tempWorkers', -1), tok('resources', 'materials', '+')] : [{ icon: 'sym.none', label: 'しない' }];
+      return t.value === '1' ? [tok('resources', 'tempWorkers', 1), tok('symbols', 'then'), tok('resources', 'materials')] : [{ icon: 'sym.none', label: 'しない' }];
     case 'raid': {
       if (t.value === 'none') return [{ icon: 'sym.none', label: '宣言しない' }];
       return [tok('metrics', t.value === 'defense' ? 'defenseLine' : 'repelLine', t.value === 'defense' ? state.defenseLine : state.repelLine)];
@@ -65,8 +65,6 @@ const panelTip = (state: GameState, choice: Choice): string => {
   }
   return choice.option.label;
 };
-
-const BUILD_LABEL = (b: string): string => entry('buildings', b).label;
 
 export const PromptBar = ({
   state,
@@ -118,7 +116,7 @@ export const PromptBar = ({
                 data-target={`pen:${b}`}
                 onClick={() => onBuildType(b)}
               >
-                {BUILD_LABEL(b)}
+                <Icon token={tok('buildings', b)} />
               </button>
             ))}
           </span>
@@ -127,7 +125,15 @@ export const PromptBar = ({
           <span className="chooser">
             {chooser.map((c) => (
               <button key={c.option.id} type="button" className="btn selectable" data-target={c.option.id} onClick={() => onChoose(c.option.id)}>
-                {c.target.kind === 'cell' && c.target.variant ? (c.target.variantKind === 'terrain' ? entry('terrains', c.target.variant).label : c.target.variant) : c.option.label}
+                {c.target.kind === 'cell' && c.target.variant ? (
+                  c.target.variantKind === 'terrain' ? (
+                    <Icon token={tok('terrains', c.target.variant)} />
+                  ) : (
+                    <Icon token={tok('terrains', 'match', c.target.variant)} />
+                  )
+                ) : (
+                  c.option.label
+                )}
               </button>
             ))}
             <button type="button" className="btn" data-ui="cancel-chooser" onClick={onCancelChooser}>
@@ -191,7 +197,8 @@ const ConversionPanel = ({ model, onChoose }: { model: UiModel; onChoose: Choose
         if (conv === undefined) return null;
         const payKey = conv.pay.kind === 'civCards' ? 'drawCivCards' : conv.pay.kind;
         const tokens: IconToken[] = [
-          tok('resources', payKey, -conv.pay.amount),
+          tok('resources', payKey, conv.pay.amount),
+          tok('symbols', 'then'),
           tok('resources', conv.gain.kind === 'drawCivCards' ? 'drawCivCards' : conv.gain.kind, conv.gain.amount),
         ];
         return (

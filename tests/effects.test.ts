@@ -69,6 +69,22 @@ describe('効果スクリプトのデータ', () => {
     expect(checkIconKeys(broken)).toContain('icon_keys.commands.gain：識別子または語がない');
   });
 
+  it('文法の区切りは必ず開きと閉じが対になる', () => {
+    // docs/styleguide-icons.md 4-3
+    const scripts = [...d.civilizationCards, ...d.specialCitizens, ...d.characters].map((c) => c.script);
+    for (const script of scripts) {
+      for (const tokens of iconSequence(script)) {
+        let depth = 0;
+        for (const t of tokens) {
+          if (t.icon.endsWith('.open')) depth += 1;
+          if (t.icon.endsWith('.close')) depth -= 1;
+          expect(depth).toBeGreaterThanOrEqual(0);
+        }
+        expect(depth).toBe(0);
+      }
+    }
+  });
+
   it('すべての効果スクリプトからアイコンの並びと補足の文章を組み立てられる', () => {
     // ui_design.md 0-1（補足の文章は効果スクリプトから自動で組み立てる）
     const scripts = [...d.civilizationCards, ...d.specialCitizens, ...d.characters].map((c) => c.script);
@@ -84,17 +100,22 @@ describe('効果スクリプトのデータ', () => {
     // ui_design.md 0-1（アイコンと数字の並び）
     const card027 = d.civilizationCards.find((c) => c.id === '027');
     const tokens = iconSequence(card027?.script ?? [])[0] ?? [];
+    // 条件はカプセル（grp.cond）で囲み、コロンで効果につなぐ（docs/styleguide-icons.md 4-3-3）。
     expect(tokens.map((t) => [t.icon, t.value])).toEqual([
       ['ability.onPlay', undefined],
+      ['grp.cond.open', undefined],
       ['track.military', undefined],
       ['sym.ge', undefined],
       ['num', 3],
-      ['sym.then', undefined],
+      ['grp.cond.close', undefined],
+      ['sym.colon', undefined],
       ['res.materials', 3],
+      ['grp.cond.open', undefined],
       ['track.military', undefined],
       ['sym.ge', undefined],
       ['num', 6],
-      ['sym.then', undefined],
+      ['grp.cond.close', undefined],
+      ['sym.colon', undefined],
       ['res.materials', 2],
     ]);
     expect(describeScript(card027?.script ?? [])).toEqual([

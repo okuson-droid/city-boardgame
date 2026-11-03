@@ -460,6 +460,10 @@
     "pass": {
       "icon": "sym.pass",
       "label": "パス時"
+    },
+    "colon": {
+      "icon": "sym.colon",
+      "label": "："
     }
   }
 }

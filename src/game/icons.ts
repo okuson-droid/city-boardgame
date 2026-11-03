@@ -7,6 +7,17 @@ import type { Ability, Amount, Command, Condition, EventFilter, Metric, Modifier
 /** アイコン1つ分。value は数字（なければ数字なし）。 */
 export type IconToken = { readonly icon: string; readonly value?: number | string; readonly label: string };
 
+/**
+ * 文法の区切り（docs/styleguide-icons.md 4-3）。open と close で挟んだ範囲を、画面が枠で囲む。
+ * cond＝条件のカプセル、loop＝「〜する度に」の輪の矢、choice＝「いずれか1つ」の角括弧。
+ */
+export const GROUPS = ['cond', 'loop', 'choice'] as const;
+export type GroupKind = (typeof GROUPS)[number];
+
+const open = (kind: GroupKind): IconToken => ({ icon: `grp.${kind}.open`, label: '' });
+const close = (kind: GroupKind): IconToken => ({ icon: `grp.${kind}.close`, label: '' });
+const group = (kind: GroupKind, inner: readonly IconToken[]): IconToken[] => [open(kind), ...inner, close(kind)];
+
 const entry = (keys: IconKeys, section: IconSection, key: string): IconEntry => {
   const found = keys[section][key];
   if (found === undefined) {
@@ -43,11 +54,13 @@ const amountTokens = (keys: IconKeys, amount: Amount, target: IconToken): IconTo
     ? [{ ...target, value: amount }]
     : [metricToken(keys, amount.count, amount.per), token(keys, 'symbols', 'per'), { ...target, value: amount.times }];
 
-const conditionTokens = (keys: IconKeys, cond: Condition): IconToken[] => [
-  metricToken(keys, cond.left),
-  token(keys, 'symbols', cond.op === '>=' ? 'ge' : 'lt'),
-  typeof cond.right === 'number' ? { icon: 'num', value: cond.right, label: String(cond.right) } : metricToken(keys, cond.right),
-];
+/** 条件はカプセルで囲む（4-3-3）。 */
+const conditionTokens = (keys: IconKeys, cond: Condition): IconToken[] =>
+  group('cond', [
+    metricToken(keys, cond.left),
+    token(keys, 'symbols', cond.op === '>=' ? 'ge' : 'lt'),
+    typeof cond.right === 'number' ? { icon: 'num', value: cond.right, label: String(cond.right) } : metricToken(keys, cond.right),
+  ]);
 
 const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
   switch (command.op) {
@@ -58,9 +71,11 @@ const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
     case 'placeTiles':
       return [token(keys, 'commands', 'placeTiles', command.count), token(keys, 'terrains', command.tile)];
     case 'build':
+      // 「〜まで」は数字の前に ≤ を付ける（4-3-5）。
       return [
-        token(keys, 'commands', 'build', command.max),
-        ...(command.upTo ? [token(keys, 'symbols', 'upTo')] : []),
+        ...(command.upTo
+          ? [token(keys, 'commands', 'build'), token(keys, 'symbols', 'upTo'), { icon: 'num', value: command.max, label: String(command.max) }]
+          : [token(keys, 'commands', 'build', command.max)]),
         ...(command.buildings ?? []).map((b) => token(keys, 'buildings', b)),
         ...(command.terrain !== null ? [token(keys, 'terrains', command.terrain)] : []),
         ...(!command.payGold && !command.payMaterials
@@ -74,14 +89,18 @@ const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
     case 'expeditionRewards':
       return [token(keys, 'commands', 'expeditionRewards', command.count)];
     case 'chooseOne':
-      return command.options.flatMap((option, i) => [
-        ...(i > 0 ? [token(keys, 'symbols', 'or')] : []),
-        ...option.flatMap((c) => commandTokens(keys, c)),
-      ]);
+      // 角括弧の中を縦線で区切る（4-3-5）。
+      return group(
+        'choice',
+        command.options.flatMap((option, i) => [
+          ...(i > 0 ? [token(keys, 'symbols', 'or')] : []),
+          ...option.flatMap((c) => commandTokens(keys, c)),
+        ]),
+      );
     case 'if':
       return [
         ...conditionTokens(keys, command.cond),
-        token(keys, 'symbols', 'then'),
+        token(keys, 'symbols', 'colon'),
         ...command.then.flatMap((c) => commandTokens(keys, c)),
       ];
     default:
@@ -122,12 +141,12 @@ const abilityTokens = (keys: IconKeys, ability: Ability): IconToken[] => {
   const head = token(keys, 'abilities', ability.ability);
   switch (ability.ability) {
     case 'on':
+      // きっかけを輪の矢で囲み、コロンで効果につなぐ（4-3-2）。
       return [
-        head,
-        token(keys, 'events', ability.event),
-        ...filterTokens(keys, ability.filter),
-        ...(ability.every !== undefined ? [token(keys, 'symbols', 'every', ability.every)] : []),
+        ...group('loop', [token(keys, 'events', ability.event), ...filterTokens(keys, ability.filter)]),
+        ...(ability.every !== undefined ? [token(keys, 'symbols', 'every', `×${ability.every}`)] : []),
         ...(ability.once === true ? [token(keys, 'symbols', 'once')] : []),
+        token(keys, 'symbols', 'colon'),
         ...ability.do.flatMap((c) => commandTokens(keys, c)),
       ];
     case 'freeAction':
@@ -135,7 +154,8 @@ const abilityTokens = (keys: IconKeys, ability: Ability): IconToken[] => {
         head,
         ...(ability.oncePerRound ? [token(keys, 'symbols', 'oncePerRound')] : []),
         ...(ability.require !== null ? conditionTokens(keys, ability.require) : []),
-        ...(ability.pay !== null ? [token(keys, 'symbols', 'pay'), token(keys, 'resources', ability.pay.res, ability.pay.amount)] : []),
+        // 支払いは矢の左（4-3-1）。
+        ...(ability.pay !== null ? [token(keys, 'resources', ability.pay.res, ability.pay.amount), token(keys, 'symbols', 'then')] : []),
         ...ability.do.flatMap((c) => commandTokens(keys, c)),
       ];
     case 'actionSpace':
@@ -228,7 +248,10 @@ const describeAbility = (keys: IconKeys, ability: Ability): string => {
   switch (ability.ability) {
     case 'on': {
       const { cond, excludeSelf, ...rest } = ability.filter;
-      const filter = filterTokens(keys, rest).map((t) => t.label).join('・');
+      const filter = filterTokens(keys, rest)
+        .map((t) => t.label)
+        .filter((l) => l !== '')
+        .join('・');
       // 出来事の語は助詞から始まる（「の土地タイルを置く度に」「を建設する度に」）。絞り込みがなければ助詞を落とす。
       const event = label(keys, 'events', ability.event);
       const eventText = filter === '' ? event.replace(/^[のを]/, '') : `${filter}${event}`;

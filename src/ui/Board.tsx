@@ -4,6 +4,7 @@ import { CELLS, type CellId } from '../game/board.ts';
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
 import type { Terrain } from '../data/types.ts';
 import type { PlayerState } from '../game/types.ts';
+import { ICON_ART } from './icon-art.ts';
 
 const R = 26;
 const W = Math.sqrt(3) * R;
@@ -29,6 +30,14 @@ const hexPoints = (cx: number, cy: number, r: number): string =>
 
 const labelOf = (section: 'buildings' | 'terrains' | 'resources', key: string): string =>
   (ICON_KEYS[section] as Readonly<Record<string, { label: string }>>)[key]?.label ?? key;
+
+/** マスボーナスの図案（docs/styleguide-icons.md 4-2）。 */
+const BONUS_ART: Record<string, string> = {
+  gold: 'res.gold',
+  materials: 'res.materials',
+  drawCivCards: 'res.civCard',
+  militaryTokens: 'res.militaryTokens',
+};
 
 export type CellState = 'selectable' | 'picked' | 'none';
 
@@ -88,17 +97,31 @@ export const Board = ({
                   <circle cx={cx + R * 0.55} cy={cy + R * 0.45} r={4} fill={TERRAIN_COLORS[terrain]} stroke="#555" />
                 ) : null}
                 {square?.bonus && tile === undefined ? (
-                  <text x={cx} y={cy - R * 0.45} className="cell-bonus">
-                    {labelOf('resources', square.bonus.kind === 'drawCivCards' ? 'drawCivCards' : square.bonus.kind).slice(0, 1)}
-                    {square.bonus.amount}
-                  </text>
+                  <g>
+                    <svg
+                      x={cx - 8}
+                      y={cy - R * 0.72}
+                      width={14}
+                      height={14}
+                      viewBox="0 0 24 24"
+                      dangerouslySetInnerHTML={{ __html: ICON_ART[BONUS_ART[square.bonus.kind] ?? ''] ?? '' }}
+                    />
+                    <text x={cx + 9} y={cy - R * 0.32} className="cell-bonus">
+                      {square.bonus.amount}
+                    </text>
+                  </g>
                 ) : null}
                 {building !== undefined ? (
                   <g>
-                    <circle cx={cx} cy={cy} r={R * 0.48} fill="#fff" stroke="#333" />
-                    <text x={cx} y={cy + 4} className="cell-building">
-                      {labelOf('buildings', building).slice(0, 1)}
-                    </text>
+                    <circle cx={cx} cy={cy} r={R * 0.5} fill="#fff" stroke="#333" />
+                    <svg
+                      x={cx - 10}
+                      y={cy - 10}
+                      width={20}
+                      height={20}
+                      viewBox="0 0 24 24"
+                      dangerouslySetInnerHTML={{ __html: ICON_ART[`bld.${building}`] ?? '' }}
+                    />
                   </g>
                 ) : null}
                 {chips.has(cell.id) ? (

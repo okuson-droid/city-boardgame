@@ -20,7 +20,7 @@ export const ICON_SECTIONS = {
   modifiers: MODIFIER_KINDS,
   results: ['defenseFailed', 'defended', 'repelled'],
   tiers: TIERS,
-  symbols: ['per', 'ge', 'lt', 'free', 'noGold', 'upTo', 'oncePerRound', 'pay', 'workers', 'every', 'once', 'or', 'then', 'excludeSelf', 'axis', 'pass'],
+  symbols: ['per', 'ge', 'lt', 'free', 'noGold', 'upTo', 'oncePerRound', 'pay', 'workers', 'every', 'once', 'or', 'then', 'excludeSelf', 'axis', 'pass', 'colon'],
 } as const;
 
 export type IconSection = keyof typeof ICON_SECTIONS;

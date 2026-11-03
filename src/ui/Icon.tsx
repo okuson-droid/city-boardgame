@@ -1,7 +1,9 @@
-// アイコンの仮の素材（ui_design.md 0-1）。styleguide.md のアイコンの文法が決まるまでは、
-// 識別子の種類ごとの色と、語の頭文字1字の図形で表す。素材の差し替えはこのファイルだけで済む。
+// アイコンの表示（docs/styleguide-icons.md）。図案は icon-art.ts、表にない識別子は仮の素材（色と1字）で出す。
+// 文法の区切り（条件のカプセル・「〜する度に」の輪・「いずれか1つ」の角括弧）は IconRow が枠で囲む。
 
-import type { IconToken } from '../game/icons.ts';
+import type { ReactNode } from 'react';
+import type { GroupKind, IconToken } from '../game/icons.ts';
+import { ACTION_ART, ICON_ART } from './icon-art.ts';
 import { Tip } from './Tip.tsx';
 
 const COLORS: Record<string, string> = {
@@ -24,39 +26,38 @@ const COLORS: Record<string, string> = {
 
 const colorOf = (icon: string): string => COLORS[icon.split('.')[0] ?? ''] ?? '#666';
 
-/** 記号の仮の字。語の頭の1字では意味が読めないものに割り当てる。 */
+/** 図案のない識別子の仮の字。 */
 const GLYPHS: Record<string, string> = {
-  'sym.per': '/',
-  'sym.ge': '≥',
-  'sym.lt': '<',
-  'sym.then': '→',
-  'sym.or': '|',
-  'sym.upTo': '≤',
-  'sym.free': '0',
   'sym.noGold': '金0',
   'sym.pay': '−',
-  'sym.oncePerRound': '1R',
   'sym.every': '毎',
-  'sym.once': '1回',
   'sym.excludeSelf': '自除',
   'sym.workers': '人',
   'sym.pass': 'パ',
   'sym.none': '×',
-  'ability.on': '常',
-  'ability.modifier': '常',
-  'ability.onPlay': 'プ',
-  'ability.onAcquire': '獲',
-  'ability.setup': '準',
-  'ability.firstTurnStart': '初',
-  'ability.gameEnd': '終',
-  'ability.freeAction': 'F',
-  'ability.actionSpace': '専',
   'evt.tilePlaced': '土',
   'evt.cardPlayed': '文',
   'evt.actionExecuted': '行',
   'evt.built': '建',
   'evt.workerGained': '人',
   'evt.raid': '襲',
+};
+
+const artOf = (icon: string): string | undefined => {
+  if (icon.startsWith('act.')) return ACTION_ART[icon.slice('act.'.length)];
+  // 出来事のきっかけは、対応する要素の図案で表す（4-3-2）。
+  const alias: Record<string, string> = {
+    'evt.tilePlaced': 'cmd.placeTiles',
+    'evt.cardPlayed': 'cmd.playCard',
+    'evt.built': 'cmd.build',
+    'evt.workerGained': 'res.regularWorkers',
+    'evt.raid': 'res.militaryTokens',
+    'met.landTiles': 'cmd.placeTiles',
+    'met.buildings': 'cmd.build',
+    'met.playedCivCards': 'cmd.playCard',
+    'res.drawCivCards': 'res.civCard',
+  };
+  return ICON_ART[icon] ?? ICON_ART[alias[icon] ?? ''];
 };
 
 const glyphOf = (token: IconToken): string => {
@@ -68,24 +69,63 @@ const glyphOf = (token: IconToken): string => {
 };
 
 export const Icon = ({ token, size = 'md' }: { token: IconToken; size?: 'sm' | 'md' }) => {
-  const showValue = token.value !== undefined && token.icon !== 'num';
-  const tip = `${token.label}${showValue ? ` ${String(token.value)}` : ''}`;
+  const art = artOf(token.icon);
+  const hasValue = token.value !== undefined && token.icon !== 'num';
+  const tip = `${token.label}${hasValue ? ` ${String(token.value)}` : ''}`;
+  // 得点は数字を輪の中に入れる（4-2）。
+  const inside = token.icon === 'res.points' && hasValue;
   return (
     <Tip text={tip}>
       <span className={`icon icon-${size}`} data-icon={token.icon}>
-        <span className="icon-glyph" style={{ background: colorOf(token.icon) }}>
-          {glyphOf(token)}
-        </span>
-        {showValue ? <span className="icon-value">{String(token.value)}</span> : null}
+        {art !== undefined ? (
+          <svg className="icon-art" viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: art }} />
+        ) : token.icon === 'num' ? (
+          <span className="icon-num">{glyphOf(token)}</span>
+        ) : (
+          <span className="icon-glyph" style={{ background: colorOf(token.icon) }}>
+            {glyphOf(token)}
+          </span>
+        )}
+        {inside ? <span className="icon-inside">{String(token.value)}</span> : null}
+        {hasValue && !inside ? <span className="icon-value">{String(token.value)}</span> : null}
       </span>
     </Tip>
   );
 };
 
+type Node = { kind: 'token'; token: IconToken } | { kind: 'group'; group: GroupKind; children: Node[] };
+
+/** 区切りの印（grp.<種類>.open / close）を入れ子の枠に組み立てる。 */
+const parse = (tokens: readonly IconToken[]): Node[] => {
+  const root: Node[] = [];
+  const stack: { group: GroupKind; children: Node[] }[] = [];
+  for (const token of tokens) {
+    const m = /^grp\.(\w+)\.(open|close)$/.exec(token.icon);
+    const target = stack[stack.length - 1]?.children ?? root;
+    if (m === null) {
+      target.push({ kind: 'token', token });
+    } else if (m[2] === 'open') {
+      stack.push({ group: m[1] as GroupKind, children: [] });
+    } else {
+      const done = stack.pop();
+      if (done !== undefined) (stack[stack.length - 1]?.children ?? root).push({ kind: 'group', group: done.group, children: done.children });
+    }
+  }
+  return root;
+};
+
+const render = (nodes: readonly Node[], size: 'sm' | 'md'): ReactNode[] =>
+  nodes.map((node, i) =>
+    node.kind === 'token' ? (
+      <Icon key={`${node.token.icon}-${i}`} token={node.token} size={size} />
+    ) : (
+      <span key={`g-${i}`} className={`icon-group group-${node.group}`}>
+        {node.group === 'loop' ? <Icon token={{ icon: 'ability.on', label: '〜する度に' }} size={size} /> : null}
+        {render(node.children, size)}
+      </span>
+    ),
+  );
+
 export const IconRow = ({ tokens, size = 'md' }: { tokens: readonly IconToken[]; size?: 'sm' | 'md' }) => (
-  <span className="icon-row">
-    {tokens.map((t, i) => (
-      <Icon key={`${t.icon}-${i}`} token={t} size={size} />
-    ))}
-  </span>
+  <span className="icon-row">{render(parse(tokens), size)}</span>
 );

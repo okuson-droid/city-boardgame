@@ -67,7 +67,8 @@ export const ICON_ART: Readonly<Record<string, string>> = {
   // 能力の札（4-3-6）
   'ability.onPlay': card(`<path d="M12 7l1.5 3.2 3.5.4-2.6 2.4.7 3.5-3.1-1.8-3.1 1.8.7-3.5L7 10.6l3.5-.4z" fill="#f2d24b"/>`),
   'ability.onAcquire': card(`<path d="M12 6v9M8.5 11.5L12 15l3.5-3.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>`),
-  'ability.setup': `<path d="M6 3h12M6 21h12M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9" ${S} stroke="#444"/>`,
+  // 準備時は「最初の手番」の旗1と対にする旗0（ユーザー決定 2026-11-03）。
+  'ability.setup': `<path d="M6 21V3M6 4h12v8H6" ${S} stroke="#2f5d8a"/><text x="12" y="10.5" text-anchor="middle" font-size="7" font-weight="700" fill="#2f5d8a">0</text>`,
   'ability.firstTurnStart': `<path d="M6 21V3M6 4h12v8H6" ${S} stroke="#2f5d8a"/><text x="12" y="10.5" text-anchor="middle" font-size="7" font-weight="700" fill="#2f5d8a">1</text>`,
   'ability.gameEnd': `<path d="M6 21V3" ${S} stroke="#222"/><path d="M6 3h4v4H6zM14 3h4v4h-4zM10 7h4v4h-4z" fill="#222"/><rect x="6" y="3" width="12" height="8" fill="none" stroke="#222" stroke-width="1.5"/>`,
   'ability.on': `<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" ${S} stroke="#2f5d8a"/>`,
@@ -81,6 +82,7 @@ export const ICON_ART: Readonly<Record<string, string>> = {
   'sym.lt': `<path d="M17 6L7 12l10 6" ${S} stroke="#444"/>`,
   'sym.upTo': `<path d="M17 5L7 10l10 5M7 19h10" ${S} stroke="#444"/>`,
   'sym.or': `<path d="M12 3v18" ${S} stroke="#444"/>`,
+  'sym.colon': `<circle cx="12" cy="7.5" r="2.2" fill="#444"/><circle cx="12" cy="16.5" r="2.2" fill="#444"/>`,
   'sym.oncePerRound': `<circle cx="12" cy="12" r="9" ${S} stroke="#444"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#444">1R</text>`,
   'sym.once': `<circle cx="12" cy="12" r="9" fill="#444"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">1</text>`,
   'sym.free': `<circle cx="12" cy="12" r="8" fill="${AXIS_COLORS.economy}" stroke="#7a5f10" stroke-width="1.5"/><path d="M5 19L19 5" stroke="#b5423b" stroke-width="2.5" stroke-linecap="round"/>`,
