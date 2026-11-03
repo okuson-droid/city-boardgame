@@ -198,7 +198,7 @@ export const copyActionOptions = (d: GameData, state: GameState, task: TaskOf<'c
 export const applyCopyAction = (state: GameState, d: GameData, task: TaskOf<'copyAction'>, id: string): void => {
   removeTask(state, task);
   const [, action, tier] = id.split(':');
-  startAction(state, d, playerOf(state, task.player), action as Action, tier as Tier);
+  startAction(state, d, playerOf(state, task.player), action as Action, tier as Tier, true);
 };
 
 export const spiritPlaceOptions = (d: GameData, state: GameState, task: TaskOf<'spiritPlace'>): Option[] =>

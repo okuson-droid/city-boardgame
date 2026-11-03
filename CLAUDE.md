@@ -8,7 +8,8 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 - 完了：3-1 データ層（`src/data/`、`src/game/board.ts`）。main に取り込み済み。
 - 完了：3-2 ゲームロジックの骨格（`src/game/`）。main に取り込み済み。
 - 完了：3-3 効果（命令セットは `docs/effect-commands.md`）。main に取り込み済み。
-- 次：3-4 ローカル UI。claude/ui_design.md の1〜7節が未作成で承認前のため、着手せずに止めている（指示書 3-4）。
+- 完了：3-4 ローカル UI（ui_design.md は 2026-11-03 に承認済み）。受け入れ検査は合格。ユーザーの確認待ち。
+- 次：3-5 チューナー。
 
 ## 構成
 
@@ -37,7 +38,11 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `src/data/script.ts` | 効果スクリプト（能力と命令）の型と検査 |
 | `src/data/icon_keys.json`・`icon-keys.ts` | アイコンの対応表と検査 |
 | `scripts/effect-scripts.ts` | 文明カード・特別な市民カード・キャラクターの効果スクリプト（取り込みで JSON に埋め込む） |
-| `src/ui/` | 画面。現在はデータ層の確認ページのみ |
+| `src/game/targets.ts` | `targetOf`：選択肢と画面要素の対応（ui_design.md 0-2）。null は安全網（「その他」）に出す |
+| `src/game/explain.ts` | `explain`・`explainUndo`：選べない理由 |
+| `src/game/queries.ts` | 画面のための派生値（場面の見出し、アクションスペースのアイコン、コストの見込み、ワーカーの内訳など） |
+| `src/ui/` | ローカル版の画面（React）。`Game.tsx`（全体）・`ActionBoard.tsx`・`Board.tsx`（SVG の個人ボード）・`Areas.tsx`（共有の場・手持ち・履歴・ドラフト・終了時の得点）・`PromptBar.tsx`・`Cards.tsx`・`Icon.tsx`（仮のアイコン素材）・`Tip.tsx`（補足表示）・`model.ts`（選択肢の振り分け） |
+| `e2e/accept.ts` | 受け入れ検査（Playwright の自動対戦） |
 | `scripts/import-design.ts` | `design/` から characters・special_citizens・raid_cards・cards_civilization を取り込む |
 | `scripts/generate-boards.ts` | 仮置きの個人ボードをシード付きで生成する |
 | `tests/` | Vitest の単体テスト。`tests/helpers/` に局面づくりと乱択プレイアウトの補助 |
@@ -52,6 +57,7 @@ npm run build         # dist/index.html（1枚の HTML）
 npm run dev           # 開発サーバー
 npm run import:design # design/ からデータを取り込み直す
 npm run gen:data      # 仮置きの個人ボードを生成し直す
+npm run accept        # ビルドして受け入れ検査（自動対戦3局、数分かかる）
 ```
 
 ## 守ること
@@ -80,6 +86,16 @@ npm run gen:data      # 仮置きの個人ボードを生成し直す
 - 得点は `addScore` で得点トラックに加え、評価軸を付けた `score` 出来事を残す（17-0-3）。評価軸の指定がない得点は `other`（17-0-2）。
 - 巻き戻しは記録（`state.log`）の再生で行う。テストで局面を直接書き換えた状態は再生できないため、巻き戻しのテストは実際の選択だけで組み立てる。
 - 乱択プレイアウトの性質テスト（3人・4人で各100局）は約30秒かかる。
+
+## 画面の約束事
+
+- 画面はルールを計算しない（ui_design.md 0-2）。選択肢は `getOptions`、画面要素の対応は `targetOf`、選べない理由は `explain`、派生値は `queries.ts` だけから得る。
+- ゲームを進める所作の要素には `data-target`（選択肢の識別子、または `pen:<建物>`・`free-panel` などの画面内の操作）を付ける。受け入れ検査はこの属性を持つ要素だけをクリックする。タブ・取り消し・設定など、ゲームを進めない要素は `data-ui` にする。
+- 手札の要素には `data-hand-card` と `data-owner` を付ける。受け入れ検査はこれで他人の手札の漏れを数える。手札の内容は、表示中のタブが画面の持ち主（選択待ちのプレイヤー）のときだけ描く。
+- 演出の速度は URL の `#speed=none|fast|standard`、シードは `#seed=<数>` で指定できる。受け入れ検査は `speed=none` で行う。
+- 建築は「建物の種類を選んでからマスをタップ」、遠征は「報酬を選ぶだけ」とする（ユーザー決定 2026-11-03。ui_design.md 2-3・2-3-1 の記述からの変更）。
+- 表示の切り替え（ドラフトの一覧か個人ボードか）は、フェイズではなく選択待ちのタスクで判断する。準備の処理（英雄・デザイナーの初期配置）はフェイズが「ドラフト」のまま進むためである。
+- アイコンは `src/ui/Icon.tsx` の仮の素材（色と1字）である。素材の差し替えはこのファイルと `icon_keys.json` の識別子の対応で行う。
 
 ## データの約束事
 

@@ -456,6 +456,10 @@
     "axis": {
       "icon": "sym.axis",
       "label": "評価軸"
+    },
+    "pass": {
+      "icon": "sym.pass",
+      "label": "パス時"
     }
   }
 }

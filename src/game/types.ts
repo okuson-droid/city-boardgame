@@ -151,7 +151,14 @@ export type GameEvent =
     }
   | { readonly type: 'round'; readonly round: number; readonly raidCard: number }
   | { readonly type: 'draft'; readonly player: number; readonly kind: string; readonly id: string }
-  | { readonly type: 'action'; readonly player: number; readonly action: Action; readonly tier: Tier }
+  | {
+      readonly type: 'action';
+      readonly player: number;
+      readonly action: Action;
+      readonly tier: Tier;
+      /** 特別市民11 で他のスペースの効果を写した（スペースは使っていない、19-2-11）。 */
+      readonly copied: boolean;
+    }
   | { readonly type: 'tilePlaced'; readonly player: number; readonly cell: CellId; readonly terrain: Terrain }
   | { readonly type: 'built'; readonly player: number; readonly cell: CellId; readonly building: Building }
   | { readonly type: 'cardPlayed'; readonly player: number; readonly card: string }

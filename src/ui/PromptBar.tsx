@@ -1,0 +1,210 @@
+// プロンプト帯（ui_design.md 3-1）と、値を決めるパネル（2-3-1）。
+// 左に場面のアイコンと見出し、中央に選択中の値と値の選択肢、右に確定・パス・フリーアクションのボタンを出す。
+
+import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
+import { describeScript, type IconToken } from '../game/icons.ts';
+import { expeditionTable, pendingBuildCost, remainingInTask, sceneOf } from '../game/queries.ts';
+import { playerOf } from '../game/core.ts';
+import type { GameState, Option, Task } from '../game/types.ts';
+import type { Building } from '../data/types.ts';
+import { Icon, IconRow } from './Icon.tsx';
+import type { Choice, UiModel } from './model.ts';
+import { Tip } from './Tip.tsx';
+
+const entry = (section: keyof typeof ICON_KEYS, key: string): { icon: string; label: string } =>
+  (ICON_KEYS[section] as Readonly<Record<string, { icon: string; label: string }>>)[key] ?? { icon: `${section}.${key}`, label: key };
+
+const tok = (section: keyof typeof ICON_KEYS, key: string, value?: number | string): IconToken => {
+  const e = entry(section, key);
+  return value === undefined ? { icon: e.icon, label: e.label } : { icon: e.icon, value, label: e.label };
+};
+
+type Choose = (optionId: string) => void;
+
+const topTask = (state: GameState): Task | undefined => state.stack[state.stack.length - 1];
+
+/** パネルの選択肢を、アイコンと数字で表す。 */
+const panelTokens = (state: GameState, choice: Choice): IconToken[] => {
+  const t = choice.target;
+  if (t.kind !== 'panel') return [];
+  const task = topTask(state);
+  switch (t.panel) {
+    case 'workers':
+      return [tok('resources', 'tempWorkers', Number(t.value))];
+    case 'count':
+      return [{ icon: 'num', value: Number(t.value), label: t.value }];
+    case 'convert':
+      return t.value === '1' ? [tok('resources', 'tempWorkers', -1), tok('resources', 'materials', '+')] : [{ icon: 'sym.none', label: 'しない' }];
+    case 'raid': {
+      if (t.value === 'none') return [{ icon: 'sym.none', label: '宣言しない' }];
+      return [tok('metrics', t.value === 'defense' ? 'defenseLine' : 'repelLine', t.value === 'defense' ? state.defenseLine : state.repelLine)];
+    }
+    case 'reward': {
+      const p = task && 'player' in task ? playerOf(state, task.player) : undefined;
+      const row = p ? expeditionTable(GAME_DATA, p)[Number(t.value)] : undefined;
+      if (row === undefined) return [];
+      const grants = row.grants.map((g) => tok(g.kind === 'buildRight' ? 'commands' : g.kind === 'landTiles' ? 'commands' : 'resources', g.kind === 'buildRight' ? 'build' : g.kind === 'landTiles' ? 'placeTiles' : g.kind === 'freeBuildOnTerrain' ? 'points' : g.kind, g.amount));
+      const command = row.command?.op === 'gain' ? [tok('resources', row.command.res, typeof row.command.amount === 'number' ? row.command.amount : '')] : [];
+      return [tok('tracks', 'military', row.level), ...grants, ...command];
+    }
+    case 'copy': {
+      const [action = '', tier = ''] = t.value.split(':');
+      return [{ icon: `act.${action}`, label: action }, tok('tiers', tier)];
+    }
+    case 'order':
+    case 'choose':
+      return [{ icon: 'sym.item', label: choice.option.label }];
+  }
+};
+
+const panelTip = (state: GameState, choice: Choice): string => {
+  const task = topTask(state);
+  if (choice.target.kind === 'panel' && choice.target.panel === 'choose' && task?.t === 'chooseOne') {
+    const commands = task.options[Number(choice.target.value)] ?? [];
+    return describeScript([{ ability: 'onPlay', do: commands }])[0]?.replace(/^[^：]*：/, '') ?? choice.option.label;
+  }
+  return choice.option.label;
+};
+
+const BUILD_LABEL = (b: string): string => entry('buildings', b).label;
+
+export const PromptBar = ({
+  state,
+  model,
+  onChoose,
+  chooser,
+  onCancelChooser,
+  buildType,
+  onBuildType,
+  freeOpen,
+  onToggleFree,
+}: {
+  state: GameState;
+  model: UiModel;
+  onChoose: Choose;
+  chooser: readonly Choice[] | null;
+  onCancelChooser: () => void;
+  buildType: Building | null;
+  onBuildType: (b: Building) => void;
+  freeOpen: boolean;
+  onToggleFree: () => void;
+}) => {
+  const scene = sceneOf(state);
+  const panelChoices = model.choices.filter((c) => c.target.kind === 'panel');
+  const pass = model.button('pass');
+  const end = model.button('end');
+  const done = model.button('done');
+  const cost = pendingBuildCost(state);
+  const remaining = remainingInTask(state);
+  const buildTypes = [
+    ...new Set(model.choices.flatMap((c) => (c.target.kind === 'cell' && c.target.variantKind === 'building' && c.target.variant ? [c.target.variant] : []))),
+  ] as Building[];
+  return (
+    <div className="prompt" data-scene={scene.heading}>
+      <div className="prompt-left">
+        <Icon token={{ icon: scene.icon, label: scene.heading }} />
+        <span className="prompt-heading">{scene.heading}</span>
+        {remaining !== null ? <span className="muted">残り{remaining}</span> : null}
+        {cost !== null ? <IconRow tokens={[tok('resources', 'gold', -cost.gold), tok('resources', 'materials', -cost.materials)]} size="sm" /> : null}
+      </div>
+      <div className="prompt-center">
+        {buildTypes.length > 0 ? (
+          <span className="chooser">
+            {buildTypes.map((b) => (
+              <button
+                key={b}
+                type="button"
+                className={`btn pen${buildType === b ? ' active' : ''}`}
+                data-target={`pen:${b}`}
+                onClick={() => onBuildType(b)}
+              >
+                {BUILD_LABEL(b)}
+              </button>
+            ))}
+          </span>
+        ) : null}
+        {chooser !== null ? (
+          <span className="chooser">
+            {chooser.map((c) => (
+              <button key={c.option.id} type="button" className="btn selectable" data-target={c.option.id} onClick={() => onChoose(c.option.id)}>
+                {c.target.kind === 'cell' && c.target.variant ? (c.target.variantKind === 'terrain' ? entry('terrains', c.target.variant).label : c.target.variant) : c.option.label}
+              </button>
+            ))}
+            <button type="button" className="btn" data-ui="cancel-chooser" onClick={onCancelChooser}>
+              戻る
+            </button>
+          </span>
+        ) : null}
+        {panelChoices.map((c) => (
+          <Tip key={c.option.id} text={panelTip(state, c)}>
+            <button type="button" className="btn selectable" data-target={c.option.id} onClick={() => onChoose(c.option.id)}>
+              <IconRow tokens={panelTokens(state, c)} size="sm" />
+            </button>
+          </Tip>
+        ))}
+        {model.fallback.length > 0 ? (
+          <span className="fallback">
+            その他：
+            {model.fallback.map((o: Option) => (
+              <button key={o.id} type="button" className="btn" data-fallback={o.id} onClick={() => onChoose(o.id)}>
+                {o.label}
+              </button>
+            ))}
+          </span>
+        ) : null}
+      </div>
+      <div className="prompt-right">
+        {done ? (
+          <button type="button" className="btn primary selectable" data-target={done.id} onClick={() => onChoose(done.id)}>
+            確定
+          </button>
+        ) : null}
+        {end ? (
+          <button type="button" className="btn primary selectable" data-target={end.id} onClick={() => onChoose(end.id)}>
+            手番を終える
+          </button>
+        ) : null}
+        {model.conversions.length > 0 ? (
+          <button type="button" className={`btn${freeOpen ? ' active' : ''}`} data-target="free-panel" onClick={onToggleFree}>
+            フリーアクション
+          </button>
+        ) : null}
+        {pass ? (
+          <button type="button" className="btn selectable" data-target={pass.id} onClick={() => onChoose(pass.id)}>
+            パス
+          </button>
+        ) : null}
+      </div>
+      {freeOpen && model.conversions.length > 0 ? <ConversionPanel model={model} onChoose={onChoose} /> : null}
+    </div>
+  );
+};
+
+/** フリーアクションの資源変換（10-1-3）。1行が1回の変換。 */
+const ConversionPanel = ({ model, onChoose }: { model: UiModel; onChoose: Choose }) => {
+  return (
+    <div className="free-panel">
+      {model.conversions.map((c) => {
+        const t = c.target;
+        if (t.kind !== 'conversion') return null;
+        const conv = GAME_DATA.params.freeActions.conversions.find((x) => x.id === t.id);
+        if (conv === undefined) return null;
+        const payKey = conv.pay.kind === 'civCards' ? 'drawCivCards' : conv.pay.kind;
+        const tokens: IconToken[] = [
+          tok('resources', payKey, -conv.pay.amount),
+          tok('resources', conv.gain.kind === 'drawCivCards' ? 'drawCivCards' : conv.gain.kind, conv.gain.amount),
+        ];
+        return (
+          <button key={c.option.id} type="button" className="btn selectable" data-target={c.option.id} onClick={() => onChoose(c.option.id)}>
+            <IconRow tokens={tokens} size="sm" />
+            {t.card !== null ? (
+              <span className="muted small" data-hand-card={t.card} data-owner={String(model.owner)}>
+                {GAME_DATA.civilizationCards.find((x) => x.id === t.card)?.name}
+              </span>
+            ) : null}
+          </button>
+        );
+      })}
+    </div>
+  );
+};

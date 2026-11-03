@@ -647,10 +647,17 @@ export const canExecute = (d: GameData, player: PlayerState, action: Action, tie
 };
 
 /** ワーカーを置いた後、アクションの中身の選択を始める。 */
-export const startAction = (state: GameState, d: GameData, player: PlayerState, action: Action, tier: Tier): void => {
+export const startAction = (
+  state: GameState,
+  d: GameData,
+  player: PlayerState,
+  action: Action,
+  tier: Tier,
+  copied = false,
+): void => {
   const a = d.params.actions;
   const p = player.index;
-  emit(state, d, { type: 'action', player: p, action, tier });
+  emit(state, d, { type: 'action', player: p, action, tier, copied });
   switch (action) {
     case 'pioneer':
       state.stack.push({ t: 'pioneerCount', player: p, tier });

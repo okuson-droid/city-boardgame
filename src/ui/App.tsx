@@ -1,0 +1,68 @@
+// ローカル版の入口。人数とシードを選んでゲームを始める。
+
+import { useState } from 'react';
+import { GAME_DATA } from '../data/index.ts';
+import { createGame } from '../game/engine.ts';
+import type { GameState } from '../game/types.ts';
+import { Game, type Settings } from './Game.tsx';
+
+const readSettings = (): Settings => {
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const speed = params.get('speed');
+  return {
+    speed: speed === 'none' || speed === 'fast' ? speed : 'standard',
+    follow: params.get('follow') !== 'off',
+  };
+};
+
+const randomSeed = (): number => Number(String(Date.now()).slice(-9));
+
+export const App = () => {
+  const [settings, setSettings] = useState<Settings>(readSettings);
+  const [game, setGame] = useState<GameState | null>(null);
+  const [players, setPlayers] = useState(GAME_DATA.params.playerCount.min);
+  const [seed, setSeed] = useState(() => {
+    const fromHash = new URLSearchParams(window.location.hash.slice(1)).get('seed');
+    return fromHash !== null ? Number(fromHash) : randomSeed();
+  });
+
+  if (game !== null) {
+    return <Game key={game.seed} initial={game} settings={settings} onRestart={() => setGame(null)} />;
+  }
+  return (
+    <div className="start">
+      <h1>都市開発ボードゲーム（仮）</h1>
+      <p className="muted">ローカル版（1台で交代して遊ぶ）。rules.md v{GAME_DATA.params.rulesVersion}。仮置きのデータには「仮」の印を付けている。</p>
+      <div className="start-row">
+        <span>人数</span>
+        {Array.from(
+          { length: GAME_DATA.params.playerCount.max - GAME_DATA.params.playerCount.min + 1 },
+          (_, i) => GAME_DATA.params.playerCount.min + i,
+        ).map((n) => (
+          <button key={n} type="button" className={`btn${players === n ? ' active' : ''}`} data-ui={`players-${n}`} onClick={() => setPlayers(n)}>
+            {n}人
+          </button>
+        ))}
+      </div>
+      <div className="start-row">
+        <span>シード</span>
+        <input type="number" value={seed} onChange={(e) => setSeed(Number(e.target.value))} />
+      </div>
+      <div className="start-row">
+        <span>演出</span>
+        {(['standard', 'fast', 'none'] as const).map((speed) => (
+          <button key={speed} type="button" className={`btn${settings.speed === speed ? ' active' : ''}`} onClick={() => setSettings({ ...settings, speed })}>
+            {speed === 'standard' ? '標準' : speed === 'fast' ? '速い' : 'なし'}
+          </button>
+        ))}
+        <span>追いかける</span>
+        <button type="button" className={`btn${settings.follow ? ' active' : ''}`} onClick={() => setSettings({ ...settings, follow: !settings.follow })}>
+          {settings.follow ? '入' : '切'}
+        </button>
+      </div>
+      <button type="button" className="btn primary" data-target="start" onClick={() => setGame(createGame({ playerCount: players }, seed))}>
+        はじめる
+      </button>
+    </div>
+  );
+};
