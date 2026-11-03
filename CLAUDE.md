@@ -10,7 +10,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 - 完了：3-3 効果（命令セットは `docs/effect-commands.md`）。main に取り込み済み。
 - 完了：3-4 ローカル UI（ui_design.md は 2026-11-03 に承認済み）。受け入れ検査は合格。main に取り込み済み。演出は現段階では最小限とする（ユーザー決定 2026-11-03）。
 - 完了：アイコンの文法（`docs/styleguide-icons.md`、承認済み 2026-11-03）。図案は `src/ui/icon-art.ts`、画面への組み込みは `Icon.tsx`。
-- 次：3-5 チューナー。
+- 完了：3-5 チューナー（`tools/tuner/`、`npm run tuner`）。ユーザーの確認待ち。検証（シミュレーションによる比較）は別の指示書で扱う。
 
 ## 構成
 
@@ -44,6 +44,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `src/game/queries.ts` | 画面のための派生値（場面の見出し、アクションスペースのアイコン、コストの見込み、ワーカーの内訳など） |
 | `src/ui/` | ローカル版の画面（React）。`Game.tsx`（全体）・`ActionBoard.tsx`・`Board.tsx`（SVG の個人ボード）・`Areas.tsx`（共有の場・手持ち・履歴・ドラフト・終了時の得点）・`PromptBar.tsx`・`Cards.tsx`・`Icon.tsx`（仮のアイコン素材）・`Tip.tsx`（補足表示）・`model.ts`（選択肢の振り分け） |
 | `e2e/accept.ts` | 受け入れ検査（Playwright の自動対戦） |
+| `tools/tuner/` | チューナー。`proposal.ts`（調整案の作成・差分・適用・保存と読み込み・検査・Markdown）、`TunerApp.tsx`（画面）、`JsonEditor.tsx`（汎用フォーム）、`ScriptEditor.tsx`（効果を命令と引数の単位で編集）、`BoardEditor.tsx`（個人ボード）、`vite.config.ts`（開発サーバーと書き戻しの口）、`play.html`（試遊） |
 | `scripts/import-design.ts` | `design/` から characters・special_citizens・raid_cards・cards_civilization を取り込む |
 | `scripts/generate-boards.ts` | 仮置きの個人ボードをシード付きで生成する |
 | `tests/` | Vitest の単体テスト。`tests/helpers/` に局面づくりと乱択プレイアウトの補助 |
@@ -59,6 +60,8 @@ npm run dev           # 開発サーバー
 npm run import:design # design/ からデータを取り込み直す
 npm run gen:data      # 仮置きの個人ボードを生成し直す
 npm run accept        # ビルドして受け入れ検査（自動対戦3局、数分かかる）
+npm run tuner         # チューナーの開発サーバー（/tools/tuner/index.html）
+npm run icons:preview # アイコンの見本 docs/icon-preview.html を生成する
 ```
 
 ## 守ること
@@ -80,7 +83,7 @@ npm run accept        # ビルドして受け入れ検査（自動対戦3局、�
 - 選択肢の識別子は `act:<action>:<tier>`・`pass`・`end`・`free:<id>[:<card>]`・`temp:<n>`・`count:<n>`・`tile:<cell>:<terrain>`・`build:<building>:<cell>`・`done`・`reward:<i>`・`convert:<0|1>`・`card:<id>`・`sc:<id>`・`order:<i>`・`bonus:<n>`・`raid:<none|defense|repel>`・`draft:<board|bonus|character>:<id>` である。
 - 資源を得るだけの効果は `processEffects` が尋ねずに処理し、選択を伴う効果（土地タイル・建設の権利・無料建設・特別な市民カード・捨て札）はタスクにする。2つ以上あれば `chooseOrder` で順番を尋ねる（decisions.md 3-4）。
 - 「〜した時」の効果（16-1-4）は、`emit` が記録する1単位ごとの出来事に反応させる（`effects.ts` の `react`）。
-- 効果スクリプトの編集は `scripts/effect-scripts.ts` で行い、`npm run import:design` で JSON に埋め込む。`src/data/` の JSON を直接書き換えても、次の取り込みで上書きされる。
+- 効果スクリプトの正は `src/data/` の JSON である（チューナーで編集し書き戻す）。`npm run import:design` は `design/` 由来の文言だけを更新し、効果スクリプトと文明カードの仮置きの項目（名称・条件・固有得点）は既存の値を保つ。`scripts/effect-scripts.ts` は値がないときの初期値としてだけ使う。
 - タスクをスタックから取り除くときは `removeTask(state, task)` を使う。処理中に常時効果が上にタスクを積むため、`pop()` では誤って別のタスクを取り除く。
 - 能力の識別子は「出どころ#添字」（例：`sc:09#0`、`char:merchant#1`）。選択肢は `ability:<識別子>`（フリーアクション）・`space:<識別子>`（専用スペース）・`plan:<id>`（計画都市の宣言）・`choose:<i>`・`copy:<action>:<tier>`・`spirit:<terrain>:<cell>`・`hero:<E1|F1>:<cell>`。
 - 骨格のテストは `withoutCharacters` でキャラクターを外して局面を作る。キャラクターの効果がテストに混ざらないようにするためである。
@@ -98,6 +101,14 @@ npm run accept        # ビルドして受け入れ検査（自動対戦3局、�
 - 表示の切り替え（ドラフトの一覧か個人ボードか）は、フェイズではなく選択待ちのタスクで判断する。準備の処理（英雄・デザイナーの初期配置）はフェイズが「ドラフト」のまま進むためである。
 - アイコンの図案は `src/ui/icon-art.ts`（識別子ごとの SVG）。表にない識別子だけ `Icon.tsx` が仮の素材（色と1字）で出す。見本は `npm run icons:preview` で `docs/icon-preview.html` に生成する。
 - 文法の区切り（条件のカプセル・「〜する度に」の輪・「いずれか1つ」の角括弧）は、`iconSequence` が `grp.<cond|loop|choice>.open/close` の印を返し、`IconRow` が枠に組み立てる。支払いは矢（`sym.then`）の左に置き、負の数にしない。
+
+## チューナーの約束事
+
+- 調整案は「ファイル名・位置（path）・元の値・新しい値」の変更点の列である。差分はファイル単位（`DATA_FILES`、`rawFromFiles`）で取る。配列の長さやオブジェクトの項目が変わった場合は、その配列・オブジェクト全体を1つの変更点にする。
+- 保存・試遊・書き出しの前に `validateFiles`（型検査と整合検査）を行い、問題があれば止める。作業中の写しはブラウザ（localStorage の `tuner:work`）に保つ。
+- 試遊は `tools/tuner/play.html` が調整案のデータを `globalThis.__TUNER_FILES__` に置き、`src/data/index.ts` がチューナーの開発サーバー（`VITE_TUNER=1`）のときだけそれを読む。配布用ビルドには含まれない。
+- 書き出しは開発サーバーの `POST /__tuner/export` が受け、`src/data/` に既にあるゲームデータの JSON（`icon_keys.json` を除く）だけを書き換える。あわせて変更点の一覧を Markdown で出し、ユーザーが claude/tuning_log.md に転記する。
+- 識別子・原本の文言・仮置きの印・プレイ条件と効果適用条件は、チューナーでは読むだけにする。
 
 ## データの約束事
 

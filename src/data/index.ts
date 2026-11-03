@@ -44,19 +44,53 @@ const boardModules = import.meta.glob<unknown>('./board_*.json', { eager: true, 
 
 const boardOrder = (path: string): number => Number(/board_(\d+)\.json$/.exec(path)?.[1] ?? Number.NaN);
 
-export const RAW_GAME_DATA: RawGameData = {
-  params: paramsJson,
-  boards: Object.keys(boardModules)
-    .sort((a, b) => boardOrder(a) - boardOrder(b))
-    .map((path) => boardModules[path]),
-  civilizationCards: civilizationJson,
-  plannedCityCards: plannedCityJson,
-  natureParkCards: natureParkJson,
-  specialCitizens: specialCitizensJson,
-  characters: charactersJson,
-  raidCards: raidCardsJson,
-  bonusTiles: bonusTilesJson,
+/** src/data/ のファイル名と中身。チューナーの調整案はファイル単位で差分を持ち、書き戻す。 */
+export type DataFiles = Readonly<Record<string, unknown>>;
+
+/** ファイル名と RawGameData の項目の対応（個人ボードは board_*.json の番号順）。 */
+export const DATA_FILE_NAMES = {
+  params: 'params.json',
+  civilizationCards: 'cards_civilization.json',
+  plannedCityCards: 'cards_planned_city.json',
+  natureParkCards: 'cards_nature_park.json',
+  specialCitizens: 'special_citizens.json',
+  characters: 'characters.json',
+  raidCards: 'raid_cards.json',
+  bonusTiles: 'bonus_tiles.json',
+} as const;
+
+export const isBoardFileName = (name: string): boolean => /^board_\d+\.json$/.test(name);
+
+/** 同梱のデータをファイル単位で持つ。 */
+export const DATA_FILES: DataFiles = {
+  [DATA_FILE_NAMES.params]: paramsJson,
+  [DATA_FILE_NAMES.civilizationCards]: civilizationJson,
+  [DATA_FILE_NAMES.plannedCityCards]: plannedCityJson,
+  [DATA_FILE_NAMES.natureParkCards]: natureParkJson,
+  [DATA_FILE_NAMES.specialCitizens]: specialCitizensJson,
+  [DATA_FILE_NAMES.characters]: charactersJson,
+  [DATA_FILE_NAMES.raidCards]: raidCardsJson,
+  [DATA_FILE_NAMES.bonusTiles]: bonusTilesJson,
+  ...Object.fromEntries(Object.entries(boardModules).map(([path, json]) => [path.replace('./', ''), json])),
 };
+
+/** ファイル単位のデータを RawGameData にする。 */
+export const rawFromFiles = (files: DataFiles): RawGameData => ({
+  params: files[DATA_FILE_NAMES.params],
+  boards: Object.keys(files)
+    .filter(isBoardFileName)
+    .sort((a, b) => boardOrder(a) - boardOrder(b))
+    .map((name) => files[name]),
+  civilizationCards: files[DATA_FILE_NAMES.civilizationCards],
+  plannedCityCards: files[DATA_FILE_NAMES.plannedCityCards],
+  natureParkCards: files[DATA_FILE_NAMES.natureParkCards],
+  specialCitizens: files[DATA_FILE_NAMES.specialCitizens],
+  characters: files[DATA_FILE_NAMES.characters],
+  raidCards: files[DATA_FILE_NAMES.raidCards],
+  bonusTiles: files[DATA_FILE_NAMES.bonusTiles],
+});
+
+export const RAW_GAME_DATA: RawGameData = rawFromFiles(DATA_FILES);
 
 /** 型検査を行い GameData にする。型に合わない値があれば DataValidationError を投げる。 */
 export const parseGameData = (raw: RawGameData): GameData => ({
@@ -82,7 +116,20 @@ export const loadGameData = (raw: RawGameData): GameData => {
   return data;
 };
 
-/** 同梱のデータ一式。 */
-export const GAME_DATA: GameData = loadGameData(RAW_GAME_DATA);
+declare global {
+  // チューナーの試遊ページ（tools/tuner/play.html）が、調整案を適用したデータを置く。
+  var __TUNER_FILES__: DataFiles | undefined;
+}
+
+/**
+ * 調整案を適用したデータ。チューナーの開発サーバー（VITE_TUNER=1）でだけ読み、配布用ビルドでは常に undefined である。
+ */
+const tunerFiles: DataFiles | undefined = import.meta.env['VITE_TUNER'] === '1' ? globalThis.__TUNER_FILES__ : undefined;
+
+/** 調整案で試遊しているか（画面に印を出すため）。 */
+export const TUNER_PLAYTEST = tunerFiles !== undefined;
+
+/** 同梱のデータ一式。チューナーの試遊では調整案を適用したデータになる。 */
+export const GAME_DATA: GameData = loadGameData(tunerFiles !== undefined ? rawFromFiles(tunerFiles) : RAW_GAME_DATA);
 export * from './script.ts';
 export { ICON_KEYS, checkIconKeys, type IconEntry, type IconKeys } from './icon-keys.ts';

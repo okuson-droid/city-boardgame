@@ -4,7 +4,7 @@
 //
 // design/ は読むだけで変更しない（指示書 0-1）。
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CHARACTER_SCRIPTS, CIV_SCRIPTS, SPECIAL_CITIZEN_SCRIPTS } from './effect-scripts.ts';
@@ -32,7 +32,19 @@ const asRecords = (value: unknown): Record<string, unknown>[] => {
 // キャラクター・特別な市民カード：原本の構造のまま provisional を加える
 // ---------------------------------------------------------------------------
 
-const scriptOf = (scripts: Record<string, unknown[]>, id: string): unknown[] => {
+// src/data/ の既存の値。効果スクリプトと仮置きの項目は、チューナーで調整した値を保つため既存の値を優先する。
+// scripts/effect-scripts.ts は、まだ値がないときの初期値としてだけ使う。
+const existingItems = (target: string, listKey: string): Map<string, Record<string, unknown>> => {
+  const path = join(dataDir, target);
+  if (!existsSync(path)) return new Map();
+  const file = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
+  const list = Array.isArray(file[listKey]) ? (file[listKey] as Record<string, unknown>[]) : [];
+  return new Map(list.map((item) => [String(item['id']), item]));
+};
+
+const scriptOf = (scripts: Record<string, unknown[]>, existing: Map<string, Record<string, unknown>>, id: string): unknown[] => {
+  const kept = existing.get(id)?.['script'];
+  if (Array.isArray(kept)) return kept;
   const script = scripts[id];
   if (script === undefined) {
     throw new Error(`効果スクリプトがない：${id}`);
@@ -42,10 +54,11 @@ const scriptOf = (scripts: Record<string, unknown[]>, id: string): unknown[] => 
 
 const importPlain = (source: string, target: string, listKey: string, scripts: Record<string, unknown[]>): void => {
   const original = readJson(source);
+  const existing = existingItems(target, listKey);
   const items = asRecords(original[listKey]).map((item) => ({
     ...item,
     provisional: false,
-    script: scriptOf(scripts, String(item['id'])),
+    script: scriptOf(scripts, existing, String(item['id'])),
   }));
   writeJson(target, {
     importedFrom: `design/${source}`,
@@ -55,7 +68,7 @@ const importPlain = (source: string, target: string, listKey: string, scripts: R
   });
 };
 
-// script は原本の文言を命令セットに書き直したもの（scripts/effect-scripts.ts）。
+// script は原本の文言を命令セットに書き直したもの。src/data/ に値があればそれを保つ。
 importPlain('data_characters.json', 'characters.json', 'characters', CHARACTER_SCRIPTS);
 importPlain('data_special_citizens.json', 'special_citizens.json', 'cards', SPECIAL_CITIZEN_SCRIPTS);
 
@@ -212,6 +225,7 @@ const civClarifications = (id: string, text: string): ClarificationJson[] => {
 
 {
   const markdown = readFileSync(join(designDir, '文明カード一覧_sample.md'), 'utf8');
+  const existingCiv = existingItems('cards_civilization.json', 'cards');
   const rows = markdown
     .split('\n')
     .filter((line) => /^\|\s*\d{3}\s*\|/.test(line))
@@ -234,17 +248,19 @@ const civClarifications = (id: string, text: string): ClarificationJson[] => {
       }
       return tagId;
     });
+    // 仮置きの項目（名称・条件・固有得点）は、既存の値があれば保つ（チューナーの調整を消さない）。
+    const kept = existingCiv.get(id) ?? {};
     return {
       id,
-      name: `文明カード${id}`,
+      name: kept['name'] ?? `文明カード${id}`,
       cost: { gold },
       tags,
-      playCondition: null,
-      effectCondition: null,
-      points: 1,
+      playCondition: kept['playCondition'] ?? null,
+      effectCondition: kept['effectCondition'] ?? null,
+      points: kept['points'] ?? 1,
       text,
       clarifications: civClarifications(id, text),
-      script: scriptOf(CIV_SCRIPTS, id),
+      script: scriptOf(CIV_SCRIPTS, existingCiv, id),
       provisional: true,
       provisionalFields: ['name', 'playCondition', 'effectCondition', 'points'],
     };

@@ -1,7 +1,7 @@
 // ローカル版の入口。人数とシードを選んでゲームを始める。
 
 import { useState } from 'react';
-import { GAME_DATA } from '../data/index.ts';
+import { GAME_DATA, TUNER_PLAYTEST } from '../data/index.ts';
 import { createGame } from '../game/engine.ts';
 import type { GameState } from '../game/types.ts';
 import { Game, type Settings } from './Game.tsx';
@@ -32,6 +32,7 @@ export const App = () => {
   return (
     <div className="start">
       <h1>都市開発ボードゲーム（仮）</h1>
+      {TUNER_PLAYTEST ? <p className="tuner-banner">調整案を適用したデータで試遊している（チューナー）</p> : null}
       <p className="muted">ローカル版（1台で交代して遊ぶ）。rules.md v{GAME_DATA.params.rulesVersion}。仮置きのデータには「仮」の印を付けている。</p>
       <div className="start-row">
         <span>人数</span>

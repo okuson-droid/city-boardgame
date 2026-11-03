@@ -87,6 +87,13 @@ h3 {
 
 /* ---------- 開始画面 ---------- */
 
+.tuner-banner {
+  background: #b5523b;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
 .start {
   max-width: 640px;
   margin: 40px auto;

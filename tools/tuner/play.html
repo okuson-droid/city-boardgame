@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>試遊 — 都市開発ボードゲーム（仮）</title>
+    <script>
+      // チューナーが保存した調整案のデータを、ゲームのモジュールより先に置く（src/data/index.ts）。
+      try {
+        const text = localStorage.getItem('tuner:playtest-files');
+        if (text) window.__TUNER_FILES__ = JSON.parse(text);
+      } catch (e) {
+        console.warn('調整案のデータを読めなかった', e);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

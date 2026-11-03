@@ -11,7 +11,8 @@
     "gen:data": "node --experimental-strip-types --no-warnings scripts/generate-boards.ts",
     "import:design": "node --experimental-strip-types --no-warnings scripts/import-design.ts",
     "accept": "vite build && node --experimental-strip-types --no-warnings e2e/accept.ts",
-    "icons:preview": "node --experimental-strip-types --no-warnings scripts/icon-preview.ts"
+    "icons:preview": "node --experimental-strip-types --no-warnings scripts/icon-preview.ts",
+    "tuner": "vite --config tools/tuner/vite.config.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

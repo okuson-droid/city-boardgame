@@ -1,0 +1,257 @@
+/* チューナーの見た目（ローカルの作業用）。 */
+
+html,
+body,
+#root {
+  overflow: auto;
+}
+
+.tuner {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.tuner-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 6px 10px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+.tuner-message {
+  padding: 6px 10px;
+  background: #fff6e5;
+  border-bottom: 1px solid var(--line);
+}
+
+.tuner-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 150px 200px minmax(0, 1fr) 300px;
+}
+
+.tuner-kinds,
+.tuner-items,
+.tuner-editor,
+.tuner-side {
+  overflow: auto;
+  padding: 6px;
+  border-right: 1px solid var(--line);
+}
+
+.kind,
+.item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 4px 6px;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.kind.active,
+.item.active {
+  background: #ffe2b8;
+}
+
+.badge {
+  margin-left: 4px;
+  background: #b5523b;
+  color: #fff;
+  border-radius: 8px;
+  padding: 0 6px;
+  font-size: 0.8em;
+}
+
+.obj {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-left: 2px solid var(--line);
+  padding-left: 6px;
+}
+
+.obj-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.obj-key {
+  min-width: 9em;
+  color: var(--muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.list-item {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.list-index {
+  color: var(--muted);
+  min-width: 1.5em;
+}
+
+.readonly {
+  color: var(--muted);
+  max-width: 40em;
+  overflow-wrap: anywhere;
+}
+
+.changed,
+.field-input.changed {
+  outline: 2px solid #b5523b;
+  background: #fff1ec;
+}
+
+.checks {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.script-editor,
+.command-list,
+.nested {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ability,
+.choice {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px;
+  background: #fff;
+}
+
+.ability-head,
+.command,
+.filter,
+.modifier,
+.cond {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.command-row,
+.ability-row {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.nested {
+  margin-left: 16px;
+}
+
+.sfield {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.sfield-label {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.int {
+  width: 5em;
+}
+
+.script-preview {
+  background: #f7f4ee;
+  border-radius: 6px;
+  padding: 6px;
+}
+
+.preview-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.board-editor {
+  display: flex;
+  gap: 12px;
+}
+
+.board-edit-svg {
+  width: 480px;
+  max-width: 100%;
+}
+
+.edit-cell {
+  cursor: pointer;
+}
+
+.edit-bonus,
+.edit-id {
+  font-size: 7px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.board-side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.counts .mismatch {
+  color: #b5523b;
+  font-weight: 700;
+}
+
+.changes,
+.issues {
+  padding-left: 1.2em;
+}
+
+.changes li,
+.issues li {
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+
+.ok {
+  color: #2d7a46;
+  font-weight: 700;
+}
+
+.verify-frame {
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  padding: 6px;
+}
+
+.tuner-side textarea {
+  width: 100%;
+  font-family: monospace;
+  font-size: 11px;
+}
+
+.btn.small {
+  min-height: 20px;
+  padding: 1px 6px;
+  font-size: 0.85em;
+}

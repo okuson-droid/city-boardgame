@@ -1,0 +1,185 @@
+// データの汎用フォーム（指示書 3-5）。JSON の値を、数値・真偽・選択・文字の入力欄で編集する。
+// 識別子と文言の原本は読むだけにする。元データと違う値には印を付ける。
+
+import { ACTIONS, BUILDINGS, CIV_TAGS, GRANT_KINDS, PAYMENT_KINDS, RAID_EFFECT_KINDS, TERRAINS, TIERS, TILE_EFFECT_KINDS } from '../../src/data/index.ts';
+import { deepEqual, type Path } from './proposal.ts';
+
+export type OnSet = (path: Path, value: unknown) => void;
+
+/** 読むだけの項目（識別子・原本の文言・注記）。識別子を変えると参照が切れるため編集させない。 */
+const READ_ONLY = new Set([
+  'id',
+  'text',
+  'notes',
+  'source',
+  'clarifications',
+  'open_issues',
+  'importedFrom',
+  'schema',
+  'version',
+  'updated',
+  'on_defense_fail',
+  'on_repel',
+  'effects',
+  'initial_bonus',
+  'label',
+  'axis',
+  'rulesRef',
+  'generatedWithSeed',
+  'rulesVersion',
+  // 仮置きの印は、データの出どころを示すものであり調整の対象ではない。
+  'provisional',
+  'provisionalFields',
+  // プレイ条件・効果適用条件は、命令セットでの表し方が決まるまで編集させない（ゲームが解釈しないため）。
+  'playCondition',
+  'effectCondition',
+]);
+
+/** 項目名と位置から、選べる値の一覧を決める。 */
+export const enumFor = (key: string, path: Path): readonly (string | null)[] | null => {
+  const inside = (k: string) => path.some((p) => p === k);
+  switch (key) {
+    case 'terrain':
+    case 'initialTerrain':
+      return inside('slots') ? [...TERRAINS, null] : TERRAINS;
+    case 'building':
+      return inside('slots') ? [...BUILDINGS, null] : BUILDINGS;
+    case 'action':
+      return ACTIONS;
+    case 'tier':
+      return TIERS;
+    case 'metric':
+      return ['buildingsOfType', 'totalBuildings', 'landTiles', 'militaryLevel', 'civCardsPlayed'];
+    case 'mode':
+      return ['distinct', 'total'];
+    case 'count':
+      return inside('passScore') ? ['houses', 'buildingTypes', 'playedCivCards'] : null;
+    case 'kind':
+      if (inside('roundStart')) return TILE_EFFECT_KINDS;
+      if (inside('defenseFailEffects') || inside('repelEffects')) return RAID_EFFECT_KINDS;
+      if (inside('pay')) return PAYMENT_KINDS;
+      return GRANT_KINDS;
+    default:
+      return null;
+  }
+};
+
+/** 配列の要素の選択肢（タグ・建物の一覧）。 */
+const listEnumFor = (key: string): readonly string[] | null => {
+  if (key === 'tags') return CIV_TAGS;
+  if (key === 'buildings') return BUILDINGS;
+  if (key === 'initialCells') return null;
+  return null;
+};
+
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+const changedClass = (value: unknown, base: unknown): string => (deepEqual(value, base) ? '' : ' changed');
+
+const Primitive = ({ value, base, path, keyName, onSet }: { value: unknown; base: unknown; path: Path; keyName: string; onSet: OnSet }) => {
+  const options = enumFor(keyName, path);
+  const cls = `field-input${changedClass(value, base)}`;
+  if (READ_ONLY.has(keyName)) return <span className="readonly">{JSON.stringify(value)}</span>;
+  if (options !== null && (typeof value === 'string' || value === null)) {
+    return (
+      <select className={cls} value={value === null ? '' : value} onChange={(e) => onSet(path, e.target.value === '' ? null : e.target.value)}>
+        {options.map((o) => (
+          <option key={o ?? ''} value={o ?? ''}>
+            {o ?? '（なし）'}
+          </option>
+        ))}
+      </select>
+    );
+  }
+  if (typeof value === 'number') {
+    return (
+      <input
+        className={cls}
+        type="number"
+        value={value}
+        onChange={(e) => onSet(path, e.target.value === '' ? 0 : Number(e.target.value))}
+      />
+    );
+  }
+  if (typeof value === 'boolean') {
+    return <input className={cls} type="checkbox" checked={value} onChange={(e) => onSet(path, e.target.checked)} />;
+  }
+  if (value === null) {
+    return <span className="readonly">null</span>;
+  }
+  return <input className={cls} type="text" value={String(value)} onChange={(e) => onSet(path, e.target.value)} />;
+};
+
+export const JsonEditor = ({
+  value,
+  base,
+  path,
+  keyName = '',
+  onSet,
+  skip = [],
+}: {
+  value: unknown;
+  base: unknown;
+  path: Path;
+  keyName?: string;
+  onSet: OnSet;
+  skip?: readonly string[];
+}) => {
+  if (READ_ONLY.has(keyName) && (Array.isArray(value) || isObject(value))) {
+    return <span className="readonly small">（読むだけ）</span>;
+  }
+  if (Array.isArray(value)) {
+    const listEnum = listEnumFor(keyName);
+    if (listEnum !== null && value.every((v) => typeof v === 'string')) {
+      return (
+        <span className={`checks${changedClass(value, base)}`}>
+          {listEnum.map((o) => (
+            <label key={o}>
+              <input
+                type="checkbox"
+                checked={value.includes(o)}
+                onChange={(e) => onSet(path, e.target.checked ? [...value, o] : value.filter((v) => v !== o))}
+              />
+              {o}
+            </label>
+          ))}
+        </span>
+      );
+    }
+    const baseList = Array.isArray(base) ? base : [];
+    return (
+      <div className={`list${value.length !== baseList.length ? ' changed' : ''}`}>
+        {value.map((item, i) => (
+          <div key={i} className="list-item">
+            <span className="list-index">{i}</span>
+            <JsonEditor value={item} base={baseList[i]} path={[...path, i]} keyName={keyName} onSet={onSet} />
+            <button type="button" className="btn small" onClick={() => onSet(path, value.filter((_, j) => j !== i))}>
+              削除
+            </button>
+          </div>
+        ))}
+        {value.length > 0 ? (
+          <button type="button" className="btn small" onClick={() => onSet(path, [...value, structuredClone(value[value.length - 1])])}>
+            追加（最後の要素を写す）
+          </button>
+        ) : null}
+      </div>
+    );
+  }
+  if (isObject(value)) {
+    const baseObj = isObject(base) ? base : {};
+    return (
+      <div className="obj">
+        {Object.entries(value)
+          .filter(([k]) => !skip.includes(k))
+          .map(([k, v]) => (
+            <div key={k} className="obj-row">
+              <span className="obj-key">{k}</span>
+              <JsonEditor value={v} base={baseObj[k]} path={[...path, k]} keyName={k} onSet={onSet} />
+            </div>
+          ))}
+      </div>
+    );
+  }
+  return <Primitive value={value} base={base} path={path} keyName={keyName} onSet={onSet} />;
+};
