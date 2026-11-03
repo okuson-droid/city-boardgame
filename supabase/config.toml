@@ -1,0 +1,6 @@
+# Supabase CLI の設定（オンライン版）。関数の配置に使う項目だけを書く。
+project_id = "city-boardgame"
+
+[functions.rooms]
+# 画面からは匿名（anon / publishable の鍵）で呼ぶ。席の照合は関数の中で席の鍵によって行う。
+verify_jwt = false

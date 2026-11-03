@@ -4,6 +4,8 @@
 // - 途中でサーバーを再起動し、記録から続きを遊べることを確かめる。
 // - 他の席の手札の DOM への漏れ・画面のはみ出し・安全網に落ちた合法手・ページのエラーが0件であること。
 // 実行：npm run accept:online（先にクライアントとサーバーをビルドする）
+// ONLINE_BACKEND=supabase-mock のときは、自前のサーバーの代わりに Supabase の模擬（e2e/supabase-mock.ts）を起動し、
+// Supabase 版の通信（Edge Function への POST と Realtime の Broadcast）で同じ検査を行う（npm run accept:supabase）。
 
 import { spawn, type ChildProcess } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -17,9 +19,13 @@ const PORT = 8799;
 const BASE = `http://localhost:${PORT}`;
 const roomsDir = mkdtempSync(join(tmpdir(), 'rooms-'));
 
+const BACKEND = process.env['ONLINE_BACKEND'] === 'supabase-mock' ? 'supabase-mock' : 'server';
+const SERVER_ARGS =
+  BACKEND === 'supabase-mock' ? ['--experimental-strip-types', '--no-warnings', 'e2e/supabase-mock.ts'] : ['dist-server/main.js'];
+
 const startServer = (): Promise<ChildProcess> =>
   new Promise((resolve, reject) => {
-    const child = spawn('node', ['dist-server/main.js'], {
+    const child = spawn('node', SERVER_ARGS, {
       cwd: root,
       env: { ...process.env, PORT: String(PORT), ROOMS_DIR: roomsDir },
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -103,7 +109,7 @@ const main = async (): Promise<number> => {
     page.on('pageerror', (e) => problems.errors.push(`P${i}：${e.message}`));
     page.on('console', (m) => {
       // 再起動中の接続の失敗は想定どおりなので数えない。
-      if (m.type() === 'error' && !/ERR_CONNECTION_REFUSED|EventSource|Failed to load resource/.test(m.text())) {
+      if (m.type() === 'error' && !/ERR_CONNECTION_REFUSED|EventSource|WebSocket|Failed to load resource|Failed to fetch/.test(m.text())) {
         problems.errors.push(`P${i}：${m.text()}`);
       }
     });
@@ -165,7 +171,7 @@ const main = async (): Promise<number> => {
 
   const count = problems.leaks.length + problems.overflow.length + problems.fallback.length + problems.errors.length;
   console.log(
-    `${finished && count === 0 ? '合格' : '不合格'}：オンライン3人（${steps}手、終局 ${finished ? 'あり' : 'なし'}、再接続 ${reloaded ? 'あり' : 'なし'}、再起動 ${restarted ? 'あり' : 'なし'}）` +
+    `${finished && count === 0 ? '合格' : '不合格'}：オンライン3人・${BACKEND === 'server' ? '自前のサーバー' : 'Supabase の模擬'}（${steps}手、終局 ${finished ? 'あり' : 'なし'}、再接続 ${reloaded ? 'あり' : 'なし'}、再起動 ${restarted ? 'あり' : 'なし'}）` +
       ` 手札の漏れ ${problems.leaks.length}件・はみ出し ${problems.overflow.length}件・安全網 ${problems.fallback.length}件・ページのエラー ${problems.errors.length}件`,
   );
   for (const line of [...problems.leaks, ...problems.overflow, ...problems.fallback, ...problems.errors].slice(0, 10)) console.log(`  - ${line}`);

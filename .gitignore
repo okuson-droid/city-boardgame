@@ -5,3 +5,6 @@ test-results/
 playwright-report/
 dist-server/
 server/rooms/
+supabase/functions/rooms/bundle.js
+supabase/.temp/
+dist-supabase/

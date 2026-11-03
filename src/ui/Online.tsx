@@ -4,22 +4,11 @@ import { useEffect, useState } from 'react';
 import { GAME_DATA } from '../data/index.ts';
 import { decider } from '../game/engine.ts';
 import { explainUndo } from '../game/explain.ts';
-import {
-  createRoomOnServer,
-  forgetSession,
-  joinRoomOnServer,
-  loadSessions,
-  saveSession,
-  sendMove,
-  sendUndo,
-  subscribe,
-  type RoomMessage,
-  type Session,
-} from '../online/client.ts';
+import { forgetSession, loadSessions, saveSession, type RoomMessage, type Session, type Transport } from '../online/client.ts';
 import { Game, type GameController, type Settings } from './Game.tsx';
 
 /** 部屋を作る・入る・続きから（ルームコード＋名前、ユーザー決定 2026-11-03）。 */
-export const OnlineEntry = ({ onEnter }: { onEnter: (session: Session) => void }) => {
+export const OnlineEntry = ({ transport, onEnter }: { transport: Transport; onEnter: (session: Session) => void }) => {
   const [name, setName] = useState('');
   const [players, setPlayers] = useState(GAME_DATA.params.playerCount.min);
   const [code, setCode] = useState('');
@@ -53,7 +42,7 @@ export const OnlineEntry = ({ onEnter }: { onEnter: (session: Session) => void }
           type="button"
           className="btn primary"
           data-ui="online-create"
-          onClick={() => createRoomOnServer(players, name).then(enter, (e: unknown) => setError(String(e)))}
+          onClick={() => transport.create(players, name).then(enter, (e: unknown) => setError(String(e)))}
         >
           作る
         </button>
@@ -65,7 +54,7 @@ export const OnlineEntry = ({ onEnter }: { onEnter: (session: Session) => void }
           type="button"
           className="btn primary"
           data-ui="online-join"
-          onClick={() => joinRoomOnServer(code, name).then(enter, (e: unknown) => setError(String(e)))}
+          onClick={() => transport.join(code, name).then(enter, (e: unknown) => setError(String(e)))}
         >
           入る
         </button>
@@ -98,13 +87,23 @@ export const OnlineEntry = ({ onEnter }: { onEnter: (session: Session) => void }
 };
 
 /** オンライン版の対局。局面はサーバーの知らせで更新し、選択は送るだけで手元では適用しない。 */
-export const OnlineGame = ({ session, settings, onLeave }: { session: Session; settings: Settings; onLeave: () => void }) => {
+export const OnlineGame = ({
+  transport,
+  session,
+  settings,
+  onLeave,
+}: {
+  transport: Transport;
+  session: Session;
+  settings: Settings;
+  onLeave: () => void;
+}) => {
   const [message, setMessage] = useState<RoomMessage | null>(null);
   const [connected, setConnected] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
-  useEffect(() => subscribe(session, (m) => setMessage(m), setConnected), [session]);
+  useEffect(() => transport.subscribe(session, (m) => setMessage(m), setConnected), [transport, session]);
 
   const state = message?.state ?? null;
   if (message === null || state === null) {
@@ -141,8 +140,8 @@ export const OnlineGame = ({ session, settings, onLeave }: { session: Session; s
   const ctl: GameController = {
     state,
     seat: session.seat,
-    choose: (id) => run(() => sendMove(session, id, state.log.length)),
-    undo: () => run(() => sendUndo(session)),
+    choose: (id) => run(() => transport.move(session, id, state.log.length)),
+    undo: () => run(() => transport.undo(session)),
     // チェックポイントの後でなければ、直前の選択をしたのは選択待ちの席である（手番の交代はチェックポイント）。
     undoReason: explainUndo(state) ?? (mine ? null : '直前の選択をした席だけが取り消せる'),
     busy,

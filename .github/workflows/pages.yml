@@ -1,0 +1,63 @@
+# GitHub Pages への配置（オンライン版は Supabase、ユーザー決定 2026-11-03）。手順は docs/online-supabase.md。
+# - main への push（または手動の実行）で、検査・ビルドを行い、dist/index.html を Pages に置く。
+# - リポジトリの Variables に SUPABASE_URL・SUPABASE_ANON_KEY があれば、画面にオンライン版の入口が出る（無ければローカル版だけ）。
+# - Secrets に SUPABASE_ACCESS_TOKEN、Variables に SUPABASE_PROJECT_REF があれば、Edge Function（rooms）も同じエンジンで配置し直す。
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: 画面をビルドする
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+      - name: Edge Function の配置の設定を確かめる
+        id: supabase
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+        run: echo "deploy=$([ -n "$SUPABASE_ACCESS_TOKEN" ] && [ -n "$SUPABASE_PROJECT_REF" ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+      - name: Edge Function を配置する（設定がある場合だけ）
+        if: steps.supabase.outputs.deploy == 'yes'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          npm run supabase:build
+          npx --yes supabase@2.121.0 functions deploy rooms --project-ref "${{ vars.SUPABASE_PROJECT_REF }}" --no-verify-jwt --use-api
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

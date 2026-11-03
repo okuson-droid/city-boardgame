@@ -5,7 +5,7 @@ import { GAME_DATA, TUNER_PLAYTEST } from '../data/index.ts';
 import { createGame } from '../game/engine.ts';
 import type { GameState } from '../game/types.ts';
 import { LocalGame, type Settings } from './Game.tsx';
-import { serverAvailable, type Session } from '../online/client.ts';
+import { detectTransport, type Session, type Transport } from '../online/client.ts';
 import { OnlineEntry, OnlineGame } from './Online.tsx';
 
 const readSettings = (): Settings => {
@@ -28,14 +28,14 @@ export const App = () => {
     return fromHash !== null ? Number(fromHash) : randomSeed();
   });
 
-  const [online, setOnline] = useState(false);
+  const [transport, setTransport] = useState<Transport | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   useEffect(() => {
-    void serverAvailable().then(setOnline);
+    void detectTransport().then(setTransport);
   }, []);
 
-  if (session !== null) {
-    return <OnlineGame key={session.code} session={session} settings={settings} onLeave={() => setSession(null)} />;
+  if (session !== null && transport !== null) {
+    return <OnlineGame key={session.code} transport={transport} session={session} settings={settings} onLeave={() => setSession(null)} />;
   }
   if (game !== null) {
     return <LocalGame key={game.seed} initial={game} settings={settings} onRestart={() => setGame(null)} />;
@@ -75,7 +75,7 @@ export const App = () => {
       <button type="button" className="btn primary" data-target="start" onClick={() => setGame(createGame({ playerCount: players }, seed))}>
         はじめる
       </button>
-      {online ? <OnlineEntry onEnter={setSession} /> : null}
+      {transport !== null ? <OnlineEntry transport={transport} onEnter={setSession} /> : null}
     </div>
   );
 };
