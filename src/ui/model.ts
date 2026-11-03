@@ -9,6 +9,11 @@ export type Choice = { readonly option: Option; readonly target: Target };
 
 export type UiModel = {
   readonly owner: number | null;
+  /**
+   * 他の席の選択待ちを待っているか（オンライン版）。このときは選択肢も選べない理由も計算しない
+   * （他の席の手札は伏せてあり、その席の選択肢は組み立てられないため）。
+   */
+  readonly waiting: boolean;
   readonly choices: readonly Choice[];
   /** targetOf が画面要素を返さない選択肢（安全網、ui_design.md 3-1）。 */
   readonly fallback: readonly Option[];
@@ -18,6 +23,22 @@ export type UiModel = {
   readonly conversions: readonly Choice[];
   readonly button: (name: 'pass' | 'end' | 'done') => Option | undefined;
 };
+
+/** 選択肢のない画面（オンライン版で他の席の手番を待つとき）。 */
+export const waitingModel = (state: GameState): UiModel => ({
+  owner: decider(state),
+  waiting: true,
+  choices: [],
+  fallback: [],
+  find: () => undefined,
+  cellChoices: () => [],
+  panel: () => [],
+  conversions: [],
+  button: () => undefined,
+});
+
+/** 他の席の手番を待つ間に、選べない要素の補足に出す文章。 */
+export const WAITING_REASON = '他のプレイヤーの手番である';
 
 export const buildModel = (state: GameState): UiModel => {
   const options = getOptions(state);
@@ -31,6 +52,7 @@ export const buildModel = (state: GameState): UiModel => {
   const find = (pred: (t: Target) => boolean): Option | undefined => choices.find((c) => pred(c.target))?.option;
   return {
     owner: decider(state),
+    waiting: false,
     choices,
     fallback,
     find,

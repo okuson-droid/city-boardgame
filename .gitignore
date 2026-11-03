@@ -3,3 +3,5 @@ dist/
 *.log
 test-results/
 playwright-report/
+dist-server/
+server/rooms/

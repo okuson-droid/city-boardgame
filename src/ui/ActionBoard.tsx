@@ -6,7 +6,7 @@ import { explain } from '../game/explain.ts';
 import { actionSpaceIcons, isSharedSpace, isTopUnlocked, spaceUsers, unlockIcons } from '../game/queries.ts';
 import type { GameState } from '../game/types.ts';
 import { IconRow } from './Icon.tsx';
-import { colorOf, type UiModel } from './model.ts';
+import { colorOf, WAITING_REASON, type UiModel } from './model.ts';
 import { Tip } from './Tip.tsx';
 
 const ACTION_LABELS: Record<Action, string> = {
@@ -54,7 +54,7 @@ export const ActionBoard = ({
             const locked = tier === 'top' && owner !== undefined && !isTopUnlocked(GAME_DATA, owner, action);
             const users = spaceUsers(state, action, tier);
             const shared = isSharedSpace(action, tier);
-            const reason = option === undefined ? explain(state, { kind: 'actionSpace', action, tier }) : null;
+            const reason = option !== undefined ? null : model.waiting ? WAITING_REASON : explain(state, { kind: 'actionSpace', action, tier });
             return (
               <Tip key={tier} text={reason}>
                 <button

@@ -12,7 +12,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 - 完了：アイコンの文法（`docs/styleguide-icons.md`、承認済み 2026-11-03）。図案は `src/ui/icon-art.ts`、画面への組み込みは `Icon.tsx`。
 - 完了：3-5 チューナー（`tools/tuner/`、`npm run tuner`）。main に取り込み済み。指示書の段階1〜4とチューナーはすべて完了した。検証（シミュレーションによる比較）は別の指示書で扱う。
 - 完了：演出の残り（ui_design.md 4節：増減のまとめ、トラックの1段ずつの表示、ラウンドの区切りの画面、置いたマスの強調、履歴からの強調）。ユーザーの確認待ち。
-- 次：オンライン化（段階5、ユーザー指示 2026-11-03）。指示書がないため、設計の決定事項を先にユーザーに確かめる。
+- 完了：オンライン化（段階5、`server/`・`src/online/`）。受け入れ検査（`npm run accept:online`）は合格。ユーザーの確認待ち。
 
 ## 構成
 
@@ -47,6 +47,11 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `src/game/queries.ts` | 画面のための派生値（場面の見出し、アクションスペースのアイコン、コストの見込み、ワーカーの内訳など） |
 | `src/ui/` | ローカル版の画面（React）。`Game.tsx`（全体）・`ActionBoard.tsx`・`Board.tsx`（SVG の個人ボード）・`Areas.tsx`（共有の場・手持ち・履歴・ドラフト・終了時の得点）・`PromptBar.tsx`・`Cards.tsx`・`Icon.tsx`（仮のアイコン素材）・`Tip.tsx`（補足表示）・`model.ts`（選択肢の振り分け） |
 | `e2e/accept.ts` | 受け入れ検査（Playwright の自動対戦） |
+| `e2e/online.ts` | オンライン版の受け入れ検査（3つのブラウザで1局、再接続とサーバーの再起動を含む） |
+| `src/online/rooms.ts` | 部屋（作成・入室・選択・取り消し・記録からの再生）と伏せた写し（`viewFor`） |
+| `src/online/client.ts` | 画面側の通信（POST と SSE）、席の鍵の保存 |
+| `src/ui/Online.tsx` | オンライン版の入口（部屋を作る・入る・続きから）と対局画面 |
+| `server/main.ts` | オンライン版のサーバー（node:http だけ、SSE＋HTTP）。`server/vite.config.ts` で `dist-server/main.js` にまとめる |
 | `tools/tuner/` | チューナー。`proposal.ts`（調整案の作成・差分・適用・保存と読み込み・検査・Markdown）、`TunerApp.tsx`（画面）、`JsonEditor.tsx`（汎用フォーム）、`ScriptEditor.tsx`（効果を命令と引数の単位で編集）、`BoardEditor.tsx`（個人ボード）、`vite.config.ts`（開発サーバーと書き戻しの口）、`play.html`（試遊） |
 | `scripts/import-design.ts` | `design/` から characters・special_citizens・raid_cards・cards_civilization を取り込む |
 | `scripts/generate-boards.ts` | 仮置きの個人ボードをシード付きで生成する |
@@ -65,6 +70,8 @@ npm run gen:data      # 仮置きの個人ボードを生成し直す
 npm run accept        # ビルドして受け入れ検査（自動対戦3局、数分かかる）
 npm run tuner         # チューナーの開発サーバー（/tools/tuner/index.html）
 npm run icons:preview # アイコンの見本 docs/icon-preview.html を生成する
+npm run server        # クライアントとサーバーをビルドしてオンライン版を起動（PORT・HOST・ROOMS_DIR で設定、既定 8787）
+npm run accept:online # オンライン版の受け入れ検査
 ```
 
 ## 守ること
@@ -113,6 +120,15 @@ npm run icons:preview # アイコンの見本 docs/icon-preview.html を生成�
 - 試遊は `tools/tuner/play.html` が調整案のデータを `globalThis.__TUNER_FILES__` に置き、`src/data/index.ts` がチューナーの開発サーバー（`VITE_TUNER=1`）のときだけそれを読む。配布用ビルドには含まれない。
 - 書き出しは開発サーバーの `POST /__tuner/export` が受け、`src/data/` に既にあるゲームデータの JSON（`icon_keys.json` を除く）だけを書き換える。あわせて変更点の一覧を Markdown で出し、ユーザーが claude/tuning_log.md に転記する。
 - 識別子・原本の文言・仮置きの印・プレイ条件と効果適用条件は、チューナーでは読むだけにする。
+
+## オンライン版の約束事（段階5、ユーザー決定 2026-11-03）
+
+- 自前の Node サーバー（`node:http` だけ、ライブラリなし）。通信はサーバーからの知らせが SSE、選択の送信が HTTP の POST。
+- 入室はルームコード＋名前（アカウントなし）。席ごとに秘密の鍵を渡し、サーバーはハッシュだけを保存する。鍵が合わない席では操作できない。
+- 再接続だけ認める。制限時間・観戦・途中離脱の処理は設けない（抜けた人の手番は戻るまで待つ）。部屋は「設定・シード・選択の列」として `ROOMS_DIR` に保存し、再起動後は再生で作り直す。
+- サーバーが全体の状態を持ち、各席には `viewFor` で伏せた写しだけを送る（他の席の手札の内容、山札の順序と内容、未公開の襲撃カード、乱数とシードを伏せる、19-6-1）。
+- 画面は同じ `Game` を使う。`GameController.seat` が席の番号ならオンライン版で、視点を自分の席に固定し、他の席の手番では選択肢も選べない理由も計算しない（`waitingModel`。伏せた手札では選択肢を組み立てられないため）。
+- 選択は局面の版（`log.length`）を添えて送り、サーバーは古い局面からの送信を拒む。取り消しは直前の選択をした席だけができる。
 
 ## データの約束事
 

@@ -1,10 +1,12 @@
 // ローカル版の入口。人数とシードを選んでゲームを始める。
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { GAME_DATA, TUNER_PLAYTEST } from '../data/index.ts';
 import { createGame } from '../game/engine.ts';
 import type { GameState } from '../game/types.ts';
-import { Game, type Settings } from './Game.tsx';
+import { LocalGame, type Settings } from './Game.tsx';
+import { serverAvailable, type Session } from '../online/client.ts';
+import { OnlineEntry, OnlineGame } from './Online.tsx';
 
 const readSettings = (): Settings => {
   const params = new URLSearchParams(window.location.hash.slice(1));
@@ -26,8 +28,17 @@ export const App = () => {
     return fromHash !== null ? Number(fromHash) : randomSeed();
   });
 
+  const [online, setOnline] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  useEffect(() => {
+    void serverAvailable().then(setOnline);
+  }, []);
+
+  if (session !== null) {
+    return <OnlineGame key={session.code} session={session} settings={settings} onLeave={() => setSession(null)} />;
+  }
   if (game !== null) {
-    return <Game key={game.seed} initial={game} settings={settings} onRestart={() => setGame(null)} />;
+    return <LocalGame key={game.seed} initial={game} settings={settings} onRestart={() => setGame(null)} />;
   }
   return (
     <div className="start">
@@ -64,6 +75,7 @@ export const App = () => {
       <button type="button" className="btn primary" data-target="start" onClick={() => setGame(createGame({ playerCount: players }, seed))}>
         はじめる
       </button>
+      {online ? <OnlineEntry onEnter={setSession} /> : null}
     </div>
   );
 };

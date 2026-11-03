@@ -1,9 +1,11 @@
-// ローカル版のゲーム画面（ui_design.md 1〜6）。1台で交代して遊ぶ。
-// 画面の持ち主は選択待ちのプレイヤーに自動で合わせ、他のプレイヤーの手札の内容は画面にも DOM にも出さない（19-6-1）。
+// ゲーム画面（ui_design.md 1〜6）。状態と選択の送り先を GameController で受け取り、ローカル版とオンライン版で共用する。
+// - ローカル版（seat＝null）：1台で交代して遊ぶ。画面の持ち主は選択待ちのプレイヤーに自動で合わせる（2-2）。
+// - オンライン版（seat＝席の番号）：視点を自分の席に固定する。他の席の手番では選択肢を出さない（6-2）。
+// どちらでも、画面の持ち主以外の手札の内容は画面にも DOM にも出さない（19-6-1）。
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CellId } from '../game/board.ts';
-import { applyMove, isGameOver } from '../game/engine.ts';
+import { applyMove, decider, isGameOver } from '../game/engine.ts';
 import { explain, explainUndo } from '../game/explain.ts';
 import { undoLast } from '../game/history.ts';
 import { pendingPicks } from '../game/queries.ts';
@@ -13,18 +15,51 @@ import type { Building } from '../data/types.ts';
 import { ActionBoard } from './ActionBoard.tsx';
 import { DraftView, FinalScores, HandArea, PlayerStatus, SharedArea } from './Areas.tsx';
 import { Board, type CellState } from './Board.tsx';
-import { buildModel, colorOf, type Choice } from './model.ts';
+import { buildModel, colorOf, waitingModel, WAITING_REASON, type Choice } from './model.ts';
 import { PromptBar } from './PromptBar.tsx';
 import { Tip } from './Tip.tsx';
 
 export type Settings = { speed: 'standard' | 'fast' | 'none'; follow: boolean };
 
+export type GameController = {
+  readonly state: GameState;
+  /** 画面の席。null はローカル版（選択待ちのプレイヤーに合わせる）。 */
+  readonly seat: number | null;
+  readonly choose: (optionId: string) => void;
+  readonly undo: () => void;
+  readonly undoReason: string | null;
+  /** 選択を送っている途中か（オンライン版）。 */
+  readonly busy?: boolean;
+  readonly message?: string | null;
+};
 
-export const Game = ({ initial, settings, onRestart }: { initial: GameState; settings: Settings; onRestart: () => void }) => {
+/** ローカル版：状態を手元で持ち、選択をその場で適用する。 */
+export const LocalGame = ({ initial, settings, onRestart }: { initial: GameState; settings: Settings; onRestart: () => void }) => {
   const [state, setState] = useState(initial);
-  const model = useMemo(() => buildModel(state), [state]);
+  const ctl: GameController = {
+    state,
+    seat: null,
+    choose: (id) => setState((s) => applyMove(s, id)),
+    undo: () => {
+      const back = undoLast(state);
+      if (back !== null) setState(back);
+    },
+    undoReason: explainUndo(state),
+  };
+  return <Game ctl={ctl} settings={settings} onRestart={onRestart} />;
+};
+
+export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settings: Settings; onRestart: () => void }) => {
+  const state = ctl.state;
+  // オンライン版では、自分の席の選択待ちのときだけ選択肢を出す。送信中も出さない。
+  const model = useMemo(
+    () => ((ctl.seat !== null && decider(state) !== ctl.seat) || ctl.busy === true ? waitingModel(state) : buildModel(state)),
+    [state, ctl.seat, ctl.busy],
+  );
   const owner = model.owner;
-  const [view, setView] = useState<number>(owner ?? 0);
+  /** 手札を見せてよい席。ローカル版は選択待ちのプレイヤー、オンライン版は自分の席。 */
+  const handOwner = ctl.seat ?? owner;
+  const [view, setView] = useState<number>(handOwner ?? 0);
   const [chooser, setChooser] = useState<Choice[] | null>(null);
   const [buildType, setBuildType] = useState<Building | null>(null);
   const [freeOpen, setFreeOpen] = useState(false);
@@ -34,9 +69,30 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
   const [summary, setSummary] = useState<number | null>(null);
   const [focus, setFocus] = useState<CellId | null>(null);
 
-  // 選択待ちの持ち主が変わったら、持ち主のタブへ戻す（ui_design.md 2-1、2-2、6-2）。
+  // 直前の選択で増えた出来事を演出の材料にする（ui_design.md 4節）。取り消しで戻ったときは演出しない。
+  const previous = useRef(state);
   useEffect(() => {
-    if (owner !== null && (settings.follow || owner !== view)) setView(owner);
+    const before = previous.current;
+    previous.current = state;
+    if (state.log.length <= before.log.length) {
+      setLastEvents([]);
+      return;
+    }
+    const added = state.events.slice(before.events.length);
+    setLastEvents(added);
+    setFocus(null);
+    // ラウンドの区切りを1画面で見せる（ui_design.md 4-3）。演出「なし」では出さない。
+    const started = added.find((e) => e.type === 'round');
+    if (started?.type === 'round' && settings.speed !== 'none') setSummary(started.round);
+    // 依存は状態の変化だけにする。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
+  // 表示するタブ（ui_design.md 2-1、2-2、6-2）。ローカル版は選択待ちのプレイヤー。
+  // オンライン版は自分の席。「追いかける」が入なら、他の席の手番の間はその席を見せる。
+  useEffect(() => {
+    const target = ctl.seat === null ? owner : settings.follow && owner !== null ? owner : ctl.seat;
+    if (target !== null) setView(target);
     // 縮退配置では、選択の対象がある側へ切り替える（1-4）。
     const sharedKinds = new Set(['actionSpace', 'bonusTile', 'specialCitizen', 'plannedCity']);
     const onShared = model.choices.some((c) => sharedKinds.has(c.target.kind));
@@ -49,34 +105,23 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
 
   const choose = useCallback(
     (optionId: string) => {
-      const next = applyMove(state, optionId);
-      const added = next.events.slice(state.events.length);
-      setLastEvents(added);
-      setFocus(null);
-      // ラウンドの区切りを1画面で見せる（ui_design.md 4-3）。演出「なし」では出さない。
-      const started = added.find((e) => e.type === 'round');
-      if (started?.type === 'round' && settings.speed !== 'none') setSummary(started.round);
-      setState(next);
       setChooser(null);
       setBuildType(null);
       setFreeOpen(false);
+      ctl.choose(optionId);
     },
-    [state, settings.speed],
+    [ctl],
   );
 
-  const undoReason = explainUndo(state);
+  const undoReason = ctl.undoReason;
   const undo = (): void => {
-    const back = undoLast(state);
-    if (back !== null) {
-      setState(back);
-      setLastEvents([]);
-      setChooser(null);
-    }
+    setChooser(null);
+    ctl.undo();
   };
 
   const viewed = state.players[view] ?? state.players[0];
   if (viewed === undefined) return null;
-  const isOwnerView = owner === view;
+  const isOwnerView = handOwner !== null && handOwner === view;
   // 直前の選択で置かれた土地・建物を強調する（ui_design.md 4-1 手順3）。
   const freshCells = new Set(
     lastEvents.flatMap((e) => ((e.type === 'tilePlaced' || e.type === 'built') && e.player === view ? [e.cell] : [])),
@@ -110,7 +155,14 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
   const compactClass = pane === 'shared' ? 'show-shared' : 'show-personal';
 
   return (
-    <div className={`game ${compactClass}`} data-owner={owner ?? ''} data-view={view} data-speed={settings.speed}>
+    <div
+      className={`game ${compactClass}`}
+      data-owner={handOwner ?? ''}
+      data-view={view}
+      data-speed={settings.speed}
+      data-seat={ctl.seat ?? ''}
+      data-turn={owner ?? ''}
+    >
       <header className="topbar">
         <span className="round">
           {state.phase === 'draft' ? 'ドラフト' : `第${state.round}ラウンド`}
@@ -125,7 +177,7 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
                 key={p}
                 type="button"
                 data-ui={`tab-${p}`}
-                className={`tab${p === view ? ' active' : ''}${p === owner ? ' turn' : ''}`}
+                className={`tab${p === view ? ' active' : ''}${p === (ctl.seat !== null ? decider(state) : owner) ? ' turn' : ''}${p === ctl.seat ? ' mine' : ''}`}
                 style={{ borderColor: colorOf(p) }}
                 onClick={() => setView(p)}
               >
@@ -150,7 +202,7 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
 
       <main className="layout">
         <section className="col-left">
-          <ActionBoard state={state} model={model} viewer={owner ?? view} onChoose={choose} />
+          <ActionBoard state={state} model={model} viewer={handOwner ?? view} onChoose={choose} />
         </section>
         <section className="col-center">
           {state.stack[state.stack.length - 1]?.t === 'draftPick' ? (
@@ -163,7 +215,9 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
                 pickOrder={(cell) => (isOwnerView && picks.includes(cell) ? picks.indexOf(cell) + 1 : null)}
                 highlight={focus}
                 fresh={freshCells}
-                explainCell={(cell) => (isOwnerView ? explain(state, { kind: 'cell', cell, variantKind: null, variant: null }, view) : null)}
+                explainCell={(cell) =>
+                  model.waiting ? WAITING_REASON : isOwnerView ? explain(state, { kind: 'cell', cell, variantKind: null, variant: null }, view) : null
+                }
                 onCell={onCell}
               />
               <DeltaChips key={state.log.length} changes={sumDeltas(lastEvents, viewed.index, ['move'])} speed={settings.speed} />
@@ -187,6 +241,7 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
         </section>
       </main>
 
+      {ctl.message ? <div className="online-message">{ctl.message}</div> : null}
       <PromptBar
         state={state}
         model={model}

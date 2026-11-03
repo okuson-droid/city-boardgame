@@ -12,7 +12,10 @@
     "import:design": "node --experimental-strip-types --no-warnings scripts/import-design.ts",
     "accept": "vite build && node --experimental-strip-types --no-warnings e2e/accept.ts",
     "icons:preview": "node --experimental-strip-types --no-warnings scripts/icon-preview.ts",
-    "tuner": "vite --config tools/tuner/vite.config.ts"
+    "tuner": "vite --config tools/tuner/vite.config.ts",
+    "server:build": "vite build --config server/vite.config.ts",
+    "server": "npm run build && npm run server:build && node dist-server/main.js",
+    "accept:online": "vite build && vite build --config server/vite.config.ts && node --experimental-strip-types --no-warnings e2e/online.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

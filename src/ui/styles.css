@@ -1024,3 +1024,38 @@ h3 {
 .round-summary th {
   text-align: left;
 }
+
+/* ---------- オンライン版 ---------- */
+
+.online-entry {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.error {
+  color: #b5523b;
+}
+
+.online-message {
+  position: fixed;
+  left: 50%;
+  top: 52px;
+  transform: translateX(-50%);
+  background: #b5523b;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 6px;
+  z-index: 30;
+}
+
+.tab.mine {
+  font-weight: 700;
+}

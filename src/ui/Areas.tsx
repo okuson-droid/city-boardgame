@@ -12,7 +12,7 @@ import { ACTIONS } from '../data/types.ts';
 import { ACTION_LABELS } from './ActionBoard.tsx';
 import { BonusTileView, CardFrame, CivCardView, NatureParkView, PlannedCityView, ScriptView } from './Cards.tsx';
 import { Icon, IconRow } from './Icon.tsx';
-import { colorOf, type UiModel } from './model.ts';
+import { colorOf, WAITING_REASON, type UiModel } from './model.ts';
 import { TrackBar, trackChanges, type Speed } from './Motion.tsx';
 import { Tip } from './Tip.tsx';
 import type { CellId } from '../game/board.ts';
@@ -108,7 +108,7 @@ export const SharedArea = ({
                 optionId={option?.id}
                 onChoose={onChoose}
                 className="pc"
-                reason={option === undefined ? explain(state, { kind: 'plannedCity', id }) : null}
+                reason={option !== undefined ? null : model.waiting ? WAITING_REASON : explain(state, { kind: 'plannedCity', id })}
               >
                 {card ? <PlannedCityView card={card} /> : null}
                 <span className="claims">
@@ -303,7 +303,7 @@ export const HandArea = ({
                     optionId={option?.id}
                     onChoose={onChoose}
                     className="civ"
-                    reason={explain(state, { kind: 'handCard', card })}
+                    reason={model.waiting ? WAITING_REASON : explain(state, { kind: 'handCard', card })}
                     extra={{ 'data-hand-card': card, 'data-owner': String(player.index) }}
                   >
                     <CivCardView card={card} player={player} />
@@ -404,7 +404,8 @@ const AbilityCard = ({
 export const DraftView = ({ state, model, onChoose }: { state: GameState; model: UiModel; onChoose: Choose }) => {
   const opt = (group: 'board' | 'bonus' | 'character', id: string) =>
     model.find((t) => t.kind === 'draft' && t.group === group && t.id === id)?.id;
-  const reason = (group: 'board' | 'bonus' | 'character', id: string) => explain(state, { kind: 'draft', group, id });
+  const reason = (group: 'board' | 'bonus' | 'character', id: string) =>
+    model.waiting ? WAITING_REASON : explain(state, { kind: 'draft', group, id });
   return (
     <div className="draft">
       <section>
