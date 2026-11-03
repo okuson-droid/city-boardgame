@@ -68,12 +68,46 @@ const raidClarifications = (id: number): string[] => {
   return list;
 };
 
+// 7-6-1 の固有効果を構造化したもの。perRound は「襲撃ラウンド数×」、afterNextIncome は「次の収入後」を表す。
+// replacesBasePoints はカード5の「合算後の数値」（19-3-3）を表す。
+const RAID_STRUCTURED: Record<number, Record<string, unknown>> = {
+  1: {
+    replacesBasePoints: false,
+    defenseFailEffects: [{ kind: 'loseGold', amount: 3, perRound: false, afterNextIncome: true }],
+    repelEffects: [{ kind: 'landTiles', amount: 1, perRound: false, afterNextIncome: false }],
+  },
+  2: {
+    replacesBasePoints: false,
+    defenseFailEffects: [{ kind: 'loseMaterials', amount: 1, perRound: true, afterNextIncome: true }],
+    repelEffects: [{ kind: 'materials', amount: 1, perRound: true, afterNextIncome: false }],
+  },
+  3: {
+    replacesBasePoints: false,
+    defenseFailEffects: [{ kind: 'loseGoldProduction', amount: 1, perRound: true, afterNextIncome: false }],
+    repelEffects: [{ kind: 'landTiles', amount: 1, perRound: true, afterNextIncome: false }],
+  },
+  4: {
+    replacesBasePoints: false,
+    defenseFailEffects: [{ kind: 'loseGold', amount: 2, perRound: true, afterNextIncome: true }],
+    repelEffects: [
+      { kind: 'gold', amount: 1, perRound: true, afterNextIncome: false },
+      { kind: 'points', amount: 1, perRound: true, afterNextIncome: false },
+    ],
+  },
+  5: {
+    replacesBasePoints: true,
+    defenseFailEffects: [{ kind: 'points', amount: -3, perRound: true, afterNextIncome: false }],
+    repelEffects: [{ kind: 'points', amount: 4, perRound: true, afterNextIncome: false }],
+  },
+};
+
 {
   const original = readJson('data_raid_cards.json');
   const cards = asRecords(original['cards']).map((card) => ({
     ...card,
     provisional: false,
     clarifications: raidClarifications(Number(card['id'])),
+    ...RAID_STRUCTURED[Number(card['id'])],
   }));
   writeJson('raid_cards.json', {
     importedFrom: 'design/data_raid_cards.json',

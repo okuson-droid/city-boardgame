@@ -362,7 +362,14 @@ describe('設計文書からの取り込み', () => {
     // 指示書 3-1、rules.md v0.8 7-6-1、19-3-1、19-3-3
     const original = readDesignJson('data_raid_cards.json')['cards'] as Record<string, unknown>[];
     const imported = GAME_DATA.raidCards.map((card) => {
-      const { provisional: _p, clarifications: _c, ...rest } = card;
+      const {
+        provisional: _p,
+        clarifications: _c,
+        replacesBasePoints: _r,
+        defenseFailEffects: _f,
+        repelEffects: _e,
+        ...rest
+      } = card;
       return rest;
     });
     expect(imported).toEqual(original);

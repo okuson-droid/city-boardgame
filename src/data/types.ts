@@ -358,11 +358,34 @@ export type NatureParkCard = ProvisionalMark & {
   readonly sets: readonly NatureParkSet[];
 };
 
+/** ボーナスタイルのラウンド開始時効果の単位（rules.md 11-2-1）。 */
+export const TILE_EFFECT_KINDS = [
+  ...GRANT_KINDS.filter((k) => k !== 'freeBuildOnTerrain'),
+  'goldProduction',
+  'materialProduction',
+  'militaryLevel',
+  'infraLevel',
+  'discardCivCards',
+] as const;
+export type TileEffect = {
+  readonly kind: (typeof TILE_EFFECT_KINDS)[number];
+  readonly amount: number;
+};
+
+/** パス時の得点（rules.md 11-2-1 No.6〜8）。count の数 per につき points 点。 */
+export type PassScore = {
+  readonly count: 'houses' | 'buildingTypes' | 'playedCivCards';
+  readonly per: number;
+  readonly points: number;
+};
+
 export type BonusTile = ProvisionalMark & {
   readonly id: number;
   readonly text: string;
   readonly rulesRef: string;
   readonly clarifications: readonly Clarification[];
+  readonly roundStart: readonly TileEffect[];
+  readonly passScore: PassScore | null;
 };
 
 // design/ の JSON は文言を変えずに取り込む。原本の構造を保ち、provisional を加える。
@@ -393,6 +416,17 @@ export type SpecialCitizen = ProvisionalMark & {
   readonly clarifications?: readonly string[];
 };
 
+/** 襲撃カードの固有効果の単位（rules.md 7-6-1）。 */
+export const RAID_EFFECT_KINDS = ['loseGold', 'loseMaterials', 'loseGoldProduction', 'landTiles', 'materials', 'gold', 'points'] as const;
+export type RaidEffect = {
+  readonly kind: (typeof RAID_EFFECT_KINDS)[number];
+  readonly amount: number;
+  /** true なら amount に襲撃ラウンド数を掛ける。 */
+  readonly perRound: boolean;
+  /** true なら次の収入の後に適用する（7-6-1、7-6-3）。 */
+  readonly afterNextIncome: boolean;
+};
+
 export type RaidCard = ProvisionalMark & {
   readonly id: number;
   readonly defense_increase: number;
@@ -401,6 +435,10 @@ export type RaidCard = ProvisionalMark & {
   readonly on_repel: string;
   readonly open_issues: readonly string[];
   readonly clarifications?: readonly string[];
+  /** true なら固有効果の得点が基本得点を含めた合算後の数値である（19-3-3）。 */
+  readonly replacesBasePoints: boolean;
+  readonly defenseFailEffects: readonly RaidEffect[];
+  readonly repelEffects: readonly RaidEffect[];
 };
 
 export type GameData = {

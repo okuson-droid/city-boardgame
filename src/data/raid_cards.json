@@ -29,6 +29,23 @@
         "7-5-1 の基本得点に加えて、この固有効果を適用する（rules.md v0.8 19-3-3）。",
         "「〜を失う」で保有量が足りない場合は、保有量を0にして終える（rules.md v0.8 19-3-4）。",
         "撃退成功時の土地タイルは資材を支払わずに 4-2 に従って配置する（rules.md v0.8 19-1-1）。"
+      ],
+      "replacesBasePoints": false,
+      "defenseFailEffects": [
+        {
+          "kind": "loseGold",
+          "amount": 3,
+          "perRound": false,
+          "afterNextIncome": true
+        }
+      ],
+      "repelEffects": [
+        {
+          "kind": "landTiles",
+          "amount": 1,
+          "perRound": false,
+          "afterNextIncome": false
+        }
       ]
     },
     {
@@ -46,6 +63,23 @@
         "「襲撃ラウンド数」は、その襲撃を判定するラウンドの番号（1〜5）である（rules.md v0.8 19-3-1）。",
         "7-5-1 の基本得点に加えて、この固有効果を適用する（rules.md v0.8 19-3-3）。",
         "「〜を失う」で保有量が足りない場合は、保有量を0にして終える（rules.md v0.8 19-3-4）。"
+      ],
+      "replacesBasePoints": false,
+      "defenseFailEffects": [
+        {
+          "kind": "loseMaterials",
+          "amount": 1,
+          "perRound": true,
+          "afterNextIncome": true
+        }
+      ],
+      "repelEffects": [
+        {
+          "kind": "materials",
+          "amount": 1,
+          "perRound": true,
+          "afterNextIncome": false
+        }
       ]
     },
     {
@@ -65,6 +99,23 @@
         "7-5-1 の基本得点に加えて、この固有効果を適用する（rules.md v0.8 19-3-3）。",
         "金の生産力は0未満にならない（rules.md v0.8 19-3-4）。",
         "撃退成功時の土地タイルは資材を支払わずに 4-2 に従って配置する（rules.md v0.8 19-1-1）。"
+      ],
+      "replacesBasePoints": false,
+      "defenseFailEffects": [
+        {
+          "kind": "loseGoldProduction",
+          "amount": 1,
+          "perRound": true,
+          "afterNextIncome": false
+        }
+      ],
+      "repelEffects": [
+        {
+          "kind": "landTiles",
+          "amount": 1,
+          "perRound": true,
+          "afterNextIncome": false
+        }
       ]
     },
     {
@@ -82,6 +133,29 @@
         "「襲撃ラウンド数」は、その襲撃を判定するラウンドの番号（1〜5）である（rules.md v0.8 19-3-1）。",
         "7-5-1 の基本得点に加えて、この固有効果を適用する（rules.md v0.8 19-3-3）。",
         "「〜を失う」で保有量が足りない場合は、保有量を0にして終える（rules.md v0.8 19-3-4）。"
+      ],
+      "replacesBasePoints": false,
+      "defenseFailEffects": [
+        {
+          "kind": "loseGold",
+          "amount": 2,
+          "perRound": true,
+          "afterNextIncome": true
+        }
+      ],
+      "repelEffects": [
+        {
+          "kind": "gold",
+          "amount": 1,
+          "perRound": true,
+          "afterNextIncome": false
+        },
+        {
+          "kind": "points",
+          "amount": 1,
+          "perRound": true,
+          "afterNextIncome": false
+        }
       ]
     },
     {
@@ -97,6 +171,23 @@
       "clarifications": [
         "「襲撃ラウンド数」は、その襲撃を判定するラウンドの番号（1〜5）である（rules.md v0.8 19-3-1）。",
         "得点は基本得点を含めた合算後の数値であり、7-5-1 の基本得点は加えない（rules.md v0.8 19-3-3）。"
+      ],
+      "replacesBasePoints": true,
+      "defenseFailEffects": [
+        {
+          "kind": "points",
+          "amount": -3,
+          "perRound": true,
+          "afterNextIncome": false
+        }
+      ],
+      "repelEffects": [
+        {
+          "kind": "points",
+          "amount": 4,
+          "perRound": true,
+          "afterNextIncome": false
+        }
       ]
     }
   ]

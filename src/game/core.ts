@@ -1,0 +1,431 @@
+// ゲームロジックの共通部品。状態の読み取り（数え上げ）と、資源・トラック・カードの変化を扱う。
+// 状態を変更する関数は、applyMove が作った写しに対してだけ呼ぶ。
+
+import { CELL_IDS, neighborsOf, type CellId } from './board.ts';
+import { shuffle } from './rng.ts';
+import type { Building, GameData, Grant, ScoreAxis, Terrain } from '../data/types.ts';
+import type { ChoiceEffect, GameEvent, GameState, PlayerState, Task } from './types.ts';
+
+// ---------------------------------------------------------------------------
+// 読み取り
+// ---------------------------------------------------------------------------
+
+export const playerOf = (state: GameState, index: number): PlayerState => {
+  const player = state.players[index];
+  if (player === undefined) {
+    throw new Error(`存在しないプレイヤーである：${index}`);
+  }
+  return player;
+};
+
+export const boardOf = (d: GameData, player: PlayerState) => {
+  const board = d.boards.find((b) => b.id === player.boardId);
+  if (board === undefined) {
+    throw new Error(`個人ボードが決まっていない：プレイヤー${player.index}`);
+  }
+  return board;
+};
+
+export const terrainOf = (d: GameData, player: PlayerState, cell: CellId): Terrain => {
+  const square = boardOf(d, player).squares[cell];
+  if (square === undefined) {
+    throw new Error(`存在しないマスである：${cell}`);
+  }
+  return square.terrain;
+};
+
+export const landCells = (player: PlayerState): CellId[] => CELL_IDS.filter((id) => player.land[id] !== undefined);
+
+export const landCount = (player: PlayerState): number => landCells(player).length;
+
+export const buildingCells = (player: PlayerState): CellId[] =>
+  CELL_IDS.filter((id) => player.buildings[id] !== undefined);
+
+export const buildingCount = (player: PlayerState, building?: Building): number =>
+  buildingCells(player).filter((id) => building === undefined || player.buildings[id] === building).length;
+
+/** 建物の建っていない開拓済みの土地（5-1-1）。 */
+export const freeLandCells = (player: PlayerState): CellId[] =>
+  landCells(player).filter((id) => player.buildings[id] === undefined);
+
+/** 土地タイルを置けるマス：未開拓で、開拓済みの土地と辺を共有する（4-2-1）。 */
+export const placeableCells = (player: PlayerState): CellId[] =>
+  CELL_IDS.filter(
+    (id) => player.land[id] === undefined && neighborsOf(id).some((n) => player.land[n] !== undefined),
+  );
+
+export const emptyCellCount = (player: PlayerState): number => CELL_IDS.length - landCount(player);
+
+/** 通常ワーカーの上限（3-3-1-2）。 */
+export const regularWorkerCap = (d: GameData, player: PlayerState): number => {
+  const w = d.params.workers;
+  return Math.min(w.regularMax, w.regularBase + Math.floor(buildingCount(player, 'house') / w.housesPerExtraRegular));
+};
+
+export const usableRegular = (player: PlayerState): number =>
+  Math.max(0, player.regularWorkers - player.regularNewThisRound - player.regularPlaced);
+
+export const usableTemp = (player: PlayerState): number => Math.max(0, player.tempWorkers - player.tempLocked);
+
+/** 飯場による資材の軽減（5-5-7-2、5-5-7-3）。既に建っている飯場だけを数える（5-6-4）。 */
+export const campDiscountAt = (d: GameData, player: PlayerState, cell: CellId): number => {
+  const camp = d.params.buildings.effects.camp;
+  const adjacent = neighborsOf(cell).some((n) => player.buildings[n] === 'camp');
+  return adjacent ? Math.min(camp.adjacentMaterialDiscount, camp.maxTotalDiscount) : 0;
+};
+
+/** 1軒分の建設コスト（建築アクションの割引を含まない）。 */
+export const baseBuildCost = (
+  d: GameData,
+  player: PlayerState,
+  building: Building,
+  cell: CellId,
+): { gold: number; materials: number } => {
+  const cost = d.params.buildings.cost[building];
+  return { gold: cost.gold, materials: Math.max(d.params.buildings.minCost, cost.materials - campDiscountAt(d, player, cell)) };
+};
+
+export const remainingBuildingStock = (d: GameData, player: PlayerState, building: Building): number =>
+  d.params.buildings.limits[building] - buildingCount(player, building);
+
+export const currentTurnPlayer = (state: GameState): number | null => {
+  for (let i = state.stack.length - 1; i >= 0; i -= 1) {
+    const task = state.stack[i];
+    if (task?.t === 'turn') {
+      return task.player;
+    }
+  }
+  return null;
+};
+
+// ---------------------------------------------------------------------------
+// 出来事と得点
+// ---------------------------------------------------------------------------
+
+/**
+ * 出来事を記録する。「〜した時」の効果（16-1-4）は、ここで1単位ごとの出来事に反応する。
+ * 反応の登録は段階3（feat/effects）で行う。段階2では反応は空である。
+ */
+export type Reactor = (state: GameState, d: GameData, event: GameEvent) => void;
+const reactors: Reactor[] = [];
+
+export const registerReactor = (reactor: Reactor): void => {
+  reactors.push(reactor);
+};
+
+export const emit = (state: GameState, d: GameData, event: GameEvent): void => {
+  state.events.push(event);
+  for (const reactor of reactors) {
+    reactor(state, d, event);
+  }
+};
+
+export const addScore = (
+  state: GameState,
+  d: GameData,
+  player: PlayerState,
+  points: number,
+  axis: ScoreAxis,
+  source: string,
+): void => {
+  if (points === 0) {
+    return;
+  }
+  player.score += points;
+  emit(state, d, { type: 'score', player: player.index, points, axis, source });
+};
+
+// ---------------------------------------------------------------------------
+// カード
+// ---------------------------------------------------------------------------
+
+/** 文明カードを1枚ずつ引く。山札と捨て札が尽きたら資材で代える（9-1-4〜9-1-6）。 */
+export const drawCivCards = (state: GameState, d: GameData, player: PlayerState, count: number): void => {
+  let drawn = 0;
+  for (let i = 0; i < count; i += 1) {
+    if (state.civDeck.length === 0 && state.civDiscard.length > 0) {
+      const [deck, rng] = shuffle(state.civDiscard, state.rng);
+      state.civDeck = deck;
+      state.civDiscard = [];
+      state.rng = rng;
+    }
+    const card = state.civDeck.shift();
+    if (card === undefined) {
+      player.materials += d.params.civCards.emptyDeckFallbackMaterials;
+      continue;
+    }
+    player.hand.push(card);
+    drawn += 1;
+  }
+  if (drawn > 0) {
+    state.revealCount += 1;
+    emit(state, d, { type: 'cardsDrawn', player: player.index, count: drawn });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// ワーカー
+// ---------------------------------------------------------------------------
+
+/** 通常ワーカーを獲得する。上限を超えた分は破棄し、獲得に数えない（3-3-4、16-1-5）。 */
+export const gainRegularWorkers = (state: GameState, d: GameData, player: PlayerState, count: number): void => {
+  const room = Math.max(0, regularWorkerCap(d, player) - player.regularWorkers);
+  const gained = Math.min(room, count);
+  for (let i = 0; i < gained; i += 1) {
+    player.regularWorkers += 1;
+    player.regularNewThisRound += 1;
+    emit(state, d, { type: 'workerGained', player: player.index, kind: 'regular' });
+  }
+};
+
+/** 臨時ワーカーを獲得する。上限を超えた分は破棄する（3-4-5）。自分の手番中の獲得は手番中は使えない（3-4-4-2）。 */
+export const gainTempWorkers = (state: GameState, d: GameData, player: PlayerState, count: number): void => {
+  const room = Math.max(0, d.params.workers.tempMax - player.tempWorkers);
+  const gained = Math.min(room, count);
+  const lock = currentTurnPlayer(state) === player.index;
+  for (let i = 0; i < gained; i += 1) {
+    player.tempWorkers += 1;
+    if (lock) {
+      player.tempLocked += 1;
+    }
+    emit(state, d, { type: 'workerGained', player: player.index, kind: 'temp' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// 効果の処理
+// ---------------------------------------------------------------------------
+
+/** 効果の単位。資源・トラックの変化は即時に処理し、選択を伴うものはタスクにする。 */
+export type Effect =
+  | { readonly k: 'grant'; readonly grant: Grant; readonly axis?: ScoreAxis; readonly source: string }
+  | { readonly k: 'military'; readonly n: number; readonly overflowPoints: boolean; readonly source: string }
+  | { readonly k: 'infra'; readonly n: number }
+  | { readonly k: 'goldProduction'; readonly n: number }
+  | { readonly k: 'materialProduction'; readonly n: number };
+
+const choiceTask = (player: number, effect: ChoiceEffect): Task => {
+  switch (effect.k) {
+    case 'landTiles':
+      return { t: 'placeTiles', player, remaining: effect.n, placed: [], mode: 'effect', tier: null, mismatches: 0 };
+    case 'buildRight':
+      return { t: 'buildRight', player };
+    case 'freeBuild':
+      return { t: 'freeBuild', player, terrain: effect.terrain };
+    case 'specialCitizen':
+      return { t: 'chooseSpecialCitizen', player };
+    case 'discard':
+      return { t: 'discard', player, remaining: effect.n };
+  }
+};
+
+/** 選択を伴う効果をタスクとして積む。2つ以上あれば処理順を尋ねる（16-1-1、decisions.md 3-4）。 */
+export const scheduleChoices = (state: GameState, player: number, choices: readonly ChoiceEffect[]): void => {
+  if (choices.length === 0) {
+    return;
+  }
+  const [only] = choices;
+  if (choices.length === 1 && only !== undefined) {
+    state.stack.push(choiceTask(player, only));
+    return;
+  }
+  state.stack.push({ t: 'chooseOrder', player, items: [...choices] });
+};
+
+/** chooseOrder で選んだ効果を処理する。残りは再び順番を尋ねる。 */
+export const takeChoice = (state: GameState, player: number, items: ChoiceEffect[], index: number): void => {
+  const chosen = items[index];
+  if (chosen === undefined) {
+    throw new Error(`存在しない効果である：${index}`);
+  }
+  const rest = items.filter((_, i) => i !== index);
+  // 残りを先に積み、選んだ効果を上に積む（先に処理される）。
+  scheduleChoices(state, player, rest);
+  state.stack.push(choiceTask(player, chosen));
+};
+
+const trackRewards = (
+  state: GameState,
+  d: GameData,
+  player: PlayerState,
+  track: 'military' | 'infra',
+  from: number,
+  to: number,
+  queue: Effect[],
+): void => {
+  const table = track === 'military' ? d.params.military.rewards : d.params.infra.rewards;
+  const claimed = track === 'military' ? player.militaryRewardsClaimed : player.infraRewardsClaimed;
+  for (const reward of table) {
+    // 通過したレベルの報酬もすべて得る。各報酬はゲーム中1回限り（7-1-3、7-1-4、8-1-3、8-1-4）。
+    if (reward.level > from && reward.level <= to && !claimed.includes(reward.level)) {
+      claimed.push(reward.level);
+      emit(state, d, { type: 'levelReward', player: player.index, track, level: reward.level });
+      for (const grant of reward.grants) {
+        queue.push({ k: 'grant', grant, axis: track === 'military' ? 'military' : 'other', source: `${track}:${reward.level}` });
+      }
+    }
+  }
+};
+
+/**
+ * 効果の列を処理する。資源を得るだけの効果は尋ねずに処理し、選択を伴う効果だけを
+ * タスクとして積む（decisions.md 3-4）。到達報酬は 16-2-6 により、実行できなければ失われる。
+ */
+export const processEffects = (state: GameState, d: GameData, player: PlayerState, effects: readonly Effect[]): void => {
+  const queue: Effect[] = [...effects];
+  const choices: ChoiceEffect[] = [];
+  while (queue.length > 0) {
+    const effect = queue.shift();
+    if (effect === undefined) {
+      break;
+    }
+    switch (effect.k) {
+      case 'military': {
+        const max = d.params.military.max;
+        const before = player.militaryLevel;
+        const after = Math.min(max, before + effect.n);
+        const overflow = before + effect.n - after;
+        player.militaryLevel = after;
+        if (effect.overflowPoints && overflow > 0) {
+          // 教練の超過上昇処理（6-3-5-6、17-6-2-2）。
+          addScore(state, d, player, overflow * d.params.military.overflowPointsPerRaise, 'military', effect.source);
+        }
+        trackRewards(state, d, player, 'military', before, after, queue);
+        break;
+      }
+      case 'infra': {
+        const before = player.infraLevel;
+        // 上限を超える上昇は破棄する（19-2-9）。
+        const after = Math.min(d.params.infra.max, before + effect.n);
+        player.infraLevel = after;
+        trackRewards(state, d, player, 'infra', before, after, queue);
+        break;
+      }
+      case 'goldProduction':
+        player.goldProduction += effect.n;
+        break;
+      case 'materialProduction':
+        player.materialProduction += effect.n;
+        break;
+      case 'grant':
+        applyGrant(state, d, player, effect.grant, effect.axis ?? 'other', effect.source, choices);
+        break;
+    }
+  }
+  scheduleChoices(state, player.index, choices);
+};
+
+const applyGrant = (
+  state: GameState,
+  d: GameData,
+  player: PlayerState,
+  grant: Grant,
+  axis: ScoreAxis,
+  source: string,
+  choices: ChoiceEffect[],
+): void => {
+  switch (grant.kind) {
+    case 'gold':
+      player.gold += grant.amount;
+      return;
+    case 'materials':
+      player.materials += grant.amount;
+      return;
+    case 'militaryTokens':
+      player.militaryTokens += grant.amount;
+      return;
+    case 'drawCivCards':
+      drawCivCards(state, d, player, grant.amount);
+      return;
+    case 'tempWorkers':
+      gainTempWorkers(state, d, player, grant.amount);
+      return;
+    case 'points':
+      addScore(state, d, player, grant.amount, axis, source);
+      return;
+    case 'landTiles':
+      choices.push({ k: 'landTiles', n: grant.amount });
+      return;
+    case 'buildRight':
+      for (let i = 0; i < grant.amount; i += 1) {
+        choices.push({ k: 'buildRight' });
+      }
+      return;
+    case 'freeBuildOnTerrain':
+      for (let i = 0; i < grant.amount; i += 1) {
+        choices.push({ k: 'freeBuild', terrain: grant.terrain });
+      }
+      return;
+    case 'specialCitizen':
+      for (let i = 0; i < grant.amount; i += 1) {
+        choices.push({ k: 'specialCitizen' });
+      }
+      return;
+  }
+};
+
+// ---------------------------------------------------------------------------
+// 土地と建物
+// ---------------------------------------------------------------------------
+
+/** 土地タイルを置く。マスボーナスは呼び出し側がまとめて処理する（4-4-4）。 */
+export const putLandTile = (state: GameState, d: GameData, player: PlayerState, cell: CellId, terrain: Terrain): void => {
+  player.land[cell] = terrain;
+  emit(state, d, { type: 'tilePlaced', player: player.index, cell, terrain });
+};
+
+/** 置いた土地タイルのマスボーナスを効果の列にする（4-4-4-2）。 */
+export const squareBonusEffects = (d: GameData, player: PlayerState, cells: readonly CellId[]): Effect[] => {
+  const board = boardOf(d, player);
+  const effects: Effect[] = [];
+  for (const cell of cells) {
+    const bonus = board.squares[cell]?.bonus;
+    if (bonus !== null && bonus !== undefined) {
+      effects.push({ k: 'grant', grant: bonus, source: `square:${cell}` });
+    }
+  }
+  return effects;
+};
+
+/** 建物を置く。建設時効果と地形ボーナスは buildEffects で得る（5-6-3）。 */
+export const putBuilding = (state: GameState, d: GameData, player: PlayerState, cell: CellId, building: Building): void => {
+  player.buildings[cell] = building;
+  emit(state, d, { type: 'built', player: player.index, cell, building });
+};
+
+/** 建設時効果と地形ボーナス（5-4、5-5）。地形は土地タイルの種類を参照する（4-1-3-2）。 */
+export const buildEffects = (d: GameData, player: PlayerState, picks: readonly { building: Building; cell: CellId }[]): Effect[] => {
+  const e = d.params.buildings.effects;
+  const effects: Effect[] = [];
+  for (const { building, cell } of picks) {
+    switch (building) {
+      case 'shop':
+        effects.push({ k: 'goldProduction', n: e.shop.goldProductionOnBuild });
+        break;
+      case 'workshop':
+        effects.push({ k: 'materialProduction', n: e.workshop.materialProductionOnBuild });
+        break;
+      case 'fort':
+        effects.push({ k: 'military', n: e.fort.militaryOnBuild, overflowPoints: false, source: 'build:fort' });
+        break;
+      case 'office':
+        effects.push({ k: 'infra', n: e.office.infraOnBuild });
+        break;
+      case 'university':
+        effects.push({ k: 'grant', grant: { kind: 'drawCivCards', amount: e.university.drawOnBuild }, source: 'build:university' });
+        break;
+      case 'camp':
+        effects.push({ k: 'grant', grant: { kind: 'landTiles', amount: e.camp.landTilesOnBuild }, source: 'build:camp' });
+        break;
+      case 'house':
+        break;
+    }
+    const tile = player.land[cell];
+    for (const bonus of d.params.buildings.terrainBonus) {
+      if (bonus.terrain === tile && bonus.buildings.includes(building)) {
+        effects.push({ k: 'grant', grant: bonus.grant, source: `terrainBonus:${building}` });
+      }
+    }
+  }
+  return effects;
+};

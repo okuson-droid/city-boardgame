@@ -9,7 +9,9 @@ import {
   CIV_TAGS,
   GRANT_KINDS,
   PAYMENT_KINDS,
+  RAID_EFFECT_KINDS,
   TERRAINS,
+  TILE_EFFECT_KINDS,
   TIERS,
   type Action,
   type BonusTile,
@@ -228,6 +230,16 @@ const readExpeditionSelection = (value: unknown, path: string): ExpeditionSelect
     mode,
     total: readPositiveInt(field(obj, 'total', path), `${path}.total`),
     maxSame: readPositiveInt(field(obj, 'maxSame', path), `${path}.maxSame`),
+  };
+};
+
+const readRaidEffect = (value: unknown, path: string) => {
+  const obj = readObject(value, path);
+  return {
+    kind: readOneOf(RAID_EFFECT_KINDS, field(obj, 'kind', path), `${path}.kind`),
+    amount: readInt(field(obj, 'amount', path), `${path}.amount`, true),
+    perRound: readBoolean(field(obj, 'perRound', path), `${path}.perRound`),
+    afterNextIncome: readBoolean(field(obj, 'afterNextIncome', path), `${path}.afterNextIncome`),
   };
 };
 
@@ -615,6 +627,19 @@ export const parseBonusTiles = (value: unknown, path = 'bonus_tiles'): BonusTile
       text: readString(field(o, 'text', q), `${q}.text`),
       rulesRef: readString(field(o, 'rulesRef', q), `${q}.rulesRef`),
       clarifications: readArray(field(o, 'clarifications', q), `${q}.clarifications`, readClarification),
+      roundStart: readArray(field(o, 'roundStart', q), `${q}.roundStart`, (e, ep) => {
+        const eo = readObject(e, ep);
+        const kind = readOneOf(TILE_EFFECT_KINDS, field(eo, 'kind', ep), `${ep}.kind`);
+        return { kind, amount: readPositiveInt(field(eo, 'amount', ep), `${ep}.amount`) };
+      }),
+      passScore: readNullable(field(o, 'passScore', q), `${q}.passScore`, (v2, p2) => {
+        const po = readObject(v2, p2);
+        return {
+          count: readOneOf(['houses', 'buildingTypes', 'playedCivCards'] as const, field(po, 'count', p2), `${p2}.count`),
+          per: readPositiveInt(field(po, 'per', p2), `${p2}.per`),
+          points: readInt(field(po, 'points', p2), `${p2}.points`),
+        };
+      }),
     };
   });
 
@@ -671,5 +696,8 @@ export const parseRaidCards = (value: unknown, path = 'raid_cards'): RaidCard[] 
       on_repel: readString(field(o, 'on_repel', q), `${q}.on_repel`),
       open_issues: readStringArray(field(o, 'open_issues', q), `${q}.open_issues`),
       ...readOptionalStringArray(o, 'clarifications', q),
+      replacesBasePoints: readBoolean(field(o, 'replacesBasePoints', q), `${q}.replacesBasePoints`),
+      defenseFailEffects: readArray(field(o, 'defenseFailEffects', q), `${q}.defenseFailEffects`, readRaidEffect),
+      repelEffects: readArray(field(o, 'repelEffects', q), `${q}.repelEffects`, readRaidEffect),
     };
   });
