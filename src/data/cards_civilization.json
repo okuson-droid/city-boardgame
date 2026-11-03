@@ -1,0 +1,1074 @@
+{
+  "importedFrom": "design/文明カード一覧_sample.md",
+  "provisional": true,
+  "notes": [
+    "001〜042 の42枚をデッキとする。総枚数は未決である（指示書 2-1）。",
+    "cost・tags・text は原本のまま。tags は原本のタグを識別子に置き換えたものである。",
+    "名称・プレイ条件・効果適用条件・固有得点は仮置きである（provisionalFields）。",
+    "効果の命令セット化は段階3（feat/effects）で行う。"
+  ],
+  "cards": [
+    {
+      "id": "001",
+      "name": "文明カード001",
+      "cost": {
+        "gold": 12
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建物1軒を無料で建設する。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "002",
+      "name": "文明カード002",
+      "cost": {
+        "gold": 8
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "土地タイル2枚を置く。",
+      "clarifications": [
+        {
+          "text": "資材は支払わず、4-2 に従って配置する。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "003",
+      "name": "文明カード003",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "金を支払わずに建物を3軒まで建設する。",
+      "clarifications": [
+        {
+          "text": "建設コストのうち金だけを免除し、資材は支払う。",
+          "source": "指示書_2026-11-03_初期実装.md 2-1（仮置き）",
+          "provisional": true
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "004",
+      "name": "文明カード004",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "5資材を得る。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "005",
+      "name": "文明カード005",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "金の生産を5上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "006",
+      "name": "文明カード006",
+      "cost": {
+        "gold": 7
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "地形を無視して山岳土地タイルを置く。",
+      "clarifications": [
+        {
+          "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
+          "source": "指示書_2026-11-03_初期実装.md 2-1（仮置き）",
+          "provisional": true
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "007",
+      "name": "文明カード007",
+      "cost": {
+        "gold": 7
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "地形を無視して水場土地タイルを置く。",
+      "clarifications": [
+        {
+          "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
+          "source": "指示書_2026-11-03_初期実装.md 2-1（仮置き）",
+          "provisional": true
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "008",
+      "name": "文明カード008",
+      "cost": {
+        "gold": 6
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "地形を無視して森林土地タイルを置く。",
+      "clarifications": [
+        {
+          "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
+          "source": "指示書_2026-11-03_初期実装.md 2-1（仮置き）",
+          "provisional": true
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "009",
+      "name": "文明カード009",
+      "cost": {
+        "gold": 6
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "地形を無視して平原土地タイルを置く。",
+      "clarifications": [
+        {
+          "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
+          "source": "指示書_2026-11-03_初期実装.md 2-1（仮置き）",
+          "provisional": true
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "010",
+      "name": "文明カード010",
+      "cost": {
+        "gold": 5
+      },
+      "tags": [
+        "military"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "軍事レベルを1上げる。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "011",
+      "name": "文明カード011",
+      "cost": {
+        "gold": 7
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "生活レベルを1上げる。",
+      "clarifications": [
+        {
+          "text": "「生活レベル」はインフラレベルである。",
+          "source": "decisions.md 1-1（ユーザー決定）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "012",
+      "name": "文明カード012",
+      "cost": {
+        "gold": 20
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "市民カード1枚を獲得する。",
+      "clarifications": [
+        {
+          "text": "「市民カード」は特別な市民カードである。公開カードから1枚を選び、山札から1枚補充する（9-3-2-2）。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "013",
+      "name": "文明カード013",
+      "cost": {
+        "gold": 11
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "臨時ワーカーを2つ得る。",
+      "clarifications": [
+        {
+          "text": "ワーカーの「つ」は「人」と読み替える。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "014",
+      "name": "文明カード014",
+      "cost": {
+        "gold": 9
+      },
+      "tags": [
+        "military"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "軍事トークンを5つ得る。",
+      "clarifications": [
+        {
+          "text": "「軍事トークン」は軍事力トークンである。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "015",
+      "name": "文明カード015",
+      "cost": {
+        "gold": 13
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "資材の生産を2上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "016",
+      "name": "文明カード016",
+      "cost": {
+        "gold": 6
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "文明カードを2枚引く。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "017",
+      "name": "文明カード017",
+      "cost": {
+        "gold": 15
+      },
+      "tags": [
+        "military"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "軍事トークンを2つ得る。遠征報酬を4つ獲得する。",
+      "clarifications": [
+        {
+          "text": "「軍事トークン」は軍事力トークンである。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "018",
+      "name": "文明カード018",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：学術タグを持つカードをプレイする度に文明カードを1枚引く。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "019",
+      "name": "文明カード019",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "literature"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "通常ワーカー1つにつき1金を得る。",
+      "clarifications": [
+        {
+          "text": "ワーカーの「つ」は「人」と読み替える。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "020",
+      "name": "文明カード020",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "literature"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建物のない土地タイル1枚につき1金を得る。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "021",
+      "name": "文明カード021",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "literature"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "インフラレベル1につき1金を得る。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "022",
+      "name": "文明カード022",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "literature"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "軍事力トークン1つにつき1金を得る。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "023",
+      "name": "文明カード023",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "literature"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "資材の生産1につき1金を得る。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "024",
+      "name": "文明カード024",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "literature"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建物1軒につき1金を得る。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "025",
+      "name": "文明カード025",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "literature"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "金の生産4につき1金を得る。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "026",
+      "name": "文明カード026",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "literature"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "襲撃の撃退に必要な軍事力1につき1金を得る。",
+      "clarifications": [
+        {
+          "text": "「襲撃の撃退に必要な軍事力」は、そのラウンドの撃退ライン − 軍事レベル（0未満は0）である。",
+          "source": "指示書_2026-11-03_初期実装.md 2-1（仮置き）",
+          "provisional": true
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "027",
+      "name": "文明カード027",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "art"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "軍事レベルが3以上なら、3資材を得る。6以上なら、もう2資材を得る。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "028",
+      "name": "文明カード028",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "art"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "インフラレベルが3以上なら、3資材を得る。6以上なら、もう2資材を得る。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "029",
+      "name": "文明カード029",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "art"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "金の生産が25以上なら、3資材を得る。30以上なら、もう2資材を得る。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "030",
+      "name": "文明カード030",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "art"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "土地タイルが7枚以上なら、3資材を得る。14枚以上なら、もう2資材を得る。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "031",
+      "name": "文明カード031",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "art"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建物が5軒以上なら、3資材を得る。8軒以上なら、もう2資材を得る。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "032",
+      "name": "文明カード032",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "art"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "住宅が4軒以上なら、3資材を得る。通常ワーカーが8人以上なら、もう2資材を得る。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "033",
+      "name": "文明カード033",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "art"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "資材の生産が5以上なら、3資材を得る。8以上なら、もう2資材を得る。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "034",
+      "name": "文明カード034",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "art"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "軍事力が撃退ラインより低いなら、3資材を得る。防衛ラインより低いなら、もう2資材を得る。",
+      "clarifications": [
+        {
+          "text": "「軍事力」は軍事レベルである。",
+          "source": "指示書_2026-11-03_初期実装.md 2-1（仮置き）",
+          "provisional": true
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "035",
+      "name": "文明カード035",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "music"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "軍事レベルが3以上なら、文明カードを1枚引く。6以上なら、もう1枚引く。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "036",
+      "name": "文明カード036",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "music"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "インフラレベルが3以上なら、文明カードを1枚引く。6以上なら、もう1枚引く。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "037",
+      "name": "文明カード037",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "music"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "金の生産が25以上なら、文明カードを1枚引く。30以上なら、もう1枚引く。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "038",
+      "name": "文明カード038",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "music"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "土地タイルが7枚以上なら、文明カードを1枚引く。14枚以上なら、もう1枚引く。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "039",
+      "name": "文明カード039",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "music"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建物が5軒以上なら、文明カードを1枚引く。8軒以上なら、もう1枚引く。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "040",
+      "name": "文明カード040",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "music"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "住宅が4軒以上なら、文明カードを1枚引く。通常ワーカーが8人以上なら、もう1枚引く。",
+      "clarifications": [],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "041",
+      "name": "文明カード041",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "music"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "資材の生産が5以上なら、文明カードを1枚引く。8以上なら、もう1枚引く。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "042",
+      "name": "文明カード042",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "music"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "軍事力が撃退ラインより低いなら、文明カードを1枚引く。防衛ラインより低いなら、もう1枚引く。",
+      "clarifications": [
+        {
+          "text": "「軍事力」は軍事レベルである。",
+          "source": "指示書_2026-11-03_初期実装.md 2-1（仮置き）",
+          "provisional": true
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "name",
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    }
+  ]
+}

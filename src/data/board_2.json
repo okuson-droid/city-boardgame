@@ -1,0 +1,209 @@
+{
+  "id": "board_2",
+  "name": "個人ボード2",
+  "provisional": true,
+  "generatedWithSeed": 20261104,
+  "notes": [
+    "地形配置とマスボーナスは仮置きである（指示書 2-2）。scripts/generate-boards.ts で生成した。"
+  ],
+  "squares": {
+    "A1": {
+      "terrain": "water",
+      "bonus": null
+    },
+    "A2": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "A3": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "A4": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "A5": {
+      "terrain": "water",
+      "bonus": null
+    },
+    "A6": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "A7": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "A8": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "B1": {
+      "terrain": "water",
+      "bonus": null
+    },
+    "B2": {
+      "terrain": "plains",
+      "bonus": {
+        "kind": "gold",
+        "amount": 2
+      }
+    },
+    "B3": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "B4": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "B5": {
+      "terrain": "forest",
+      "bonus": {
+        "kind": "gold",
+        "amount": 2
+      }
+    },
+    "B6": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "B7": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "C1": {
+      "terrain": "water",
+      "bonus": {
+        "kind": "gold",
+        "amount": 2
+      }
+    },
+    "C2": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "C3": {
+      "terrain": "plains",
+      "bonus": {
+        "kind": "militaryTokens",
+        "amount": 1
+      }
+    },
+    "C4": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "C5": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "C6": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "C7": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "C8": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "D1": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "D2": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "D3": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "D4": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "D5": {
+      "terrain": "plains",
+      "bonus": {
+        "kind": "materials",
+        "amount": 1
+      }
+    },
+    "D6": {
+      "terrain": "water",
+      "bonus": null
+    },
+    "D7": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "E1": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "E2": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "E3": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "E4": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "E5": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "E6": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "E7": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "E8": {
+      "terrain": "water",
+      "bonus": null
+    },
+    "F1": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "F2": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "F3": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "F4": {
+      "terrain": "forest",
+      "bonus": {
+        "kind": "drawCivCards",
+        "amount": 1
+      }
+    },
+    "F5": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "F6": {
+      "terrain": "water",
+      "bonus": null
+    },
+    "F7": {
+      "terrain": "plains",
+      "bonus": null
+    }
+  }
+}

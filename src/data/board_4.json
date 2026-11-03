@@ -1,0 +1,209 @@
+{
+  "id": "board_4",
+  "name": "個人ボード4",
+  "provisional": true,
+  "generatedWithSeed": 20261106,
+  "notes": [
+    "地形配置とマスボーナスは仮置きである（指示書 2-2）。scripts/generate-boards.ts で生成した。"
+  ],
+  "squares": {
+    "A1": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "A2": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "A3": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "A4": {
+      "terrain": "forest",
+      "bonus": {
+        "kind": "gold",
+        "amount": 2
+      }
+    },
+    "A5": {
+      "terrain": "plains",
+      "bonus": {
+        "kind": "militaryTokens",
+        "amount": 1
+      }
+    },
+    "A6": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "A7": {
+      "terrain": "water",
+      "bonus": {
+        "kind": "materials",
+        "amount": 1
+      }
+    },
+    "A8": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "B1": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "B2": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "B3": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "B4": {
+      "terrain": "water",
+      "bonus": null
+    },
+    "B5": {
+      "terrain": "water",
+      "bonus": null
+    },
+    "B6": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "B7": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "C1": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "C2": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "C3": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "C4": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "C5": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "C6": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "C7": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "C8": {
+      "terrain": "water",
+      "bonus": null
+    },
+    "D1": {
+      "terrain": "forest",
+      "bonus": {
+        "kind": "materials",
+        "amount": 1
+      }
+    },
+    "D2": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "D3": {
+      "terrain": "water",
+      "bonus": null
+    },
+    "D4": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "D5": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "D6": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "D7": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "E1": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "E2": {
+      "terrain": "plains",
+      "bonus": {
+        "kind": "gold",
+        "amount": 2
+      }
+    },
+    "E3": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "E4": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "E5": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "E6": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "E7": {
+      "terrain": "water",
+      "bonus": null
+    },
+    "E8": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "F1": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "F2": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "F3": {
+      "terrain": "forest",
+      "bonus": {
+        "kind": "gold",
+        "amount": 2
+      }
+    },
+    "F4": {
+      "terrain": "mountain",
+      "bonus": null
+    },
+    "F5": {
+      "terrain": "plains",
+      "bonus": null
+    },
+    "F6": {
+      "terrain": "forest",
+      "bonus": null
+    },
+    "F7": {
+      "terrain": "water",
+      "bonus": null
+    }
+  }
+}

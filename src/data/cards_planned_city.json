@@ -1,0 +1,293 @@
+{
+  "provisional": true,
+  "notes": [
+    "全カードが仮置きである（指示書 2-3）。",
+    "slots の q・r はアキシャル座標の相対位置（src/game/board.ts）。回転を認め鏡像は認めない（rules.md v0.8 19-1-6）。",
+    "terrain・building の null は「任意」を表す。条件の3種類（13-2-2）は、両方指定・土地種のみ・建物種のみの slot の組み合わせで表す。",
+    "benefit は達成宣言時に得る恩恵（13-3-8）である。"
+  ],
+  "cards": [
+    {
+      "id": "PC01",
+      "name": "計画都市カード01",
+      "shape": "直線3軒",
+      "slots": [
+        {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "building": "house"
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "terrain": null,
+          "building": "shop"
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "terrain": "water",
+          "building": null
+        }
+      ],
+      "benefit": {
+        "kind": "gold",
+        "amount": 3
+      },
+      "provisional": true
+    },
+    {
+      "id": "PC02",
+      "name": "計画都市カード02",
+      "shape": "三角形3軒",
+      "slots": [
+        {
+          "q": 0,
+          "r": 0,
+          "terrain": null,
+          "building": "university"
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "terrain": "plains",
+          "building": null
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "terrain": "forest",
+          "building": null
+        }
+      ],
+      "benefit": {
+        "kind": "materials",
+        "amount": 2
+      },
+      "provisional": true
+    },
+    {
+      "id": "PC03",
+      "name": "計画都市カード03",
+      "shape": "折れ線3軒",
+      "slots": [
+        {
+          "q": 0,
+          "r": 0,
+          "terrain": "mountain",
+          "building": "workshop"
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "terrain": null,
+          "building": "house"
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "terrain": null,
+          "building": "house"
+        }
+      ],
+      "benefit": {
+        "kind": "drawCivCards",
+        "amount": 1
+      },
+      "provisional": true
+    },
+    {
+      "id": "PC04",
+      "name": "計画都市カード04",
+      "shape": "斜めの直線4軒",
+      "slots": [
+        {
+          "q": 0,
+          "r": 0,
+          "terrain": null,
+          "building": "fort"
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "terrain": "mountain",
+          "building": null
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "terrain": "mountain",
+          "building": null
+        },
+        {
+          "q": 0,
+          "r": 3,
+          "terrain": null,
+          "building": "fort"
+        }
+      ],
+      "benefit": {
+        "kind": "gold",
+        "amount": 3
+      },
+      "provisional": true
+    },
+    {
+      "id": "PC05",
+      "name": "計画都市カード05",
+      "shape": "菱形4軒",
+      "slots": [
+        {
+          "q": 0,
+          "r": 0,
+          "terrain": "water",
+          "building": "shop"
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "terrain": "water",
+          "building": "office"
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "terrain": null,
+          "building": "house"
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "terrain": "plains",
+          "building": null
+        }
+      ],
+      "benefit": {
+        "kind": "materials",
+        "amount": 2
+      },
+      "provisional": true
+    },
+    {
+      "id": "PC06",
+      "name": "計画都市カード06",
+      "shape": "折れ線4軒",
+      "slots": [
+        {
+          "q": 0,
+          "r": 0,
+          "terrain": null,
+          "building": "house"
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "terrain": null,
+          "building": "house"
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "terrain": "plains",
+          "building": "house"
+        },
+        {
+          "q": 2,
+          "r": 1,
+          "terrain": "forest",
+          "building": null
+        }
+      ],
+      "benefit": {
+        "kind": "drawCivCards",
+        "amount": 1
+      },
+      "provisional": true
+    },
+    {
+      "id": "PC07",
+      "name": "計画都市カード07",
+      "shape": "直線5軒",
+      "slots": [
+        {
+          "q": 0,
+          "r": 0,
+          "terrain": "water",
+          "building": null
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "terrain": null,
+          "building": "shop"
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "terrain": "plains",
+          "building": "house"
+        },
+        {
+          "q": 3,
+          "r": 0,
+          "terrain": null,
+          "building": "workshop"
+        },
+        {
+          "q": 4,
+          "r": 0,
+          "terrain": "mountain",
+          "building": null
+        }
+      ],
+      "benefit": {
+        "kind": "gold",
+        "amount": 3
+      },
+      "provisional": true
+    },
+    {
+      "id": "PC08",
+      "name": "計画都市カード08",
+      "shape": "三角形と枝5軒",
+      "slots": [
+        {
+          "q": 0,
+          "r": 0,
+          "terrain": null,
+          "building": "camp"
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "terrain": "forest",
+          "building": null
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "terrain": "forest",
+          "building": null
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "terrain": "plains",
+          "building": "house"
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "terrain": "plains",
+          "building": "house"
+        }
+      ],
+      "benefit": {
+        "kind": "materials",
+        "amount": 2
+      },
+      "provisional": true
+    }
+  ]
+}

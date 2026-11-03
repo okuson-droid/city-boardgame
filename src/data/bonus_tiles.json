@@ -1,0 +1,118 @@
+{
+  "provisional": false,
+  "notes": [
+    "text は rules.md v0.8 11-2-1 の表の文言のまま。「／」で区切られた効果は両方適用する（11-2-2）。",
+    "効果の命令セット化は段階3（feat/effects）で行う。"
+  ],
+  "tiles": [
+    {
+      "id": 1,
+      "text": "土地タイル1枚獲得／軍事力トークン1個獲得",
+      "rulesRef": "11-2-1",
+      "clarifications": [
+        {
+          "text": "土地タイルは資材を支払わずに 4-2 に従って配置する。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        }
+      ],
+      "provisional": false
+    },
+    {
+      "id": 2,
+      "text": "8金獲得",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false
+    },
+    {
+      "id": 3,
+      "text": "資材2個獲得",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false
+    },
+    {
+      "id": 4,
+      "text": "文明カード2枚を引き、手札全体から任意の1枚を捨てる",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false
+    },
+    {
+      "id": 5,
+      "text": "臨時ワーカー1人獲得",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false
+    },
+    {
+      "id": 6,
+      "text": "3金獲得／パス時、住宅1軒につき1点",
+      "rulesRef": "11-2-1",
+      "clarifications": [
+        {
+          "text": "パス時得点はパス宣言時点の状態を参照する。",
+          "source": "rules.md v0.8 11-2-5",
+          "provisional": false
+        }
+      ],
+      "provisional": false
+    },
+    {
+      "id": 7,
+      "text": "資材生産力＋1／パス時、建設済み建物の種類数につき1点",
+      "rulesRef": "11-2-1",
+      "clarifications": [
+        {
+          "text": "生産力の増加は獲得したラウンドの収入から反映し、タイルを返却しても失われない。",
+          "source": "rules.md v0.8 3-2-4、11-2-3",
+          "provisional": false
+        },
+        {
+          "text": "建物の種類数は、同じ種類を複数建設していても1種類として数える。",
+          "source": "rules.md v0.8 11-2-4",
+          "provisional": false
+        },
+        {
+          "text": "パス時得点はパス宣言時点の状態を参照する。",
+          "source": "rules.md v0.8 11-2-5",
+          "provisional": false
+        }
+      ],
+      "provisional": false
+    },
+    {
+      "id": 8,
+      "text": "金生産力＋2／パス時、プレイ済み文明カード2枚につき1点",
+      "rulesRef": "11-2-1",
+      "clarifications": [
+        {
+          "text": "生産力の増加は獲得したラウンドの収入から反映し、タイルを返却しても失われない。",
+          "source": "rules.md v0.8 3-2-4、11-2-3",
+          "provisional": false
+        },
+        {
+          "text": "パス時得点はパス宣言時点の状態を参照する。",
+          "source": "rules.md v0.8 11-2-5",
+          "provisional": false
+        }
+      ],
+      "provisional": false
+    },
+    {
+      "id": 9,
+      "text": "軍事レベル＋1",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false
+    },
+    {
+      "id": 10,
+      "text": "インフラレベル＋1",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false
+    }
+  ]
+}
