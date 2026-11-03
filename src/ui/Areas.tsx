@@ -13,6 +13,7 @@ import { ACTION_LABELS } from './ActionBoard.tsx';
 import { BonusTileView, CardFrame, CivCardView, NatureParkView, PlannedCityView, ScriptView } from './Cards.tsx';
 import { Icon, IconRow } from './Icon.tsx';
 import { colorOf, type UiModel } from './model.ts';
+import { TrackBar, trackChanges, type Speed } from './Motion.tsx';
 import { Tip } from './Tip.tsx';
 import type { CellId } from '../game/board.ts';
 
@@ -30,7 +31,17 @@ type Choose = (optionId: string) => void;
 // 共有の場（右列、5-1）
 // ---------------------------------------------------------------------------
 
-export const SharedArea = ({ state, model, onChoose }: { state: GameState; model: UiModel; onChoose: Choose }) => {
+export const SharedArea = ({
+  state,
+  model,
+  onChoose,
+  onFocus,
+}: {
+  state: GameState;
+  model: UiModel;
+  onChoose: Choose;
+  onFocus?: (cell: CellId | null, player: number | null) => void;
+}) => {
   const round = Math.max(1, state.round);
   const raidCard = GAME_DATA.raidCards.find((c) => c.id === state.raidOrder[round - 1]);
   const shown = state.phase !== 'draft';
@@ -116,7 +127,7 @@ export const SharedArea = ({ state, model, onChoose }: { state: GameState; model
         <h3>文明カード</h3>
         <IconRow tokens={[tok('resources', 'drawCivCards', `山${state.civDeck.length}`), tok('symbols', 'pay', `捨${state.civDiscard.length}`)]} size="sm" />
       </section>
-      <EventLog state={state} />
+      <EventLog state={state} {...(onFocus ? { onFocus } : {})} />
     </div>
   );
 };
@@ -154,7 +165,8 @@ const eventTokens = (e: GameEvent): IconToken[] | null => {
   }
 };
 
-export const EventLog = ({ state, onFocus }: { state: GameState; onFocus?: (cell: CellId | null) => void }) => {
+/** 出来事の履歴（6-3）。行をタップすると、その出来事で変わった盤面の要素を強調する。 */
+export const EventLog = ({ state, onFocus }: { state: GameState; onFocus?: (cell: CellId | null, player: number | null) => void }) => {
   const rows = state.events
     .map((e, i) => ({ e, i, tokens: eventTokens(e) }))
     .filter((r) => r.tokens !== null)
@@ -165,7 +177,7 @@ export const EventLog = ({ state, onFocus }: { state: GameState; onFocus?: (cell
       <h3>履歴</h3>
       <ol>
         {rows.map(({ e, i, tokens }) => (
-          <li key={i} onClick={() => onFocus?.('cell' in e ? e.cell : null)}>
+          <li key={i} data-ui="history-row" onClick={() => onFocus?.('cell' in e ? e.cell : null, 'player' in e ? e.player : null)}>
             {'player' in e ? <span className="worker-dot" style={{ background: colorOf(e.player) }} /> : null}
             <IconRow tokens={tokens ?? []} size="sm" />
           </li>
@@ -179,11 +191,17 @@ export const EventLog = ({ state, onFocus }: { state: GameState; onFocus?: (cell
 // 個人の資源とトラック（5-2）
 // ---------------------------------------------------------------------------
 
-const trackMarks = (levels: readonly number[], claimed: readonly number[]): string =>
-  levels.map((l) => (claimed.includes(l) ? `●${l}` : `○${l}`)).join(' ');
-
-export const PlayerStatus = ({ player }: { player: PlayerState }) => {
+export const PlayerStatus = ({
+  player,
+  lastEvents = [],
+  speed = 'none',
+}: {
+  player: PlayerState;
+  lastEvents?: readonly GameEvent[];
+  speed?: Speed;
+}) => {
   const w = workerSummary(player);
+  const tracks = trackChanges(lastEvents, player.index);
   return (
     <div className="status">
       <IconRow
@@ -204,11 +222,26 @@ export const PlayerStatus = ({ player }: { player: PlayerState }) => {
           tok('tracks', 'infra', player.infraLevel),
         ]}
       />
+      <TrackBar
+        key={`m-${player.index}-${player.militaryLevel}`}
+        track="military"
+        level={player.militaryLevel}
+        claimed={player.militaryRewardsClaimed}
+        rose={tracks.military.rose}
+        rewarded={tracks.military.rewarded}
+        speed={speed}
+      />
+      <TrackBar
+        key={`i-${player.index}-${player.infraLevel}`}
+        track="infra"
+        level={player.infraLevel}
+        claimed={player.infraRewardsClaimed}
+        rose={tracks.infra.rose}
+        rewarded={tracks.infra.rewarded}
+        speed={speed}
+      />
       <Tip text={`配置済み${w.regularPlaced}人・次ラウンドから${w.regularNextRound}人・手番中に得た臨時${w.tempLocked}人`}>
-        <span className="muted small">
-          軍事 {trackMarks(GAME_DATA.params.military.rewards.map((r) => r.level), player.militaryRewardsClaimed)}／インフラ{' '}
-          {trackMarks(GAME_DATA.params.infra.rewards.map((r) => r.level), player.infraRewardsClaimed)}
-        </span>
+        <span className="muted small">ワーカーの内訳</span>
       </Tip>
       <IconRow
         size="sm"

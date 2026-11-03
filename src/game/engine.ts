@@ -48,6 +48,7 @@ import {
   type Effect,
 } from './core.ts';
 import { isCheckpoint } from './history.ts';
+import { recordDeltas, snapshot } from './deltas.ts';
 import { onSpecialCitizenAcquired, runAbilities } from './effects.ts';
 import {
   abilityFreeOptions,
@@ -894,6 +895,13 @@ const applyTask = (state: GameState, d: GameData, task: Task, id: string): void 
 };
 
 const runAuto = (state: GameState, d: GameData, task: Task): void => {
+  // 自動の処理ごとに増減を記録する（ui_design.md 4-3 のラウンド開始の画面などに使う）。
+  const before = snapshot(state);
+  runAutoTask(state, d, task);
+  recordDeltas(state, before, task.t);
+};
+
+const runAutoTask = (state: GameState, d: GameData, task: Task): void => {
   state.stack.pop();
   switch (task.t) {
     case 'setupFinish':
@@ -982,7 +990,10 @@ export const applyMove = (state: GameState, optionId: string, d: GameData = GAME
   if (task === undefined) {
     throw new Error('選択待ちがない');
   }
+  const before = snapshot(next);
   applyTask(next, d, task, optionId);
+  // 選択1つの処理の増減（ui_design.md 4-1 の「−5 金 ＋2 資材」）。自動の処理は runAuto が別に記録する。
+  recordDeltas(next, before, 'move');
   advance(next, d);
   next.log.push({ move: optionId, checkpoint: isCheckpoint(state, optionId, next) });
   return next;

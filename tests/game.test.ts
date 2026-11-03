@@ -189,7 +189,7 @@ describe('手番とパス（第11章・第12章）', () => {
     const index = me(s).index;
     s = applyMove(s, 'pass');
     expect(playerOf(s, index).score).toBe(before + 2);
-    expect(s.events.at(-2)).toMatchObject({ type: 'score', axis: 'other', points: 2 });
+    expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ type: 'score', axis: 'other', points: 2 });
   });
 
   it('パスしたプレイヤーには、そのラウンド中は手番が回らない', () => {

@@ -46,6 +46,7 @@ export const Board = ({
   cellState,
   pickOrder,
   highlight,
+  fresh = new Set(),
   explainCell,
   onCell,
 }: {
@@ -53,6 +54,8 @@ export const Board = ({
   cellState: (cell: CellId) => CellState;
   pickOrder: (cell: CellId) => number | null;
   highlight: CellId | null;
+  /** 直前の選択で置かれた土地・建物のマス。 */
+  fresh?: ReadonlySet<CellId>;
   explainCell: (cell: CellId) => string | null;
   onCell: (cell: CellId) => void;
 }) => {
@@ -80,7 +83,7 @@ export const Board = ({
           return (
             <g
                 key={cell.id}
-              className={`cell cell-${state}${highlight === cell.id ? ' cell-highlight' : ''}`}
+              className={`cell cell-${state}${highlight === cell.id ? ' cell-highlight' : ''}${fresh.has(cell.id) ? ' cell-fresh' : ''}`}
                 data-cell={cell.id}
                 {...(state === 'selectable' ? { 'data-target': `cell:${cell.id}` } : {})}
                 onClick={() => onCell(cell.id)}

@@ -11,12 +11,22 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-type Run = { name: string; players: number; seed: number; width: number; height: number; maxSteps: number };
+type Run = {
+  name: string;
+  players: number;
+  seed: number;
+  width: number;
+  height: number;
+  maxSteps: number;
+  /** 演出の速度。none 以外では、ラウンドの区切りの画面を閉じながら進める。 */
+  speed: 'none' | 'fast';
+};
 
 const RUNS: Run[] = [
-  { name: 'PC 1440×900・3人', players: 3, seed: 101, width: 1440, height: 900, maxSteps: 6000 },
-  { name: 'PC 1280×720・4人', players: 4, seed: 202, width: 1280, height: 720, maxSteps: 8000 },
-  { name: 'スマホ横 844×390・3人', players: 3, seed: 303, width: 844, height: 390, maxSteps: 6000 },
+  { name: 'PC 1440×900・3人', players: 3, seed: 101, width: 1440, height: 900, maxSteps: 6000, speed: 'none' },
+  { name: 'PC 1280×720・4人', players: 4, seed: 202, width: 1280, height: 720, maxSteps: 8000, speed: 'none' },
+  { name: 'スマホ横 844×390・3人', players: 3, seed: 303, width: 844, height: 390, maxSteps: 6000, speed: 'none' },
+  { name: 'PC 1440×900・3人・演出あり', players: 3, seed: 404, width: 1440, height: 900, maxSteps: 6000, speed: 'fast' },
 ];
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -123,7 +133,7 @@ const play = async (run: Run): Promise<Result> => {
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
-  await page.goto(`file://${html}#speed=none&seed=${run.seed}`);
+  await page.goto(`file://${html}#speed=${run.speed}&seed=${run.seed}`);
   await page.click(`[data-ui="players-${run.players}"]`);
   await page.click('[data-target="start"]');
 
@@ -140,6 +150,8 @@ const play = async (run: Run): Promise<Result> => {
       result.steps = step;
       break;
     }
+    // ラウンドの区切りの画面（演出あり）は閉じて進める。
+    if (await page.$('[data-ui="close-summary"]')) await page.click('[data-ui="close-summary"]');
     if (step % 40 === 0) await checkOtherTabs(page, result.leaks);
     const items = await candidates(page);
     const target = pick(items, random);

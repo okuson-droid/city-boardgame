@@ -178,6 +178,13 @@ export type GameEvent =
   | { readonly type: 'fizzle'; readonly player: number; readonly what: string }
   | { readonly type: 'plannedCity'; readonly player: number; readonly card: string; readonly rank: number; readonly points: number }
   | { readonly type: 'ability'; readonly player: number; readonly key: string }
+  | {
+      readonly type: 'delta';
+      readonly player: number;
+      /** move は選択1つの処理、それ以外は自動の処理（roundStart・bonusTileStart・income・gameEnd など）。 */
+      readonly cause: string;
+      readonly changes: Readonly<Partial<Record<string, number>>>;
+    }
   | { readonly type: 'gameOver' };
 
 export type RaidResult = 'defenseFailed' | 'defended' | 'repelled';

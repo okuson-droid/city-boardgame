@@ -7,7 +7,8 @@ import { applyMove, isGameOver } from '../game/engine.ts';
 import { explain, explainUndo } from '../game/explain.ts';
 import { undoLast } from '../game/history.ts';
 import { pendingPicks } from '../game/queries.ts';
-import type { GameState } from '../game/types.ts';
+import type { GameEvent, GameState } from '../game/types.ts';
+import { DeltaChips, RoundSummary, sumDeltas } from './Motion.tsx';
 import type { Building } from '../data/types.ts';
 import { ActionBoard } from './ActionBoard.tsx';
 import { DraftView, FinalScores, HandArea, PlayerStatus, SharedArea } from './Areas.tsx';
@@ -18,7 +19,6 @@ import { Tip } from './Tip.tsx';
 
 export type Settings = { speed: 'standard' | 'fast' | 'none'; follow: boolean };
 
-const ROUND_BANNER_MS: Record<Settings['speed'], number> = { standard: 1400, fast: 600, none: 0 };
 
 export const Game = ({ initial, settings, onRestart }: { initial: GameState; settings: Settings; onRestart: () => void }) => {
   const [state, setState] = useState(initial);
@@ -29,7 +29,10 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
   const [buildType, setBuildType] = useState<Building | null>(null);
   const [freeOpen, setFreeOpen] = useState(false);
   const [pane, setPane] = useState<'shared' | 'personal'>('shared');
-  const [banner, setBanner] = useState<number | null>(null);
+  /** 直前の選択で増えた出来事（演出の材料、ui_design.md 4節）。 */
+  const [lastEvents, setLastEvents] = useState<GameEvent[]>([]);
+  const [summary, setSummary] = useState<number | null>(null);
+  const [focus, setFocus] = useState<CellId | null>(null);
 
   // 選択待ちの持ち主が変わったら、持ち主のタブへ戻す（ui_design.md 2-1、2-2、6-2）。
   useEffect(() => {
@@ -47,13 +50,12 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
   const choose = useCallback(
     (optionId: string) => {
       const next = applyMove(state, optionId);
-      const lastRound = [...next.events].reverse().find((e) => e.type === 'round');
-      const prevRound = [...state.events].reverse().find((e) => e.type === 'round');
-      // ラウンドの区切りを短く見せる（ui_design.md 4-3）。演出「なし」では出さない。
-      if (lastRound?.type === 'round' && (prevRound?.type !== 'round' || lastRound.round !== prevRound.round) && ROUND_BANNER_MS[settings.speed] > 0) {
-        setBanner(lastRound.round);
-        window.setTimeout(() => setBanner(null), ROUND_BANNER_MS[settings.speed]);
-      }
+      const added = next.events.slice(state.events.length);
+      setLastEvents(added);
+      setFocus(null);
+      // ラウンドの区切りを1画面で見せる（ui_design.md 4-3）。演出「なし」では出さない。
+      const started = added.find((e) => e.type === 'round');
+      if (started?.type === 'round' && settings.speed !== 'none') setSummary(started.round);
       setState(next);
       setChooser(null);
       setBuildType(null);
@@ -67,6 +69,7 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
     const back = undoLast(state);
     if (back !== null) {
       setState(back);
+      setLastEvents([]);
       setChooser(null);
     }
   };
@@ -74,6 +77,10 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
   const viewed = state.players[view] ?? state.players[0];
   if (viewed === undefined) return null;
   const isOwnerView = owner === view;
+  // 直前の選択で置かれた土地・建物を強調する（ui_design.md 4-1 手順3）。
+  const freshCells = new Set(
+    lastEvents.flatMap((e) => ((e.type === 'tilePlaced' || e.type === 'built') && e.player === view ? [e.cell] : [])),
+  );
   const picks = pendingPicks(state);
 
   const cellChoices = (cell: CellId): Choice[] => {
@@ -154,16 +161,26 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
                 player={viewed}
                 cellState={cellState}
                 pickOrder={(cell) => (isOwnerView && picks.includes(cell) ? picks.indexOf(cell) + 1 : null)}
-                highlight={null}
+                highlight={focus}
+                fresh={freshCells}
                 explainCell={(cell) => (isOwnerView ? explain(state, { kind: 'cell', cell, variantKind: null, variant: null }, view) : null)}
                 onCell={onCell}
               />
-              <PlayerStatus player={viewed} />
+              <DeltaChips key={state.log.length} changes={sumDeltas(lastEvents, viewed.index, ['move'])} speed={settings.speed} />
+              <PlayerStatus player={viewed} lastEvents={lastEvents} speed={settings.speed} />
             </>
           )}
         </section>
         <section className="col-right">
-          <SharedArea state={state} model={model} onChoose={choose} />
+          <SharedArea
+            state={state}
+            model={model}
+            onChoose={choose}
+            onFocus={(cell, player) => {
+              setFocus(cell);
+              if (player !== null) setView(player);
+            }}
+          />
         </section>
         <section className="bottom">
           <HandArea state={state} player={viewed} isOwner={isOwnerView} model={model} onChoose={choose} />
@@ -182,11 +199,7 @@ export const Game = ({ initial, settings, onRestart }: { initial: GameState; set
         onToggleFree={() => setFreeOpen(!freeOpen)}
       />
 
-      {banner !== null ? (
-        <div className="banner" data-ui="banner" onClick={() => setBanner(null)}>
-          第{banner}ラウンド
-        </div>
-      ) : null}
+      {summary !== null && !isGameOver(state) ? <RoundSummary state={state} round={summary} onClose={() => setSummary(null)} /> : null}
       {isGameOver(state) ? <FinalScores state={state} onRestart={onRestart} /> : null}
       <div className="rotate">横向きにしてください</div>
     </div>

@@ -123,3 +123,29 @@ describe('queries（画面のための派生値）', () => {
     expect(pendingBuildCost(s)).toEqual({ gold: 1, materials: 1 });
   });
 });
+
+describe('増減の出来事（ui_design.md 0-2、4-1）', () => {
+  it('選択1つの処理の増減を、プレイヤーごとに1つの出来事として記録する', () => {
+    // ui_design.md 4-1（同じ資源ごとに合算して1回だけ見せる）、rules.md v0.8 6-3-3-2
+    let s = edit(withoutCharacters(firstTurn()), (state, p) => {
+      for (const q of state.players) q.tempWorkers = 0;
+      p.gold = 7;
+      p.materials = 0;
+    });
+    const index = me(s).index;
+    s = play(s, 'act:import:upper', 'count:1');
+    const deltas = s.events.filter((e) => e.type === 'delta' && e.player === index && e.cause === 'move');
+    expect(deltas.at(-1)).toMatchObject({ changes: { gold: -7, materials: 4 } });
+  });
+
+  it('ラウンド開始時の収入は、自動の処理（income）の出来事として記録する', () => {
+    // rules.md v0.8 12-0-1、ui_design.md 4-3
+    let s = firstTurn();
+    while (s.round === 1) s = applyMove(s, top(s).t === 'turn' ? 'pass' : (ids(s)[0] ?? ''));
+    const incomes = s.events.filter((e) => e.type === 'delta' && e.cause === 'income');
+    expect(incomes.length).toBeGreaterThanOrEqual(3);
+    for (const e of incomes) {
+      if (e.type === 'delta') expect(e.changes['gold'] ?? 0).not.toBe(0);
+    }
+  });
+});
