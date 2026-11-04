@@ -61,6 +61,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `.github/workflows/pages.yml` | GitHub Pages への配置と Edge Function の配置 |
 | `src/ui/Online.tsx` | オンライン版の入口（部屋を作る・入る・続きから）と対局画面 |
 | `server/main.ts` | オンライン版のサーバー（node:http だけ、SSE＋HTTP）。`server/vite.config.ts` で `dist-server/main.js` にまとめる |
+| `tools/tuner/labels.ts` | チューナーの画面に出す項目名・選択肢の日本語 |
 | `tools/tuner/github.ts` | 公開ページのチューナーの GitHub への保存（Git Data API で1つの commit、保存先の最新に変更点を適用し直す） |
 | `tools/tuner/vite.pages.config.ts` | 公開ページ用のチューナーのビルド（`dist/tuner/index.html`・`play.html`） |
 | `tools/tuner/` | チューナー。`proposal.ts`（調整案の作成・差分・適用・保存と読み込み・検査・Markdown）、`TunerApp.tsx`（画面）、`JsonEditor.tsx`（汎用フォーム）、`ScriptEditor.tsx`（効果を命令と引数の単位で編集）、`BoardEditor.tsx`（個人ボード）、`vite.config.ts`（開発サーバーと書き戻しの口）、`play.html`（試遊） |
@@ -137,6 +138,7 @@ npm run accept:supabase  # Supabase の模擬に対するオンライン版の�
 - 試遊は `tools/tuner/play.html` が調整案のデータを `globalThis.__TUNER_FILES__` に置き、`src/data/index.ts` がチューナーの開発サーバー（`VITE_TUNER=1`）のときだけそれを読む。配布用ビルドには含まれない。
 - 書き出しは開発サーバーの `POST /__tuner/export` が受け、`src/data/` に既にあるゲームデータの JSON（`icon_keys.json` を除く）だけを書き換える。あわせて変更点の一覧を Markdown で出し、ユーザーが claude/tuning_log.md に転記する。
 - 識別子・原本の文言・仮置きの印・プレイ条件と効果適用条件は、チューナーでは読むだけにする。
+- チューナーの画面の文言は日本語にする（ユーザー決定 2026-11-04）。項目名と選択肢の値の日本語は `tools/tuner/labels.ts`（`keyLabel`・`valueLabel`）にまとめ、資源・建物・地形などはアイコンの対応表の語を使う。保存する値は英語の識別子のままである。データに項目を足したら labels.ts にも足す。
 - 公開ページのチューナー（案A、ユーザー決定 2026-11-04）：開発サーバーへの書き出しの代わりに「GitHub に保存」を使う。トークン（Contents の読み書きだけの fine-grained PAT）はユーザーが貼り、ブラウザにだけ置く。リポジトリの初期値はビルド時の `VITE_GITHUB_REPO`、ゲームからのリンクは `VITE_TUNER_URL`（どちらも `pages.yml` が与える）。
 - `index.html`・`play.html` の入口と試遊ページへのリンクは相対パスで書く（開発サーバーと公開ページの両方で動かすため）。試遊ページではオンライン版を出さない。
 - データの更新は進行中の対局に反映しない（ユーザー決定 2026-11-04）。部屋は作成時の `DATA_VERSION`（データ一式の FNV-1a）を記録し、版が違えば `assertDataVersion` が 410 で止める。版を持たない古い記録はそのまま続ける。

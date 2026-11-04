@@ -5,6 +5,7 @@ import { CELLS, type CellId } from '../../src/game/board.ts';
 import { GRANT_KINDS, TERRAINS, type Terrain } from '../../src/data/index.ts';
 import { TERRAIN_COLORS } from '../../src/ui/Board.tsx';
 import type { OnSet } from './JsonEditor.tsx';
+import { valueLabel } from './labels.ts';
 import { deepEqual } from './proposal.ts';
 
 type Square = { terrain: Terrain; bonus: { kind: string; amount: number; terrain?: string } | null };
@@ -70,7 +71,7 @@ export const BoardEditor = ({
               <select value={square.terrain} onChange={(e) => onSet(['squares', selected, 'terrain'], e.target.value)}>
                 {TERRAINS.map((t) => (
                   <option key={t} value={t}>
-                    {t}
+                    {valueLabel(t, 'terrain')}
                   </option>
                 ))}
               </select>
@@ -86,7 +87,7 @@ export const BoardEditor = ({
                 <option value="">（なし）</option>
                 {GRANT_KINDS.filter((k) => k !== 'freeBuildOnTerrain').map((k) => (
                   <option key={k} value={k}>
-                    {k}
+                    {valueLabel(k, 'kind')}
                   </option>
                 ))}
               </select>
@@ -108,7 +109,7 @@ export const BoardEditor = ({
           <tbody>
             {TERRAINS.map((t) => (
               <tr key={t} className={counts[t] === expected[t] ? '' : 'mismatch'}>
-                <th>{t}</th>
+                <th>{valueLabel(t, 'terrain')}</th>
                 <td>{counts[t]}</td>
                 <td>／{expected[t]}</td>
               </tr>

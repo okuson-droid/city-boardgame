@@ -2,6 +2,7 @@
 // 識別子と文言の原本は読むだけにする。元データと違う値には印を付ける。
 
 import { ACTIONS, BUILDINGS, CIV_TAGS, GRANT_KINDS, PAYMENT_KINDS, RAID_EFFECT_KINDS, TERRAINS, TIERS, TILE_EFFECT_KINDS } from '../../src/data/index.ts';
+import { keyLabel, valueLabel } from './labels.ts';
 import { deepEqual, type Path } from './proposal.ts';
 
 export type OnSet = (path: Path, value: unknown) => void;
@@ -74,18 +75,26 @@ const listEnumFor = (key: string): readonly string[] | null => {
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
+/** 読むだけの値の表示。null・真偽は日本語にし、文字はそのまま出す。 */
+const readonlyText = (value: unknown): string => {
+  if (value === null) return '（なし）';
+  if (value === true) return 'はい';
+  if (value === false) return 'いいえ';
+  return typeof value === 'string' ? value : JSON.stringify(value);
+};
+
 const changedClass = (value: unknown, base: unknown): string => (deepEqual(value, base) ? '' : ' changed');
 
 const Primitive = ({ value, base, path, keyName, onSet }: { value: unknown; base: unknown; path: Path; keyName: string; onSet: OnSet }) => {
   const options = enumFor(keyName, path);
   const cls = `field-input${changedClass(value, base)}`;
-  if (READ_ONLY.has(keyName)) return <span className="readonly">{JSON.stringify(value)}</span>;
+  if (READ_ONLY.has(keyName)) return <span className="readonly">{readonlyText(value)}</span>;
   if (options !== null && (typeof value === 'string' || value === null)) {
     return (
       <select className={cls} value={value === null ? '' : value} onChange={(e) => onSet(path, e.target.value === '' ? null : e.target.value)}>
         {options.map((o) => (
           <option key={o ?? ''} value={o ?? ''}>
-            {o ?? '（なし）'}
+            {o === null ? '（なし）' : valueLabel(o, keyName)}
           </option>
         ))}
       </select>
@@ -105,7 +114,7 @@ const Primitive = ({ value, base, path, keyName, onSet }: { value: unknown; base
     return <input className={cls} type="checkbox" checked={value} onChange={(e) => onSet(path, e.target.checked)} />;
   }
   if (value === null) {
-    return <span className="readonly">null</span>;
+    return <span className="readonly">（なし）</span>;
   }
   return <input className={cls} type="text" value={String(value)} onChange={(e) => onSet(path, e.target.value)} />;
 };
@@ -140,7 +149,7 @@ export const JsonEditor = ({
                 checked={value.includes(o)}
                 onChange={(e) => onSet(path, e.target.checked ? [...value, o] : value.filter((v) => v !== o))}
               />
-              {o}
+              {valueLabel(o, keyName)}
             </label>
           ))}
         </span>
@@ -174,7 +183,9 @@ export const JsonEditor = ({
           .filter(([k]) => !skip.includes(k))
           .map(([k, v]) => (
             <div key={k} className="obj-row">
-              <span className="obj-key">{k}</span>
+              <span className="obj-key" title={k}>
+                {keyLabel(k)}
+              </span>
               <JsonEditor value={v} base={baseObj[k]} path={[...path, k]} keyName={k} onSet={onSet} />
             </div>
           ))}

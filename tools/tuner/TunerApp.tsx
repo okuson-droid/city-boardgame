@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { DATA_FILES, isBoardFileName, type DataFiles } from '../../src/data/index.ts';
 import { BoardEditor } from './BoardEditor.tsx';
 import { GitHubSaveError, parseRepo, saveToGitHub } from './github.ts';
+import { keyLabel } from './labels.ts';
 import { JsonEditor, type OnSet } from './JsonEditor.tsx';
 import {
   applyChanges,
@@ -408,7 +409,7 @@ export const TunerApp = () => {
             <ol className="changes">
               {changes.map((c: Change, i) => (
                 <li key={i}>
-                  <span className="muted small">{c.file}</span> {formatPath(base, c)}
+                  <span className="muted small">{c.file}</span> {formatPath(base, c, keyLabel)}
                   <div className="small">
                     <code>{JSON.stringify(c.before)}</code> → <code>{JSON.stringify(c.after)}</code>
                   </div>

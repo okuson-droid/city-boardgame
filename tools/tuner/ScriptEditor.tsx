@@ -20,6 +20,7 @@ import { describeScript } from '../../src/game/icons.ts';
 import { IconRow } from '../../src/ui/Icon.tsx';
 import { iconSequence } from '../../src/game/icons.ts';
 import { JsonEditor } from './JsonEditor.tsx';
+import { keyLabel, valueLabel } from './labels.ts';
 
 type J = Record<string, unknown>;
 
@@ -74,22 +75,25 @@ const MODIFIER_TEMPLATES: Record<(typeof MODIFIER_KINDS)[number], J> = {
 // 入力欄
 // ---------------------------------------------------------------------------
 
+/** 選択欄。表示は日本語の名前（labels.ts）、保存する値は識別子のままである。kind は値の種類を表す項目名。 */
 const Select = ({
   value,
   options,
   onChange,
   empty,
+  kind = '',
 }: {
   value: string | null | undefined;
   options: readonly string[];
   onChange: (v: string | null) => void;
   empty?: string;
+  kind?: string;
 }) => (
   <select value={value ?? ''} onChange={(e) => onChange(e.target.value === '' ? null : e.target.value)}>
     {empty !== undefined ? <option value="">{empty}</option> : null}
     {options.map((o) => (
       <option key={o} value={o}>
-        {o}
+        {valueLabel(o, kind)}
       </option>
     ))}
   </select>
@@ -128,7 +132,7 @@ const AmountEditor = ({ value, onChange }: { value: unknown; onChange: (v: unkno
   const v = (value ?? {}) as J;
   return (
     <span>
-      <Select value={String(v['count'])} options={METRICS} onChange={(c) => onChange({ ...v, count: c })} />
+      <Select value={String(v['count'])} kind="metric" options={METRICS} onChange={(c) => onChange({ ...v, count: c })} />
       <Int value={v['per']} onChange={(n) => onChange({ ...v, per: n })} />
       につき
       <Int value={v['times']} onChange={(n) => onChange({ ...v, times: n })} />
@@ -152,12 +156,12 @@ const ConditionEditor = ({ value, onChange, nullable }: { value: unknown; onChan
   const right = v['right'];
   return (
     <span className="cond">
-      <Select value={String(v['left'])} options={METRICS} onChange={(l) => onChange({ ...v, left: l })} />
-      <Select value={String(v['op'])} options={['>=', '<']} onChange={(o) => onChange({ ...v, op: o })} />
+      <Select value={String(v['left'])} kind="left" options={METRICS} onChange={(l) => onChange({ ...v, left: l })} />
+      <Select value={String(v['op'])} kind="compare" options={['>=', '<']} onChange={(o) => onChange({ ...v, op: o })} />
       {typeof right === 'number' ? (
         <Int value={right} onChange={(n) => onChange({ ...v, right: n })} />
       ) : (
-        <Select value={String(right)} options={METRICS} onChange={(m) => onChange({ ...v, right: m })} />
+        <Select value={String(right)} kind="right" options={METRICS} onChange={(m) => onChange({ ...v, right: m })} />
       )}
       <button type="button" className="btn small" onClick={() => onChange({ ...v, right: typeof right === 'number' ? 'repelLine' : 1 })}>
         {typeof right === 'number' ? '指標と比べる' : '数と比べる'}
@@ -184,24 +188,24 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
   };
   return (
     <div className="command">
-      <Select value={op} options={COMMAND_OPS} onChange={(o) => onChange({ ...COMMAND_TEMPLATES[o as (typeof COMMAND_OPS)[number]] })} />
+      <Select value={op} kind="op" options={COMMAND_OPS} onChange={(o) => onChange({ ...COMMAND_TEMPLATES[o as (typeof COMMAND_OPS)[number]] })} />
       {op === 'gain' ? (
         <>
           <Field label="資源">
-            <Select value={String(value['res'])} options={GAIN_RESOURCES} onChange={(r) => set('res', r)} />
+            <Select value={String(value['res'])} kind="res" options={GAIN_RESOURCES} onChange={(r) => set('res', r)} />
           </Field>
           <Field label="数">
             <AmountEditor value={value['amount']} onChange={(a) => set('amount', a)} />
           </Field>
           <Field label="評価軸">
-            <Select value={value['axis'] as string | undefined} options={SCORE_AXES} empty="（既定）" onChange={(a) => (a === null ? unset('axis') : set('axis', a))} />
+            <Select value={value['axis'] as string | undefined} kind="axis" options={SCORE_AXES} empty="（既定）" onChange={(a) => (a === null ? unset('axis') : set('axis', a))} />
           </Field>
         </>
       ) : null}
       {op === 'raise' ? (
         <>
           <Field label="トラック">
-            <Select value={String(value['track'])} options={['military', 'infra']} onChange={(t) => set('track', t)} />
+            <Select value={String(value['track'])} kind="track" options={['military', 'infra']} onChange={(t) => set('track', t)} />
           </Field>
           <Field label="数">
             <Int value={value['amount']} onChange={(n) => set('amount', n)} />
@@ -214,7 +218,7 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
             <Int value={value['count']} onChange={(n) => set('count', n)} />
           </Field>
           <Field label="種類">
-            <Select value={String(value['tile'])} options={['match', 'any', ...TERRAINS]} onChange={(t) => set('tile', t)} />
+            <Select value={String(value['tile'])} kind="tile" options={['match', 'any', ...TERRAINS]} onChange={(t) => set('tile', t)} />
           </Field>
         </>
       ) : null}
@@ -238,14 +242,14 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
                         set('buildings', next.length === 0 ? null : next);
                       }}
                     />
-                    {b}
+                    {valueLabel(b, 'building')}
                   </label>
                 );
               })}
             </span>
           </Field>
           <Field label="地形">
-            <Select value={value['terrain'] as string | null} options={TERRAINS} empty="（任意）" onChange={(t) => set('terrain', t)} />
+            <Select value={value['terrain'] as string | null} kind="terrain" options={TERRAINS} empty="（任意）" onChange={(t) => set('terrain', t)} />
           </Field>
           <Check label="金を払う" value={value['payGold']} onChange={(b) => set('payGold', b)} />
           <Check label="資材を払う" value={value['payMaterials']} onChange={(b) => set('payMaterials', b)} />
@@ -334,13 +338,13 @@ const FilterEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void 
   return (
     <span className="filter">
       {FILTER_FIELDS.map(({ key, options }) => (
-        <Field key={key} label={key}>
+        <Field key={key} label={keyLabel(key)}>
           {options === 'bool' ? (
             <input type="checkbox" checked={value[key] === true} onChange={(e) => set(key, e.target.checked)} />
           ) : options === 'cond' ? (
             <ConditionEditor value={value[key]} onChange={(c) => set(key, c)} nullable />
           ) : (
-            <Select value={value[key] as string | undefined} options={options} empty="（指定なし）" onChange={(v) => set(key, v)} />
+            <Select value={value[key] as string | undefined} kind={key} options={options} empty="（指定なし）" onChange={(v) => set(key, v)} />
           )}
         </Field>
       ))}
@@ -353,10 +357,10 @@ const ModifierEditor = ({ value, onChange }: { value: J; onChange: (v: J) => voi
   const set = (key: string, v: unknown): void => onChange({ ...value, [key]: v });
   return (
     <span className="modifier">
-      <Select value={kind} options={MODIFIER_KINDS} onChange={(k) => onChange({ ...MODIFIER_TEMPLATES[k as (typeof MODIFIER_KINDS)[number]] })} />
+      <Select value={kind} kind="kind" options={MODIFIER_KINDS} onChange={(k) => onChange({ ...MODIFIER_TEMPLATES[k as (typeof MODIFIER_KINDS)[number]] })} />
       {kind === 'buildCost' ? (
         <>
-          <Select value={String(value['building'])} options={BUILDINGS} onChange={(b) => set('building', b)} />
+          <Select value={String(value['building'])} kind="building" options={BUILDINGS} onChange={(b) => set('building', b)} />
           <Field label="資材">
             <Int value={value['materials']} onChange={(n) => set('materials', n)} />
           </Field>
@@ -403,11 +407,11 @@ const AbilityEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
   return (
     <div className="ability">
       <div className="ability-head">
-        <Select value={ability} options={ABILITY_NAMES} onChange={(a) => onChange({ ...ABILITY_TEMPLATES[a as (typeof ABILITY_NAMES)[number]] })} />
+        <Select value={ability} kind="ability" options={ABILITY_NAMES} onChange={(a) => onChange({ ...ABILITY_TEMPLATES[a as (typeof ABILITY_NAMES)[number]] })} />
         {ability === 'on' ? (
           <>
             <Field label="出来事">
-              <Select value={String(value['event'])} options={EVENT_NAMES} onChange={(e) => set('event', e)} />
+              <Select value={String(value['event'])} kind="event" options={EVENT_NAMES} onChange={(e) => set('event', e)} />
             </Field>
             <Field label="N回ごと">
               <input
@@ -427,7 +431,7 @@ const AbilityEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
             <Field label="支払い">
               {pay ? (
                 <span>
-                  <Select value={String(pay['res'])} options={['gold', 'materials']} onChange={(r) => set('pay', { ...pay, res: r })} />
+                  <Select value={String(pay['res'])} kind="res" options={['gold', 'materials']} onChange={(r) => set('pay', { ...pay, res: r })} />
                   <Int value={pay['amount']} onChange={(n) => set('pay', { ...pay, amount: n })} />
                   <button type="button" className="btn small" onClick={() => set('pay', null)}>
                     なし

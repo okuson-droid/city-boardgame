@@ -202,8 +202,8 @@ export const changedFiles = (proposal: Proposal, work: DataFiles): DataFiles => 
   return Object.fromEntries(names.map((name) => [name, work[name]]));
 };
 
-/** 変更点の位置を読みやすくする。配列の要素は id があれば id で示す。 */
-export const formatPath = (base: DataFiles, change: Change): string => {
+/** 変更点の位置を読みやすくする。配列の要素は id があれば id で示す。label で項目名を言い換えられる（画面では日本語にする）。 */
+export const formatPath = (base: DataFiles, change: Change, label: (key: string) => string = (key) => key): string => {
   const parts: string[] = [];
   let current: unknown = base[change.file];
   for (const key of change.path) {
@@ -212,7 +212,7 @@ export const formatPath = (base: DataFiles, change: Change): string => {
       const id = isObject(item) && (typeof item['id'] === 'string' || typeof item['id'] === 'number') ? item['id'] : null;
       parts.push(id !== null ? `[${String(id)}]` : `[${key}]`);
     } else {
-      parts.push(parts.length === 0 ? key : `.${key}`);
+      parts.push(parts.length === 0 ? label(key) : `.${label(key)}`);
     }
     current = getAt(current, [key]);
   }
