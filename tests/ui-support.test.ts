@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { applyMove, createGame, getOptions, isGameOver } from '../src/game/engine.ts';
 import { explain, explainUndo } from '../src/game/explain.ts';
-import { pendingBuildCost, sceneOf } from '../src/game/queries.ts';
+import { describeActionSpace, pendingBuildCost, sceneOf } from '../src/game/queries.ts';
+import { ACTIONS, TIERS } from '../src/data/types.ts';
 import { createRng, nextInt } from '../src/game/rng.ts';
 import { targetOf } from '../src/game/targets.ts';
 import { edit, firstTurn, ids, me, play, top, withoutCharacters } from './helpers/game.ts';
@@ -109,6 +110,13 @@ describe('queries（画面のための派生値）', () => {
     }
     for (const heading of headings) expect(heading.length).toBeLessThanOrEqual(10);
     expect(headings.size).toBeGreaterThan(3);
+  });
+
+  it('アクションスペースの効果文は、30スペースすべてで params.json の数値から組み立てる', () => {
+    // rules.md v0.8 6-3（各アクションの段階ごとの効果）
+    for (const action of ACTIONS) for (const tier of TIERS) expect(describeActionSpace(action, tier).length).toBeGreaterThan(5);
+    expect(describeActionSpace('import', 'normal')).toBe('金3を払って資材1を得る交換を、最大3回行う。');
+    expect(describeActionSpace('research', 'top')).toBe('文明カードを5枚引き、手札から2枚捨てる。');
   });
 
   it('建設の選択中はコストの見込み（割引・軽減を含む）を返す', () => {

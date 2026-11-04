@@ -4,7 +4,7 @@
 import type { ReactNode } from 'react';
 import type { GroupKind, IconToken } from '../game/icons.ts';
 import { ACTION_ART, ICON_ART } from './icon-art.ts';
-import { Tip } from './Tip.tsx';
+import { iconTipText, Tip, useTipContext } from './Tip.tsx';
 
 const COLORS: Record<string, string> = {
   res: '#c9a227',
@@ -71,7 +71,8 @@ const glyphOf = (token: IconToken): string => {
 export const Icon = ({ token, size = 'md' }: { token: IconToken; size?: 'sm' | 'md' }) => {
   const art = artOf(token.icon);
   const hasValue = token.value !== undefined && token.icon !== 'num';
-  const tip = `${token.label}${hasValue ? ` ${String(token.value)}` : ''}`;
+  // カーソルを合わせると、アイコンの語に続けて、囲む効果の文章を出す。
+  const tip = iconTipText(`${token.label}${hasValue ? ` ${String(token.value)}` : ''}`, useTipContext());
   // 得点は数字を輪の中に入れる（4-2）。
   const inside = token.icon === 'res.points' && hasValue;
   return (

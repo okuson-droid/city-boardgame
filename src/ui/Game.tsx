@@ -17,6 +17,7 @@ import { DraftView, FinalScores, HandArea, PlayerStatus, SharedArea } from './Ar
 import { Board, type CellState } from './Board.tsx';
 import { buildModel, colorOf, waitingModel, WAITING_REASON, type Choice } from './model.ts';
 import { PromptBar } from './PromptBar.tsx';
+import { LegendButton } from './Legend.tsx';
 import { Tip } from './Tip.tsx';
 
 export type Settings = { speed: 'standard' | 'fast' | 'none'; follow: boolean };
@@ -193,6 +194,7 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
         <button type="button" className="btn pane-toggle" data-ui="pane" onClick={() => setPane(pane === 'shared' ? 'personal' : 'shared')}>
           {pane === 'shared' ? '個人領域' : '共有の場'}
         </button>
+        <LegendButton />
         <Tip text={undoReason}>
           <button type="button" className="btn" data-ui="undo" aria-disabled={undoReason !== null} disabled={undoReason !== null} onClick={undo}>
             取り消し

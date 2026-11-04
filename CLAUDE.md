@@ -46,7 +46,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `src/game/explain.ts` | `explain`・`explainUndo`：選べない理由 |
 | `src/game/deltas.ts` | 増減の出来事（`delta`）。選択1つの処理（cause＝move）と自動の処理（cause＝タスクの種類）ごとに記録する |
 | `src/game/queries.ts` | 画面のための派生値（場面の見出し、アクションスペースのアイコン、コストの見込み、ワーカーの内訳など） |
-| `src/ui/` | ローカル版の画面（React）。`Game.tsx`（全体）・`ActionBoard.tsx`・`Board.tsx`（SVG の個人ボード）・`Areas.tsx`（共有の場・手持ち・履歴・ドラフト・終了時の得点）・`PromptBar.tsx`・`Cards.tsx`・`Icon.tsx`（仮のアイコン素材）・`Tip.tsx`（補足表示）・`model.ts`（選択肢の振り分け） |
+| `src/ui/` | ローカル版の画面（React）。`Game.tsx`（全体）・`ActionBoard.tsx`・`Board.tsx`（SVG の個人ボード）・`Areas.tsx`（共有の場・手持ち・履歴・ドラフト・終了時の得点）・`PromptBar.tsx`・`Cards.tsx`・`Icon.tsx`（仮のアイコン素材）・`Tip.tsx`（補足表示と HoverTip）・`Legend.tsx`（アイコンの一覧）・`model.ts`（選択肢の振り分け） |
 | `e2e/accept.ts` | 受け入れ検査（Playwright の自動対戦） |
 | `e2e/online.ts` | オンライン版の受け入れ検査（3つのブラウザで1局、再接続とサーバーの再起動を含む） |
 | `src/online/rooms.ts` | 部屋（作成・入室・選択・取り消し・記録からの再生）と伏せた写し（`viewFor`） |
@@ -113,6 +113,8 @@ npm run accept:supabase  # Supabase の模擬に対するオンライン版の�
 
 ## 画面の約束事
 
+- 補足表示：`Tip` は子要素に `data-tip` を付け、文章を `TipContext` で子孫に渡す。PC はカーソルを合わせると `HoverTip`（画面に1つ、`App` に置く）が最も近い `data-tip` を吹き出しで出し、スマホは長押しで出す。アイコンは自身の語に続けて、囲む `Tip` の効果文を出す（ユーザー決定 2026-11-04）。アクションスペースの効果文は `describeActionSpace`（queries.ts）。
+- アイコンの一覧は `Legend.tsx`（上部の「アイコン一覧」、`data-ui="legend"`）。対応表の全要素・10アクション・並べ方の約束の例を出し、語の補足は styleguide-icons.md 4-3 に従う。
 - 画面はルールを計算しない（ui_design.md 0-2）。選択肢は `getOptions`、画面要素の対応は `targetOf`、選べない理由は `explain`、派生値は `queries.ts` だけから得る。
 - ゲームを進める所作の要素には `data-target`（選択肢の識別子、または `pen:<建物>`・`free-panel` などの画面内の操作）を付ける。受け入れ検査はこの属性を持つ要素だけをクリックする。タブ・取り消し・設定など、ゲームを進めない要素は `data-ui` にする。
 - 手札の要素には `data-hand-card` と `data-owner` を付ける。受け入れ検査はこれで他人の手札の漏れを数える。手札の内容は、表示中のタブが画面の持ち主（選択待ちのプレイヤー）のときだけ描く。

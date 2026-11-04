@@ -7,6 +7,8 @@ import type { GameState } from '../game/types.ts';
 import { LocalGame, type Settings } from './Game.tsx';
 import { detectTransport, type Session, type Transport } from '../online/client.ts';
 import { OnlineEntry, OnlineGame } from './Online.tsx';
+import { LegendButton } from './Legend.tsx';
+import { HoverTip } from './Tip.tsx';
 
 const readSettings = (): Settings => {
   const params = new URLSearchParams(window.location.hash.slice(1));
@@ -19,7 +21,7 @@ const readSettings = (): Settings => {
 
 const randomSeed = (): number => Number(String(Date.now()).slice(-9));
 
-export const App = () => {
+const Screen = () => {
   const [settings, setSettings] = useState<Settings>(readSettings);
   const [game, setGame] = useState<GameState | null>(null);
   const [players, setPlayers] = useState(GAME_DATA.params.playerCount.min);
@@ -75,7 +77,18 @@ export const App = () => {
       <button type="button" className="btn primary" data-target="start" onClick={() => setGame(createGame({ playerCount: players }, seed))}>
         はじめる
       </button>
+      <div className="start-row">
+        <LegendButton />
+      </div>
       {transport !== null ? <OnlineEntry transport={transport} onEnter={setSession} /> : null}
     </div>
   );
 };
+
+/** 画面全体。カーソルを合わせたときの補足（HoverTip）は、どの画面にも1つだけ置く。 */
+export const App = () => (
+  <>
+    <Screen />
+    <HoverTip />
+  </>
+);

@@ -3,7 +3,7 @@
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
 import { ACTIONS, TIERS, type Action, type Tier } from '../data/types.ts';
 import { explain } from '../game/explain.ts';
-import { actionSpaceIcons, isSharedSpace, isTopUnlocked, spaceUsers, unlockIcons } from '../game/queries.ts';
+import { actionSpaceIcons, describeActionSpace, isSharedSpace, isTopUnlocked, spaceUsers, unlockIcons } from '../game/queries.ts';
 import type { GameState } from '../game/types.ts';
 import { IconRow } from './Icon.tsx';
 import { colorOf, WAITING_REASON, type UiModel } from './model.ts';
@@ -56,7 +56,7 @@ export const ActionBoard = ({
             const shared = isSharedSpace(action, tier);
             const reason = option !== undefined ? null : model.waiting ? WAITING_REASON : explain(state, { kind: 'actionSpace', action, tier });
             return (
-              <Tip key={tier} text={reason}>
+              <Tip key={tier} text={`${ACTION_LABELS[action]}（${tierLabel(tier)}）：${describeActionSpace(action, tier)}${reason !== null ? `\n${reason}` : ''}`}>
                 <button
                   type="button"
                   className={`ab-space${shared ? ' ab-shared' : ''}${option ? ' selectable' : ' disabled'}`}

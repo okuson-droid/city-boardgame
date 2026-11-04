@@ -96,6 +96,57 @@ export const actionSpaceIcons = (action: Action, tier: Tier, d: GameData = GAME_
   }
 };
 
+/** アクションスペースの効果文（補足表示用、params.json から組み立てる）。 */
+export const describeActionSpace = (action: Action, tier: Tier, d: GameData = GAME_DATA): string => {
+  const a = d.params.actions;
+  const upTo = (isMax: boolean): string => (isMax ? '最大' : '');
+  switch (action) {
+    case 'pioneer': {
+      const s = a.pioneer[tier];
+      return `土地タイルを最大${s.maxTiles}枚置く。${s.materialDiscount > 0 ? `資材のコストを${s.materialDiscount}軽減する。` : ''}`;
+    }
+    case 'build': {
+      const s = a.build[tier];
+      const discounts = [s.goldDiscount > 0 ? `金${s.goldDiscount}` : '', s.materialDiscount > 0 ? `資材${s.materialDiscount}` : ''].filter((t) => t !== '');
+      return `建物を最大${s.maxBuildings}軒建てる。${discounts.length > 0 ? `コストを${discounts.join('・')}軽減する。` : ''}`;
+    }
+    case 'import': {
+      const s = a.import[tier];
+      return `金${s.payGold}を払って資材${s.gainMaterials}を得る交換を、最大${s.maxTimes}回行う。${s.bonusMaterials > 0 ? `交換すると資材${s.bonusMaterials}を追加で得る。` : ''}`;
+    }
+    case 'export': {
+      const s = a.export[tier];
+      return `資材${s.payMaterials}を払って金${s.gainGold}を得る交換を、最大${s.maxTimes}回行う。${s.bonusGold > 0 ? `交換すると金${s.bonusGold}を追加で得る。` : ''}`;
+    }
+    case 'drill': {
+      const s = a.drill[tier];
+      return `金${s.payGold}を払って軍事力トークン${s.gainTokens}を得る。続けて軍事力トークンを払い、軍事レベルを最大${s.maxRaises}上げる。`;
+    }
+    case 'expedition': {
+      const s = a.expedition.selection[tier];
+      return s.mode === 'distinct'
+        ? `軍事力トークンを払い、軍事レベル以下の遠征の報酬から、異なるものを最大${s.max}つ得る。`
+        : `軍事力トークンを払い、軍事レベル以下の遠征の報酬を合計${s.total}個まで得る（同じ報酬は${s.maxSame}個まで）。`;
+    }
+    case 'welfare': {
+      const s = a.welfare[tier];
+      return `資材${s.payMaterials}を払ってインフラレベルを${s.infra}上げる。${s.tempWorkers > 0 ? `臨時ワーカー${s.tempWorkers}人を得る。` : ''}`;
+    }
+    case 'migration': {
+      const s = a.migration[tier];
+      return `${s.tempWorkers > 0 ? `臨時ワーカー${s.tempWorkers}人と、` : ''}通常ワーカーを${upTo(s.regularWorkersIsMax)}${s.regularWorkers}人得る。`;
+    }
+    case 'research': {
+      const s = a.research[tier];
+      return `文明カードを${s.draw}枚引き、手札から${s.discard}枚捨てる。`;
+    }
+    case 'spread': {
+      const s = a.spread[tier];
+      return `文明カードを${upTo(s.cardsIsMax)}${s.maxCards}枚プレイする。${s.goldPerCard > 0 ? `1枚プレイするごとに金${s.goldPerCard}を得る。` : ''}`;
+    }
+  }
+};
+
 /** 最上位アクションの解放条件のアイコン（6-3 の各最上位解放条件）。 */
 export const unlockIcons = (condition: UnlockCondition): IconToken[] => {
   switch (condition.metric) {
