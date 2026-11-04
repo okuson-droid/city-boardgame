@@ -18,7 +18,8 @@
 
 保存に使うトークンを作る。
 
-1. GitHub の右上のアイコン → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token。
+1. https://github.com/settings/personal-access-tokens/new を開く（作成画面に直接入る）。
+   画面から辿る場合は、右上の自分のアイコン → Settings（リポジトリの Settings ではなく、アカウントの Settings）→ 左の列の一番下の Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token。
 2. 次のとおりに設定する。
    - Token name：任意（例：`city-boardgame-tuner`）
    - Expiration：任意（期限が切れたら作り直す）
