@@ -26,7 +26,7 @@ GitHub Pages に置いた画面から、Supabase を通してオンラインで�
 1. https://supabase.com でプロジェクトを作る。
 2. SQL Editor で `supabase/migrations/20261103000000_rooms.sql` の内容を実行し、`rooms` テーブルを作る。
 3. Project Settings → API（または API Keys）で次の2つを控える。
-   - Project URL（`https://<project-ref>.supabase.co`）
+   - Project URL（`https://<project-ref>.supabase.co`）。末尾に `/rest/v1/` が付いた URL が表示された場合も、画面のビルドがパスを捨てて読むためそのまま使える。
    - anon（または publishable）の鍵。公開してよい鍵である。**service_role（secret）の鍵は控えない・どこにも貼らない。**
 4. Realtime の設定で、公開のチャンネル（public channels）を許可しておく（既定で許可されている）。
 

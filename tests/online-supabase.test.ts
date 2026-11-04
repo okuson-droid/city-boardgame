@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { decider, getOptions } from '../src/game/engine.ts';
+import { projectOrigin } from '../src/online/client.ts';
 import { createRequestHandler, postgrestStore } from '../src/online/edge.ts';
 import { handleAction, memoryStore, type Credentials, type RoomView, type ServiceDeps, type StoredRoom } from '../src/online/service.ts';
 
@@ -133,5 +134,14 @@ describe('PostgREST の保存先', () => {
     expect(await store.get('ABC234')).toBeNull();
     expect(calls[0]).toMatchObject({ method: 'PATCH', prefer: 'return=representation' });
     expect(calls[0]?.url).toBe('https://p.supabase.co/rest/v1/rooms?code=eq.ABC234&version=eq.3');
+  });
+});
+
+describe('画面の Supabase の設定', () => {
+  it('Project URL に REST の入口や末尾の斜線が付いていても、プロジェクトの起点にそろえる', () => {
+    // 段階5（Supabase 版、ユーザー決定 2026-11-03）
+    expect(projectOrigin('https://abc.supabase.co/rest/v1/')).toBe('https://abc.supabase.co');
+    expect(projectOrigin(' https://abc.supabase.co/ ')).toBe('https://abc.supabase.co');
+    expect(projectOrigin('https://abc.supabase.co')).toBe('https://abc.supabase.co');
   });
 });

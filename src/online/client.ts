@@ -182,12 +182,24 @@ export const supabaseTransport = (config: SupabaseClientConfig): Transport => {
   };
 };
 
+/**
+ * Project URL を、プロジェクトの起点（https://<ref>.supabase.co）にそろえる。
+ * ダッシュボードには REST の入口（…/rest/v1/）付きの URL も出るため、パスは捨てる。
+ */
+export const projectOrigin = (url: string): string => {
+  try {
+    return new URL(url.trim()).origin;
+  } catch {
+    return url.trim().replace(/\/+$/, '');
+  }
+};
+
 /** ビルド時に与えた Supabase の設定。無ければ null。anon（publishable）の鍵は公開してよい鍵である。 */
 export const supabaseConfig = (): SupabaseClientConfig | null => {
   const url = import.meta.env['VITE_SUPABASE_URL'];
   const anonKey = import.meta.env['VITE_SUPABASE_ANON_KEY'];
   if (typeof url !== 'string' || url === '' || typeof anonKey !== 'string' || anonKey === '') return null;
-  return { url: url.replace(/\/+$/, ''), anonKey };
+  return { url: projectOrigin(url), anonKey };
 };
 
 /** 使える通信先。Supabase の設定があればそれを、無ければ同じオリジンの自前のサーバーを探す。どちらも無ければ null。 */
