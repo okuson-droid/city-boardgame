@@ -19,6 +19,9 @@ const readSettings = (): Settings => {
   };
 };
 
+/** 公開ページのチューナーの場所（GitHub Actions のビルドで与える）。無ければリンクを出さない。 */
+const TUNER_URL = String(import.meta.env['VITE_TUNER_URL'] ?? '');
+
 const randomSeed = (): number => Number(String(Date.now()).slice(-9));
 
 const Screen = () => {
@@ -33,7 +36,8 @@ const Screen = () => {
   const [transport, setTransport] = useState<Transport | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   useEffect(() => {
-    void detectTransport().then(setTransport);
+    // 試遊（調整案のデータ）ではオンライン版を出さない。サーバーのデータと食い違うためである。
+    if (!TUNER_PLAYTEST) void detectTransport().then(setTransport);
   }, []);
 
   if (session !== null && transport !== null) {
@@ -79,6 +83,11 @@ const Screen = () => {
       </button>
       <div className="start-row">
         <LegendButton />
+        {TUNER_URL !== '' && !TUNER_PLAYTEST ? (
+          <a className="btn" data-ui="tuner-link" href={TUNER_URL}>
+            データを編集する（チューナー）
+          </a>
+        ) : null}
       </div>
       {transport !== null ? <OnlineEntry transport={transport} onEnter={setSession} /> : null}
     </div>

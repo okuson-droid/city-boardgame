@@ -2,7 +2,7 @@
 // 対局は「設定・シード・選択の列」として記録し、再生で状態を作り直す（サーバーの再起動後も続きから遊べる）。
 // 通信や鍵の照合はサーバー（server/main.ts）が行い、ここには画面にも通信にも依存しない処理だけを置く。
 
-import { GAME_DATA } from '../data/index.ts';
+import { DATA_VERSION, GAME_DATA } from '../data/index.ts';
 import type { GameData } from '../data/types.ts';
 import { applyMove, createGame, decider, getOptions } from '../game/engine.ts';
 import { undoLast } from '../game/history.ts';
@@ -15,6 +15,8 @@ export type RoomRecord = {
   readonly code: string;
   readonly playerCount: number;
   readonly createdAt: string;
+  /** 部屋を作ったときのデータの版（DATA_VERSION）。この版と異なるデータでは対局を続けない。古い記録には無い。 */
+  readonly dataVersion?: string;
   seats: SeatRecord[];
   /** 全席が埋まって対局を始めたときのシード。始まる前は null。 */
   seed: number | null;
@@ -66,7 +68,15 @@ export const createRoom = (
     throw new RoomError(400, `対応していないプレイ人数である：${playerCount}`);
   }
   return {
-    record: { code, playerCount, createdAt: now.toISOString(), seats: [{ name: validName(name), keyHash }], seed: null, moves: [] },
+    record: {
+      code,
+      playerCount,
+      createdAt: now.toISOString(),
+      dataVersion: DATA_VERSION,
+      seats: [{ name: validName(name), keyHash }],
+      seed: null,
+      moves: [],
+    },
     state: null,
   };
 };
@@ -83,8 +93,19 @@ export const joinRoom = (room: Room, name: string, keyHash: string, seed: number
   return seat;
 };
 
-/** 記録から部屋を作り直す（選択の列を再生する）。 */
-export const loadRoom = (record: RoomRecord, d: GameData = GAME_DATA): Room => {
+/**
+ * 部屋のデータの版が、いま使っているデータの版と同じか確かめる。違えば例外。
+ * データの更新は進行中の対局に反映しない（ユーザー決定 2026-11-04）。選択の列を新しいデータで再生すると局面が食い違うためである。
+ */
+export const assertDataVersion = (record: RoomRecord, current: string = DATA_VERSION): void => {
+  if (record.dataVersion !== undefined && record.dataVersion !== current) {
+    throw new RoomError(410, 'ゲームのデータが更新されたため、この部屋の対局は続けられない。新しい部屋を作ること');
+  }
+};
+
+/** 記録から部屋を作り直す（選択の列を再生する）。データの版が違う部屋は作り直さない。 */
+export const loadRoom = (record: RoomRecord, d: GameData = GAME_DATA, version: string = DATA_VERSION): Room => {
+  assertDataVersion(record, version);
   if (record.seed === null) return { record, state: null };
   let state = createGame({ playerCount: record.playerCount, playerNames: record.seats.map((s) => s.name) }, record.seed, d);
   for (const { move } of record.moves) state = applyMove(state, move, d);

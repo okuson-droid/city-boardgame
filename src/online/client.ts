@@ -67,7 +67,15 @@ export type Transport = {
   readonly join: (code: string, name: string) => Promise<Credentials>;
   readonly move: (session: Session, move: string, logLength: number) => Promise<unknown>;
   readonly undo: (session: Session) => Promise<unknown>;
-  readonly subscribe: (session: Session, onMessage: (message: RoomMessage) => void, onStatus: (connected: boolean) => void) => () => void;
+  /**
+   * 局面の知らせを受け取る。onStatus の fatal は、繋ぎ直しても回復しない誤り（部屋が無い、データの版が変わった）の文章で、
+   * このとき購読は止まる。
+   */
+  readonly subscribe: (
+    session: Session,
+    onMessage: (message: RoomMessage) => void,
+    onStatus: (connected: boolean, fatal?: string) => void,
+  ) => () => void;
 };
 
 const normalizeCode = (code: string): string => code.trim().toUpperCase();
@@ -89,6 +97,17 @@ export const serverTransport: Transport = {
   },
 };
 
+/** 通信先が返した誤り（状態コード付き）。 */
+export class TransportError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'TransportError';
+    this.status = status;
+  }
+}
+
 export type SupabaseClientConfig = { readonly url: string; readonly anonKey: string };
 
 /** 知らせが届いている間も、取りこぼしに備えて取りに行く間隔。 */
@@ -105,7 +124,7 @@ export const supabaseTransport = (config: SupabaseClientConfig): Transport => {
       body: JSON.stringify(body),
     });
     const value = (await res.json().catch(() => ({ error: res.statusText }))) as T & { error?: string };
-    if (!res.ok) throw new Error(value.error ?? res.statusText);
+    if (!res.ok) throw new TransportError(res.status, value.error ?? res.statusText);
     return value;
   };
   // 自分の選択が通ったら、知らせを待たずに局面を取りに行く。
@@ -143,8 +162,16 @@ export const supabaseTransport = (config: SupabaseClientConfig): Transport => {
               onMessage({ summary: view.summary, seat: view.seat, state: view.state });
             }
           }
-        } catch {
-          if (!stopped) onStatus(false);
+        } catch (error) {
+          if (!stopped) {
+            // 部屋が無い・データの版が変わった（410）は繋ぎ直しても回復しないため、取りに行くのをやめる。
+            if (error instanceof TransportError && (error.status === 404 || error.status === 410)) {
+              stopped = true;
+              onStatus(false, error.message);
+            } else {
+              onStatus(false);
+            }
+          }
         } finally {
           inflight = false;
         }

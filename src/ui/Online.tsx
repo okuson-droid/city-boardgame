@@ -102,15 +102,33 @@ export const OnlineGame = ({
   const [connected, setConnected] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [fatal, setFatal] = useState<string | null>(null);
 
-  useEffect(() => transport.subscribe(session, (m) => setMessage(m), setConnected), [transport, session]);
+  useEffect(
+    () =>
+      transport.subscribe(
+        session,
+        (m) => setMessage(m),
+        (ok, error) => {
+          setConnected(ok);
+          if (error !== undefined) setFatal(error);
+        },
+      ),
+    [transport, session],
+  );
 
   const state = message?.state ?? null;
   if (message === null || state === null) {
     return (
       <div className="start" data-ui="lobby">
         <h1>部屋 {session.code}</h1>
-        <p className="muted">{connected ? 'サーバーにつながっている' : 'サーバーに接続しています…'}</p>
+        {fatal !== null ? (
+          <p className="error" data-ui="online-fatal">
+            {fatal}
+          </p>
+        ) : (
+          <p className="muted">{connected ? 'サーバーにつながっている' : 'サーバーに接続しています…'}</p>
+        )}
         <p>
           ルームコード <strong data-ui="room-code">{session.code}</strong> を他のプレイヤーに伝え、全員がそろうと始まる。
         </p>
@@ -145,7 +163,7 @@ export const OnlineGame = ({
     // チェックポイントの後でなければ、直前の選択をしたのは選択待ちの席である（手番の交代はチェックポイント）。
     undoReason: explainUndo(state) ?? (mine ? null : '直前の選択をした席だけが取り消せる'),
     busy,
-    message: !connected ? 'サーバーとの接続が切れた。繋ぎ直しています…' : notice,
+    message: fatal ?? (!connected ? 'サーバーとの接続が切れた。繋ぎ直しています…' : notice),
   };
   return <Game ctl={ctl} settings={settings} onRestart={onLeave} />;
 };

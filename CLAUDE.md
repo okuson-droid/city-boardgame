@@ -14,6 +14,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 - 完了：3-5 チューナー（`tools/tuner/`、`npm run tuner`）。main に取り込み済み。指示書の段階1〜4とチューナーはすべて完了した。検証（シミュレーションによる比較）は別の指示書で扱う。
 - 完了：演出の残り（ui_design.md 4節：増減のまとめ、トラックの1段ずつの表示、ラウンドの区切りの画面、置いたマスの強調、履歴からの強調）。main に取り込み済み。
 - 完了：オンライン化（段階5、`server/`・`src/online/`）。受け入れ検査（`npm run accept:online`）は合格。main に取り込み済み。
+- 作業中：公開ページのチューナー（案A、ユーザー決定 2026-11-04、`docs/tuner-pages.md`）。GitHub への保存は模擬の API で単体テストを行った。本物の GitHub への保存は未確認。
 - 完了：オンライン版の Supabase 化と GitHub Pages への配置（ユーザー決定 2026-11-03、`docs/online-supabase.md`）。模擬に対する受け入れ検査（`npm run accept:supabase`）は合格。main に取り込み済み。本物の Supabase では、Edge Function とテーブルが動き部屋を作れることを確かめた（2026-11-04）。Project URL はパスを捨てて起点だけを使う（`projectOrigin`）。
 
 ## 構成
@@ -60,6 +61,8 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `.github/workflows/pages.yml` | GitHub Pages への配置と Edge Function の配置 |
 | `src/ui/Online.tsx` | オンライン版の入口（部屋を作る・入る・続きから）と対局画面 |
 | `server/main.ts` | オンライン版のサーバー（node:http だけ、SSE＋HTTP）。`server/vite.config.ts` で `dist-server/main.js` にまとめる |
+| `tools/tuner/github.ts` | 公開ページのチューナーの GitHub への保存（Git Data API で1つの commit、保存先の最新に変更点を適用し直す） |
+| `tools/tuner/vite.pages.config.ts` | 公開ページ用のチューナーのビルド（`dist/tuner/index.html`・`play.html`） |
 | `tools/tuner/` | チューナー。`proposal.ts`（調整案の作成・差分・適用・保存と読み込み・検査・Markdown）、`TunerApp.tsx`（画面）、`JsonEditor.tsx`（汎用フォーム）、`ScriptEditor.tsx`（効果を命令と引数の単位で編集）、`BoardEditor.tsx`（個人ボード）、`vite.config.ts`（開発サーバーと書き戻しの口）、`play.html`（試遊） |
 | `scripts/import-design.ts` | `design/` から characters・special_citizens・raid_cards・cards_civilization を取り込む |
 | `scripts/generate-boards.ts` | 仮置きの個人ボードをシード付きで生成する |
@@ -77,6 +80,7 @@ npm run import:design # design/ からデータを取り込み直す
 npm run gen:data      # 仮置きの個人ボードを生成し直す
 npm run accept        # ビルドして受け入れ検査（自動対戦3局、数分かかる）
 npm run tuner         # チューナーの開発サーバー（/tools/tuner/index.html）
+npm run build:tuner   # 公開ページ用のチューナーを dist/tuner/ にビルドする（npm run build の後に行う）
 npm run icons:preview # アイコンの見本 docs/icon-preview.html を生成する
 npm run server        # クライアントとサーバーをビルドしてオンライン版を起動（PORT・HOST・ROOMS_DIR で設定、既定 8787）
 npm run accept:online # オンライン版の受け入れ検査
@@ -133,6 +137,9 @@ npm run accept:supabase  # Supabase の模擬に対するオンライン版の�
 - 試遊は `tools/tuner/play.html` が調整案のデータを `globalThis.__TUNER_FILES__` に置き、`src/data/index.ts` がチューナーの開発サーバー（`VITE_TUNER=1`）のときだけそれを読む。配布用ビルドには含まれない。
 - 書き出しは開発サーバーの `POST /__tuner/export` が受け、`src/data/` に既にあるゲームデータの JSON（`icon_keys.json` を除く）だけを書き換える。あわせて変更点の一覧を Markdown で出し、ユーザーが claude/tuning_log.md に転記する。
 - 識別子・原本の文言・仮置きの印・プレイ条件と効果適用条件は、チューナーでは読むだけにする。
+- 公開ページのチューナー（案A、ユーザー決定 2026-11-04）：開発サーバーへの書き出しの代わりに「GitHub に保存」を使う。トークン（Contents の読み書きだけの fine-grained PAT）はユーザーが貼り、ブラウザにだけ置く。リポジトリの初期値はビルド時の `VITE_GITHUB_REPO`、ゲームからのリンクは `VITE_TUNER_URL`（どちらも `pages.yml` が与える）。
+- `index.html`・`play.html` の入口と試遊ページへのリンクは相対パスで書く（開発サーバーと公開ページの両方で動かすため）。試遊ページではオンライン版を出さない。
+- データの更新は進行中の対局に反映しない（ユーザー決定 2026-11-04）。部屋は作成時の `DATA_VERSION`（データ一式の FNV-1a）を記録し、版が違えば `assertDataVersion` が 410 で止める。版を持たない古い記録はそのまま続ける。
 
 ## オンライン版の約束事（段階5、ユーザー決定 2026-11-03）
 

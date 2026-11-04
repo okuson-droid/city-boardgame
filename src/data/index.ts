@@ -129,6 +129,23 @@ const tunerFiles: DataFiles | undefined = import.meta.env['VITE_TUNER'] === '1' 
 /** 調整案で試遊しているか（画面に印を出すため）。 */
 export const TUNER_PLAYTEST = tunerFiles !== undefined;
 
+/**
+ * データの版。データ一式の JSON から作る短い要約値（FNV-1a、32ビット）で、データを1か所でも変えると変わる。
+ * オンライン版の部屋は作成時の版を記録し、版が変わった部屋は続けない（データの更新は進行中の対局に反映しない、ユーザー決定 2026-11-04）。
+ */
+export const dataVersionOf = (files: DataFiles): string => {
+  const text = JSON.stringify(Object.keys(files).sort().map((name) => [name, files[name]]));
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, '0');
+};
+
+/** 使っているデータの版。 */
+export const DATA_VERSION: string = dataVersionOf(tunerFiles ?? DATA_FILES);
+
 /** 同梱のデータ一式。チューナーの試遊では調整案を適用したデータになる。 */
 export const GAME_DATA: GameData = loadGameData(tunerFiles !== undefined ? rawFromFiles(tunerFiles) : RAW_GAME_DATA);
 export * from './script.ts';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { decider, getOptions, isGameOver } from '../src/game/engine.ts';
-import { createRoom, joinRoom, loadRoom, moveInRoom, RoomError, summaryOf, undoInRoom, viewFor, type Room } from '../src/online/rooms.ts';
+import { assertDataVersion, createRoom, joinRoom, loadRoom, moveInRoom, RoomError, summaryOf, undoInRoom, viewFor, type Room } from '../src/online/rooms.ts';
 
 const now = new Date('2026-11-03T00:00:00Z');
 
@@ -59,6 +59,17 @@ describe('部屋（オンライン版）', () => {
     for (let i = 0; i < 40; i += 1) step(room);
     const reloaded = loadRoom(JSON.parse(JSON.stringify(room.record)));
     expect(reloaded.state).toEqual(room.state);
+  });
+
+  it('データの版が変わった部屋は続けない（記録の再生もしない）', () => {
+    // 段階5（ユーザー決定 2026-11-04：データの更新は進行中の対局に反映しない）
+    const room = fullRoom();
+    expect(room.record.dataVersion).toMatch(/^[0-9a-f]{8}$/);
+    expect(() => assertDataVersion(room.record)).not.toThrow();
+    expect(() => loadRoom(JSON.parse(JSON.stringify(room.record)), undefined, 'ffffffff')).toThrow('データが更新された');
+    // 版を記録していない古い部屋は、そのまま続ける。
+    const { dataVersion: _omit, ...legacy } = room.record;
+    expect(() => assertDataVersion(legacy)).not.toThrow();
   });
 
   it('取り消しは直前の選択をした席だけができ、チェックポイントの後はできない', () => {

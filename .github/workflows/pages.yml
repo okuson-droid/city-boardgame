@@ -1,6 +1,7 @@
 # GitHub Pages への配置（オンライン版は Supabase、ユーザー決定 2026-11-03）。手順は docs/online-supabase.md。
 # - main への push（または手動の実行）で、検査・ビルドを行い、dist/index.html を Pages に置く。
 # - リポジトリの Variables に SUPABASE_URL・SUPABASE_ANON_KEY があれば、画面にオンライン版の入口が出る（無ければローカル版だけ）。
+# - チューナーを dist/tuner/ に置く。チューナーからの保存（GitHub の API による commit）が main に入ると、このワークフローが再び動く。
 # - Secrets に SUPABASE_ACCESS_TOKEN、Variables に SUPABASE_PROJECT_REF があれば、Edge Function（rooms）も同じエンジンで配置し直す。
 name: Pages
 
@@ -35,6 +36,11 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          VITE_TUNER_URL: tuner/
+      - name: チューナーをビルドする（dist/tuner/）
+        run: npm run build:tuner
+        env:
+          VITE_GITHUB_REPO: ${{ github.repository }}
       - name: Edge Function の配置の設定を確かめる
         id: supabase
         env:

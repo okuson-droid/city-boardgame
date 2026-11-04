@@ -1,10 +1,12 @@
 // チューナー（指示書 3-5）：データの編集・調整案の保存と読み込み・試遊・書き出し。
 // 編集は作業中の写し（調整案）に対して行い、元データ（src/data/）は書き出しまで変更しない。
 // 作業中の写しはブラウザに保存し、再読み込みしても続きから編集できる。
+// 公開ページ（GitHub Pages の tuner/）では、開発サーバーへの書き出しの代わりに GitHub への保存（github.ts）を使う。
 
 import { useEffect, useMemo, useState } from 'react';
 import { DATA_FILES, isBoardFileName, type DataFiles } from '../../src/data/index.ts';
 import { BoardEditor } from './BoardEditor.tsx';
+import { GitHubSaveError, parseRepo, saveToGitHub } from './github.ts';
 import { JsonEditor, type OnSet } from './JsonEditor.tsx';
 import {
   applyChanges,
@@ -43,6 +45,15 @@ const KINDS: readonly Kind[] = [
 const STORE_WORK = 'tuner:work';
 const STORE_META = 'tuner:meta';
 const STORE_PLAYTEST = 'tuner:playtest-files';
+const STORE_GITHUB = 'tuner:github';
+
+/** 開発サーバー（npm run tuner）か。公開ページでは src/data/ に書き戻せない。 */
+const DEV_SERVER = import.meta.env.DEV;
+
+/** 保存先のリポジトリの初期値。公開ページのビルドで GitHub Actions が与える（owner/repo）。 */
+const DEFAULT_REPO = String(import.meta.env['VITE_GITHUB_REPO'] ?? '');
+
+type GitHubSettings = { repo: string; branch: string; token: string };
 
 const load = <T,>(key: string, fallback: T): T => {
   try {
@@ -89,9 +100,17 @@ export const TunerApp = () => {
   const [issues, setIssues] = useState<{ path: string; message: string }[] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [markdown, setMarkdown] = useState<string | null>(null);
+  const [github, setGithub] = useState<GitHubSettings>(() => {
+    const stored = load<Partial<GitHubSettings>>(STORE_GITHUB, {});
+    return { repo: stored.repo || DEFAULT_REPO, branch: stored.branch || 'main', token: stored.token ?? '' };
+  });
+  const [githubOpen, setGithubOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedUrl, setSavedUrl] = useState<string | null>(null);
 
   useEffect(() => save(STORE_WORK, work), [work]);
   useEffect(() => save(STORE_META, meta), [meta]);
+  useEffect(() => save(STORE_GITHUB, github), [github]);
 
   const changes = useMemo(() => diffFiles(base, work), [base, work]);
   const proposal = useMemo(() => proposalFromWork(meta, base, work), [meta, base, work]);
@@ -150,7 +169,8 @@ export const TunerApp = () => {
       return;
     }
     save(STORE_PLAYTEST, work);
-    window.open('/tools/tuner/play.html', '_blank');
+    // 開発サーバーでも公開ページでも、チューナーと同じ場所にある play.html を開く。
+    window.open('play.html', '_blank');
   };
 
   const exportToData = (): void => {
@@ -177,6 +197,46 @@ export const TunerApp = () => {
       .catch((error: unknown) => setMessage(`書き戻せなかった：${String(error)}`));
   };
 
+  /** GitHub に1つの commit として保存する（案A、ユーザー決定 2026-11-04）。 */
+  const saveGitHub = (): void => {
+    setSavedUrl(null);
+    if (!check()) {
+      setMessage('検査で問題が見つかったため GitHub に保存しなかった。');
+      return;
+    }
+    if (proposal.changes.length === 0) {
+      setMessage('変更点がない。');
+      return;
+    }
+    const repo = parseRepo(github.repo);
+    if (repo === null || github.branch.trim() === '' || github.token.trim() === '') {
+      setGithubOpen(true);
+      setMessage('GitHub の設定（リポジトリ・ブランチ・トークン）を入れること。');
+      return;
+    }
+    const md = toMarkdown(proposal, base);
+    setSaving(true);
+    setMessage('GitHub に保存しています…');
+    saveToGitHub({
+      token: github.token,
+      target: { ...repo, branch: github.branch.trim() },
+      changes: proposal.changes,
+      message: `調整案「${proposal.name}」を反映する\n\nチューナーから保存した。\n\n${md}`,
+    })
+      .then((result) => {
+        setMarkdown(md);
+        setSavedUrl(result.commitUrl);
+        setMessage(
+          `GitHub の ${github.branch} に保存した（${result.files.join('、')}）。` +
+            (github.branch.trim() === 'main'
+              ? '数分で公開ページと Edge Function が配置し直される。反映後にこのページを読み込み直すと、変更点は0件になる。'
+              : 'main に取り込むと公開ページに反映される。'),
+        );
+      })
+      .catch((error: unknown) => setMessage(error instanceof GitHubSaveError ? error.message : `保存できなかった：${String(error)}`))
+      .finally(() => setSaving(false));
+  };
+
   const reset = (): void => {
     setWork(base);
     setMeta({ name: '新しい調整案', createdAt: formatDate(new Date()) });
@@ -197,6 +257,9 @@ export const TunerApp = () => {
   return (
     <div className="tuner">
       <header className="tuner-top">
+        <a className="btn small" href={DEV_SERVER ? '/' : '../'}>
+          ゲームへ
+        </a>
         <strong>チューナー</strong>
         <label>
           調整案の名前
@@ -216,8 +279,16 @@ export const TunerApp = () => {
         <button type="button" className="btn primary" onClick={playtest}>
           試遊
         </button>
-        <button type="button" className="btn primary" onClick={exportToData}>
-          書き出し
+        {DEV_SERVER ? (
+          <button type="button" className="btn primary" onClick={exportToData}>
+            書き出し
+          </button>
+        ) : null}
+        <button type="button" className="btn primary" data-ui="github-save" disabled={saving} onClick={saveGitHub}>
+          GitHub に保存
+        </button>
+        <button type="button" className="btn" data-ui="github-settings" onClick={() => setGithubOpen(!githubOpen)}>
+          GitHub の設定
         </button>
         <button type="button" className="btn" disabled title="シミュレーションによる比較は別の指示書で扱う">
           検証（未実装）
@@ -227,7 +298,49 @@ export const TunerApp = () => {
         </button>
       </header>
 
-      {message ? <div className="tuner-message">{message}</div> : null}
+      {githubOpen ? (
+        <div className="tuner-github">
+          <label>
+            リポジトリ
+            <input value={github.repo} placeholder="owner/repo" onChange={(e) => setGithub({ ...github, repo: e.target.value })} />
+          </label>
+          <label>
+            ブランチ
+            <input value={github.branch} onChange={(e) => setGithub({ ...github, branch: e.target.value })} />
+          </label>
+          <label>
+            トークン
+            <input
+              type="password"
+              autoComplete="off"
+              value={github.token}
+              placeholder="github_pat_…"
+              onChange={(e) => setGithub({ ...github, token: e.target.value })}
+            />
+          </label>
+          <button type="button" className="btn small" onClick={() => setGithub({ ...github, token: '' })}>
+            トークンを消す
+          </button>
+          <p className="muted small">
+            トークンは、このリポジトリだけを対象に「Contents：Read and write」を許した fine-grained personal access token を使う。
+            このブラウザにだけ保存し、他には送らない（GitHub の API を除く）。共用のパソコンでは、使い終わったら消すこと。
+          </p>
+        </div>
+      ) : null}
+
+      {message ? (
+        <div className="tuner-message">
+          {message}
+          {savedUrl !== null ? (
+            <>
+              {' '}
+              <a href={savedUrl} target="_blank" rel="noreferrer">
+                commit を見る
+              </a>
+            </>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="tuner-body">
         <nav className="tuner-kinds">
@@ -263,7 +376,10 @@ export const TunerApp = () => {
               </button>
             ))}
           </nav>
-        ) : null}
+        ) : (
+          // 一覧のない種類（パラメータ）でも列をそろえ、編集欄が一覧の列に入り込まないようにする。
+          <nav className="tuner-items" aria-hidden="true" />
+        )}
 
         <main className="tuner-editor">
           {kind.id === 'boards' ? (

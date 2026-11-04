@@ -6,6 +6,7 @@
 
 import type { GameState } from '../game/types.ts';
 import {
+  assertDataVersion,
   createRoom,
   joinRoom,
   loadRoom,
@@ -86,6 +87,7 @@ const normalizeCode = (v: unknown): string => text(v).trim().toUpperCase();
 const load = async (store: RoomStore, code: string): Promise<{ room: Room; version: number }> => {
   const stored = await store.get(code);
   if (stored === null) throw new RoomError(404, '部屋が見つからない');
+  assertDataVersion(stored.record);
   // 記録だけが正である。写しが無いか記録と食い違う場合は再生で作り直す。
   const consistent = stored.record.seed === null || (stored.state !== null && stored.state.log.length === stored.record.moves.length);
   const room = consistent ? { record: stored.record, state: stored.state } : loadRoom(stored.record);
