@@ -219,11 +219,6 @@ export const formatPath = (base: DataFiles, change: Change, label: (key: string)
   return parts.join('') || '（ファイル全体）';
 };
 
-const show = (v: unknown): string => {
-  const text = JSON.stringify(v);
-  return (text ?? 'null').replace(/\|/g, '\\|');
-};
-
 /** 変更点の一覧を Markdown にする（ユーザーが claude/tuning_log.md に転記する）。 */
 export const toMarkdown = (proposal: Proposal, base: DataFiles): string => {
   const lines = [
@@ -234,8 +229,82 @@ export const toMarkdown = (proposal: Proposal, base: DataFiles): string => {
     '',
     '| ファイル | 項目 | 元の値 | 新しい値 |',
     '|---|---|---|---|',
-    ...proposal.changes.map((c) => `| ${c.file} | ${formatPath(base, c)} | \`${show(c.before)}\` | \`${show(c.after)}\` |`),
+    ...proposal.changes.map((c) => {
+      const sum = summarizeChange(c, 400);
+      const after = sum.note === null ? sum.after : `${sum.after}（${sum.note}）`;
+      return `| ${c.file} | ${formatPath(base, c)} | \`${sum.before.replace(/\|/g, '\\|')}\` | \`${after.replace(/\|/g, '\\|')}\` |`;
+    }),
     '',
   ];
   return lines.join('\n');
+};
+
+// ---------------------------------------------------------------------------
+// 新しいカード（ユーザー決定 2026-11-04：既存のカードの編集に加えて、新しく作れるようにする）
+// ---------------------------------------------------------------------------
+
+/** 一覧の次の識別子。数なら最大＋1、「接頭辞＋数字」なら同じ桁数で最大＋1、それ以外は custom_<n> とする。 */
+export const nextId = (ids: readonly unknown[]): string | number => {
+  if (ids.length > 0 && ids.every((id) => typeof id === 'number')) return Math.max(...(ids as number[])) + 1;
+  const parsed = ids.map((id) => /^(\D*)(\d+)$/.exec(String(id)));
+  const first = parsed[0];
+  if (first && first[1] !== undefined && first[2] !== undefined && parsed.every((m) => m !== null && m[1] === first[1])) {
+    const prefix = first[1];
+    const width = first[2].length;
+    const max = Math.max(...parsed.map((m) => Number(m?.[2] ?? 0)));
+    return `${prefix}${String(max + 1).padStart(width, '0')}`;
+  }
+  for (let n = 1; ; n += 1) {
+    const id = `custom_${n}`;
+    if (!ids.includes(id)) return id;
+  }
+};
+
+/**
+ * 一覧の index 番目を写して、新しいカードを作る。識別子は nextId、名前は「（写し）」を付け、仮置きの印を付ける。
+ * 原本の文言の解釈・未決の事項は写さない（新しいカードには当てはまらないため）。
+ */
+export const newItemFrom = (list: readonly unknown[], index: number): unknown => {
+  const source = list[index];
+  if (!isObject(source)) throw new ProposalError('写すカードがない');
+  const copy = clone(source) as Record<string, unknown>;
+  copy['id'] = nextId(list.map((item) => (isObject(item) ? item['id'] : undefined)));
+  if (typeof copy['name'] === 'string') copy['name'] = `${copy['name']}（写し）`;
+  if ('provisional' in copy) copy['provisional'] = true;
+  if (Array.isArray(copy['clarifications'])) copy['clarifications'] = [];
+  if (Array.isArray(copy['open_issues'])) copy['open_issues'] = [];
+  return copy;
+};
+
+/** 元データにない（チューナーで作った）カードか。 */
+export const isNewItem = (baseList: readonly unknown[], item: unknown): boolean =>
+  isObject(item) && !baseList.some((b) => isObject(b) && b['id'] === item['id']);
+
+const idsOf = (list: readonly unknown[]): string[] => list.map((item) => (isObject(item) ? String(item['id'] ?? '') : ''));
+
+/**
+ * 変更点の元の値と新しい値を短く表す。カードの一覧（id を持つ要素の配列）は件数と追加・削除・変更した id で表し、
+ * それ以外の値は JSON を長さ max までに切る（画面の変更点の一覧と Markdown に使う）。
+ */
+export const summarizeChange = (change: Change, max = 120): { before: string; after: string; note: string | null } => {
+  const { before, after } = change;
+  const short = (v: unknown): string => {
+    const text = JSON.stringify(v) ?? 'null';
+    return text.length > max ? `${text.slice(0, max)}…` : text;
+  };
+  const isCardList = (v: unknown): v is unknown[] => Array.isArray(v) && v.length > 0 && v.every((x) => isObject(x) && 'id' in x);
+  if (isCardList(before) && isCardList(after)) {
+    const b = idsOf(before);
+    const a = idsOf(after);
+    const added = a.filter((id) => !b.includes(id));
+    const removed = b.filter((id) => !a.includes(id));
+    const changed = a.filter((id) => b.includes(id) && !deepEqual(before[b.indexOf(id)], after[a.indexOf(id)]));
+    const parts = [
+      added.length > 0 ? `追加：${added.join('・')}` : '',
+      removed.length > 0 ? `削除：${removed.join('・')}` : '',
+      changed.length > 0 ? `変更：${changed.join('・')}` : '',
+    ].filter((t) => t !== '');
+    return { before: `${before.length}件`, after: `${after.length}件`, note: parts.length > 0 ? parts.join('／') : null };
+  }
+  return { before: short(before), after: short(after), note: null };
 };

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DATA_FILES, loadGameData, rawFromFiles } from '../src/data/index.ts';
+import { isGameOver } from '../src/game/engine.ts';
 import { finalScores } from '../src/game/scoring.ts';
 import {
   applyChanges,
@@ -7,12 +8,16 @@ import {
   createProposal,
   diffFiles,
   getAt,
+  isNewItem,
+  newItemFrom,
+  nextId,
   parseProposal,
   ProposalError,
   proposalFromWork,
   revertChange,
   serializeProposal,
   setInFiles,
+  summarizeChange,
   toMarkdown,
   validateFiles,
 } from '../tools/tuner/proposal.ts';
@@ -160,4 +165,60 @@ describe('調整案を適用したゲームの性質', () => {
       }
     }
   }, 120_000);
+});
+
+describe('新しいカード（ユーザー決定 2026-11-04）', () => {
+  it('識別子は一覧の形に合わせて次の番号にする', () => {
+    // 指示書 3-5（チューナーでカードを新しく作る）
+    expect(nextId(['001', '002', '042'])).toBe('043');
+    expect(nextId(['PC01', 'PC08'])).toBe('PC09');
+    expect(nextId([1, 2, 10])).toBe(11);
+    expect(nextId(['hero', 'merchant'])).toBe('custom_1');
+    expect(nextId(['hero', 'custom_1'])).toBe('custom_2');
+  });
+
+  it('写したカードは新しい識別子・仮置きの印を持ち、原本の解釈は写さない', () => {
+    // 指示書 3-5、指示書 1（仮置きの印）
+    const cards = getAt(base['cards_civilization.json'], ['cards']) as Record<string, unknown>[];
+    const created = newItemFrom(cards, 0) as Record<string, unknown>;
+    expect(created['id']).toBe('043');
+    expect(created['name']).toBe(`${String(cards[0]?.['name'])}（写し）`);
+    expect(created['provisional']).toBe(true);
+    expect(created['clarifications']).toEqual([]);
+    expect(isNewItem(cards, created)).toBe(true);
+    expect(isNewItem(cards, cards[0])).toBe(false);
+  });
+
+  it('カードの一覧の変更点は、件数と追加した識別子で短く表す', () => {
+    // 指示書 3-5（変更点の一覧）
+    const cards = getAt(base['cards_civilization.json'], ['cards']) as unknown[];
+    const after = [...cards, newItemFrom(cards, 0)];
+    const summary = summarizeChange({ file: 'cards_civilization.json', path: ['cards'], before: cards, after });
+    expect(summary).toEqual({ before: '42件', after: '43件', note: '追加：043' });
+    const work = setInFiles(base, 'cards_civilization.json', ['cards'], after);
+    expect(toMarkdown(proposalFromWork({ name: '新カード', createdAt: '2026-11-04' }, base, work), base)).toContain('`43件（追加：043）`');
+  });
+
+  it('新しい文明カード・キャラクターを加えたデータは検査を通り、乱択プレイアウトが終局する', () => {
+    // rules.md v0.8 1-0-6（新しいカードを含むデータでも遊べる）
+    let files = base;
+    for (const [file, key] of [
+      ['cards_civilization.json', 'cards'],
+      ['characters.json', 'characters'],
+      ['special_citizens.json', 'cards'],
+      ['cards_planned_city.json', 'cards'],
+      ['cards_nature_park.json', 'cards'],
+    ] as const) {
+      const list = getAt(files[file], [key]) as unknown[];
+      files = setInFiles(files, file, [key], [...list, newItemFrom(list, 0)]);
+    }
+    expect(validateFiles(files)).toEqual([]);
+    const data = loadGameData(rawFromFiles(files));
+    expect(data.civilizationCards.some((c) => c.id === '043')).toBe(true);
+    for (const seed of [1, 2]) {
+      const result = playout(4, seed, 4000, data);
+      expect(result.stuck).toBe(false);
+      expect(isGameOver(result.state)).toBe(true);
+    }
+  });
 });

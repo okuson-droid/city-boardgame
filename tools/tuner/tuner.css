@@ -276,3 +276,16 @@ body,
   flex-basis: 100%;
   margin: 0;
 }
+
+.item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.badge.new {
+  background: #2f7d4f;
+}

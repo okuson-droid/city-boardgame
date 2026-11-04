@@ -17,12 +17,15 @@ import {
   formatDate,
   formatPath,
   getAt,
+  isNewItem,
+  newItemFrom,
   parseProposal,
   ProposalError,
   proposalFromWork,
   revertChange,
   serializeProposal,
   setInFiles,
+  summarizeChange,
   toMarkdown,
   validateFiles,
   type Change,
@@ -238,6 +241,31 @@ export const TunerApp = () => {
       .finally(() => setSaving(false));
   };
 
+  /** いま選んでいるカードを写して、新しいカードを一覧の最後に加える。 */
+  const addItem = (): void => {
+    if (kind.listKey === null || kind.file === null) return;
+    const current = (getAt(work[kind.file], [kind.listKey]) as unknown[] | undefined) ?? [];
+    try {
+      const created = newItemFrom(current, Math.min(itemIndex, current.length - 1));
+      setWork((w) => setInFiles(w, kind.file ?? '', [kind.listKey ?? ''], [...current, created]));
+      setItemIndex(current.length);
+      setMessage(`${kind.label}を新しく作った（いま選んでいたカードの写し）。値を直してから試遊・保存すること。`);
+    } catch (error) {
+      setMessage(error instanceof ProposalError ? error.message : String(error));
+    }
+  };
+
+  /** 新しく作ったカードを消す。元データにあるカードは消さない（他のデータから参照されている場合があるため）。 */
+  const removeItem = (): void => {
+    if (kind.listKey === null || kind.file === null) return;
+    const current = (getAt(work[kind.file], [kind.listKey]) as unknown[] | undefined) ?? [];
+    const baseList = (getAt(base[kind.file], [kind.listKey]) as unknown[] | undefined) ?? [];
+    if (!isNewItem(baseList, current[itemIndex])) return;
+    setWork((w) => setInFiles(w, kind.file ?? '', [kind.listKey ?? ''], current.filter((_, i) => i !== itemIndex)));
+    setItemIndex(Math.max(0, itemIndex - 1));
+    setMessage('新しく作ったカードを消した。');
+  };
+
   const reset = (): void => {
     setWork(base);
     setMeta({ name: '新しい調整案', createdAt: formatDate(new Date()) });
@@ -248,7 +276,10 @@ export const TunerApp = () => {
   const file = fileOf(kind);
   const list = kind.listKey ? (getAt(work[file], [kind.listKey]) as unknown[] | undefined) ?? [] : [];
   const item = kind.listKey ? list[itemIndex] : work[file];
-  const baseItem = kind.listKey ? getAt(base[file], [kind.listKey, itemIndex]) : base[file];
+  const baseList = kind.listKey ? ((getAt(base[file], [kind.listKey]) as unknown[] | undefined) ?? []) : [];
+  const itemIsNew = kind.listKey !== null && isNewItem(baseList, item);
+  // 新しいカードは元データに同じカードがない。添字で比べると別のカードと比べてしまうため、比べる相手を持たない。
+  const baseItem = kind.listKey ? (itemIsNew ? undefined : getAt(base[file], [kind.listKey, itemIndex])) : base[file];
   const prefix: (string | number)[] = kind.listKey ? [kind.listKey, itemIndex] : [];
   const boardFiles = Object.keys(work).filter(isBoardFileName).sort();
   const expectedTerrain = (getAt(work['params.json'], ['board', 'terrainCounts']) ?? {}) as Record<string, number>;
@@ -371,9 +402,20 @@ export const TunerApp = () => {
           </nav>
         ) : kind.listKey ? (
           <nav className="tuner-items">
+            <div className="item-actions">
+              <button type="button" className="btn small" data-ui="item-add" onClick={addItem}>
+                新しく作る（選んでいるカードを写す）
+              </button>
+              {itemIsNew ? (
+                <button type="button" className="btn small" data-ui="item-remove" onClick={removeItem}>
+                  このカードを消す
+                </button>
+              ) : null}
+            </div>
             {list.map((it, i) => (
               <button key={i} type="button" className={`item${i === itemIndex ? ' active' : ''}`} onClick={() => setItemIndex(i)}>
                 {itemLabel(it, i)}
+                {isNewItem(baseList, it) ? <span className="badge new">新</span> : null}
               </button>
             ))}
           </nav>
@@ -392,7 +434,7 @@ export const TunerApp = () => {
             />
           ) : (
             <>
-              <JsonEditor value={item} base={baseItem} path={[]} onSet={onSetIn(file, prefix)} skip={['script']} />
+              <JsonEditor value={item} base={baseItem} path={[]} onSet={onSetIn(file, prefix)} skip={['script']} unlocked={itemIsNew} />
               {isObject(item) && 'script' in item ? (
                 <section>
                   <h3>効果（命令と引数）</h3>
@@ -411,7 +453,8 @@ export const TunerApp = () => {
                 <li key={i}>
                   <span className="muted small">{c.file}</span> {formatPath(base, c, keyLabel)}
                   <div className="small">
-                    <code>{JSON.stringify(c.before)}</code> → <code>{JSON.stringify(c.after)}</code>
+                    <code>{summarizeChange(c).before}</code> → <code>{summarizeChange(c).after}</code>
+                    {summarizeChange(c).note !== null ? <div className="muted">{summarizeChange(c).note}</div> : null}
                   </div>
                   <button type="button" className="btn small" onClick={() => setWork((w) => revertChange(w, c))}>
                     取り消す

@@ -42,6 +42,15 @@ const existingItems = (target: string, listKey: string): Map<string, Record<stri
   return new Map(list.map((item) => [String(item['id']), item]));
 };
 
+/**
+ * 原本にない（チューナーで新しく作った）既存の項目。取り込み直しても消さず、原本の項目の後ろに残す
+ * （ユーザー決定 2026-11-04：チューナーで新しくカードを作れるようにする）。
+ */
+const tunerItems = (existing: Map<string, Record<string, unknown>>, importedIds: readonly unknown[]): Record<string, unknown>[] => {
+  const imported = new Set(importedIds.map(String));
+  return [...existing.entries()].filter(([id]) => !imported.has(id)).map(([, item]) => item);
+};
+
 const scriptOf = (scripts: Record<string, unknown[]>, existing: Map<string, Record<string, unknown>>, id: string): unknown[] => {
   const kept = existing.get(id)?.['script'];
   if (Array.isArray(kept)) return kept;
@@ -64,7 +73,7 @@ const importPlain = (source: string, target: string, listKey: string, scripts: R
     importedFrom: `design/${source}`,
     provisional: false,
     ...original,
-    [listKey]: items,
+    [listKey]: [...items, ...tunerItems(existing, asRecords(original[listKey]).map((item) => item['id']))],
   });
 };
 
@@ -130,7 +139,8 @@ const RAID_STRUCTURED: Record<number, Record<string, unknown>> = {
 
 {
   const original = readJson('data_raid_cards.json');
-  const cards = asRecords(original['cards']).map((card) => ({
+  const existingRaid = existingItems('raid_cards.json', 'cards');
+  const designCards = asRecords(original['cards']).map((card) => ({
     ...card,
     provisional: false,
     clarifications: raidClarifications(Number(card['id'])),
@@ -140,7 +150,7 @@ const RAID_STRUCTURED: Record<number, Record<string, unknown>> = {
     importedFrom: 'design/data_raid_cards.json',
     provisional: false,
     ...original,
-    cards,
+    cards: [...designCards, ...tunerItems(existingRaid, asRecords(original['cards']).map((card) => card['id']))],
   });
 }
 
@@ -274,6 +284,6 @@ const civClarifications = (id: string, text: string): ClarificationJson[] => {
       '名称・プレイ条件・効果適用条件・固有得点は仮置きである（provisionalFields）。',
       '効果の命令セット化は段階3（feat/effects）で行う。',
     ],
-    cards,
+    cards: [...cards, ...tunerItems(existingCiv, cards.map((card) => card.id))],
   });
 }

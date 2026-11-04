@@ -36,6 +36,14 @@ const READ_ONLY = new Set([
   'effectCondition',
 ]);
 
+/**
+ * 新しく作ったカード（元データにないカード）で編集できる、読むだけの項目。新しいカードには原本がないため、
+ * 名前に加えて文言・分類・効果の説明などを自由に書けるようにする。識別子と仮置きの印は読むだけのままである。
+ */
+const UNLOCKED_FOR_NEW = new Set(['text', 'label', 'axis', 'effects', 'initial_bonus', 'on_defense_fail', 'on_repel']);
+
+const isReadOnly = (key: string, unlocked: boolean): boolean => READ_ONLY.has(key) && !(unlocked && UNLOCKED_FOR_NEW.has(key));
+
 /** 項目名と位置から、選べる値の一覧を決める。 */
 export const enumFor = (key: string, path: Path): readonly (string | null)[] | null => {
   const inside = (k: string) => path.some((p) => p === k);
@@ -85,10 +93,24 @@ const readonlyText = (value: unknown): string => {
 
 const changedClass = (value: unknown, base: unknown): string => (deepEqual(value, base) ? '' : ' changed');
 
-const Primitive = ({ value, base, path, keyName, onSet }: { value: unknown; base: unknown; path: Path; keyName: string; onSet: OnSet }) => {
+const Primitive = ({
+  value,
+  base,
+  path,
+  keyName,
+  onSet,
+  unlocked,
+}: {
+  value: unknown;
+  base: unknown;
+  path: Path;
+  keyName: string;
+  onSet: OnSet;
+  unlocked: boolean;
+}) => {
   const options = enumFor(keyName, path);
   const cls = `field-input${changedClass(value, base)}`;
-  if (READ_ONLY.has(keyName)) return <span className="readonly">{readonlyText(value)}</span>;
+  if (isReadOnly(keyName, unlocked)) return <span className="readonly">{readonlyText(value)}</span>;
   if (options !== null && (typeof value === 'string' || value === null)) {
     return (
       <select className={cls} value={value === null ? '' : value} onChange={(e) => onSet(path, e.target.value === '' ? null : e.target.value)}>
@@ -126,6 +148,7 @@ export const JsonEditor = ({
   keyName = '',
   onSet,
   skip = [],
+  unlocked = false,
 }: {
   value: unknown;
   base: unknown;
@@ -133,8 +156,10 @@ export const JsonEditor = ({
   keyName?: string;
   onSet: OnSet;
   skip?: readonly string[];
+  /** 新しく作ったカードなら true（文言などの読むだけの項目も編集できる）。 */
+  unlocked?: boolean;
 }) => {
-  if (READ_ONLY.has(keyName) && (Array.isArray(value) || isObject(value))) {
+  if (isReadOnly(keyName, unlocked) && (Array.isArray(value) || isObject(value))) {
     return <span className="readonly small">（読むだけ）</span>;
   }
   if (Array.isArray(value)) {
@@ -161,7 +186,7 @@ export const JsonEditor = ({
         {value.map((item, i) => (
           <div key={i} className="list-item">
             <span className="list-index">{i}</span>
-            <JsonEditor value={item} base={baseList[i]} path={[...path, i]} keyName={keyName} onSet={onSet} />
+            <JsonEditor value={item} base={baseList[i]} path={[...path, i]} keyName={keyName} onSet={onSet} unlocked={unlocked} />
             <button type="button" className="btn small" onClick={() => onSet(path, value.filter((_, j) => j !== i))}>
               削除
             </button>
@@ -186,11 +211,11 @@ export const JsonEditor = ({
               <span className="obj-key" title={k}>
                 {keyLabel(k)}
               </span>
-              <JsonEditor value={v} base={baseObj[k]} path={[...path, k]} keyName={k} onSet={onSet} />
+              <JsonEditor value={v} base={baseObj[k]} path={[...path, k]} keyName={k} onSet={onSet} unlocked={unlocked} />
             </div>
           ))}
       </div>
     );
   }
-  return <Primitive value={value} base={base} path={path} keyName={keyName} onSet={onSet} />;
+  return <Primitive value={value} base={base} path={path} keyName={keyName} onSet={onSet} unlocked={unlocked} />;
 };

@@ -224,6 +224,7 @@ describe('文明カード', () => {
       .filter((line) => /^\|\s*\d{3}\s*\|/.test(line))
       .map((line) => line.split('|').slice(1, -1).map((c) => c.trim()));
     expect(rows).toHaveLength(42);
+    // チューナーで新しく作ったカードは原本にないため、原本の42枚だけを照らす（ユーザー決定 2026-11-04）。
     rows.forEach(([id, , cost, tag, , text]) => {
       const card = GAME_DATA.civilizationCards.find((c) => c.id === id);
       expect(card).toBeDefined();
@@ -346,22 +347,23 @@ describe('設計文書からの取り込み', () => {
 
   it('キャラクターは design/data_characters.json の文言のまま取り込む', () => {
     // 指示書 3-1（文言をそのまま取り込み、clarifications も保持する）
-    const original = readDesignJson('data_characters.json')['characters'];
-    expect(GAME_DATA.characters.map(stripAdded)).toEqual(original);
-    expect(GAME_DATA.characters).toHaveLength(10);
+    // チューナーで新しく作ったキャラクターは原本にないため、原本の10人だけを照らす（ユーザー決定 2026-11-04）。
+    const original = readDesignJson('data_characters.json')['characters'] as { id: string }[];
+    expect(original).toHaveLength(10);
+    expect(GAME_DATA.characters.filter((c) => original.some((o) => o.id === c.id)).map(stripAdded)).toEqual(original);
   });
 
   it('特別な市民カードは design/data_special_citizens.json の文言のまま取り込む', () => {
     // 指示書 3-1、rules.md v0.8 19-4-4（特別な住民カードと同一物）
-    const original = readDesignJson('data_special_citizens.json')['cards'];
-    expect(GAME_DATA.specialCitizens.map(stripAdded)).toEqual(original);
-    expect(GAME_DATA.specialCitizens).toHaveLength(20);
+    const original = readDesignJson('data_special_citizens.json')['cards'] as { id: string }[];
+    expect(original).toHaveLength(20);
+    expect(GAME_DATA.specialCitizens.filter((c) => original.some((o) => o.id === c.id)).map(stripAdded)).toEqual(original);
   });
 
   it('襲撃カードは design/data_raid_cards.json の値と文言のまま取り込み、第19章の解釈を加える', () => {
     // 指示書 3-1、rules.md v0.8 7-6-1、19-3-1、19-3-3
     const original = readDesignJson('data_raid_cards.json')['cards'] as Record<string, unknown>[];
-    const imported = GAME_DATA.raidCards.map((card) => {
+    const imported = GAME_DATA.raidCards.filter((card) => original.some((o) => o['id'] === card.id)).map((card) => {
       const {
         provisional: _p,
         clarifications: _c,
@@ -373,7 +375,7 @@ describe('設計文書からの取り込み', () => {
       return rest;
     });
     expect(imported).toEqual(original);
-    expect(GAME_DATA.raidCards.reduce((sum, c) => sum + c.repel_increase, 0)).toBe(12);
+    expect(GAME_DATA.raidCards.filter((c) => original.some((o) => o['id'] === c.id)).reduce((sum, c) => sum + c.repel_increase, 0)).toBe(12);
     expect(GAME_DATA.raidCards.find((c) => c.id === 5)?.clarifications?.join()).toContain('基本得点は加えない');
   });
 
