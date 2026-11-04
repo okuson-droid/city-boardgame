@@ -15,6 +15,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 - 完了：演出の残り（ui_design.md 4節：増減のまとめ、トラックの1段ずつの表示、ラウンドの区切りの画面、置いたマスの強調、履歴からの強調）。main に取り込み済み。
 - 完了：オンライン化（段階5、`server/`・`src/online/`）。受け入れ検査（`npm run accept:online`）は合格。main に取り込み済み。
 - 完了：公開ページのチューナー（案A、ユーザー決定 2026-11-04、`docs/tuner-pages.md`）。main に取り込み済み。GitHub への保存は模擬の API で単体テストを行った。本物の GitHub への保存は未確認（ユーザーのトークン待ち）。
+- 作業中：チュートリアル（ユーザー決定 2026-11-04、`src/tutorial/`・`src/ui/Tutorial.tsx`）。受け入れ検査（`npm run accept:tutorial`）は合格。
 - 完了：オンライン版の Supabase 化と GitHub Pages への配置（ユーザー決定 2026-11-03、`docs/online-supabase.md`）。模擬に対する受け入れ検査（`npm run accept:supabase`）は合格。main に取り込み済み。本物の Supabase では、Edge Function とテーブルが動き部屋を作れることを確かめた（2026-11-04）。Project URL はパスを捨てて起点だけを使う（`projectOrigin`）。
 
 ## 構成
@@ -50,6 +51,9 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `src/game/queries.ts` | 画面のための派生値（場面の見出し、アクションスペースのアイコン、コストの見込み、ワーカーの内訳など） |
 | `src/ui/` | ローカル版の画面（React）。`Game.tsx`（全体）・`ActionBoard.tsx`・`Board.tsx`（SVG の個人ボード）・`Areas.tsx`（共有の場・手持ち・履歴・ドラフト・終了時の得点）・`PromptBar.tsx`・`Cards.tsx`・`Icon.tsx`（仮のアイコン素材）・`Tip.tsx`（補足表示と HoverTip）・`Legend.tsx`（アイコンの一覧）・`model.ts`（選択肢の振り分け） |
 | `e2e/accept.ts` | 受け入れ検査（Playwright の自動対戦） |
+| `src/tutorial/tutorial.ts` | チュートリアルの台本（手順の列）と進め方、自動の打ち手。画面に依存しない |
+| `src/ui/Tutorial.tsx` | チュートリアルの画面（ゲーム画面に案内の札を重ね、選ぶ所作を光らせる） |
+| `e2e/tutorial.ts` | チュートリアルの受け入れ検査（光っている所作だけを押して案内の最後まで進む） |
 | `e2e/online.ts` | オンライン版の受け入れ検査（3つのブラウザで1局、再接続とサーバーの再起動を含む） |
 | `src/online/rooms.ts` | 部屋（作成・入室・選択・取り消し・記録からの再生）と伏せた写し（`viewFor`） |
 | `src/online/client.ts` | 画面側の通信。`Transport`（自前のサーバー：POST と SSE、Supabase：Edge Function への POST と Realtime）、席の鍵の保存 |
@@ -88,6 +92,7 @@ npm run accept:online # オンライン版の受け入れ検査
 npm run supabase:build   # Edge Function の中身を supabase/functions/rooms/bundle.js にまとめる
 npm run supabase:deploy  # 上のビルドのあと Edge Function を配置する（-- --project-ref <ref> を付ける）
 npm run accept:supabase  # Supabase の模擬に対するオンライン版の受け入れ検査
+npm run accept:tutorial  # チュートリアルの受け入れ検査
 ```
 
 ## 守ること
@@ -130,6 +135,13 @@ npm run accept:supabase  # Supabase の模擬に対するオンライン版の�
 - 表示の切り替え（ドラフトの一覧か個人ボードか）は、フェイズではなく選択待ちのタスクで判断する。準備の処理（英雄・デザイナーの初期配置）はフェイズが「ドラフト」のまま進むためである。
 - アイコンの図案は `src/ui/icon-art.ts`（識別子ごとの SVG）。表にない識別子だけ `Icon.tsx` が仮の素材（色と1字）で出す。見本は `npm run icons:preview` で `docs/icon-preview.html` に生成する。
 - 文法の区切り（条件のカプセル・「〜する度に」の輪・「いずれか1つ」の角括弧）は、`iconSequence` が `grp.<cond|loop|choice>.open/close` の印を返し、`IconRow` が枠に組み立てる。支払いは矢（`sym.then`）の左に置き、負の数にしない。
+
+## チュートリアルの約束事（ユーザー決定 2026-11-04）
+
+- 実際の対局（3人、`TUTORIAL_SEED`、席0が第1ラウンドの最初の手番）で、第1ラウンドを一手ずつ案内し、その後は自由に遊ぶ。他の2席は自動の打ち手（`botMove`、`rng.ts` の乱数、1ラウンドにアクション2回まで、第1ラウンドは案内で使う占有型のスペースを使わない）。
+- 台本は `STEPS`。手順は「次へ」（kind: next）か「決まった選択」（kind: move、`allow` の型。末尾の * は前方一致）。`when` が偽の手順は、`optional` なら自分の番で飛ばし、そうでなければ待つ。待つ間に来た台本にない選択（キャラクターやカードの効果）は、どれでも選べるようにする。
+- 説明の数値は `GAME_DATA` から読む（チューナーで値を変えても説明が食い違わない）。台本を変えたら `tests/tutorial.test.ts`（全キャラクターで最後まで通るか）と `npm run accept:tutorial` を通す。
+- 画面は `GameController.seat` を席0に固定し、取り消しは使わない。光らせる所作は CSS（`data-target` の属性セレクタ）で強調し、それ以外の所作は薄くする。案内の札は右上（襲撃・ボーナスタイルを見せる手順は左上）に置く。
 
 ## チューナーの約束事
 

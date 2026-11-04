@@ -19,7 +19,8 @@
     "supabase:build": "vite build --config supabase/vite.config.ts",
     "supabase:deploy": "npm run supabase:build && npx --yes supabase@2.121.0 functions deploy rooms --no-verify-jwt --use-api",
     "accept:supabase": "VITE_SUPABASE_URL=http://localhost:8799 VITE_SUPABASE_ANON_KEY=test-anon-key vite build --outDir dist-supabase && npm run supabase:build && ONLINE_BACKEND=supabase-mock node --experimental-strip-types --no-warnings e2e/online.ts",
-    "build:tuner": "vite build --config tools/tuner/vite.pages.config.ts --mode index && vite build --config tools/tuner/vite.pages.config.ts --mode play"
+    "build:tuner": "vite build --config tools/tuner/vite.pages.config.ts --mode index && vite build --config tools/tuner/vite.pages.config.ts --mode play",
+    "accept:tutorial": "vite build && node --experimental-strip-types --no-warnings e2e/tutorial.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

@@ -9,6 +9,7 @@ import { detectTransport, type Session, type Transport } from '../online/client.
 import { OnlineEntry, OnlineGame } from './Online.tsx';
 import { LegendButton } from './Legend.tsx';
 import { HoverTip } from './Tip.tsx';
+import { TutorialGame } from './Tutorial.tsx';
 
 const readSettings = (): Settings => {
   const params = new URLSearchParams(window.location.hash.slice(1));
@@ -35,11 +36,15 @@ const Screen = () => {
 
   const [transport, setTransport] = useState<Transport | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [tutorial, setTutorial] = useState(false);
   useEffect(() => {
     // 試遊（調整案のデータ）ではオンライン版を出さない。サーバーのデータと食い違うためである。
     if (!TUNER_PLAYTEST) void detectTransport().then(setTransport);
   }, []);
 
+  if (tutorial) {
+    return <TutorialGame settings={settings} onLeave={() => setTutorial(false)} />;
+  }
   if (session !== null && transport !== null) {
     return <OnlineGame key={session.code} transport={transport} session={session} settings={settings} onLeave={() => setSession(null)} />;
   }
@@ -51,6 +56,14 @@ const Screen = () => {
       <h1>都市開発ボードゲーム（仮）</h1>
       {TUNER_PLAYTEST ? <p className="tuner-banner">調整案を適用したデータで試遊している（チューナー）</p> : null}
       <p className="muted">ローカル版（1台で交代して遊ぶ）。rules.md v{GAME_DATA.params.rulesVersion}。仮置きのデータには「仮」の印を付けている。</p>
+      {!TUNER_PLAYTEST ? (
+        <div className="start-row tutorial-row">
+          <button type="button" className="btn primary" data-ui="tutorial" onClick={() => setTutorial(true)}>
+            チュートリアル（はじめての人へ）
+          </button>
+          <span className="muted">実際に1ラウンド遊びながら、ルールを一手ずつ案内する。</span>
+        </div>
+      ) : null}
       <div className="start-row">
         <span>人数</span>
         {Array.from(
