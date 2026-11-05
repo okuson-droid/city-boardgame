@@ -41,7 +41,9 @@ const highlightCss = (patterns: readonly string[]): string => {
   return [
     // 光らせるもの以外の所作は薄くする（ゲームの画面は選べるものすべてに枠を付けるため、案内の対象が埋もれないように）。
     `.game [data-target]${selectors.map((s) => `:not(${s})`).join('')} { opacity: 0.35; filter: grayscale(0.6); }`,
-    `${selectors.join(',\n')} { outline: 3px solid var(--coach, #e8a33d) !important; outline-offset: 2px; animation: coach-pulse 1.2s ease-in-out infinite; }`,
+    // 枠線（outline）は HTML の要素だけに付ける。個人ボードのマス（SVG の g）は四角い枠が出るため、下の六角形の縁取りで光らせる。
+    `${selectors.map((s) => `${s}:not(g)`).join(',\n')} { outline: 3px solid var(--coach, #e8a33d) !important; outline-offset: 2px; animation: coach-pulse 1.2s ease-in-out infinite; }`,
+    `${selectors.map((s) => `g${s}`).join(',\n')} { animation: coach-pulse 1.2s ease-in-out infinite; }`,
     // 個人ボードのマスは SVG のため、枠線で光らせる。
     `${selectors.map((s) => `g${s} polygon`).join(',\n')} { stroke: var(--coach, #e8a33d) !important; stroke-width: 4 !important; }`,
   ].join('\n');

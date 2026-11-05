@@ -118,11 +118,12 @@ h3 {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 35% 40% 25%;
-  grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 160px);
+  /* 左半分に共有の盤面（アクションボードと共有の場）、右半分に個人盤面、下に手札（ユーザー決定 2026-11-05、スイーツランドに倣う） */
+  grid-template-columns: 34% 21% 45%;
+  grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 200px);
   grid-template-areas:
     'top top top'
-    'left center right'
+    'left right center'
     'prompt prompt prompt'
     'bottom bottom bottom';
   overflow: hidden;
@@ -539,10 +540,10 @@ h3 {
  * （幅：高さ ≒ 5：7）、キャラクターは横長の一定の大きさにする。中身が収まらないときはカードの中でスクロールする。
  */
 :root {
-  --card-w: 7.6em;
-  --card-h: 10.6em;
-  --char-w: 15.5em;
-  --char-h: 10.6em;
+  --card-w: 9.6em;
+  --card-h: 13.4em;
+  --char-w: 19em;
+  --char-h: 13.4em;
 }
 
 .card.civ,
@@ -1572,4 +1573,73 @@ h3 {
 .coach.coach-left {
   right: auto;
   left: 12px;
+}
+
+/*
+ * 横長の画面では、案内の札を共有の場の列（左半分の右寄り）に重ねる。右半分の個人盤面（マスを選ぶ）と、
+ * 左のアクションボードを隠さないためである。共有の場を見せたい手順（coach-left）はアクションボードの上に置く。
+ */
+@media (min-width: 1100px) and (min-height: 600px) {
+  .coach {
+    right: auto;
+    left: calc(34% + 4px);
+    width: max(300px, calc(21% - 8px));
+  }
+
+  .coach.coach-left {
+    left: 12px;
+    width: min(380px, calc(34% - 16px));
+  }
+}
+
+/* ---------- 畳める見出し（ユーザー決定 2026-11-05） ---------- */
+
+.fold-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 2px 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.fold-arrow {
+  width: 1em;
+  color: var(--muted);
+}
+
+.fold-label {
+  font-weight: 700;
+}
+
+.fold-summary {
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.fold-hint {
+  margin-left: auto;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--select);
+  color: #fff;
+  font-size: 0.85em;
+}
+
+.fold-body {
+  padding-top: 4px;
+}
+
+.panel-box.fold.forced {
+  border-color: var(--select);
+}
+
+/* 左半分（共有）と右半分（個人）の境目 */
+.col-right {
+  border-right: 3px solid var(--line);
 }

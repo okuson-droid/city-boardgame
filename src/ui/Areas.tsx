@@ -1,5 +1,6 @@
-// 共有の場（右列）・個人の資源（中央の下）・手持ち（下帯）・履歴・ドラフト・終了時の得点（ui_design.md 1-2、4-3、5、6-3）。
+// 共有の場（左半分の右寄り）・個人の資源（右半分の下）・手持ち（下帯）・履歴・終了時の得点（ui_design.md 1-2、4-3、5、6-3）。
 
+import { useState } from 'react';
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
 import { BUILDINGS, SCORE_AXES, type ScoreAxis } from '../data/types.ts';
 import { explain } from '../game/explain.ts';
@@ -28,8 +29,42 @@ const tok = (section: keyof typeof ICON_KEYS, key: string, value?: number | stri
 type Choose = (optionId: string) => void;
 
 // ---------------------------------------------------------------------------
-// 共有の場（右列、5-1）
+// 共有の場（左半分の右寄り、5-1）
 // ---------------------------------------------------------------------------
+
+/**
+ * クリックで中身を開く見出し（ユーザー決定 2026-11-05：スイーツランドに倣い、常に見える必要のないものは畳む）。
+ * 中に選べるものがあるときは自動で開き（force）、閉じていても印を出す。
+ */
+const Fold = ({
+  name,
+  label,
+  summary,
+  force = false,
+  children,
+}: {
+  name: string;
+  label: string;
+  summary?: React.ReactNode;
+  force?: boolean;
+  children: React.ReactNode;
+}) => {
+  const [open, setOpen] = useState(false);
+  const shown = open || force;
+  return (
+    <section className={`panel-box fold${shown ? ' open' : ''}${force ? ' forced' : ''}`} data-fold={name}>
+      <button type="button" className="fold-head" data-ui={`fold-${name}`} aria-expanded={shown} onClick={() => setOpen(!open)}>
+        <span className="fold-arrow" aria-hidden="true">
+          {shown ? '▾' : '▸'}
+        </span>
+        <span className="fold-label">{label}</span>
+        {summary !== undefined ? <span className="fold-summary">{summary}</span> : null}
+        {force ? <span className="fold-hint">選ぶ</span> : null}
+      </button>
+      {shown ? <div className="fold-body">{children}</div> : null}
+    </section>
+  );
+};
 
 export const SharedArea = ({
   state,
@@ -61,8 +96,12 @@ export const SharedArea = ({
           <span className="muted">ゲーム開始前</span>
         )}
       </section>
-      <section className="panel-box">
-        <h3>ボーナスタイル</h3>
+      <Fold
+        name="bonus"
+        label="ボーナスタイル"
+        summary={`場に${state.bonusTilesOnBoard.length}枚`}
+        force={model.choices.some((c) => c.target.kind === 'bonusTile')}
+      >
         <div className="tiles">
           {state.bonusTilesOnBoard.map((id) => {
             const tile = GAME_DATA.bonusTiles.find((t) => t.id === id);
@@ -77,9 +116,13 @@ export const SharedArea = ({
             );
           })}
         </div>
-      </section>
-      <section className="panel-box">
-        <h3>特別な市民カード</h3>
+      </Fold>
+      <Fold
+        name="citizens"
+        label="特別な市民カード"
+        summary={`公開${state.scRevealed.length}枚`}
+        force={model.choices.some((c) => c.target.kind === 'specialCitizen')}
+      >
         <div className="cards-row">
           {state.scRevealed.map((id) => {
             const card = GAME_DATA.specialCitizens.find((c) => c.id === id);
@@ -94,7 +137,7 @@ export const SharedArea = ({
             );
           })}
         </div>
-      </section>
+      </Fold>
       <section className="panel-box">
         <h3>計画都市</h3>
         <div className="cards-row">
