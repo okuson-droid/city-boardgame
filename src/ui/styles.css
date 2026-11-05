@@ -534,6 +534,87 @@ h3 {
 
 /* ---------- カード ---------- */
 
+/*
+ * 大きさをそろえる（ユーザー決定 2026-11-05）。カード（文明カード・特別な市民カード・計画都市・自然公園）は縦長の一定の大きさ
+ * （幅：高さ ≒ 5：7）、キャラクターは横長の一定の大きさにする。中身が収まらないときはカードの中でスクロールする。
+ */
+:root {
+  --card-w: 7.6em;
+  --card-h: 10.6em;
+  --char-w: 15.5em;
+  --char-h: 10.6em;
+}
+
+.card.civ,
+.card.sc,
+.card.pc,
+.card.np {
+  flex: none;
+  width: var(--card-w);
+  max-width: none;
+  height: var(--card-h);
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+.card.character {
+  flex: none;
+  width: var(--char-w);
+  max-width: none;
+  height: var(--char-h);
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+.card.card-back {
+  flex: none;
+  width: calc(var(--card-w) * 0.45);
+  height: calc(var(--card-h) * 0.45);
+}
+
+/* 一定の大きさのカードでは、名前を少し小さくして1行に収める（仮置きの印は名前の後ろに小さく付ける）。 */
+.card.civ .card-name,
+.card.sc .card-name,
+.card.pc .card-name,
+.card.np .card-name {
+  font-size: 0.76em;
+  white-space: nowrap;
+}
+
+.card.civ,
+.card.sc,
+.card.pc,
+.card.np {
+  position: relative;
+}
+
+.card.civ .card-head,
+.card.sc .card-head,
+.card.pc .card-head,
+.card.np .card-head {
+  gap: 2px;
+}
+
+.card.civ .provisional-badge,
+.card.sc .provisional-badge,
+.card.pc .provisional-badge,
+.card.np .provisional-badge {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  font-size: 0.7em;
+  padding: 0 2px;
+}
+
+/* カードの中の効果の並びは、カードの幅で折り返す。 */
+.card .script-row .icon-row {
+  display: flex;
+}
+
+.card .shape {
+  align-self: center;
+}
+
 .cards-row {
   display: flex;
   flex-wrap: wrap;
@@ -810,6 +891,22 @@ h3 {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+/* ドラフトのキャラクターも一定の大きさにそろえる（横長）。文言が長いときは枠の中でスクロールする。 */
+.draft-grid-character {
+  grid-template-columns: repeat(auto-fill, 25em);
+  justify-content: start;
+}
+
+.draft-card.draft-character {
+  height: 30em;
+}
+
+.draft-card.draft-character .draft-card-body {
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
 }
 
 .draft-grid-board {

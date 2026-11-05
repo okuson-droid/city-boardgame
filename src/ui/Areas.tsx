@@ -324,6 +324,7 @@ export const HandArea = ({
         <div className="cards-row">
           {character ? (
             <AbilityCard
+              className="character"
               title={character.name}
               options={abilityOptions(`char:${character.id}`)}
               fallback={abilityOption(`char:${character.id}`)?.id}
@@ -341,7 +342,7 @@ export const HandArea = ({
             const card = GAME_DATA.specialCitizens.find((c) => c.id === id);
             const used = owned.some((o) => o.source === `sc:${id}` && state.occupied.includes(o.key));
             return (
-              <AbilityCard key={id} title={`市民${id}${used ? '（使用済み）' : ''}`} options={abilityOptions(`sc:${id}`)} onChoose={onChoose}>
+              <AbilityCard key={id} className="sc" title={`市民${id}${used ? '（使用済み）' : ''}`} options={abilityOptions(`sc:${id}`)} onChoose={onChoose}>
                 {card ? <ScriptView script={card.script} /> : null}
               </AbilityCard>
             );
@@ -376,17 +377,20 @@ export const HandArea = ({
 /** キャラクター・特別な市民カード。能力ごとに選択肢（フリーアクション・専用スペース）を出す。 */
 const AbilityCard = ({
   title,
+  className,
   options,
   onChoose,
   children,
 }: {
   title: string;
+  /** 大きさの種類。character はキャラクター（横長の一定の大きさ）、sc は特別な市民カード（カードの大きさ）。 */
+  className: 'character' | 'sc';
   options: ReturnType<UiModel['choices']['filter']>;
   fallback?: string | undefined;
   onChoose: Choose;
   children: React.ReactNode;
 }) => (
-  <div className="card ability-card">
+  <div className={`card ability-card ${className}`}>
     <div className="card-head">
       <span className="card-name">{title}</span>
     </div>
