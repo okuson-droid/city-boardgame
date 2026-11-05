@@ -407,65 +407,6 @@ const AbilityCard = ({
 // ドラフト（2-6）
 // ---------------------------------------------------------------------------
 
-export const DraftView = ({ state, model, onChoose }: { state: GameState; model: UiModel; onChoose: Choose }) => {
-  const opt = (group: 'board' | 'bonus' | 'character', id: string) =>
-    model.find((t) => t.kind === 'draft' && t.group === group && t.id === id)?.id;
-  const reason = (group: 'board' | 'bonus' | 'character', id: string) =>
-    model.waiting ? WAITING_REASON : explain(state, { kind: 'draft', group, id });
-  return (
-    <div className="draft">
-      <section>
-        <h3>個人ボード</h3>
-        <div className="cards-row">
-          {state.draftPool.boards.map((id) => (
-            <CardFrame key={id} optionId={opt('board', id)} onChoose={onChoose} reason={reason('board', id)} className="draft-board">
-              <span className="card-name">{GAME_DATA.boards.find((b) => b.id === id)?.name}</span>
-              <MiniBoard boardId={id} />
-            </CardFrame>
-          ))}
-        </div>
-      </section>
-      <section>
-        <h3>ボーナスタイル</h3>
-        <div className="cards-row">
-          {state.draftPool.bonusTiles.map((id) => {
-            const tile = GAME_DATA.bonusTiles.find((t) => t.id === id);
-            return tile ? (
-              <CardFrame key={id} optionId={opt('bonus', String(id))} onChoose={onChoose} reason={reason('bonus', String(id))} className="tile">
-                <BonusTileView tile={tile} />
-              </CardFrame>
-            ) : null;
-          })}
-        </div>
-      </section>
-      <section>
-        <h3>キャラクター</h3>
-        <div className="cards-row">
-          {state.draftPool.characters.map((id) => {
-            const c = GAME_DATA.characters.find((x) => x.id === id);
-            return c ? (
-              <CardFrame key={id} optionId={opt('character', id)} onChoose={onChoose} reason={reason('character', id)} className="character">
-                <span className="card-name">{c.name}</span>
-                <ScriptView script={c.script} />
-              </CardFrame>
-            ) : null;
-          })}
-        </div>
-      </section>
-    </div>
-  );
-};
-
-const MiniBoard = ({ boardId }: { boardId: string }) => {
-  const board = GAME_DATA.boards.find((b) => b.id === boardId);
-  if (!board) return null;
-  const counts = new Map<string, number>();
-  for (const sq of Object.values(board.squares)) {
-    if (sq?.bonus) counts.set(sq.bonus.kind, (counts.get(sq.bonus.kind) ?? 0) + 1);
-  }
-  return <IconRow tokens={[...counts.entries()].map(([k, n]) => tok('resources', k, n))} size="sm" />;
-};
-
 // ---------------------------------------------------------------------------
 // 終了時の得点（4-3）
 // ---------------------------------------------------------------------------

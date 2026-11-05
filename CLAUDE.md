@@ -12,6 +12,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 - 完了：アイコンの文法（`docs/styleguide-icons.md`、承認済み 2026-11-03）。図案は `src/ui/icon-art.ts`、画面への組み込みは `Icon.tsx`。
 - 完了：アイコンの一覧（`Legend.tsx`）とカーソルを合わせたときの効果文（`HoverTip`、ユーザー決定 2026-11-04）。main に取り込み済み。
 - 完了：アイコンの見直し（ユーザー決定 2026-11-04・05）。開拓・建築・普及・インフラ・建物7種を描き直し、文字1字の仮の素材をすべて図案に置き換えた。文明カードを捨てる（`symbols.discard`）を支払うから分けた。教練と軍事レベルは塗りの剣にした（2026-11-05）。main に取り込み済み。
+- 完了：ドラフトの専用画面（ユーザー決定 2026-11-05、スイーツランドの準備のドラフトを参考にした。`src/ui/DraftScreen.tsx`）。
 - 完了：3-5 チューナー（`tools/tuner/`、`npm run tuner`）。main に取り込み済み。指示書の段階1〜4とチューナーはすべて完了した。検証（シミュレーションによる比較）は別の指示書で扱う。
 - 完了：演出の残り（ui_design.md 4節：増減のまとめ、トラックの1段ずつの表示、ラウンドの区切りの画面、置いたマスの強調、履歴からの強調）。main に取り込み済み。
 - 完了：オンライン化（段階5、`server/`・`src/online/`）。受け入れ検査（`npm run accept:online`）は合格。main に取り込み済み。
@@ -64,6 +65,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `supabase/` | Edge Function の入口（`functions/rooms/index.ts`、Deno）、`config.toml`、テーブルの SQL（`migrations/`） |
 | `e2e/supabase-mock.ts` | Supabase の模擬（`bundle.js` で処理し、Realtime を最小の WebSocket で模擬する） |
 | `.github/workflows/pages.yml` | GitHub Pages への配置と Edge Function の配置 |
+| `src/ui/DraftScreen.tsx` | ドラフトの専用画面（選ぶ順番の帯・選んだもののまとめ・種類ごとのタブ・個人ボードの地図 `BoardMap`・キャラクターの文言） |
 | `src/ui/Online.tsx` | オンライン版の入口（部屋を作る・入る・続きから）と対局画面 |
 | `server/main.ts` | オンライン版のサーバー（node:http だけ、SSE＋HTTP）。`server/vite.config.ts` で `dist-server/main.js` にまとめる |
 | `tools/tuner/labels.ts` | チューナーの画面に出す項目名・選択肢の日本語 |
@@ -134,6 +136,7 @@ npm run accept:tutorial  # チュートリアルの受け入れ検査
 - 演出の速度は URL の `#speed=none|fast|standard`、シードは `#seed=<数>` で指定できる。受け入れ検査は `speed=none` の3局と `speed=fast` の1局で行う。
 - 演出は `src/ui/Motion.tsx` にまとめ、`delta`・`levelReward`・`raid`・`round`・`tilePlaced`・`built` の出来事だけから組み立てる。速度「なし」では動きを止め、ラウンドの区切りの画面も出さない。
 - 建築は「建物の種類を選んでからマスをタップ」、遠征は「報酬を選ぶだけ」とする（ユーザー決定 2026-11-03。ui_design.md 2-3・2-3-1 の記述からの変更）。
+- ドラフト（ユーザー決定 2026-11-05）：選択待ちが `draftPick` の間は、3列の画面の代わりに `DraftScreen` を出す。個人ボードは地図そのもの（`BoardMap`）を見せ、タブは選ぶ人がまだ選んでいない種類だけ押せる。「閉じて盤面を見る」で畳み、上部の「ドラフトを開く」で戻る（選ぶ人が変わると開き直す）。手札の欄は通常の画面と同じく、表示中のタブが画面の持ち主のときだけ内容を描く。
 - 表示の切り替え（ドラフトの一覧か個人ボードか）は、フェイズではなく選択待ちのタスクで判断する。準備の処理（英雄・デザイナーの初期配置）はフェイズが「ドラフト」のまま進むためである。
 - アイコンの図案は `src/ui/icon-art.ts`（識別子ごとの SVG）。文字1字の仮の素材は画面に出さない（ユーザー決定 2026-11-04）。新しい識別子を足したら図案も足す。合成のアイコン（指標:建物・指標:地形）は `compositeArt` が組み立てる。見本は `npm run icons:preview` で `docs/icon-preview.html` に生成する。
 - 文法の区切り（条件のカプセル・「〜する度に」の輪・「いずれか1つ」の角括弧）は、`iconSequence` が `grp.<cond|loop|choice>.open/close` の印を返し、`IconRow` が枠に組み立てる。支払いは矢（`sym.then`）の左に置き、負の数にしない。
@@ -143,6 +146,7 @@ npm run accept:tutorial  # チュートリアルの受け入れ検査
 - 実際の対局（3人、`TUTORIAL_SEED`、席0が第1ラウンドの最初の手番）で、第1ラウンドを一手ずつ案内し、その後は自由に遊ぶ。他の2席は自動の打ち手（`botMove`、`rng.ts` の乱数、1ラウンドにアクション2回まで、第1ラウンドは案内で使う占有型のスペースを使わない）。
 - 台本は `STEPS`。手順は「次へ」（kind: next）か「決まった選択」（kind: move、`allow` の型。末尾の * は前方一致）。`when` が偽の手順は、`optional` なら自分の番で飛ばし、そうでなければ待つ。待つ間に来た台本にない選択（キャラクターやカードの効果）は、どれでも選べるようにする。
 - 説明の数値は `GAME_DATA` から読む（チューナーで値を変えても説明が食い違わない）。台本を変えたら `tests/tutorial.test.ts`（全キャラクターで最後まで通るか）と `npm run accept:tutorial` を通す。
+- 台本にない選択や、光らせる指定のない手順では、選べる選択肢を光らせる。マスに対応する選択肢は `cell:<マス>` も光らせる（`patternsOf`）。
 - 画面は `GameController.seat` を席0に固定し、取り消しは使わない。光らせる所作は CSS（`data-target` の属性セレクタ）で強調し、それ以外の所作は薄くする。案内の札は右上（襲撃・ボーナスタイルを見せる手順は左上）に置く。
 
 ## チューナーの約束事

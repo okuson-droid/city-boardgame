@@ -676,10 +676,256 @@ h3 {
   flex-wrap: wrap;
 }
 
-.draft {
+/* ---------- ドラフトの専用画面（ユーザー決定 2026-11-05） ---------- */
+
+.game.drafting {
+  grid-template-rows: auto minmax(0, 1fr) auto 0;
+}
+
+.game.drafting .pane-toggle {
+  display: none;
+}
+
+.draft-screen {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background: var(--bg);
+}
+
+.draft-top {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.draft-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.draft-heading h2 {
+  margin: 0 auto 0 0;
+  font-size: 1.15em;
+}
+
+.draft-order {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: pick;
+}
+
+.draft-order li {
+  counter-increment: pick;
+  padding: 2px 8px;
+  border: 2px solid var(--pc);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.85em;
+}
+
+.draft-order li::before {
+  content: counter(pick) '. ';
+  color: #888;
+}
+
+.draft-order li.done {
+  opacity: 0.4;
+}
+
+.draft-order li.now {
+  background: var(--pc);
+  color: #fff;
+  font-weight: bold;
+}
+
+.draft-order li.now::before {
+  color: #fff;
+}
+
+.draft-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.draft-pl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.draft-pl.now {
+  background: #fff4dd;
+}
+
+.draft-pl .chip {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #eee;
+  color: #777;
+  font-size: 0.85em;
+}
+
+.draft-pl .chip.got {
+  background: #e3f0e6;
+  color: #24522f;
+}
+
+.draft-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--line);
+}
+
+.draft-tabs .btn {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.draft-tabs .btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.draft-tabs .btn:disabled {
+  opacity: 0.45;
+}
+
+.draft-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.draft-grid-board {
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+}
+
+@media (max-height: 500px) {
+  .draft-screen {
+    padding: 4px 8px 8px;
+    gap: 4px;
+  }
+
+  .draft-heading h2 {
+    font-size: 1em;
+  }
+
+  .draft-order li {
+    padding: 0 6px;
+  }
+
+  .draft-picks {
+    gap: 2px 10px;
+  }
+
+  .draft-grid,
+  .draft-grid-board {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 6px;
+  }
+}
+
+.draft-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.draft-card.selectable-card {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.draft-card.taken {
+  opacity: 0.55;
+}
+
+.draft-card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.draft-card-head strong {
+  margin-right: auto;
+}
+
+.draft-owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border: 2px solid;
+  border-radius: 999px;
+  font-size: 0.85em;
+}
+
+.draft-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.board-map {
+  width: 100%;
+  height: auto;
+}
+
+.draft-board-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+
+.draft-text,
+.draft-axis {
+  margin: 0;
+}
+
+.draft-effects {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.draft-choose {
+  align-self: stretch;
+}
+
+.draft-note {
+  margin: 0;
+}
+
+.draft-hand {
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+}
+
+.draft-folded-note {
+  padding: 12px;
 }
 
 /* ---------- プロンプト帯（3-1） ---------- */

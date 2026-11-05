@@ -7,6 +7,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { GAME_DATA } from '../data/index.ts';
 import { decider, isGameOver } from '../game/engine.ts';
 import { sceneOf } from '../game/queries.ts';
+import { targetOf } from '../game/targets.ts';
+import type { Option } from '../game/types.ts';
 import {
   allowedOptions,
   botsMayMove,
@@ -45,6 +47,16 @@ const highlightCss = (patterns: readonly string[]): string => {
   ].join('\n');
 };
 
+/**
+ * 選択肢を、光らせる data-target の型にする。マスに対応する選択肢（土地タイル・建物・英雄の初期配置など）は、
+ * 画面ではマス（cell:<マス>）を押して選ぶため、マスの型も加える。
+ */
+const patternsOf = (options: readonly Option[]): string[] =>
+  options.flatMap((o) => {
+    const target = targetOf(o);
+    return target?.kind === 'cell' ? [o.id, `cell:${target.cell}`] : [o.id];
+  });
+
 export const TutorialGame = ({ settings, onLeave }: { settings: Settings; onLeave: () => void }) => {
   const [t, setT] = useState<TutorialState>(() => createTutorial());
   const [warning, setWarning] = useState<string | null>(null);
@@ -81,12 +93,13 @@ export const TutorialGame = ({ settings, onLeave }: { settings: Settings; onLeav
   };
 
   // 光らせるもの：手順が当てはまるときは手順の指定、台本にない選択のときは選べるものすべて。
+  // 手順に光らせる指定がない（どれでも選べる）ときも、選べるものを光らせる。
   const patterns =
     step === null || !mine
       ? []
-      : active
-        ? (step.highlight ?? [])
-        : allowed.map((o) => o.id);
+      : active && step.highlight !== undefined
+        ? step.highlight
+        : patternsOf(allowed);
 
   const title = step === null ? null : active ? step.title : mine ? sceneOf(t.game).heading : 'ほかの人の番';
   const body =

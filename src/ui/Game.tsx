@@ -13,7 +13,8 @@ import type { GameEvent, GameState } from '../game/types.ts';
 import { DeltaChips, RoundSummary, sumDeltas } from './Motion.tsx';
 import type { Building } from '../data/types.ts';
 import { ActionBoard } from './ActionBoard.tsx';
-import { DraftView, FinalScores, HandArea, PlayerStatus, SharedArea } from './Areas.tsx';
+import { FinalScores, HandArea, PlayerStatus, SharedArea } from './Areas.tsx';
+import { DraftScreen } from './DraftScreen.tsx';
 import { Board, type CellState } from './Board.tsx';
 import { buildModel, colorOf, waitingModel, WAITING_REASON, type Choice } from './model.ts';
 import { PromptBar } from './PromptBar.tsx';
@@ -69,6 +70,11 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
   const [lastEvents, setLastEvents] = useState<GameEvent[]>([]);
   const [summary, setSummary] = useState<number | null>(null);
   const [focus, setFocus] = useState<CellId | null>(null);
+  /** ドラフトの専用画面を畳んで盤面を見ているか。選ぶ人が変わると開き直す。 */
+  const [draftFolded, setDraftFolded] = useState(false);
+  const drafting = state.stack[state.stack.length - 1]?.t === 'draftPick';
+  const draftPicker = drafting ? decider(state) : null;
+  useEffect(() => setDraftFolded(false), [draftPicker]);
 
   // 直前の選択で増えた出来事を演出の材料にする（ui_design.md 4節）。取り消しで戻ったときは演出しない。
   const previous = useRef(state);
@@ -154,10 +160,12 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
   };
 
   const compactClass = pane === 'shared' ? 'show-shared' : 'show-personal';
+  const draftOpen = drafting && !draftFolded && draftPicker !== null;
+  const picker = draftPicker !== null ? state.players[draftPicker] : undefined;
 
   return (
     <div
-      className={`game ${compactClass}`}
+      className={`game ${compactClass}${draftOpen ? ' drafting' : ''}`}
       data-owner={handOwner ?? ''}
       data-view={view}
       data-speed={settings.speed}
@@ -194,6 +202,11 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
         <button type="button" className="btn pane-toggle" data-ui="pane" onClick={() => setPane(pane === 'shared' ? 'personal' : 'shared')}>
           {pane === 'shared' ? '個人領域' : '共有の場'}
         </button>
+        {drafting && draftFolded ? (
+          <button type="button" className="btn primary" data-ui="draft-open" onClick={() => setDraftFolded(false)}>
+            ドラフトを開く
+          </button>
+        ) : null}
         <LegendButton />
         <Tip text={undoReason}>
           <button type="button" className="btn" data-ui="undo" aria-disabled={undoReason !== null} disabled={undoReason !== null} onClick={undo}>
@@ -202,13 +215,26 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
         </Tip>
       </header>
 
+      {draftOpen && picker !== undefined ? (
+        <main className="layout">
+          <DraftScreen
+            state={state}
+            model={model}
+            picker={picker}
+            handPlayer={viewed}
+            isOwner={isOwnerView}
+            onChoose={choose}
+            onFold={() => setDraftFolded(true)}
+          />
+        </main>
+      ) : (
       <main className="layout">
         <section className="col-left">
           <ActionBoard state={state} model={model} viewer={handOwner ?? view} onChoose={choose} />
         </section>
         <section className="col-center">
-          {state.stack[state.stack.length - 1]?.t === 'draftPick' ? (
-            <DraftView state={state} model={model} onChoose={choose} />
+          {drafting ? (
+            <p className="muted draft-folded-note">ドラフト中である。上の「ドラフトを開く」で選ぶ画面に戻る。</p>
           ) : (
             <>
               <Board
@@ -242,6 +268,7 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
           <HandArea state={state} player={viewed} isOwner={isOwnerView} model={model} onChoose={choose} />
         </section>
       </main>
+      )}
 
       {ctl.message ? <div className="online-message">{ctl.message}</div> : null}
       <PromptBar

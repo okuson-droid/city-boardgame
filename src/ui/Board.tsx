@@ -128,9 +128,15 @@ export const Board = ({
                   </g>
                 ) : null}
                 {chips.has(cell.id) ? (
-                  <text x={cx - R * 0.5} y={cy + R * 0.55} className="cell-chip">
-                    精
-                  </text>
+                  <svg
+                    x={cx - R * 0.85}
+                    y={cy + R * 0.15}
+                    width={14}
+                    height={14}
+                    viewBox="0 0 24 24"
+                    dangerouslySetInnerHTML={{ __html: ICON_ART['cmd.spiritPlace'] ?? '' }}
+                  >
+                  </svg>
                 ) : null}
                 {order !== null ? (
                   <text x={cx + R * 0.5} y={cy - R * 0.3} className="cell-order">
@@ -145,6 +151,57 @@ export const Board = ({
         })}
       </svg>
     </div>
+  );
+};
+
+/**
+ * 個人ボードの地図だけを描く（ドラフトで選ぶ前に見せる）。マスの地形・マスボーナス・最初に土地タイルを置くマスを出す。
+ * 遊んでいるときの Board と同じ並びと色で描くため、選んだ後の見え方と食い違わない。
+ */
+export const BoardMap = ({ boardId }: { boardId: string }) => {
+  const board = GAME_DATA.boards.find((b) => b.id === boardId);
+  if (board === undefined) return null;
+  const width = PAD * 2 + W * 8;
+  const height = PAD * 2 + R * 2 + 1.5 * R * 5;
+  const initial = new Set<string>(GAME_DATA.params.board.initialCells);
+  return (
+    <svg className="board board-map" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${board.name}の地図`}>
+      {CELLS.map((cell) => {
+        const { cx, cy } = center(cell.x, cell.rowIndex);
+        const square = board.squares[cell.id];
+        const terrain = square?.terrain ?? 'plains';
+        const start = initial.has(cell.id);
+        const bonus = square?.bonus ?? null;
+        return (
+          <g key={cell.id} data-cell={cell.id}>
+            <title>
+              {`${cell.id}（${labelOf('terrains', terrain)}）${start ? '・最初に土地タイルを置くマス' : ''}${bonus ? `・マスボーナス：${labelOf('resources', bonus.kind)}${bonus.amount}` : ''}`}
+            </title>
+            <polygon
+              points={hexPoints(cx, cy, R - 1)}
+              fill={TERRAIN_COLORS[terrain]}
+              fillOpacity={start ? 1 : 0.55}
+              stroke={start ? '#222' : '#888'}
+              strokeWidth={start ? 3 : 1}
+            />
+            {bonus ? (
+              <g>
+                <circle cx={cx} cy={cy - 2} r={R * 0.5} fill="#fff" fillOpacity={0.85} stroke="#666" strokeWidth={0.8} />
+                <svg x={cx - 9} y={cy - 11} width={18} height={18} viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: ICON_ART[BONUS_ART[bonus.kind] ?? ''] ?? '' }} />
+                <text x={cx + 10} y={cy + 6} className="cell-bonus">
+                  {bonus.amount}
+                </text>
+              </g>
+            ) : null}
+            {start ? (
+              <text x={cx} y={cy + R * 0.78} className="cell-id">
+                開始
+              </text>
+            ) : null}
+          </g>
+        );
+      })}
+    </svg>
   );
 };
 
