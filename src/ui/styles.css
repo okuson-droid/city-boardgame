@@ -118,12 +118,15 @@ h3 {
   width: 100%;
   height: 100%;
   display: grid;
-  /* 左半分に共有の盤面（アクションボードと共有の場）、右半分に個人盤面、下に手札（ユーザー決定 2026-11-05、スイーツランドに倣う） */
-  grid-template-columns: 34% 21% 45%;
+  /*
+   * 左に共有の盤面（アクションボードとその下の共有の場）、中央に個人ボードの地図、右に個人の情報、下に手札
+   * （ユーザー決定 2026-11-05、スイーツランドに倣う）。
+   */
+  grid-template-columns: 36% minmax(0, 1fr) 25%;
   grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 200px);
   grid-template-areas:
     'top top top'
-    'left right center'
+    'left center info'
     'prompt prompt prompt'
     'bottom bottom bottom';
   overflow: hidden;
@@ -192,7 +195,7 @@ h3 {
 
 .col-left,
 .col-center,
-.col-right,
+.col-info,
 .bottom {
   min-width: 0;
   min-height: 0;
@@ -202,7 +205,21 @@ h3 {
 
 .col-left {
   grid-area: left;
-  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* 共有（左）と個人（中央・右）の境目 */
+  border-right: 3px solid var(--line);
+}
+
+/* 個人の情報と手札。横長の画面では格子に直接並べ、縮退配置では1つの列にまとめる。 */
+.personal-side {
+  display: contents;
+}
+
+.col-info {
+  grid-area: info;
+  border-left: 1px solid var(--line);
 }
 
 .col-center {
@@ -210,11 +227,6 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.col-right {
-  grid-area: right;
-  border-left: 1px solid var(--line);
 }
 
 .bottom {
@@ -1181,15 +1193,13 @@ h3 {
   }
 
   .game.show-shared .col-left {
-    grid-area: a;
-  }
-
-  .game.show-shared .col-right {
-    grid-area: b;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    border-right: none;
   }
 
   .game.show-shared .col-center,
-  .game.show-shared .bottom {
+  .game.show-shared .personal-side {
     display: none;
   }
 
@@ -1201,13 +1211,27 @@ h3 {
     grid-area: a;
   }
 
-  .game.show-personal .bottom {
+  .game.show-personal .personal-side {
     grid-area: b;
-    border-top: none;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
   }
 
-  .game.show-personal .col-left,
-  .game.show-personal .col-right {
+  .game.show-personal .col-info,
+  .game.show-personal .bottom {
+    flex-shrink: 0;
+    overflow: visible;
+    border-left: none;
+  }
+
+  .game.show-personal .bottom {
+    border-top: 1px solid var(--line);
+  }
+
+  .game.show-personal .col-left {
     display: none;
   }
 
@@ -1576,19 +1600,15 @@ h3 {
 }
 
 /*
- * 横長の画面では、案内の札を共有の場の列（左半分の右寄り）に重ねる。右半分の個人盤面（マスを選ぶ）と、
- * 左のアクションボードを隠さないためである。共有の場を見せたい手順（coach-left）はアクションボードの上に置く。
+ * 横長の画面では、案内の札を右の個人の情報の列に重ねる。左のアクションボード・共有の場と、中央の地図
+ * （マスを選ぶ）を隠さないためである。共有の場を見せたい手順（coach-left）も同じ位置に置く（共有の場は左の列にある）。
  */
 @media (min-width: 1100px) and (min-height: 600px) {
-  .coach {
-    right: auto;
-    left: calc(34% + 4px);
-    width: max(300px, calc(21% - 8px));
-  }
-
+  .coach,
   .coach.coach-left {
-    left: 12px;
-    width: min(380px, calc(34% - 16px));
+    left: auto;
+    right: 8px;
+    width: calc(25% - 16px);
   }
 }
 
@@ -1639,7 +1659,38 @@ h3 {
   border-color: var(--select);
 }
 
-/* 左半分（共有）と右半分（個人）の境目 */
-.col-right {
-  border-right: 3px solid var(--line);
+
+/* ---------- 個人の情報（右の列、ユーザー決定 2026-11-05） ---------- */
+
+.personal-info {
+  gap: 6px;
+}
+
+.info-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: 4.5em minmax(0, 1fr);
+  align-items: start;
+  gap: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--line);
+}
+
+.info-label {
+  color: var(--muted);
+  font-size: 0.85em;
+  padding-top: 2px;
+}
+
+.info-value {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }

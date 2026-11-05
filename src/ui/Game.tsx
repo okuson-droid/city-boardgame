@@ -13,7 +13,7 @@ import type { GameEvent, GameState } from '../game/types.ts';
 import { DeltaChips, RoundSummary, sumDeltas } from './Motion.tsx';
 import type { Building } from '../data/types.ts';
 import { ActionBoard } from './ActionBoard.tsx';
-import { FinalScores, HandArea, PlayerStatus, SharedArea } from './Areas.tsx';
+import { FinalScores, HandArea, PersonalInfo, SharedArea } from './Areas.tsx';
 import { DraftScreen } from './DraftScreen.tsx';
 import { Board, type CellState } from './Board.tsx';
 import { buildModel, colorOf, waitingModel, WAITING_REASON, type Choice } from './model.ts';
@@ -231,6 +231,15 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
       <main className="layout">
         <section className="col-left">
           <ActionBoard state={state} model={model} viewer={handOwner ?? view} onChoose={choose} />
+          <SharedArea
+            state={state}
+            model={model}
+            onChoose={choose}
+            onFocus={(cell, player) => {
+              setFocus(cell);
+              if (player !== null) setView(player);
+            }}
+          />
         </section>
         <section className="col-center">
           {drafting ? (
@@ -249,24 +258,17 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
                 onCell={onCell}
               />
               <DeltaChips key={state.log.length} changes={sumDeltas(lastEvents, viewed.index, ['move'])} speed={settings.speed} />
-              <PlayerStatus player={viewed} lastEvents={lastEvents} speed={settings.speed} />
             </>
           )}
         </section>
-        <section className="col-right">
-          <SharedArea
-            state={state}
-            model={model}
-            onChoose={choose}
-            onFocus={(cell, player) => {
-              setFocus(cell);
-              if (player !== null) setView(player);
-            }}
-          />
-        </section>
-        <section className="bottom">
-          <HandArea state={state} player={viewed} isOwner={isOwnerView} model={model} onChoose={choose} />
-        </section>
+        <div className="personal-side">
+          <section className="col-info">
+            <PersonalInfo player={viewed} isOwner={isOwnerView} model={model} onChoose={choose} lastEvents={lastEvents} speed={settings.speed} />
+          </section>
+          <section className="bottom">
+            <HandArea state={state} player={viewed} isOwner={isOwnerView} model={model} onChoose={choose} />
+          </section>
+        </div>
       </main>
       )}
 

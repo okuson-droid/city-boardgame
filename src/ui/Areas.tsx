@@ -1,4 +1,4 @@
-// 共有の場（左半分の右寄り）・個人の資源（右半分の下）・手持ち（下帯）・履歴・終了時の得点（ui_design.md 1-2、4-3、5、6-3）。
+// 共有の場（左の列、アクションボードの下）・個人の情報（右の列）・手持ち（下帯）・履歴・終了時の得点（ui_design.md 1-2、4-3、5、6-3）。
 
 import { useState } from 'react';
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
@@ -138,8 +138,12 @@ export const SharedArea = ({
           })}
         </div>
       </Fold>
-      <section className="panel-box">
-        <h3>計画都市</h3>
+      <Fold
+        name="planned"
+        label="計画都市"
+        summary={`公開${state.plannedCityRevealed.length}枚`}
+        force={model.choices.some((c) => c.target.kind === 'plannedCity' && state.plannedCityRevealed.includes(c.target.id))}
+      >
         <div className="cards-row">
           {state.plannedCityRevealed.map((id) => {
             const card = GAME_DATA.plannedCityCards.find((c) => c.id === id);
@@ -165,12 +169,10 @@ export const SharedArea = ({
             );
           })}
         </div>
-      </section>
-      <section className="panel-box">
-        <h3>文明カード</h3>
-        <IconRow tokens={[tok('resources', 'drawCivCards', `山${state.civDeck.length}`), tok('symbols', 'discard', `捨${state.civDiscard.length}`)]} size="sm" />
-      </section>
-      <EventLog state={state} {...(onFocus ? { onFocus } : {})} />
+      </Fold>
+      <Fold name="history" label="履歴" summary="直近の出来事">
+        <EventLog state={state} {...(onFocus ? { onFocus } : {})} />
+      </Fold>
     </div>
   );
 };
@@ -216,8 +218,7 @@ export const EventLog = ({ state, onFocus }: { state: GameState; onFocus?: (cell
     .slice(-14)
     .reverse();
   return (
-    <section className="panel-box event-log">
-      <h3>履歴</h3>
+    <section className="event-log">
       <ol>
         {rows.map(({ e, i, tokens }) => (
           <li key={i} data-ui="history-row" onClick={() => onFocus?.('cell' in e ? e.cell : null, 'player' in e ? e.player : null)}>
@@ -231,78 +232,108 @@ export const EventLog = ({ state, onFocus }: { state: GameState; onFocus?: (cell
 };
 
 // ---------------------------------------------------------------------------
-// 個人の資源とトラック（5-2）
+// 個人の情報（右の列、ユーザー決定 2026-11-05）：キャラクターの能力・資源・生産・ワーカー・トラック・建物・最上位の解放
 // ---------------------------------------------------------------------------
 
-export const PlayerStatus = ({
+const InfoRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div className="info-row">
+    <span className="info-label">{label}</span>
+    <div className="info-value">{children}</div>
+  </div>
+);
+
+export const PersonalInfo = ({
   player,
+  isOwner,
+  model,
+  onChoose,
   lastEvents = [],
   speed = 'none',
 }: {
   player: PlayerState;
+  isOwner: boolean;
+  model: UiModel;
+  onChoose: Choose;
   lastEvents?: readonly GameEvent[];
   speed?: Speed;
 }) => {
   const w = workerSummary(player);
   const tracks = trackChanges(lastEvents, player.index);
+  const character = GAME_DATA.characters.find((c) => c.id === player.characterId);
+  const options = isOwner && character
+    ? model.choices.filter((c) => (c.target.kind === 'ability' || c.target.kind === 'specialSpace') && c.target.source === `char:${character.id}`)
+    : [];
   return (
-    <div className="status">
-      <IconRow
-        tokens={[
-          tok('resources', 'gold', player.gold),
-          tok('resources', 'materials', player.materials),
-          tok('resources', 'militaryTokens', player.militaryTokens),
-          tok('resources', 'goldProduction', player.goldProduction),
-          tok('resources', 'materialProduction', player.materialProduction),
-          tok('resources', 'points', player.score),
-        ]}
-      />
-      <IconRow
-        tokens={[
-          tok('resources', 'regularWorkers', `${w.regularUsable}/${w.regularCap}`),
-          tok('resources', 'tempWorkers', `${w.tempUsable}/${w.tempMax}`),
-          tok('tracks', 'military', player.militaryLevel),
-          tok('tracks', 'infra', player.infraLevel),
-        ]}
-      />
-      <TrackBar
-        key={`m-${player.index}-${player.militaryLevel}`}
-        track="military"
-        level={player.militaryLevel}
-        claimed={player.militaryRewardsClaimed}
-        rose={tracks.military.rose}
-        rewarded={tracks.military.rewarded}
-        speed={speed}
-      />
-      <TrackBar
-        key={`i-${player.index}-${player.infraLevel}`}
-        track="infra"
-        level={player.infraLevel}
-        claimed={player.infraRewardsClaimed}
-        rose={tracks.infra.rose}
-        rewarded={tracks.infra.rewarded}
-        speed={speed}
-      />
-      <Tip text={`配置済み${w.regularPlaced}人・次ラウンドから${w.regularNextRound}人・手番中に得た臨時${w.tempLocked}人`}>
-        <span className="muted small">ワーカーの内訳</span>
-      </Tip>
-      <IconRow
-        size="sm"
-        tokens={BUILDINGS.map((b) => tok('buildings', b, `${buildingCount(player, b)}/${GAME_DATA.params.buildings.limits[b]}`))}
-      />
-      <span className="unlocks">
-        <span className="muted small">最上位</span>
-        {ACTIONS.map((a) => {
-          const on = isTopUnlocked(GAME_DATA, player, a);
-          return (
-            <Tip key={a} text={`${ACTION_LABELS[a]}の最上位：${on ? '解放済み' : 'まだ使えない'}`}>
-              <span className={`unlock ${on ? 'on' : 'off'}`} data-unlock={a}>
-                <Icon token={{ icon: `act.${a}`, label: ACTION_LABELS[a] }} size="sm" />
-              </span>
-            </Tip>
-          );
-        })}
-      </span>
+    <div className="status personal-info" data-info={player.index}>
+      <h3 className="info-name">
+        <span className="worker-dot" style={{ background: colorOf(player.index) }} />
+        {player.name}
+      </h3>
+      {character ? (
+        <AbilityCard className="character" title={character.name} options={options} onChoose={onChoose}>
+          <ScriptView script={character.script} />
+        </AbilityCard>
+      ) : null}
+      <InfoRow label="資源">
+        <IconRow
+          tokens={[
+            tok('resources', 'gold', player.gold),
+            tok('resources', 'materials', player.materials),
+            tok('resources', 'militaryTokens', player.militaryTokens),
+            tok('resources', 'points', player.score),
+          ]}
+        />
+      </InfoRow>
+      <InfoRow label="生産">
+        <IconRow tokens={[tok('resources', 'goldProduction', player.goldProduction), tok('resources', 'materialProduction', player.materialProduction)]} />
+      </InfoRow>
+      <InfoRow label="ワーカー">
+        <Tip text={`配置済み${w.regularPlaced}人・次ラウンドから${w.regularNextRound}人・手番中に得た臨時${w.tempLocked}人`}>
+          <IconRow
+            tokens={[tok('resources', 'regularWorkers', `${w.regularUsable}/${w.regularCap}`), tok('resources', 'tempWorkers', `${w.tempUsable}/${w.tempMax}`)]}
+          />
+        </Tip>
+      </InfoRow>
+      <InfoRow label="トラック">
+        <TrackBar
+          key={`m-${player.index}-${player.militaryLevel}`}
+          track="military"
+          level={player.militaryLevel}
+          claimed={player.militaryRewardsClaimed}
+          rose={tracks.military.rose}
+          rewarded={tracks.military.rewarded}
+          speed={speed}
+        />
+        <TrackBar
+          key={`i-${player.index}-${player.infraLevel}`}
+          track="infra"
+          level={player.infraLevel}
+          claimed={player.infraRewardsClaimed}
+          rose={tracks.infra.rose}
+          rewarded={tracks.infra.rewarded}
+          speed={speed}
+        />
+      </InfoRow>
+      <InfoRow label="建物">
+        <IconRow
+          size="sm"
+          tokens={BUILDINGS.map((b) => tok('buildings', b, `${buildingCount(player, b)}/${GAME_DATA.params.buildings.limits[b]}`))}
+        />
+      </InfoRow>
+      <InfoRow label="最上位">
+        <span className="unlocks">
+          {ACTIONS.map((a) => {
+            const on = isTopUnlocked(GAME_DATA, player, a);
+            return (
+              <Tip key={a} text={`${ACTION_LABELS[a]}の最上位：${on ? '解放済み' : 'まだ使えない'}`}>
+                <span className={`unlock ${on ? 'on' : 'off'}`} data-unlock={a}>
+                  <Icon token={{ icon: `act.${a}`, label: ACTION_LABELS[a] }} size="sm" />
+                </span>
+              </Tip>
+            );
+          })}
+        </span>
+      </InfoRow>
     </div>
   );
 };
@@ -324,14 +355,9 @@ export const HandArea = ({
   model: UiModel;
   onChoose: Choose;
 }) => {
-  const character = GAME_DATA.characters.find((c) => c.id === player.characterId);
   const tile = GAME_DATA.bonusTiles.find((t) => t.id === player.bonusTile);
   const park = GAME_DATA.natureParkCards.find((c) => c.id === player.natureParkCard);
   const owned = abilitiesOf(GAME_DATA, player);
-  const abilityOption = (source: string) =>
-    isOwner
-      ? model.find((t) => (t.kind === 'ability' || t.kind === 'specialSpace') && t.source === source)
-      : undefined;
   const abilityOptions = (source: string) =>
     isOwner ? model.choices.filter((c) => (c.target.kind === 'ability' || c.target.kind === 'specialSpace') && c.target.source === source) : [];
   const tagCounts = new Map<string, number>();
@@ -363,19 +389,8 @@ export const HandArea = ({
         </div>
       </section>
       <section className="owned">
-        <h3>キャラクター・タイル・市民</h3>
+        <h3>タイル・市民・カード</h3>
         <div className="cards-row">
-          {character ? (
-            <AbilityCard
-              className="character"
-              title={character.name}
-              options={abilityOptions(`char:${character.id}`)}
-              fallback={abilityOption(`char:${character.id}`)?.id}
-              onChoose={onChoose}
-            >
-              <ScriptView script={character.script} />
-            </AbilityCard>
-          ) : null}
           {tile ? (
             <div className="card tile">
               <BonusTileView tile={tile} />
@@ -407,6 +422,8 @@ export const HandArea = ({
         </div>
       </section>
       <section className="played">
+        <h3>文明カードの山</h3>
+        <IconRow tokens={[tok('resources', 'drawCivCards', `山${state.civDeck.length}`), tok('symbols', 'discard', `捨${state.civDiscard.length}`)]} size="sm" />
         <h3>プレイ済み {player.played.length}枚</h3>
         <IconRow tokens={[...tagCounts.entries()].map(([tag, n]) => tok('tags', tag, n))} size="sm" />
         <Tip text={player.played.join('・')}>
@@ -429,7 +446,6 @@ const AbilityCard = ({
   /** 大きさの種類。character はキャラクター（横長の一定の大きさ）、sc は特別な市民カード（カードの大きさ）。 */
   className: 'character' | 'sc';
   options: ReturnType<UiModel['choices']['filter']>;
-  fallback?: string | undefined;
   onChoose: Choose;
   children: React.ReactNode;
 }) => (
