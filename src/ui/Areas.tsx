@@ -125,7 +125,7 @@ export const SharedArea = ({
       </section>
       <section className="panel-box">
         <h3>文明カード</h3>
-        <IconRow tokens={[tok('resources', 'drawCivCards', `山${state.civDeck.length}`), tok('symbols', 'pay', `捨${state.civDiscard.length}`)]} size="sm" />
+        <IconRow tokens={[tok('resources', 'drawCivCards', `山${state.civDeck.length}`), tok('symbols', 'discard', `捨${state.civDiscard.length}`)]} size="sm" />
       </section>
       <EventLog state={state} {...(onFocus ? { onFocus } : {})} />
     </div>

@@ -89,7 +89,7 @@ export const bonusTileIcons = (tile: BonusTile): IconToken[] => [
       case 'landTiles':
         return tok('commands', 'placeTiles', e.amount);
       case 'discardCivCards':
-        return tok('symbols', 'pay', -e.amount);
+        return tok('symbols', 'discard', e.amount);
       case 'buildRight':
         return tok('commands', 'build', e.amount);
       default:

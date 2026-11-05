@@ -464,6 +464,10 @@
     "colon": {
       "icon": "sym.colon",
       "label": "："
+    },
+    "discard": {
+      "icon": "sym.discard",
+      "label": "文明カードを捨てる"
     }
   }
 }

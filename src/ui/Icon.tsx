@@ -62,7 +62,7 @@ const artOf = (icon: string): string | undefined => {
     'scene.tile': 'cmd.placeTiles',
     'scene.build': 'cmd.build',
     'scene.reward': 'cmd.expeditionRewards',
-    'scene.discard': 'sym.pay',
+    'scene.discard': 'sym.discard',
     'scene.play': 'cmd.playCard',
     'scene.citizen': 'res.specialCitizen',
     'scene.choose': 'cmd.chooseOne',

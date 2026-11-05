@@ -90,7 +90,7 @@ export const actionSpaceIcons = (action: Action, tier: Tier, d: GameData = GAME_
     case 'migration':
       return [...(a.migration[tier].tempWorkers > 0 ? [tok('resources', 'tempWorkers', a.migration[tier].tempWorkers)] : []), tok('resources', 'regularWorkers', a.migration[tier].regularWorkers)];
     case 'research':
-      return [tok('resources', 'drawCivCards', a.research[tier].draw), tok('symbols', 'pay', -a.research[tier].discard)];
+      return [tok('resources', 'drawCivCards', a.research[tier].draw), tok('symbols', 'discard', a.research[tier].discard)];
     case 'spread':
       return [tok('commands', 'playCard', a.spread[tier].maxCards), ...(a.spread[tier].goldPerCard > 0 ? [tok('resources', 'gold', a.spread[tier].goldPerCard)] : [])];
   }

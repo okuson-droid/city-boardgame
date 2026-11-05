@@ -77,8 +77,8 @@ const BUILDING_ART = {
   fort: `<path d="M5 21V7h3v2h2V7h4v2h2V7h3v14z" fill="${AXIS_COLORS.military}" stroke="#333" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 21v-4a2 2 0 0 1 4 0v4" fill="#fff" stroke="#333" stroke-width="1.2"/>`,
   // 役所：三角の破風と柱の並ぶ建物
   office: `<path d="M2.5 9L12 3.5 21.5 9z" fill="${AXIS_COLORS.welfare}" stroke="#333" stroke-width="1.5" stroke-linejoin="round"/><rect x="3.5" y="9" width="17" height="2" fill="${AXIS_COLORS.welfare}" stroke="#333" stroke-width="1.2"/><path d="M6 11v7M10 11v7M14 11v7M18 11v7" stroke="#333" stroke-width="2.2"/><rect x="2.5" y="18" width="19" height="3" fill="${AXIS_COLORS.welfare}" stroke="#333" stroke-width="1.2"/>`,
-  // 大学：角帽と房
-  university: `<path d="M6 11.5v4c0 1.6 2.7 3.2 6 3.2s6-1.6 6-3.2v-4l-6 3z" fill="#5d3a7d" stroke="#333" stroke-width="1.3"/><path d="M1.5 9L12 4l10.5 5L12 14z" fill="${AXIS_COLORS.culture}" stroke="#333" stroke-width="1.5" stroke-linejoin="round"/><path d="M19.5 10.2v6" stroke="#f2c84b" stroke-width="1.6"/><circle cx="19.5" cy="17" r="1.4" fill="#f2c84b"/>`,
+  // 大学：時計塔のある学舎。塔の上に角帽を載せる
+  university: `<rect x="2" y="12" width="20" height="9" fill="${AXIS_COLORS.culture}" stroke="#333" stroke-width="1.5"/><rect x="8.5" y="7.5" width="7" height="13.5" fill="#8f63b5" stroke="#333" stroke-width="1.5"/><path d="M5.5 7.2L12 3.8l6.5 3.4L12 10.4z" fill="#3b2650" stroke="#222" stroke-width="1.1" stroke-linejoin="round"/><path d="M17.2 7.2v3.6" stroke="#f2c84b" stroke-width="1.3"/><circle cx="17.2" cy="11.2" r=".9" fill="#f2c84b"/><circle cx="12" cy="12.3" r="1.8" fill="#fff" stroke="#333" stroke-width="1"/><path d="M12 11.3v1.1l.7.5" stroke="#333" stroke-width=".8" stroke-linecap="round" fill="none"/><path d="M10.5 21v-3.2a1.5 1.5 0 0 1 3 0V21" fill="#fff" stroke="#333" stroke-width="1.1"/><rect x="4" y="14.5" width="2.6" height="3" fill="#fff" stroke="#333" stroke-width=".9"/><rect x="17.4" y="14.5" width="2.6" height="3" fill="#fff" stroke="#333" stroke-width=".9"/>`,
   // 住宅：煙突のある家、戸と窓
   house: `<rect x="15" y="4" width="2.6" height="5" fill="#8a4a16" stroke="#333" stroke-width="1.2"/><path d="M2 12L12 3.5 22 12z" fill="#a85d1c" stroke="#333" stroke-width="1.5" stroke-linejoin="round"/><rect x="5" y="12" width="14" height="9" fill="${AXIS_COLORS.welfare}" stroke="#333" stroke-width="1.5"/><rect x="7" y="14" width="3" height="3" fill="#fff" stroke="#333" stroke-width="1"/><rect x="12.5" y="15" width="3.5" height="6" fill="#fff" stroke="#333" stroke-width="1"/>`,
   // 飯場：入口の開いた天幕
@@ -201,8 +201,10 @@ export const ICON_ART: Readonly<Record<string, string>> = {
   'sym.once': `<circle cx="12" cy="12" r="9" fill="#444"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">1</text>`,
   'sym.free': `<circle cx="12" cy="12" r="8" fill="${AXIS_COLORS.economy}" stroke="#7a5f10" stroke-width="1.5"/><path d="M5 19L19 5" stroke="#b5423b" stroke-width="2.5" stroke-linecap="round"/>`,
   'sym.noGold': `<circle cx="12" cy="12" r="8" fill="${AXIS_COLORS.economy}" stroke="#7a5f10" stroke-width="1.5"/><path d="M5 19L19 5" stroke="#b5423b" stroke-width="2.5" stroke-linecap="round"/>`,
-  // 支払う・捨てる：カードを捨て札の箱に入れる
-  'sym.pay': `<rect x="7.5" y="1.5" width="9" height="12" rx="1.5" fill="#2f4a7a" stroke="#1d2f50" stroke-width="1.3" transform="rotate(12 12 7.5)"/><path d="M3 13h18l-1.8 8.5H4.8z" fill="#ddd" stroke="#444" stroke-width="1.5" stroke-linejoin="round"/>`,
+  // 支払う：硬貨を差し出す（手から出ていく矢）
+  'sym.pay': `${coin(9, 12, 7)}<path d="M15 12h7M19 8.5l3.5 3.5-3.5 3.5" ${S} stroke="#222" stroke-width="2.2"/>`,
+  // 文明カードを捨てる：ふた付きのごみ箱に、文明カードを入れる
+  'sym.discard': `<rect x="10.5" y="0.8" width="7" height="9.5" rx="1.2" fill="#2f4a7a" stroke="#1d2f50" stroke-width="1.2" transform="rotate(20 14 5.5)"/><rect x="3.5" y="8.2" width="14" height="2.6" rx="1" fill="#777" stroke="#333" stroke-width="1.3"/><path d="M8.5 8.2V6.8h4v1.4" fill="none" stroke="#333" stroke-width="1.3"/><path d="M5 10.8h11l-1.2 11H6.2z" fill="#9a9a9a" stroke="#333" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.6 13.5v5.8M10.5 13.5v5.8M12.4 13.5v5.8" stroke="#555" stroke-width="1.2" stroke-linecap="round"/>`,
   'sym.workers': meeple('#888'),
   'sym.every': `<path d="M4.5 10a8 8 0 0 1 14-3.5M19.5 14a8 8 0 0 1-14 3.5" ${S} stroke="#444"/><path d="M19 3v4h-4M5 21v-4h4" ${S} stroke="#444"/>`,
   'sym.excludeSelf': `${card(`<path d="M8.5 8h7M8.5 11.5h7M8.5 15h4.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>`)}<path d="M3 21L21 3" stroke="#c8453b" stroke-width="2.4" stroke-linecap="round"/>`,
