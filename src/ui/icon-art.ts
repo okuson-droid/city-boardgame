@@ -85,6 +85,13 @@ const BUILDING_ART = {
   camp: `<path d="M2 21L12 4l10 17z" fill="#8a8a8a" stroke="#333" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 21L8.5 14 12 8.5 15.5 14z" fill="#fff" stroke="#333" stroke-width="1.2" stroke-linejoin="round"/><path d="M12 4L10.5 1.5M12 4l1.5-2.5" stroke="#333" stroke-width="1.3" stroke-linecap="round"/><path d="M1 21h22" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>`,
 } as const;
 
+/** 塗った剣（上向き、中心 x=12）。刃は金属、つばと柄頭は金、柄は茶。教練と軍事レベルに使う。 */
+const SWORD_UP = `<path d="M12 1.8l1.5 2.2v10.3h-3V4z" fill="#dfe4ea" stroke="#333" stroke-width="1.2" stroke-linejoin="round"/><path d="M12 4.6v9" stroke="#9aa3ad" stroke-width=".9"/><rect x="7.6" y="14.3" width="8.8" height="2.2" rx="1.1" fill="#d4a62a" stroke="#333" stroke-width="1"/><rect x="11" y="16.5" width="2" height="3.8" fill="#7a4a22" stroke="#333" stroke-width=".9"/><circle cx="12" cy="21.3" r="1.4" fill="#d4a62a" stroke="#333" stroke-width=".9"/>`;
+
+/** 剣を中心 (12,12) のまわりに回して、縮めて置く。 */
+const swordAt = (angle: number, scale: number, dx: number, dy: number): string =>
+  `<g transform="translate(${dx} ${dy}) rotate(${angle} 12 12) translate(12 12) scale(${scale}) translate(-12 -12)">${SWORD_UP}</g>`;
+
 /** 建物の図案を縮めて置く（合成のアイコン用）。 */
 const smallArt = (art: string, x: number, y: number, scale: number): string =>
   `<g transform="translate(${x} ${y}) scale(${scale})">${art}</g>`;
@@ -110,7 +117,8 @@ export const ICON_ART: Readonly<Record<string, string>> = {
   'res.goldProduction': `<rect x="2" y="18" width="20" height="4" rx="1" fill="#555"/><circle cx="12" cy="10" r="7" fill="${AXIS_COLORS.economy}" stroke="#7a5f10" stroke-width="1.5"/><circle cx="12" cy="10" r="4" fill="none" stroke="#7a5f10" stroke-width="1.2"/>`,
   'res.materialProduction': `<rect x="2" y="18" width="20" height="4" rx="1" fill="#555"/><rect x="4" y="11" width="16" height="5" rx="1" fill="#9a6b3e" stroke="#5a3b1e" stroke-width="1.2"/><rect x="7" y="5" width="10" height="5" rx="1" fill="#c99a63" stroke="#5a3b1e" stroke-width="1.2"/>`,
   // トラック：上向きの矢を右に添える
-  'track.military': `<path d="M4 18L14 8M12 6l4-1-1 4M3 15l4 4M2 20l2-2" ${S} stroke="${AXIS_COLORS.military}"/><path d="M20 22v-8M17.5 16.5L20 14l2.5 2.5" ${S} stroke="#222"/>`,
+  // 軍事レベル：斜めに掲げた剣と上向きの矢（インフラの道路と対にする）
+  'track.military': `${swordAt(40, 1.08, -3.2, 0.3)}<path d="M20 22v-8M17.5 16.5L20 14l2.5 2.5" ${S} stroke="#222"/>`,
   // インフラ：まっすぐ延びる道（遠近の道路と中央の白線）
   'track.infra': `<path d="M1.5 21.5L7 5h4l5.5 16.5z" fill="${INFRA}" stroke="#1f4e80" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 7.5v2M9 12v2.5M9 17.5v3" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M20 22v-8M17.5 16.5L20 14l2.5 2.5" ${S} stroke="#222"/>`,
   // 建物
@@ -232,7 +240,8 @@ export const ACTION_ART: Readonly<Record<string, string>> = {
   build: `<rect x="2" y="17" width="9" height="4" fill="#c8634a" stroke="#222" stroke-width="1.3"/><rect x="6.5" y="13" width="9" height="4" fill="#d9785e" stroke="#222" stroke-width="1.3"/><path d="M13 9.5l8-6.5" stroke="#8a5a2b" stroke-width="2.6" stroke-linecap="round"/><path d="M9.2 4.6l4.2-2.2 3 5.6-4.2 2.2z" fill="#666" stroke="#222" stroke-width="1.3" stroke-linejoin="round"/>`,
   import: `<path d="M3 15h18l-3 5H6zM12 3v9M8.5 8.5L12 12l3.5-3.5" ${S} stroke="#222"/>`,
   export: `<path d="M3 15h18l-3 5H6zM12 12V3M8.5 6.5L12 3l3.5 3.5" ${S} stroke="#222"/>`,
-  drill: `<path d="M5 19L15 9M13 7l5-3-3 5M4 16l4 4" ${S} stroke="#222"/>`,
+  // 教練：交差させた2本の剣（稽古で打ち合う）
+  drill: `${swordAt(-42, 1.1, 0, 0)}${swordAt(42, 1.1, 0, 0)}`,
   expedition: `<path d="M6 21V3M6 4h11l-3 4 3 4H6" ${S} stroke="#222"/>`,
   welfare: `<path d="M12 20s-8-4.5-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.5-8 10-8 10z" ${S} stroke="#222"/>`,
   migration: `<circle cx="8" cy="7" r="2.5" ${S} stroke="#222"/><path d="M4 20c0-4 2-7 4-7s4 3 4 7M14 12h7M18 9l3 3-3 3" ${S} stroke="#222"/>`,
