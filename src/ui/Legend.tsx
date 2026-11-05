@@ -7,7 +7,7 @@ import type { IconSection } from '../data/icon-keys.ts';
 import { ACTIONS } from '../data/types.ts';
 import type { IconToken } from '../game/icons.ts';
 import { ACTION_LABELS } from './ActionBoard.tsx';
-import { Icon, IconRow } from './Icon.tsx';
+import { Icon, IconRow, standaloneLabel } from './Icon.tsx';
 
 const SECTION_TITLES: Readonly<Record<IconSection, string>> = {
   abilities: 'いつ処理するか（能力の札）',
@@ -110,7 +110,7 @@ const sections = (): { title: string; entries: Entry[] }[] => {
     for (const { icon, label } of Object.values(table)) {
       if (seen.has(icon)) continue;
       seen.add(icon);
-      entries.push({ token: { icon, label }, note: NOTES[icon] });
+      entries.push({ token: { icon, label: standaloneLabel(icon, label) }, note: NOTES[icon] });
     }
     result.push({ title: SECTION_TITLES[section], entries });
   }

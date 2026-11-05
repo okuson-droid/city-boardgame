@@ -5,6 +5,8 @@ import { describeActionSpace, pendingBuildCost, sceneOf } from '../src/game/quer
 import { ACTIONS, TIERS } from '../src/data/types.ts';
 import { createRng, nextInt } from '../src/game/rng.ts';
 import { targetOf } from '../src/game/targets.ts';
+import { ICON_KEYS } from '../src/data/index.ts';
+import { standaloneLabel } from '../src/ui/Icon.tsx';
 import { edit, firstTurn, ids, me, play, top, withoutCharacters } from './helpers/game.ts';
 
 const base = () =>
@@ -155,5 +157,23 @@ describe('増減の出来事（ui_design.md 0-2、4-1）', () => {
     for (const e of incomes) {
       if (e.type === 'delta') expect(e.changes['gold'] ?? 0).not.toBe(0);
     }
+  });
+});
+
+describe('単独で出すときのアイコンの名前（ユーザー決定 2026-11-05）', () => {
+  it('アイコンの一覧と吹き出しに出す名前は、助詞から始まらない', () => {
+    // ui_design.md 2-1（補足表示）、docs/styleguide-icons.md 4-7
+    const fragments: string[] = [];
+    for (const table of Object.values(ICON_KEYS)) {
+      if (typeof table !== 'object' || table === null) continue;
+      for (const entry of Object.values(table as Record<string, { icon: string; label: string }>)) {
+        const shown = standaloneLabel(entry.icon, entry.label);
+        if (/^[のにをがへとし]/.test(shown)) fragments.push(`${entry.icon}：${shown}`);
+      }
+    }
+    expect(fragments).toEqual([]);
+    expect(standaloneLabel('met.buildingsOfType', 'の数')).toBe('（建物）の数');
+    // 効果の文章を組み立てる語（対応表）は変えない。
+    expect(ICON_KEYS.metrics.buildingsOfType?.label).toBe('の数');
   });
 });

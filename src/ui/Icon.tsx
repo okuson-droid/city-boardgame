@@ -72,6 +72,25 @@ const artOf = (icon: string): string | undefined => {
   return ICON_ART[icon] ?? ICON_ART[alias[icon] ?? ''] ?? compositeArt(icon);
 };
 
+/**
+ * 単独で出すときの名前（アイコンの一覧と、カーソルを合わせたときの吹き出し）。
+ * 対応表の語のうち「の数」「を建設する度に」などは、効果の文章で前の語（地形・建物など）につなげる部品である。
+ * 単独では読みにくいため、前に入るものを括弧で補う。対応表の語そのもの（文章の組み立て）は変えない。
+ */
+const STANDALONE: Readonly<Record<string, string>> = {
+  'met.buildingsOfType': '（建物）の数',
+  'met.buildingsOnTerrain': '（地形）に建てた建物',
+  'evt.tilePlaced': '（地形）の土地タイルを置く度に',
+  'evt.cardPlayed': '（タグ）の文明カードをプレイする度に',
+  'evt.actionExecuted': '（種類）のアクションを実行する度に',
+  'evt.built': '（建物）を建設する度に',
+  'evt.workerGained': '（ワーカー）を獲得する度に',
+  'evt.raid': '襲撃で（防衛成功など）した時',
+  'sym.per': '（数える対象）につき',
+};
+
+export const standaloneLabel = (icon: string, label: string): string => STANDALONE[icon] ?? label;
+
 const glyphOf = (token: IconToken): string => {
   if (token.icon === 'num') return String(token.value ?? '');
   const fixed = GLYPHS[token.icon];
@@ -84,7 +103,7 @@ export const Icon = ({ token, size = 'md' }: { token: IconToken; size?: 'sm' | '
   const art = artOf(token.icon);
   const hasValue = token.value !== undefined && token.icon !== 'num';
   // カーソルを合わせると、アイコンの語に続けて、囲む効果の文章を出す。
-  const tip = iconTipText(`${token.label}${hasValue ? ` ${String(token.value)}` : ''}`, useTipContext());
+  const tip = iconTipText(`${standaloneLabel(token.icon, token.label)}${hasValue ? ` ${String(token.value)}` : ''}`, useTipContext());
   // 得点は数字を輪の中に入れる（4-2）。
   const inside = token.icon === 'res.points' && hasValue;
   return (
