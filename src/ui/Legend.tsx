@@ -99,6 +99,10 @@ const sections = (): { title: string; entries: Entry[] }[] => {
       entries: ACTIONS.map((a) => ({ token: { icon: `act.${a}`, label: ACTION_LABELS[a] }, note: undefined })),
     },
   ];
+  result.push({
+    title: 'アクションボードの印',
+    entries: [{ token: { icon: 'sym.lock', label: '最上位の解放条件' }, note: '右に並んだ条件を満たすと、その最上位のアクションが使えるようになる' }],
+  });
   for (const section of SECTION_ORDER) {
     const table = ICON_KEYS[section] as Readonly<Record<string, { icon: string; label: string }>>;
     const entries: Entry[] = [];

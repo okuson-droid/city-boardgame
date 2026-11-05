@@ -276,10 +276,13 @@ h3 {
 }
 
 .lock-mark {
-  background: #555;
-  color: #fff;
-  border-radius: 3px;
-  padding: 0 3px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.lock-mark svg {
+  width: 16px;
+  height: 16px;
 }
 
 .ab-users {
@@ -507,22 +510,26 @@ h3 {
 
 .unlocks {
   display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 2px;
 }
 
 .unlock {
-  border-radius: 3px;
-  padding: 0 3px;
-  font-size: 0.85em;
+  display: inline-flex;
+  border-radius: 4px;
+  padding: 1px;
+  border: 1.5px solid transparent;
 }
 
+/* 解放済みは色の枠、まだのものは薄く（アイコンの形は同じまま、地の明るさで見分ける）。 */
 .unlock.on {
-  background: var(--accent);
-  color: #fff;
+  border-color: var(--accent);
+  background: #fff4dd;
 }
 
 .unlock.off {
-  background: #ddd;
+  opacity: 0.35;
 }
 
 /* ---------- カード ---------- */

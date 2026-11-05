@@ -147,19 +147,19 @@ const eventTokens = (e: GameEvent): IconToken[] | null => {
     case 'built':
       return [tok('commands', 'build'), tok('buildings', e.building)];
     case 'cardPlayed':
-      return [tok('commands', 'playCard'), { icon: 'card', label: e.card, value: e.card }];
+      return [tok('commands', 'playCard'), { icon: 'num', label: e.card, value: e.card }];
     case 'cardsDrawn':
       return [tok('resources', 'drawCivCards', e.count)];
     case 'specialCitizen':
-      return [tok('resources', 'specialCitizen'), { icon: 'card', label: e.card, value: e.card }];
+      return [tok('resources', 'specialCitizen'), { icon: 'num', label: e.card, value: e.card }];
     case 'raid':
       return [tok('results', e.result)];
     case 'pass':
-      return [{ icon: 'pass', label: 'パス' }];
+      return [{ icon: 'sym.pass', label: 'パス' }];
     case 'plannedCity':
       return [{ icon: 'pc', label: `計画都市${e.card}`, value: e.rank }];
     case 'round':
-      return [{ icon: 'round', label: `第${e.round}ラウンド`, value: e.round }];
+      return [{ icon: 'num', label: `第${e.round}ラウンド`, value: `第${e.round}ラウンド` }];
     default:
       return null;
   }
@@ -248,11 +248,17 @@ export const PlayerStatus = ({
         tokens={BUILDINGS.map((b) => tok('buildings', b, `${buildingCount(player, b)}/${GAME_DATA.params.buildings.limits[b]}`))}
       />
       <span className="unlocks">
-        {ACTIONS.map((a) => (
-          <span key={a} className={`unlock ${isTopUnlocked(GAME_DATA, player, a) ? 'on' : 'off'}`}>
-            {ACTION_LABELS[a].slice(0, 1)}
-          </span>
-        ))}
+        <span className="muted small">最上位</span>
+        {ACTIONS.map((a) => {
+          const on = isTopUnlocked(GAME_DATA, player, a);
+          return (
+            <Tip key={a} text={`${ACTION_LABELS[a]}の最上位：${on ? '解放済み' : 'まだ使えない'}`}>
+              <span className={`unlock ${on ? 'on' : 'off'}`} data-unlock={a}>
+                <Icon token={{ icon: `act.${a}`, label: ACTION_LABELS[a] }} size="sm" />
+              </span>
+            </Tip>
+          );
+        })}
       </span>
     </div>
   );

@@ -152,7 +152,8 @@ export const Board = ({
 export const ShapeView = ({
   cells,
 }: {
-  cells: readonly { q: number; r: number; terrain: Terrain | null; text: string }[];
+  /** art は建物などの図案（icon-art.ts の SVG の中身）。マスの中に縮めて描く。title はカーソルを合わせたときの名前。 */
+  cells: readonly { q: number; r: number; terrain: Terrain | null; text: string; art?: string; title?: string }[];
 }) => {
   const r = 9;
   const w = Math.sqrt(3) * r;
@@ -165,10 +166,15 @@ export const ShapeView = ({
     <svg className="shape" viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}>
       {pts.map((p, i) => (
         <g key={i}>
+          {p.title ? <title>{p.title}</title> : null}
           <polygon points={hexPoints(p.x, p.y, r - 0.5)} fill={p.terrain ? TERRAIN_COLORS[p.terrain] : '#fff'} stroke="#555" strokeWidth={0.8} />
-          <text x={p.x} y={p.y + 3} className="shape-text">
-            {p.text}
-          </text>
+          {p.art ? (
+            <g transform={`translate(${p.x - 5.5} ${p.y - 5.5}) scale(0.46)`} dangerouslySetInnerHTML={{ __html: p.art }} />
+          ) : (
+            <text x={p.x} y={p.y + 3} className="shape-text">
+              {p.text}
+            </text>
+          )}
         </g>
       ))}
     </svg>

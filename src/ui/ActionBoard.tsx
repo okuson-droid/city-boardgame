@@ -6,6 +6,7 @@ import { explain } from '../game/explain.ts';
 import { actionSpaceIcons, describeActionSpace, isSharedSpace, isTopUnlocked, spaceUsers, unlockIcons } from '../game/queries.ts';
 import type { GameState } from '../game/types.ts';
 import { IconRow } from './Icon.tsx';
+import { ICON_ART } from './icon-art.ts';
 import { colorOf, WAITING_REASON, type UiModel } from './model.ts';
 import { Tip } from './Tip.tsx';
 
@@ -67,7 +68,9 @@ export const ActionBoard = ({
                   <IconRow tokens={actionSpaceIcons(action, tier)} size="sm" />
                   {locked ? (
                     <span className="ab-lock">
-                      <span className="lock-mark">鍵</span>
+                      <span className="lock-mark" aria-label="解放条件">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: ICON_ART['sym.lock'] ?? '' }} />
+                      </span>
                       <IconRow tokens={unlockIcons(GAME_DATA.params.actions.unlockTop[action])} size="sm" />
                     </span>
                   ) : null}

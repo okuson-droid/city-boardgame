@@ -8,6 +8,7 @@ import { civCardCost } from '../game/queries.ts';
 import type { PlayerState } from '../game/types.ts';
 import { IconRow } from './Icon.tsx';
 import { ShapeView } from './Board.tsx';
+import { ICON_ART } from './icon-art.ts';
 import { Tip } from './Tip.tsx';
 import type { ReactNode } from 'react';
 
@@ -120,7 +121,8 @@ export const PlannedCityView = ({ card }: { card: PlannedCityCard }) => (
         q: s.q,
         r: s.r,
         terrain: s.terrain,
-        text: s.building === null ? '' : entry('buildings', s.building).label.slice(0, 1),
+        text: '',
+        ...(s.building === null ? {} : { art: ICON_ART[`bld.${s.building}`] ?? '', title: entry('buildings', s.building).label }),
       }))}
     />
     <IconRow tokens={[tok('resources', card.benefit.kind === 'drawCivCards' ? 'drawCivCards' : card.benefit.kind, card.benefit.amount)]} size="sm" />

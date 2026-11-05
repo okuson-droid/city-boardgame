@@ -3,7 +3,7 @@
 
 import type { ReactNode } from 'react';
 import type { GroupKind, IconToken } from '../game/icons.ts';
-import { ACTION_ART, ICON_ART } from './icon-art.ts';
+import { ACTION_ART, compositeArt, ICON_ART } from './icon-art.ts';
 import { iconTipText, Tip, useTipContext } from './Tip.tsx';
 
 const COLORS: Record<string, string> = {
@@ -56,8 +56,20 @@ const artOf = (icon: string): string | undefined => {
     'met.buildings': 'cmd.build',
     'met.playedCivCards': 'cmd.playCard',
     'res.drawCivCards': 'res.civCard',
+    // 場面の見出し（ui_design.md 3-1）は、その場面で扱う要素の図案で表す。
+    'scene.turn': 'res.regularWorkers',
+    'scene.workers': 'res.tempWorkers',
+    'scene.tile': 'cmd.placeTiles',
+    'scene.build': 'cmd.build',
+    'scene.reward': 'cmd.expeditionRewards',
+    'scene.discard': 'sym.pay',
+    'scene.play': 'cmd.playCard',
+    'scene.citizen': 'res.specialCitizen',
+    'scene.choose': 'cmd.chooseOne',
+    'scene.copy': 'cmd.copyAction',
+    'scene.raid': 'res.militaryTokens',
   };
-  return ICON_ART[icon] ?? ICON_ART[alias[icon] ?? ''];
+  return ICON_ART[icon] ?? ICON_ART[alias[icon] ?? ''] ?? compositeArt(icon);
 };
 
 const glyphOf = (token: IconToken): string => {
