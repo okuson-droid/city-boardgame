@@ -16,7 +16,8 @@ export const AXIS_COLORS = {
 } as const;
 
 /** 文明カードのタグの色。8種を色と図柄の両方で見分ける。 */
-const TAG_COLORS = {
+/** 文明カードの分類の色。アイコンとカードの帯で共有する。 */
+export const TAG_COLORS = {
   military: '#b5423b',
   economy: '#b8901a',
   academic: '#7b4fa0',
@@ -26,6 +27,9 @@ const TAG_COLORS = {
   art: '#c0577a',
   music: '#2f8a8a',
 } as const;
+
+/** 分類の色。分類の名前が表にないときは undefined。 */
+export const tagColor = (tag: string): string | undefined => (TAG_COLORS as Readonly<Record<string, string>>)[tag];
 
 const INK = '#2a2a2a';
 const BLUE = '#2f5d8a';

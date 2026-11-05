@@ -1711,3 +1711,114 @@ h3 {
   display: inline-flex;
   min-width: 0;
 }
+
+/* ---------- 文明カードの面（ユーザー決定 2026-11-05） ---------- */
+
+/* 外枠：分類の色の縁取りと、紙の地。中身は .civ-face が受け持つ。 */
+.card.civ {
+  padding: 0;
+  gap: 0;
+  border: 2px solid var(--civ-frame, #6b5a3e);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fffdf6 0%, #f6efdc 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), inset 0 0 0 2px #fffaf0;
+}
+
+.civ-face {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  border-radius: 6px;
+  /* 内側の細い飾り罫 */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tag) 45%, transparent);
+}
+
+/* 帯：分類の色の地に、金貨のコストと名前 */
+.civ-band {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 1.9em;
+  padding: 2px 4px 2px 2px;
+  border-radius: 5px 5px 0 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tag) 88%, #fff) 0%, var(--tag) 100%);
+  color: #fff;
+  border-bottom: 2px solid color-mix(in srgb, var(--tag) 70%, #000);
+}
+
+.civ-band .card-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+/* 金貨のコスト */
+.civ-cost {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75em;
+  height: 1.75em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3b0 0%, #f2c94c 45%, #c99a1c 100%);
+  border: 1.5px solid #8a6510;
+  color: #4a3405;
+  font-weight: 800;
+  font-size: 0.95em;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+/* 割引されたコストは緑の縁で示す */
+.civ-cost.reduced {
+  border-color: #2f7d46;
+  box-shadow: 0 0 0 1.5px #bfe5c8;
+}
+
+/* 分類の段：帯の下の薄い地 */
+.civ-tags {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 4px;
+  background: color-mix(in srgb, var(--tag) 12%, #fff);
+  border-bottom: 1px solid color-mix(in srgb, var(--tag) 35%, transparent);
+}
+
+.civ-section-label {
+  font-size: 0.62em;
+  color: #7a6a4d;
+  letter-spacing: 0.05em;
+}
+
+/* 効果：囲み枠 */
+.civ-effect {
+  flex: 1;
+  margin: 4px;
+  padding: 3px;
+  border: 1px solid #d8ccb0;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* 得点：左下 */
+.civ-foot {
+  display: flex;
+  align-items: center;
+  padding: 0 4px 3px;
+}
+
+.civ-points {
+  display: inline-flex;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #eef6ea;
+  border: 1px solid #a9cf9c;
+}
+
+.card.civ.selectable {
+  outline: 2px solid var(--select);
+  outline-offset: 1px;
+}

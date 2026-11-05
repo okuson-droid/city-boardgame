@@ -8,7 +8,7 @@ import { civCardCost } from '../game/queries.ts';
 import type { PlayerState } from '../game/types.ts';
 import { IconRow } from './Icon.tsx';
 import { ShapeView } from './Board.tsx';
-import { ICON_ART } from './icon-art.ts';
+import { ICON_ART, tagColor } from './icon-art.ts';
 import { Tip } from './Tip.tsx';
 import type { ReactNode } from 'react';
 
@@ -61,21 +61,44 @@ export const CardFrame = ({ optionId, onChoose, reason = null, className = '', c
   </Tip>
 );
 
+/**
+ * 文明カード（ユーザー決定 2026-11-05：コスト・分類・効果の区切りをはっきりさせ、カードらしく飾る）。
+ * 上から、分類の色の帯（左に金貨のコスト、右に名前）、分類のアイコンの段、枠で囲んだ効果、固有の得点の順に並べる。
+ */
 export const CivCardView = ({ card, player }: { card: string; player: PlayerState | null }) => {
   const data = GAME_DATA.civilizationCards.find((c) => c.id === card);
   if (data === undefined) return <span>{card}</span>;
   const cost = player === null ? data.cost.gold : civCardCost(GAME_DATA, player, card);
+  const reduced = cost < data.cost.gold;
+  const color = tagColor(data.tags[0] ?? '') ?? '#8a7a5a';
   return (
-    <>
-      <div className="card-head">
+    <div className="civ-face" style={{ ['--tag' as string]: color }} data-tags={data.tags.join(' ')}>
+      <div className="civ-band">
+        <Tip text={`プレイに要る金：${cost}${reduced ? `（元は${data.cost.gold}）` : ''}`}>
+          <span className={`civ-cost${reduced ? ' reduced' : ''}`} aria-label={`コスト 金${cost}`}>
+            {cost}
+          </span>
+        </Tip>
         <span className="card-name">{data.name}</span>
-        {data.provisional ? <span className="provisional-badge">仮</span> : null}
       </div>
-      <div className="card-meta">
-        <IconRow tokens={[tok('resources', 'gold', cost), ...data.tags.map((t) => tok('tags', t)), tok('resources', 'points', data.points)]} size="sm" />
+      <div className="civ-tags">
+        <span className="civ-section-label">分類</span>
+        <IconRow tokens={data.tags.map((t) => tok('tags', t))} size="sm" />
       </div>
-      <ScriptView script={data.script} />
-    </>
+      <div className="civ-effect">
+        <ScriptView script={data.script} />
+      </div>
+      {data.points !== 0 ? (
+        <div className="civ-foot">
+          <Tip text={`このカードの得点：${data.points}点（ゲーム終了時）`}>
+            <span className="civ-points">
+              <IconRow tokens={[tok('resources', 'points', data.points)]} size="sm" />
+            </span>
+          </Tip>
+        </div>
+      ) : null}
+      {data.provisional ? <span className="provisional-badge">仮</span> : null}
+    </div>
   );
 };
 
