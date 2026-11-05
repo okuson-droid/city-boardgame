@@ -15,7 +15,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 - 完了：演出の残り（ui_design.md 4節：増減のまとめ、トラックの1段ずつの表示、ラウンドの区切りの画面、置いたマスの強調、履歴からの強調）。main に取り込み済み。
 - 完了：オンライン化（段階5、`server/`・`src/online/`）。受け入れ検査（`npm run accept:online`）は合格。main に取り込み済み。
 - 完了：公開ページのチューナー（案A、ユーザー決定 2026-11-04、`docs/tuner-pages.md`）。main に取り込み済み。GitHub への保存は模擬の API で単体テストを行った。本物の GitHub への保存は未確認（ユーザーのトークン待ち）。
-- 作業中：チュートリアル（ユーザー決定 2026-11-04、`src/tutorial/`・`src/ui/Tutorial.tsx`）。受け入れ検査（`npm run accept:tutorial`）は合格。
+- 完了：チュートリアル（ユーザー決定 2026-11-04、`src/tutorial/`・`src/ui/Tutorial.tsx`）。受け入れ検査（`npm run accept:tutorial`）は合格。main に取り込み済み。
 - 完了：オンライン版の Supabase 化と GitHub Pages への配置（ユーザー決定 2026-11-03、`docs/online-supabase.md`）。模擬に対する受け入れ検査（`npm run accept:supabase`）は合格。main に取り込み済み。本物の Supabase では、Edge Function とテーブルが動き部屋を作れることを確かめた（2026-11-04）。Project URL はパスを捨てて起点だけを使う（`projectOrigin`）。
 
 ## 構成
