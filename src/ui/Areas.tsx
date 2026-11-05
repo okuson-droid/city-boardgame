@@ -138,38 +138,6 @@ export const SharedArea = ({
           })}
         </div>
       </Fold>
-      <Fold
-        name="planned"
-        label="計画都市"
-        summary={`公開${state.plannedCityRevealed.length}枚`}
-        force={model.choices.some((c) => c.target.kind === 'plannedCity' && state.plannedCityRevealed.includes(c.target.id))}
-      >
-        <div className="cards-row">
-          {state.plannedCityRevealed.map((id) => {
-            const card = GAME_DATA.plannedCityCards.find((c) => c.id === id);
-            const option = model.find((t) => t.kind === 'plannedCity' && t.id === id);
-            const claims = state.plannedCityClaims[id] ?? [];
-            return (
-              <CardFrame
-                key={id}
-                optionId={option?.id}
-                onChoose={onChoose}
-                className="pc"
-                reason={option !== undefined ? null : model.waiting ? WAITING_REASON : explain(state, { kind: 'plannedCity', id })}
-              >
-                {card ? <PlannedCityView card={card} /> : null}
-                <span className="claims">
-                  {claims.map((p, i) => (
-                    <span key={i} className="rank-marker" style={{ background: colorOf(p) }}>
-                      {i + 1}
-                    </span>
-                  ))}
-                </span>
-              </CardFrame>
-            );
-          })}
-        </div>
-      </Fold>
       <Fold name="history" label="履歴" summary="直近の出来事">
         <EventLog state={state} {...(onFocus ? { onFocus } : {})} />
       </Fold>
@@ -260,6 +228,11 @@ export const PersonalInfo = ({
   const w = workerSummary(player);
   const tracks = trackChanges(lastEvents, player.index);
   const character = GAME_DATA.characters.find((c) => c.id === player.characterId);
+  const park = GAME_DATA.natureParkCards.find((c) => c.id === player.natureParkCard);
+  const tagCounts = new Map<string, number>();
+  for (const id of player.played) {
+    for (const tag of GAME_DATA.civilizationCards.find((c) => c.id === id)?.tags ?? []) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+  }
   const options = isOwner && character
     ? model.choices.filter((c) => (c.target.kind === 'ability' || c.target.kind === 'specialSpace') && c.target.source === `char:${character.id}`)
     : [];
@@ -269,11 +242,18 @@ export const PersonalInfo = ({
         <span className="worker-dot" style={{ background: colorOf(player.index) }} />
         {player.name}
       </h3>
-      {character ? (
-        <AbilityCard className="character" title={character.name} options={options} onChoose={onChoose}>
-          <ScriptView script={character.script} />
-        </AbilityCard>
-      ) : null}
+      <div className="info-cards">
+        {character ? (
+          <AbilityCard className="character" title={character.name} options={options} onChoose={onChoose}>
+            <ScriptView script={character.script} />
+          </AbilityCard>
+        ) : null}
+        {park ? (
+          <div className="card np">
+            <NatureParkView card={park} />
+          </div>
+        ) : null}
+      </div>
       <InfoRow label="資源">
         <IconRow
           tokens={[
@@ -334,6 +314,19 @@ export const PersonalInfo = ({
           })}
         </span>
       </InfoRow>
+      <Fold
+        name="played"
+        label={`プレイ済み ${player.played.length}枚`}
+        summary={<IconRow tokens={[...tagCounts.entries()].map(([tag, n]) => tok('tags', tag, n))} size="sm" />}
+      >
+        <div className="cards-row">
+          {player.played.map((card, i) => (
+            <div key={`${card}-${i}`} className="card civ" data-played-card={card}>
+              <CivCardView card={card} player={player} />
+            </div>
+          ))}
+        </div>
+      </Fold>
     </div>
   );
 };
@@ -355,17 +348,45 @@ export const HandArea = ({
   model: UiModel;
   onChoose: Choose;
 }) => {
-  const tile = GAME_DATA.bonusTiles.find((t) => t.id === player.bonusTile);
-  const park = GAME_DATA.natureParkCards.find((c) => c.id === player.natureParkCard);
   const owned = abilitiesOf(GAME_DATA, player);
   const abilityOptions = (source: string) =>
     isOwner ? model.choices.filter((c) => (c.target.kind === 'ability' || c.target.kind === 'specialSpace') && c.target.source === source) : [];
-  const tagCounts = new Map<string, number>();
-  for (const id of player.played) {
-    for (const tag of GAME_DATA.civilizationCards.find((c) => c.id === id)?.tags ?? []) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
-  }
+  // 計画都市は共有の目標（13-1-1）。場に公開したものと、表示中のプレイヤーの専用のもの（デザイナー、19-5-3）を並べる。
+  const planned = [
+    ...state.plannedCityRevealed.map((id) => ({ id, own: false })),
+    ...player.privatePlannedCities.map((id) => ({ id, own: true })),
+  ];
   return (
     <div className="hand-area">
+      <section className="planned">
+        <h3>計画都市</h3>
+        <div className="cards-row">
+          {planned.map(({ id, own }) => {
+            const card = GAME_DATA.plannedCityCards.find((c) => c.id === id);
+            const option = own && !isOwner ? undefined : model.find((t) => t.kind === 'plannedCity' && t.id === id);
+            const claims = state.plannedCityClaims[id] ?? [];
+            return (
+              <CardFrame
+                key={`${own ? 'own' : 'pub'}-${id}`}
+                optionId={option?.id}
+                onChoose={onChoose}
+                className="pc"
+                reason={option !== undefined ? null : model.waiting ? WAITING_REASON : own ? null : explain(state, { kind: 'plannedCity', id })}
+              >
+                {card ? <PlannedCityView card={card} /> : null}
+                {own ? <span className="muted small">{player.name}専用</span> : null}
+                <span className="claims">
+                  {claims.map((p, k) => (
+                    <span key={k} className="rank-marker" style={{ background: colorOf(p) }}>
+                      {k + 1}
+                    </span>
+                  ))}
+                </span>
+              </CardFrame>
+            );
+          })}
+        </div>
+      </section>
       <section className="hand">
         <h3>手札 {player.hand.length}枚</h3>
         <div className="cards-row">
@@ -388,47 +409,25 @@ export const HandArea = ({
             : Array.from({ length: player.hand.length }, (_, i) => <div key={i} className="card card-back" />)}
         </div>
       </section>
-      <section className="owned">
-        <h3>タイル・市民・カード</h3>
-        <div className="cards-row">
-          {tile ? (
-            <div className="card tile">
-              <BonusTileView tile={tile} />
-            </div>
-          ) : null}
-          {player.specialCitizens.map((id) => {
-            const card = GAME_DATA.specialCitizens.find((c) => c.id === id);
-            const used = owned.some((o) => o.source === `sc:${id}` && state.occupied.includes(o.key));
-            return (
-              <AbilityCard key={id} className="sc" title={`市民${id}${used ? '（使用済み）' : ''}`} options={abilityOptions(`sc:${id}`)} onChoose={onChoose}>
-                {card ? <ScriptView script={card.script} /> : null}
-              </AbilityCard>
-            );
-          })}
-          {park ? (
-            <div className="card np">
-              <NatureParkView card={park} />
-            </div>
-          ) : null}
-          {player.privatePlannedCities.map((id) => {
-            const card = GAME_DATA.plannedCityCards.find((c) => c.id === id);
-            const option = isOwner ? model.find((t) => t.kind === 'plannedCity' && t.id === id) : undefined;
-            return card ? (
-              <CardFrame key={id} optionId={option?.id} onChoose={onChoose} className="pc">
-                <PlannedCityView card={card} />
-              </CardFrame>
-            ) : null;
-          })}
-        </div>
-      </section>
-      <section className="played">
+      {player.specialCitizens.length > 0 ? (
+        <section className="owned">
+          <h3>特別な市民カード</h3>
+          <div className="cards-row">
+            {player.specialCitizens.map((id) => {
+              const card = GAME_DATA.specialCitizens.find((c) => c.id === id);
+              const used = owned.some((o) => o.source === `sc:${id}` && state.occupied.includes(o.key));
+              return (
+                <AbilityCard key={id} className="sc" title={`市民${id}${used ? '（使用済み）' : ''}`} options={abilityOptions(`sc:${id}`)} onChoose={onChoose}>
+                  {card ? <ScriptView script={card.script} /> : null}
+                </AbilityCard>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+      <section className="deck">
         <h3>文明カードの山</h3>
         <IconRow tokens={[tok('resources', 'drawCivCards', `山${state.civDeck.length}`), tok('symbols', 'discard', `捨${state.civDiscard.length}`)]} size="sm" />
-        <h3>プレイ済み {player.played.length}枚</h3>
-        <IconRow tokens={[...tagCounts.entries()].map(([tag, n]) => tok('tags', tag, n))} size="sm" />
-        <Tip text={player.played.join('・')}>
-          <span className="muted small">一覧</span>
-        </Tip>
       </section>
     </div>
   );
