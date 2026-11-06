@@ -42,3 +42,9 @@ export const playout = (playerCount: number, seed: number, maxMoves: number, d: 
   }
   return { state, moves, stuck: false };
 };
+
+/**
+ * 処理を一度だけ Vitest の作業者に譲る。乱択プレイアウトを何十局も同期で続けると、作業者が親との通信に
+ * 答えられず「Timeout calling onTaskUpdate」で全体が失敗するため、1局ごとに呼ぶ。
+ */
+export const yieldToRunner = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));

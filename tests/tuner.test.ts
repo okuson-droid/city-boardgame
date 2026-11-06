@@ -21,7 +21,7 @@ import {
   toMarkdown,
   validateFiles,
 } from '../tools/tuner/proposal.ts';
-import { playout } from './helpers/playout.ts';
+import { playout, yieldToRunner } from './helpers/playout.ts';
 
 const base = DATA_FILES;
 
@@ -148,7 +148,7 @@ describe('書き出し（指示書 3-5）', () => {
 });
 
 describe('調整案を適用したゲームの性質', () => {
-  it('調整案を適用したデータで、乱択プレイアウトが詰まらず終局する', () => {
+  it('調整案を適用したデータで、乱択プレイアウトが詰まらず終局する', async () => {
     // 指示書 3-5（調整案を適用したゲームが性質テストを通ること）、rules.md v0.8 12-1-1、1-0-6
     let work = setInFiles(base, 'params.json', ['initial', 'gold'], 10);
     work = setInFiles(work, 'params.json', ['buildings', 'cost', 'house', 'materials'], 1);
@@ -158,6 +158,7 @@ describe('調整案を適用したゲームの性質', () => {
     const d = loadGameData(rawFromFiles(work));
     for (const players of [3, 4]) {
       for (let i = 0; i < 20; i += 1) {
+        await yieldToRunner();
         const result = playout(players, 7000 + players * 100 + i, 5000, d);
         expect(result.stuck).toBe(false);
         expect(result.state.phase).toBe('over');
