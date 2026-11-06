@@ -53,7 +53,7 @@ const resourceToken = (kind: string, value: number): IconToken => {
 };
 
 /** 個人ボードのマスボーナスの合計（地図の下に添える）。 */
-const bonusTotals = (boardId: string): IconToken[] => {
+export const bonusTotals = (boardId: string): IconToken[] => {
   const board = GAME_DATA.boards.find((b) => b.id === boardId);
   const totals = new Map<string, number>();
   for (const sq of Object.values(board?.squares ?? {})) if (sq?.bonus) totals.set(sq.bonus.kind, (totals.get(sq.bonus.kind) ?? 0) + sq.bonus.amount);

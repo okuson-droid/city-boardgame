@@ -6,8 +6,10 @@
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
 import type { IconToken } from '../game/icons.ts';
 import type { GameEvent, GameState } from '../game/types.ts';
+import type { Grant } from '../data/types.ts';
 import { IconRow } from './Icon.tsx';
 import { colorOf } from './model.ts';
+import { Tip } from './Tip.tsx';
 
 export type Speed = 'standard' | 'fast' | 'none';
 
@@ -62,6 +64,26 @@ export const DeltaChips = ({ changes, speed }: { changes: Record<string, number>
 };
 
 /** 軍事・インフラのトラック。上がった段を1段ずつ動かし、到達報酬の段を強調する。 */
+const keyEntry = (section: keyof typeof ICON_KEYS, key: string): { icon: string; label: string } =>
+  (ICON_KEYS[section] as Readonly<Record<string, { icon: string; label: string }>>)[key] ?? { icon: `${section}.${key}`, label: key };
+
+/** 到達報酬1つのアイコン（ユーザー決定 2026-11-06：トラックの下に報酬を絵で示す）。 */
+const grantTokens = (g: Grant): IconToken[] => {
+  if (g.kind === 'landTiles') return [{ ...keyEntry('commands', 'placeTiles'), value: g.amount }];
+  if (g.kind === 'buildRight') return [{ ...keyEntry('commands', 'build'), value: g.amount }];
+  if (g.kind === 'freeBuildOnTerrain') return [keyEntry('terrains', g.terrain), { ...keyEntry('commands', 'build'), value: g.amount }];
+  return [{ ...keyEntry('resources', g.kind), value: g.amount }];
+};
+
+/** 到達報酬1つの文章。 */
+const grantText = (g: Grant): string => {
+  if (g.kind === 'landTiles') return `土地タイル${g.amount}枚を置く`;
+  if (g.kind === 'buildRight') return `建物${g.amount}軒を建てる`;
+  if (g.kind === 'freeBuildOnTerrain') return `${keyEntry('terrains', g.terrain).label}に建物${g.amount}軒を無料で建てる`;
+  if (g.kind === 'specialCitizen') return `特別な市民カード${g.amount}枚を獲得する`;
+  return `${keyEntry('resources', g.kind).label}${g.amount}を得る`;
+};
+
 export const TrackBar = ({
   track,
   level,
@@ -80,30 +102,61 @@ export const TrackBar = ({
   speed: Speed;
 }) => {
   const table = track === 'military' ? GAME_DATA.params.military : GAME_DATA.params.infra;
-  const rewardLevels = new Set(table.rewards.map((r) => r.level));
+  const rewardAt = new Map(table.rewards.map((r) => [r.level, r]));
+  const name = track === 'military' ? '軍事レベル' : 'インフラレベル';
   const from = level - rose;
+  const next = table.rewards.find((r) => r.level > level && !claimed.includes(r.level));
+  const overflow = track === 'military' ? GAME_DATA.params.military.overflowPointsPerRaise : 0;
+  const levels = Array.from({ length: table.max }, (_, i) => i + 1);
   return (
-    <span className={`track track-${track}`} data-track={track}>
-      <span className="track-label">{track === 'military' ? '軍事' : 'インフラ'}</span>
-      {Array.from({ length: table.max + 1 }, (_, l) => {
-        const filled = l <= level && l > 0;
-        const stepping = rose > 0 && l > from && l <= level;
-        const delay = stepping ? (l - from - 1) * STEP_MS[speed] : 0;
-        const classes = [
-          'track-cell',
-          filled ? 'filled' : '',
-          rewardLevels.has(l) ? 'reward' : '',
-          claimed.includes(l) ? 'claimed' : '',
-          stepping && speed !== 'none' ? 'stepping' : '',
-          rewarded.includes(l) && speed !== 'none' ? 'flash' : '',
-        ].join(' ');
-        return (
-          <span key={l} className={classes} style={stepping ? { animationDelay: `${delay}ms` } : undefined} title={`${l}`}>
-            {rewardLevels.has(l) ? l : ''}
-          </span>
-        );
-      })}
-    </span>
+    <div className={`track track-${track}`} data-track={track}>
+      <div className="track-head">
+        <span className="track-label">{name}</span>
+        <b className="track-level">{level}</b>
+        <span className="track-max">／{table.max}</span>
+        <span className="track-next">
+          {next !== undefined
+            ? `次の報酬：${next.level}で${next.grants.map(grantText).join('・')}（あと${next.level - level}）`
+            : overflow > 0 && level >= table.max
+              ? `報酬はすべて獲得。教練で${table.max}を超えて上げると1段につき${overflow}点`
+              : '報酬はすべて獲得'}
+        </span>
+      </div>
+      <div className="track-grid" style={{ gridTemplateColumns: `repeat(${table.max}, minmax(0, 1fr))` }}>
+        {levels.map((l) => {
+          const filled = l <= level;
+          const stepping = rose > 0 && l > from && l <= level;
+          const delay = stepping ? (l - from - 1) * STEP_MS[speed] : 0;
+          const classes = [
+            'track-cell',
+            filled ? 'filled' : '',
+            rewardAt.has(l) ? 'reward' : '',
+            claimed.includes(l) ? 'claimed' : '',
+            stepping && speed !== 'none' ? 'stepping' : '',
+            rewarded.includes(l) && speed !== 'none' ? 'flash' : '',
+          ].join(' ');
+          return (
+            <span key={l} className={classes} style={stepping ? { animationDelay: `${delay}ms` } : undefined} title={`${name}${l}`}>
+              {l}
+            </span>
+          );
+        })}
+        {levels.map((l) => {
+          const reward = rewardAt.get(l);
+          if (reward === undefined) return <span key={`r${l}`} className="track-reward-slot" />;
+          const got = claimed.includes(l);
+          const state = got ? '獲得済み' : next?.level === l ? '次の報酬' : '未到達';
+          return (
+            <Tip key={`r${l}`} text={`${name}${l}の到達報酬：${reward.grants.map(grantText).join('・')}（${state}）`}>
+              <span className={`track-reward${got ? ' got' : ''}${next?.level === l ? ' next' : ''}`} data-reward={l}>
+                <IconRow tokens={reward.grants.flatMap(grantTokens)} size="sm" />
+                {got ? <span className="track-check" aria-label="獲得済み">✓</span> : null}
+              </span>
+            </Tip>
+          );
+        })}
+      </div>
+    </div>
   );
 };
 

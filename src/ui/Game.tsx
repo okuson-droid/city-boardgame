@@ -19,6 +19,7 @@ import { Board, type CellState } from './Board.tsx';
 import { buildModel, colorOf, waitingModel, WAITING_REASON, type Choice } from './model.ts';
 import { PromptBar } from './PromptBar.tsx';
 import { LegendButton } from './Legend.tsx';
+import { RulesButton } from './RulesDeck.tsx';
 import { Tip } from './Tip.tsx';
 
 export type Settings = { speed: 'standard' | 'fast' | 'none'; follow: boolean };
@@ -207,6 +208,7 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
             ドラフトを開く
           </button>
         ) : null}
+        <RulesButton label="ルール" />
         <LegendButton />
         <Tip text={undoReason}>
           <button type="button" className="btn" data-ui="undo" aria-disabled={undoReason !== null} disabled={undoReason !== null} onClick={undo}>

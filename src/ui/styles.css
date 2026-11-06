@@ -1325,33 +1325,96 @@ h3 {
   }
 }
 
+/* トラック（ユーザー決定 2026-11-06：到達報酬をマスの下に絵で示し、次の報酬を文で添える） */
 .track {
-  display: inline-flex;
-  align-items: center;
-  gap: 1px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.track-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
 }
 
 .track-label {
   font-size: 0.85em;
   color: var(--muted);
-  min-width: 4.5em;
+}
+
+.track-level {
+  font-size: 1.05em;
+}
+
+.track-max {
+  font-size: 0.8em;
+  color: var(--muted);
+}
+
+.track-next {
+  font-size: 0.78em;
+  color: #6b5a2e;
+}
+
+.track-grid {
+  display: grid;
+  gap: 1px;
+  row-gap: 2px;
 }
 
 .track-cell {
-  width: 1.35em;
-  height: 1.2em;
+  height: 1.3em;
   border: 1px solid var(--line);
   border-radius: 3px;
   background: #fff;
-  font-size: 0.7em;
+  font-size: 0.68em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--muted);
 }
 
-.track-cell:first-of-type {
-  display: none;
+.track-reward-slot {
+  min-height: 1.6em;
+}
+
+.track-reward {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  /* 報酬のアイコンが2つのときは隣の空きにはみ出して見せる */
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.track-reward .icon-row {
+  flex-wrap: nowrap;
+  justify-content: center;
+  border-radius: 6px;
+  padding: 0 1px;
+}
+
+.track-reward.next .icon-row {
+  background: #fff1c9;
+  box-shadow: 0 0 0 1.5px #e3bb45;
+}
+
+.track-reward.got .icon-row {
+  opacity: 0.45;
+  filter: grayscale(0.7);
+}
+
+.track-check {
+  position: absolute;
+  right: -2px;
+  top: -4px;
+  font-size: 0.75em;
+  font-weight: 700;
+  color: #2f7d46;
 }
 
 .track-military .track-cell.filled {
@@ -1365,6 +1428,7 @@ h3 {
 .track-cell.reward {
   border-color: #777;
   font-weight: 700;
+  color: #333;
 }
 
 .track-cell.claimed {
@@ -1842,4 +1906,241 @@ h3 {
 .card.civ.selectable {
   outline: 2px solid var(--select);
   outline-offset: 1px;
+}
+
+/* ---------- ルール解説（ユーザー決定 2026-11-06） ---------- */
+
+.rules-box {
+  width: min(1280px, calc(100vw - 24px));
+  height: calc(100vh - 24px);
+  max-height: calc(100vh - 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.rules-head,
+.rules-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rules-head h2 {
+  margin: 0;
+  font-size: 1.1em;
+  flex: 1;
+  min-width: 0;
+}
+
+.rules-head select {
+  max-width: 100%;
+  font: inherit;
+}
+
+.rules-foot {
+  justify-content: center;
+}
+
+.rules-page {
+  min-width: 4em;
+  text-align: center;
+  font-weight: 700;
+}
+
+.rules-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.rules-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* スライドの書式（1920×1080 の画面、指定のない余白は 0、ボックスは枠線込みの大きさ） */
+.rules-canvas {
+  width: 1920px;
+  height: 1080px;
+  transform-origin: 0 0;
+  font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+}
+
+.rules-canvas section {
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.rules-canvas section * {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.rules-canvas h2 {
+  font-family: 'Zen Old Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+}
+
+.rules-canvas ul,
+.rules-canvas ol {
+  padding-left: 1.3em;
+}
+
+.rules-canvas table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rules-canvas th,
+.rules-canvas td {
+  text-align: left;
+  padding: 0.45em 0.6em;
+  border-bottom: 2px solid #d8cdb8;
+}
+
+.rules-canvas th {
+  border-bottom-width: 3px;
+}
+
+.rules-canvas x-shape {
+  display: block;
+  flex: none;
+}
+
+.rules-canvas x-shape[kind='arrow-right'] {
+  clip-path: polygon(0 30%, 55% 30%, 55% 0, 100% 50%, 55% 100%, 55% 70%, 0 70%);
+}
+
+.rules-notes {
+  margin: 0;
+  padding: 6px 10px;
+  max-height: 7em;
+  overflow: auto;
+  border-radius: 6px;
+  background: #f6efdc;
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+
+/* ---------- 一覧（ユーザー決定 2026-11-06） ---------- */
+
+.read-row {
+  flex-wrap: wrap;
+}
+
+.catalog {
+  width: min(1200px, calc(100vw - 24px));
+  height: calc(100vh - 24px);
+}
+
+.catalog-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: -16px;
+  z-index: 1;
+  margin: -16px -16px 8px;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+
+.catalog-tabs {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.catalog-kinds {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 10px;
+}
+
+.catalog-grid-characters {
+  grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+}
+
+.catalog-grid-boards {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.catalog-item,
+.catalog-board {
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  min-width: 0;
+}
+
+.catalog-board {
+  flex-direction: column;
+}
+
+.catalog-card {
+  flex: none;
+}
+
+.catalog-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.92em;
+  line-height: 1.5;
+}
+
+.catalog-text p {
+  margin: 0;
+}
+
+.catalog-name {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.catalog-effects {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+@media (max-width: 700px) {
+  .catalog-grid,
+  .catalog-grid-characters {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-item {
+    flex-direction: column;
+  }
+}
+
+/* 最後の段の報酬（アイコンが2つ）は右寄せにして、列からはみ出さないようにする */
+.track-grid > :last-child {
+  justify-content: flex-end;
 }
