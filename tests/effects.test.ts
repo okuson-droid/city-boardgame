@@ -40,7 +40,7 @@ const draftWith = (characters: readonly string[], playerCount = 3, seed = 1): Ga
       s = applyMove(s, character);
       continue;
     }
-    s = applyMove(s, options.find((id) => !id.startsWith('draft:character:') && id !== 'draft:bonus:1' && id !== 'draft:bonus:4') ?? options[0] ?? '');
+    s = applyMove(s, options.find((id) => !id.startsWith('draft:character:') && id !== 'draft:bonus:1' && id !== 'draft:bonus:4' && id !== 'draft:bonus:8') ?? options[0] ?? '');
   }
   return s;
 };

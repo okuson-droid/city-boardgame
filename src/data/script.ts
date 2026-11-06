@@ -74,6 +74,8 @@ export type Command =
       readonly distinct?: boolean;
       /** true なら途中で（0枚でも）配置を終えられる（「〜枚まで」）。 */
       readonly upTo?: boolean;
+      /** その地形のマスにだけ置く（文明カード「山岳タイル1枚を置く」。種類は地形と同じ、4-2-2）。 */
+      readonly onTerrain?: Terrain;
     }
   | {
       readonly op: 'build';
@@ -96,6 +98,12 @@ export type Command =
   | { readonly op: 'chooseOne'; readonly options: readonly (readonly Command[])[] }
   | { readonly op: 'if'; readonly cond: Condition; readonly then: readonly Command[] }
   | { readonly op: 'copyAction' }
+  /** 同じ効果の選択を伴う命令をすべて処理した後に処理する（文明カード「繁栄」の「建設した住宅を含めて数える」）。 */
+  | { readonly op: 'later'; readonly do: readonly Command[] }
+  /** 建物を盤面ではなくこのカードの上に建てる（文明カード「移動住宅」）。建物の数・上限・建設時の効果には数える。 */
+  | { readonly op: 'buildOnCard'; readonly building: Building; readonly count: number }
+  /** 手札を max 枚まで捨て、捨てた枚数だけトラックを上げる（文明カード「兵法」）。 */
+  | { readonly op: 'discardRaise'; readonly max: number; readonly track: 'military' | 'infra' }
   | { readonly op: 'drawPlannedCity'; readonly count: number }
   | { readonly op: 'spiritPlace' }
   | { readonly op: 'heroStart' };
@@ -110,6 +118,9 @@ export const COMMAND_OPS = [
   'chooseOne',
   'if',
   'copyAction',
+  'later',
+  'buildOnCard',
+  'discardRaise',
   'drawPlannedCity',
   'spiritPlace',
   'heroStart',
@@ -120,7 +131,18 @@ export type CommandOp = (typeof COMMAND_OPS)[number];
 // 能力
 // ---------------------------------------------------------------------------
 
-export const EVENT_NAMES = ['tilePlaced', 'cardPlayed', 'actionExecuted', 'built', 'workerGained', 'raid'] as const;
+export const EVENT_NAMES = [
+  'tilePlaced',
+  'cardPlayed',
+  'actionExecuted',
+  'built',
+  'workerGained',
+  'raid',
+  /** アクションの処理（途中で起きた効果を含む）をすべて終えた時。 */
+  'actionFinished',
+  /** トラックが1上がった時。上限で上がらなかった分は起きない。 */
+  'trackRaised',
+] as const;
 export type EventName = (typeof EVENT_NAMES)[number];
 
 export type EventFilter = {
@@ -133,6 +155,14 @@ export type EventFilter = {
   /** actionExecuted をアクションの種類で絞る（文明カード「研究アクション実行後」）。 */
   readonly action?: Action;
   readonly building?: Building;
+  /** built：この建物以外（文明カード「住宅以外の建物を建設する度に」）。 */
+  readonly exceptBuilding?: Building;
+  /** actionFinished：そのアクションの処理中に建てた建物の条件。only は他の建物を建てていないこと。 */
+  readonly builtDuring?: { readonly building: Building; readonly min: number; readonly max?: number; readonly only?: boolean };
+  /** trackRaised：トラック。 */
+  readonly track?: 'military' | 'infra';
+  /** true なら、どのプレイヤーの出来事にも反応する（文明カード「いずれかのプレイヤーが」）。 */
+  readonly anyPlayer?: boolean;
   readonly kind?: 'regular' | 'temp';
   readonly result?: 'defenseFailed' | 'defended' | 'repelled';
   /** 出来事の後にこの条件を満たすときだけ発動する（聖女の「10人になった時」）。 */
@@ -156,6 +186,8 @@ export type Modifier =
   | { readonly kind: 'tokensByGold'; readonly gold: number }
   /** 自分の襲撃の処理を行わないことを選べる（文明カード「雲隠れ」）。 */
   | { readonly kind: 'skipRaid' }
+  /** 防衛失敗で点数を失わない（文明カード「名誉ある犠牲」）。 */
+  | { readonly kind: 'noRaidPointLoss' }
   /** 遠征アクションで同じ報酬を選べる回数の上限（文明カード「特別任務」）。 */
   | { readonly kind: 'expeditionSameReward'; readonly maxSame: Readonly<Record<'normal' | 'upper' | 'top', number>> };
 
@@ -170,6 +202,7 @@ export const MODIFIER_KINDS = [
   'expeditionTilesAnyTerrain',
   'tokensByGold',
   'skipRaid',
+  'noRaidPointLoss',
   'expeditionSameReward',
 ] as const;
 
@@ -317,6 +350,7 @@ export const readCommand = (v: unknown, path: string): Command => {
         tile: tile === 'match' || tile === 'any' ? tile : oneOf(TERRAINS, tile, p('tile')),
         ...optional(o, 'distinct', bool, path),
         ...optional(o, 'upTo', bool, path),
+        ...optional(o, 'onTerrain', (x, q) => oneOf(TERRAINS, x, q), path),
       };
     }
     case 'build':
@@ -344,6 +378,12 @@ export const readCommand = (v: unknown, path: string): Command => {
       return { op, cond: readCondition(o['cond'], p('cond')), then: readCommands(o['then'], p('then')) };
     case 'drawPlannedCity':
       return { op, count: int(o['count'], p('count')) };
+    case 'later':
+      return { op, do: readCommands(o['do'], p('do')) };
+    case 'buildOnCard':
+      return { op, building: oneOf(BUILDINGS, o['building'], p('building')), count: int(o['count'], p('count')) };
+    case 'discardRaise':
+      return { op, max: int(o['max'], p('max')), track: oneOf(['military', 'infra'] as const, o['track'], p('track')) };
     case 'copyAction':
     case 'spiritPlace':
     case 'heroStart':
@@ -361,6 +401,23 @@ const readFilter = (v: unknown, path: string): EventFilter => {
     ...optional(o, 'tier', (x, q) => oneOf(['normal', 'upper', 'top'] as const, x, q), path),
     ...optional(o, 'action', (x, q) => oneOf(ACTIONS, x, q), path),
     ...optional(o, 'building', (x, q) => oneOf(BUILDINGS, x, q), path),
+    ...optional(o, 'exceptBuilding', (x, q) => oneOf(BUILDINGS, x, q), path),
+    ...optional(
+      o,
+      'builtDuring',
+      (x, q) => {
+        const b = obj(x, q);
+        return {
+          building: oneOf(BUILDINGS, b['building'], `${q}.building`),
+          min: int(b['min'], `${q}.min`),
+          ...optional(b, 'max', int, q),
+          ...optional(b, 'only', bool, q),
+        };
+      },
+      path,
+    ),
+    ...optional(o, 'track', (x, q) => oneOf(['military', 'infra'] as const, x, q), path),
+    ...optional(o, 'anyPlayer', bool, path),
     ...optional(o, 'kind', (x, q) => oneOf(['regular', 'temp'] as const, x, q), path),
     ...optional(o, 'result', (x, q) => oneOf(['defenseFailed', 'defended', 'repelled'] as const, x, q), path),
     ...optional(o, 'cond', readCondition, path),
@@ -406,6 +463,7 @@ const readModifier = (v: unknown, path: string): Modifier => {
     case 'noBuildOnSpiritLand':
     case 'expeditionTilesAnyTerrain':
     case 'skipRaid':
+    case 'noRaidPointLoss':
       return { kind };
   }
 };

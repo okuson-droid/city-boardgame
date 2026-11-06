@@ -100,6 +100,8 @@ export const placeTilesOptions = (d: GameData, state: GameState, task: TaskOf<'p
   const options: Option[] = [];
   for (const cell of placeableCells(player)) {
     const terrain = terrainOf(d, player, cell);
+    // 山小屋など：その地形のマスにだけ置く（ユーザー決定 2026-11-06、4-2-2）。
+    if (task.onTerrain !== undefined && terrain !== task.onTerrain) continue;
     if (task.mode === 'effect') {
       // 効果による配置は資材を払わない（19-1-1）。種類は地形と同じ（4-2-2）か、効果の特記に従う（4-2-3、4-2-5）。
       const tiles = task.tile === 'match' ? [terrain] : task.tile === 'any' ? [...TERRAINS] : [task.tile];
@@ -561,18 +563,40 @@ export const applyMigrationCount = (state: GameState, d: GameData, task: TaskOf<
 
 export const discardOptions = (state: GameState, task: TaskOf<'discard'>): Option[] => {
   const player = playerOf(state, task.player);
-  return [...new Set(player.hand)].map((card) => opt(task.player, `card:${card}`, `${card} を捨てる`));
+  const options = [...new Set(player.hand)].map((card) => opt(task.player, `card:${card}`, `${card} を捨てる`));
+  // 兵法：「〜枚まで」は途中で（0枚でも）終えられる。
+  if (task.raise !== undefined && options.length > 0) {
+    options.push(opt(task.player, 'done', '捨てるのを終える'));
+  }
+  return options;
 };
 
-export const applyDiscard = (state: GameState, task: TaskOf<'discard'>, id: string): void => {
+/** 兵法の終わり：捨てた枚数だけトラックを上げる（12 を超えた分の得点はない、ユーザー決定 2026-11-03）。 */
+export const finishDiscardRaise = (state: GameState, d: GameData, task: TaskOf<'discard'>): void => {
+  removeTask(state, task);
+  const n = task.discarded ?? 0;
+  if (task.raise === undefined || n <= 0) return;
+  const player = playerOf(state, task.player);
+  processEffects(state, d, player, [
+    task.raise === 'military' ? { k: 'military', n, overflowPoints: false, source: 'discardRaise' } : { k: 'infra', n },
+  ]);
+};
+
+export const applyDiscard = (state: GameState, d: GameData, task: TaskOf<'discard'>, id: string): void => {
+  if (id === 'done') {
+    finishDiscardRaise(state, d, task);
+    return;
+  }
   const player = playerOf(state, task.player);
   const card = parseParts(id, 'card')[0] ?? '';
   player.hand.splice(player.hand.indexOf(card), 1);
   state.civDiscard.push(card);
   task.remaining -= 1;
+  if (task.raise !== undefined) task.discarded = (task.discarded ?? 0) + 1;
   // 手札が尽きたら、あるだけ捨てて終える（ユーザー決定 2026-11-03）。
   if (task.remaining === 0 || player.hand.length === 0) {
-    removeTask(state, task);
+    if (task.raise !== undefined) finishDiscardRaise(state, d, task);
+    else removeTask(state, task);
   }
 };
 
@@ -677,6 +701,8 @@ export const startAction = (
 ): void => {
   const a = d.params.actions;
   const p = player.index;
+  // アクションの終わりの印を、アクションの選択タスクと途中で起きる効果より下に積む（発明王・注文住宅・開拓小屋）。
+  state.stack.push({ t: 'actionEnd', player: p, action, tier, built: [] });
   emit(state, d, { type: 'action', player: p, action, tier, copied });
   switch (action) {
     case 'pioneer':

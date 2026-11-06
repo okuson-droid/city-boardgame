@@ -41,6 +41,7 @@
 | `tokensByGold` | `gold` | 傭兵団（軍事力トークン1つの代わりに払う金、2026-11-06） |
 | `skipRaid` | なし | 雲隠れ（襲撃の処理を行わないことを選べる、2026-11-06） |
 | `expeditionSameReward` | `maxSame`（段階ごと） | 特別任務（遠征で同じ報酬を選べる回数、2026-11-06） |
+| `noRaidPointLoss` | なし | 名誉ある犠牲（防衛失敗で点数を失わない、2026-11-06） |
 
 ## 2. 命令
 
@@ -48,13 +49,16 @@
 |---|---|---|
 | `gain` | `res`、`amount`、`axis?` | 資源・生産力・得点・カードを得る。`res` は gold・materials・militaryTokens・tempWorkers・regularWorkers・goldProduction・materialProduction・drawCivCards・specialCitizen・points |
 | `raise` | `track`（military・infra）、`amount` | トラックを上げる（到達報酬を含む）。`amount` は数値か「指標 n につき m」（2026-11-06 追加） |
-| `placeTiles` | `count`、`tile`（`match`・`any`・地形名）、`distinct?`、`upTo?` | 土地タイルを置く。資材は払わない（19-1-1）。`distinct` は異なる種類だけ、`upTo` は途中で終えられる（2026-11-06 追加） |
+| `placeTiles` | `count`、`tile`（`match`・`any`・地形名）、`distinct?`、`upTo?` | 土地タイルを置く。資材は払わない（19-1-1）。`distinct` は異なる種類だけ、`upTo` は途中で終えられる、`onTerrain` はその地形のマスにだけ置く（2026-11-06 追加） |
 | `build` | `max`、`buildings?`、`terrain?`、`payGold`、`payMaterials` | 建物を建てる。001・09（無料1軒）、003（金なし3軒まで）、特別市民13（住宅2軒まで無料）、建設の権利、軍事レベル12 を表す |
 | `playCard` | `count`、`free`、`upTo?` | 文明カードをプレイする（特別市民10、芸術家）。`upTo` が真なら「プレイを終える」を選べる（2026-11-06 追加） |
 | `expeditionRewards` | `count`、`distinct`、`payTokens` | 遠征の報酬を得る（017） |
 | `chooseOne` | `options`（命令の列の列） | いずれか1つを選ぶ（学者） |
 | `if` | `cond`、`then` | 条件を満たせば実行する（027〜042）。各条件は個別に判定する（9-2-7） |
 | `copyAction` | なし | 任意のアクションスペースの効果を使う（特別市民11、19-2-11） |
+| `later` | `do` | 同じ効果の選択を伴う命令をすべて処理した後に処理する（繁栄、2026-11-06） |
+| `buildOnCard` | `building`、`count` | 建物をこのカードの上に建てる（移動住宅、2026-11-06）。建物の数・上限・建設した時の効果に数える |
+| `discardRaise` | `max`、`track` | 手札を max 枚まで捨て、捨てた枚数だけトラックを上げる（兵法、2026-11-06） |
 | `drawPlannedCity` | `count` | 専用の計画都市カードを引く（デザイナー、19-5-3） |
 | `spiritPlace` | なし | 精霊チップと土地タイルを置く（精霊使い、19-5-7） |
 | `heroStart` | なし | 英雄の初期配置（19-5-1） |
@@ -76,6 +80,10 @@
 | `workerGained` | `kind` | 聖女（通常、上限超過の破棄分は数えない 16-1-5） |
 | `raid` | `result` | 英雄（撃退成功） |
 | `threshold` | `cond` | 聖女（通常ワーカー10人、`once`） |
+| `actionFinished` | `action`、`tier`、`builtDuring` | アクションの処理をすべて終えた時（発明王・注文住宅・開拓小屋、2026-11-06） |
+| `trackRaised` | `track` | トラックが1上がった時。上限で上がらなかった分は起きない（公務、2026-11-06） |
+
+絞り込みの `anyPlayer` が真なら、どのプレイヤーの出来事にも反応する（関税）。`built` の `exceptBuilding` はその建物以外（建設業）。いずれも 2026-11-06 に追加した。
 
 ## 3. 書き方の例
 

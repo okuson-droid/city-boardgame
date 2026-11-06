@@ -43,8 +43,10 @@ export const landCount = (player: PlayerState): number => landCells(player).leng
 export const buildingCells = (player: PlayerState): CellId[] =>
   CELL_IDS.filter((id) => player.buildings[id] !== undefined);
 
+/** 建物の数。文明カードの上の住宅（移動住宅）も数える（ユーザー決定 2026-11-06）。盤面の建物だけは buildingCells で数える。 */
 export const buildingCount = (player: PlayerState, building?: Building): number =>
-  buildingCells(player).filter((id) => building === undefined || player.buildings[id] === building).length;
+  buildingCells(player).filter((id) => building === undefined || player.buildings[id] === building).length +
+  (building === undefined || building === 'house' ? (player.cardHouses ?? 0) : 0);
 
 /** 建物の建っていない開拓済みの土地（5-1-1）。 */
 export const freeLandCells = (player: PlayerState): CellId[] =>
@@ -238,7 +240,10 @@ const commandTask = (player: number, command: Command, source: string): Task => 
         tile: command.tile,
         ...(command.distinct === true ? { distinct: true } : {}),
         ...(command.upTo === true ? { upTo: true } : {}),
+        ...(command.onTerrain !== undefined ? { onTerrain: command.onTerrain } : {}),
       };
+    case 'discardRaise':
+      return { t: 'discard', player, remaining: command.max, raise: command.track, discarded: 0 };
     case 'build':
       return buildTask(player, {
         min: command.upTo ? 0 : command.max,
@@ -368,6 +373,7 @@ export const processEffects = (
           addScore(state, d, player, overflow * d.params.military.overflowPointsPerRaise, 'military', effect.source);
         }
         trackRewards(state, d, player, 'military', before, after, queue);
+        emitTrackRaised(state, d, player, 'military', before, after);
         break;
       }
       case 'infra': {
@@ -376,6 +382,7 @@ export const processEffects = (
         const after = Math.min(d.params.infra.max, before + effect.n);
         player.infraLevel = after;
         trackRewards(state, d, player, 'infra', before, after, queue);
+        emitTrackRaised(state, d, player, 'infra', before, after);
         break;
       }
       case 'goldProduction':
@@ -474,7 +481,53 @@ export const squareBonusEffects = (d: GameData, player: PlayerState, cells: read
 /** 建物を置く。建設時効果と地形ボーナスは buildEffects で得る（5-6-3）。 */
 export const putBuilding = (state: GameState, d: GameData, player: PlayerState, cell: CellId, building: Building): void => {
   player.buildings[cell] = building;
+  noteBuiltDuringAction(state, player, building);
   emit(state, d, { type: 'built', player: player.index, cell, building });
+};
+
+/** 処理中のアクション（最も上のアクションの終わりの印）に、建てた建物を記録する（注文住宅・開拓小屋）。 */
+const noteBuiltDuringAction = (state: GameState, player: PlayerState, building: Building): void => {
+  for (let i = state.stack.length - 1; i >= 0; i -= 1) {
+    const task = state.stack[i];
+    if (task?.t === 'actionEnd' && task.player === player.index) {
+      task.built.push(building);
+      return;
+    }
+  }
+};
+
+/**
+ * 文明カードの上に建物を建てる（移動住宅、ユーザー決定 2026-11-06）。建物の上限までに限る。
+ * 盤面のマスを使わないため、地形ボーナスと飯場の軽減はない。建設時効果と「建設した時」の効果は通常どおり起きる。
+ */
+export const buildOnCard = (state: GameState, d: GameData, player: PlayerState, building: Building, count: number): void => {
+  const room = Math.max(0, d.params.buildings.limits[building] - buildingCount(player, building));
+  const n = Math.min(count, room);
+  if (n < count) {
+    emit(state, d, { type: 'fizzle', player: player.index, what: `buildOnCard:${count - n}` });
+  }
+  if (building !== 'house') {
+    throw new Error(`カードの上に建てられるのは住宅だけである：${building}`);
+  }
+  for (let i = 0; i < n; i += 1) {
+    player.cardHouses = (player.cardHouses ?? 0) + 1;
+    noteBuiltDuringAction(state, player, building);
+    emit(state, d, { type: 'built', player: player.index, cell: null, building });
+  }
+};
+
+/** トラックが1上がるごとの出来事（公務）。上限で上がらなかった分は起きない。 */
+const emitTrackRaised = (
+  state: GameState,
+  d: GameData,
+  player: PlayerState,
+  track: 'military' | 'infra',
+  before: number,
+  after: number,
+): void => {
+  for (let level = before + 1; level <= after; level += 1) {
+    emit(state, d, { type: 'trackRaised', player: player.index, track, level });
+  }
 };
 
 /** 建設時効果と地形ボーナス（5-4、5-5）。地形は土地タイルの種類を参照する（4-1-3-2）。 */

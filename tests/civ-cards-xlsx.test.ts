@@ -276,3 +276,218 @@ describe('カードの効果が rules.md に優先する5枚（ユーザー決�
     expect(picks(idOf('特別任務'))).toContain(`reward:${free}`);
   });
 });
+
+describe('推しの解釈で加えた16枚（ユーザー決定 2026-11-06）', () => {
+  const score = (s: GameState, index: number): number => s.players[index]?.score ?? 0;
+  const ownerOf = (s: GameState, card: string): PlayerState => {
+    const p = s.players.find((q) => q.played.includes(card));
+    if (p === undefined) throw new Error(`${card} の持ち主がいない`);
+    return p;
+  };
+  /** 選択肢のうち、指定の前置きで始まる最初のもの。 */
+  const first = (s: GameState, prefix: string): string => {
+    const id = ids(s).find((x) => x.startsWith(prefix));
+    if (id === undefined) throw new Error(`${prefix} の選択肢がない：${ids(s).join(',')}`);
+    return id;
+  };
+
+  it('発明王：普及アクションの処理をすべて終えた後に1枚引く', () => {
+    // ユーザー決定 2026-11-06（「実行後」）、rules.md v0.8 6-3-10
+    const card = idOf('発明王');
+    let s = edit(base(), (_, p) => {
+      p.played = [card];
+      p.hand = ['004', '005'];
+      p.gold = 100;
+    });
+    s = applyMove(s, 'act:spread:normal');
+    // 普及の途中では引かない。
+    expect(me(s).hand).toEqual(['004', '005']);
+    s = applyMove(s, 'card:004');
+    const p = ownerOf(s, card);
+    expect(p.hand).toHaveLength(2);
+    expect(p.hand).toContain('005');
+  });
+
+  it('温故知新・学術評価：プレイ済みの文明カードにプレイ中の自身を数える', () => {
+    // ユーザー決定 2026-11-06
+    const card = idOf('温故知新');
+    const s = playCard(base(), card, (p) => (p.played = ['001', '002']));
+    expect(me(s).gold).toBe(100 - costOf(card) + 2 * 3);
+  });
+
+  it('名誉ある犠牲：防衛失敗で点数を失わない', () => {
+    // ユーザー決定 2026-11-06、rules.md v0.8 7-5-1
+    const card = idOf('名誉ある犠牲');
+    const afterRaid = (played: string[]): { before: number; after: number; result: string } => {
+      let s = edit(base(), (state) => {
+        for (const p of state.players) {
+          p.played = played;
+          p.militaryLevel = 0;
+          p.militaryTokens = 0;
+        }
+      });
+      while (s.stack.at(-1)?.t !== 'raidDeclare') s = applyMove(s, s.stack.at(-1)?.t === 'turn' ? 'pass' : (ids(s)[0] ?? ''));
+      const index = me(s).index;
+      const before = score(s, index);
+      const events = s.events.length;
+      s = applyMove(s, 'raid:none');
+      const raid = s.events.slice(events).find((e) => e.type === 'raid' && e.player === index);
+      return { before, after: score(s, index), result: raid?.type === 'raid' ? raid.result : '' };
+    };
+    const without = afterRaid([]);
+    expect(without.result).toBe('defenseFailed');
+    expect(without.after).toBeLessThan(without.before);
+    const withCard = afterRaid([card]);
+    expect(withCard.after).toBe(withCard.before);
+  });
+
+  it('兵法：手札を0〜2枚捨て、捨てた枚数だけ軍事レベルを上げる', () => {
+    // ユーザー決定 2026-11-06、rules.md v0.8 7-1-2
+    const card = idOf('兵法');
+    let s = edit(base(), (_, p) => {
+      p.hand = [card, '001', '002'];
+      p.gold = 100;
+      p.militaryLevel = 0;
+    });
+    s = play(s, 'act:spread:normal', `card:${card}`);
+    expect(ids(s)).toEqual(expect.arrayContaining(['card:001', 'card:002', 'done']));
+    s = play(s, 'card:001', 'done');
+    const p = ownerOf(s, card);
+    expect(p.hand).toEqual(['002']);
+    expect(p.militaryLevel).toBe(1);
+  });
+
+  it('関税：他のプレイヤーの輸入アクションでも2金を得る', () => {
+    // ユーザー決定 2026-11-06（「いずれかのプレイヤーが」）、rules.md v0.8 16-1-4
+    const card = idOf('関税');
+    let other = -1;
+    let s = edit(base(), (state, p) => {
+      p.gold = 100;
+      const q = state.players.find((x) => x.index !== p.index);
+      if (q === undefined) throw new Error('他のプレイヤーがいない');
+      q.played = [card];
+      other = q.index;
+    });
+    const gold = s.players[other]?.gold ?? 0;
+    s = applyMove(s, 'act:import:normal');
+    expect(s.players[other]?.gold).toBe(gold + 2);
+  });
+
+  it('建設業：住宅以外の建物を建てる度に2金、住宅では得ない', () => {
+    // ユーザー決定 2026-11-06、rules.md v0.8 16-1-4
+    const card = idOf('建設業');
+    const gold = (building: string): number => {
+      let s = playCard(base(), '001', (p) => (p.played = [card]));
+      const before = me(s).gold;
+      s = applyMove(s, first(s, `build:${building}:`));
+      return ownerOf(s, card).gold - before;
+    };
+    expect(gold('shop')).toBe(2);
+    expect(gold('house')).toBe(0);
+  });
+
+  it('注文住宅：1回のアクションで住宅を2軒以上建てたら、アクションを終えた時に臨時ワーカー1人', () => {
+    // ユーザー決定 2026-11-06、rules.md v0.8 3-4
+    const card = idOf('注文住宅');
+    const housing = idOf('公団住宅');
+    const temp = (houses: number): number => {
+      let s = playCard(base(), housing, (p) => {
+        p.played = [card];
+        // 住宅を建てられる土地を用意する。
+        for (const c of CELL_IDS.slice(0, 8)) if (p.land[c] === undefined) p.land[c] = 'plains';
+      });
+      for (let i = 0; i < houses; i += 1) s = applyMove(s, first(s, 'build:house:'));
+      if (ids(s).includes('done')) s = applyMove(s, 'done');
+      return ownerOf(s, card).tempWorkers;
+    };
+    expect(temp(1)).toBe(0);
+    expect(temp(2)).toBe(1);
+    expect(temp(3)).toBe(1);
+  });
+
+  it('開拓小屋：建築アクションで住宅1軒だけを建てたら、土地タイルを1枚置く', () => {
+    // ユーザー決定 2026-11-06（「建設アクション」は建築アクション）、rules.md v0.8 6-3-2
+    const card = idOf('開拓小屋');
+    const after = (building: string): GameState => {
+      let s = edit(base(), (_, p) => {
+        p.played = [card];
+        p.gold = 100;
+        p.materials = 20;
+      });
+      s = applyMove(s, 'act:build:normal');
+      s = applyMove(s, first(s, `build:${building}:`));
+      if (ids(s).includes('done')) s = applyMove(s, 'done');
+      return s;
+    };
+    expect(after('house').stack.at(-1)?.t).toBe('placeTiles');
+    expect(after('shop').stack.at(-1)?.t).not.toBe('placeTiles');
+  });
+
+  it('公務：インフラレベルが1上がる度に1資材', () => {
+    // ユーザー決定 2026-11-06、rules.md v0.8 8-1-1
+    const card = idOf('公務');
+    const materials = (played: string[]): number =>
+      me(
+        playCard(base(), '011', (p) => {
+          p.played = played;
+          p.infraLevel = 0;
+          p.materials = 0;
+        }),
+      ).materials;
+    expect(materials([card]) - materials([])).toBe(1);
+  });
+
+  it('山小屋・森の小屋・平屋・水車小屋：その地形のマスにだけ、同じ種類の土地タイルを置く', () => {
+    // ユーザー決定 2026-11-06、rules.md v0.8 4-2-2
+    const huts: [string, string][] = [
+      ['山小屋', 'mountain'],
+      ['森の小屋', 'forest'],
+      ['平屋', 'plains'],
+      ['水車小屋', 'water'],
+    ];
+    let seen = 0;
+    for (const [name, terrain] of huts) {
+      let s = playCard(base(), idOf(name));
+      if (s.stack.at(-1)?.t === 'chooseOrder') s = applyMove(s, first(s, 'order:'));
+      const p = me(s);
+      const tiles = ids(s).filter((id) => id.startsWith('tile:'));
+      seen += tiles.length;
+      for (const id of tiles) {
+        const [, cell, tile] = id.split(':');
+        expect(tile).toBe(terrain);
+        expect(terrainOfCell(p, cell as CellId)).toBe(terrain);
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
+  it('繁栄：先に住宅を建て、その住宅を含めて1軒につき1点', () => {
+    // ユーザー決定 2026-11-06（書いてある順に処理する）
+    const card = idOf('繁栄');
+    let s = playCard(base(), card, (p) => {
+      for (const c of CELL_IDS) delete p.buildings[c];
+    });
+    const index = me(s).index;
+    const before = score(s, index);
+    s = applyMove(s, first(s, 'build:house:'));
+    expect(score(s, index)).toBe(before + 1);
+  });
+
+  it('移動住宅：カードの上の住宅は住宅の数と「建設した時」に数え、盤面には置かない', () => {
+    // ユーザー決定 2026-11-06
+    const card = idOf('移動住宅');
+    const street = idOf('住宅街');
+    let cells = 0;
+    let before = 0;
+    const s = playCard(base(), card, (p) => {
+      p.played = [street];
+      cells = CELL_IDS.filter((c) => p.buildings[c] !== undefined).length;
+      before = p.score;
+    });
+    const p = ownerOf(s, card);
+    expect(p.cardHouses).toBe(2);
+    expect(CELL_IDS.filter((c) => p.buildings[c] !== undefined)).toHaveLength(cells);
+    // 住宅街：住宅を建設する度に1点。
+    expect(p.score).toBe(before + 2);
+  });
+});

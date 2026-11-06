@@ -46,6 +46,9 @@ const COMMAND_TEMPLATES: Record<(typeof COMMAND_OPS)[number], Command> = {
   chooseOne: { op: 'chooseOne', options: [[{ op: 'gain', res: 'gold', amount: 1 }]] },
   if: { op: 'if', cond: { left: 'militaryLevel', op: '>=', right: 1 }, then: [{ op: 'gain', res: 'gold', amount: 1 }] },
   copyAction: { op: 'copyAction' },
+  later: { op: 'later', do: [{ op: 'gain', res: 'points', amount: 1 }] },
+  buildOnCard: { op: 'buildOnCard', building: 'house', count: 1 },
+  discardRaise: { op: 'discardRaise', max: 1, track: 'military' },
   drawPlannedCity: { op: 'drawPlannedCity', count: 1 },
   spiritPlace: { op: 'spiritPlace' },
   heroStart: { op: 'heroStart' },
@@ -74,6 +77,7 @@ const MODIFIER_TEMPLATES: Record<(typeof MODIFIER_KINDS)[number], J> = {
   expeditionTilesAnyTerrain: { kind: 'expeditionTilesAnyTerrain' },
   tokensByGold: { kind: 'tokensByGold', gold: 2 },
   skipRaid: { kind: 'skipRaid' },
+  noRaidPointLoss: { kind: 'noRaidPointLoss' },
   expeditionSameReward: { kind: 'expeditionSameReward', maxSame: { normal: 2, upper: 2, top: 3 } },
 };
 
@@ -228,6 +232,9 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
           </Field>
           <Check label="異なる種類" value={value['distinct']} onChange={(b) => (b ? set('distinct', true) : unset('distinct'))} />
           <Check label="まで" value={value['upTo']} onChange={(b) => (b ? set('upTo', true) : unset('upTo'))} />
+          <Field label="置けるマスの地形">
+            <Select value={value['onTerrain'] as string | undefined} kind="terrain" options={TERRAINS} empty="（指定なし）" onChange={(t) => (t === null ? unset('onTerrain') : set('onTerrain', t))} />
+          </Field>
         </>
       ) : null}
       {op === 'build' ? (
@@ -276,6 +283,28 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
         <Field label="数">
           <Int value={value['count']} onChange={(n) => set('count', n)} />
         </Field>
+      ) : null}
+      {op === 'later' ? (
+        <div className="nested">
+          <span className="muted">選択の後に</span>
+          <CommandList value={(value['do'] as J[]) ?? []} onChange={(c) => set('do', c)} />
+        </div>
+      ) : null}
+      {op === 'buildOnCard' ? (
+        <>
+          <Select value={String(value['building'])} kind="building" options={BUILDINGS} onChange={(b) => set('building', b)} />
+          <Field label="軒数">
+            <Int value={value['count']} onChange={(n) => set('count', n)} />
+          </Field>
+        </>
+      ) : null}
+      {op === 'discardRaise' ? (
+        <>
+          <Field label="捨てる枚数の上限">
+            <Int value={value['max']} onChange={(n) => set('max', n)} />
+          </Field>
+          <Select value={String(value['track'])} kind="track" options={['military', 'infra']} onChange={(t) => set('track', t)} />
+        </>
       ) : null}
       {op === 'if' ? (
         <div className="nested">
@@ -336,6 +365,9 @@ const FILTER_FIELDS: { key: string; options: readonly string[] | 'bool' | 'cond'
   { key: 'tier', options: TIERS },
   { key: 'action', options: ACTIONS },
   { key: 'building', options: BUILDINGS },
+  { key: 'exceptBuilding', options: BUILDINGS },
+  { key: 'track', options: ['military', 'infra'] },
+  { key: 'anyPlayer', options: 'bool' },
   { key: 'kind', options: ['regular', 'temp'] },
   { key: 'result', options: ['defenseFailed', 'defended', 'repelled'] },
   { key: 'cond', options: 'cond' },

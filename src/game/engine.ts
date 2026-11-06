@@ -53,7 +53,7 @@ import {
 import { hasModifier } from './abilities.ts';
 import { isCheckpoint } from './history.ts';
 import { recordDeltas, snapshot } from './deltas.ts';
-import { onSpecialCitizenAcquired, runAbilities } from './effects.ts';
+import { onSpecialCitizenAcquired, runAbilities, runCommands } from './effects.ts';
 import {
   abilityFreeOptions,
   applyAbilityFree,
@@ -94,6 +94,7 @@ const newPlayer = (d: GameData, index: number, name: string): PlayerState => {
     bonusTile: null,
     land: {},
     buildings: {},
+    cardHouses: 0,
     gold: init.gold,
     materials: init.materials,
     goldProduction: init.goldProduction,
@@ -716,8 +717,14 @@ const applyRaid = (state: GameState, d: GameData, task: TaskOf<'raidDeclare'>, i
   }
   const source = `raid:${card.id}`;
   // 基本得点（7-5-1）。カード5は合算後の数値のため加えない（19-3-3）。
+  // 名誉ある犠牲：防衛失敗で点数を失わない。基本得点と襲撃カードの「点」の減点をなくし、金・資材などの損失は受ける（ユーザー決定 2026-11-06）。
+  const keepPoints = result === 'defenseFailed' && hasModifier(d, player, 'noRaidPointLoss');
+  const raidScore = (points: number): void => {
+    if (keepPoints && points < 0) return;
+    addScore(state, d, player, points, 'military', source);
+  };
   if (!card.replacesBasePoints) {
-    addScore(state, d, player, d.params.raid.basePointsPerRound[result] * round, 'military', source);
+    raidScore(d.params.raid.basePointsPerRound[result] * round);
   }
   const cardEffects = result === 'defenseFailed' ? card.defenseFailEffects : result === 'repelled' ? card.repelEffects : [];
   const effects: Effect[] = [];
@@ -739,7 +746,7 @@ const applyRaid = (state: GameState, d: GameData, task: TaskOf<'raidDeclare'>, i
         player.goldProduction = Math.max(0, player.goldProduction - amount);
         break;
       case 'points':
-        addScore(state, d, player, amount, 'military', source);
+        raidScore(amount);
         break;
       case 'landTiles':
       case 'materials':
@@ -804,6 +811,8 @@ const AUTO_TASKS = new Set<Task['t']>([
   'turnStart',
   'roundEnd',
   'gameEnd',
+  'actionEnd',
+  'later',
 ]);
 
 const topOf = (state: GameState): Task | undefined => state.stack[state.stack.length - 1];
@@ -903,7 +912,7 @@ const applyTask = (state: GameState, d: GameData, task: Task, id: string): void 
     case 'migrationCount':
       return applyMigrationCount(state, d, task, id);
     case 'discard':
-      return applyDiscard(state, task, id);
+      return applyDiscard(state, d, task, id);
     case 'spreadPlay':
       return applySpread(state, d, task, id);
     case 'chooseSpecialCitizen':
@@ -950,6 +959,13 @@ const runAutoTask = (state: GameState, d: GameData, task: Task): void => {
       return roundEnd(state, d);
     case 'gameEnd':
       return gameEnd(state, d);
+    case 'actionEnd':
+      // アクションの処理をすべて終えた（発明王・注文住宅・開拓小屋）。
+      emit(state, d, { type: 'actionFinished', player: task.player, action: task.action, tier: task.tier, built: [...task.built] });
+      return;
+    case 'later':
+      runCommands(state, d, playerOf(state, task.player), task.commands, task.source, task.axis);
+      return;
     default:
       throw new Error(`自動タスクではない：${task.t}`);
   }

@@ -87,6 +87,8 @@ const STANDALONE: Readonly<Record<string, string>> = {
   'evt.built': '（建物）を建設する度に',
   'evt.workerGained': '（ワーカー）を獲得する度に',
   'evt.raid': '襲撃で（防衛成功など）した時',
+  'evt.actionFinished': '（種類）のアクションを終えた時',
+  'evt.trackRaised': '（トラック）が1上がる度に',
   'sym.per': '（数える対象）につき',
 };
 

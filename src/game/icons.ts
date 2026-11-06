@@ -75,7 +75,7 @@ const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
         ...(command.upTo === true
           ? [token(keys, 'commands', 'placeTiles'), token(keys, 'symbols', 'upTo'), { icon: 'num', value: command.count, label: String(command.count) }]
           : [token(keys, 'commands', 'placeTiles', command.count)]),
-        token(keys, 'terrains', command.tile),
+        ...(command.onTerrain !== undefined ? [token(keys, 'terrains', command.onTerrain)] : [token(keys, 'terrains', command.tile)]),
         ...(command.distinct === true ? [token(keys, 'symbols', 'distinct')] : []),
       ];
     case 'build':
@@ -92,6 +92,13 @@ const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
             ? [token(keys, 'symbols', 'noGold')]
             : []),
       ];
+    case 'later':
+      // 処理の順番だけを表す命令のため、中身の命令だけを並べる。
+      return command.do.flatMap((c) => commandTokens(keys, c));
+    case 'buildOnCard':
+      return [token(keys, 'commands', 'buildOnCard', command.count), token(keys, 'buildings', command.building), token(keys, 'symbols', 'free')];
+    case 'discardRaise':
+      return [token(keys, 'symbols', 'discard'), token(keys, 'symbols', 'upTo'), { icon: 'num', value: command.max, label: String(command.max) }, token(keys, 'symbols', 'then'), token(keys, 'commands', 'discardRaise'), token(keys, 'tracks', command.track)];
     case 'playCard':
       return command.upTo === true
         ? [
@@ -127,7 +134,23 @@ const filterTokens = (keys: IconKeys, filter: EventFilter): IconToken[] => [
   ...(filter.terrain !== undefined ? [token(keys, 'terrains', filter.terrain)] : []),
   ...(filter.tag !== undefined ? [token(keys, 'tags', filter.tag)] : []),
   ...(filter.tags ?? []).flatMap((t, i) => [...(i > 0 ? [token(keys, 'symbols', 'or')] : []), token(keys, 'tags', t)]),
+  ...(filter.anyPlayer === true ? [token(keys, 'symbols', 'anyPlayer')] : []),
+  ...(filter.track !== undefined ? [token(keys, 'tracks', filter.track)] : []),
   ...(filter.building !== undefined ? [token(keys, 'buildings', filter.building)] : []),
+  ...(filter.exceptBuilding !== undefined
+    ? [
+        { ...token(keys, 'buildings', filter.exceptBuilding), label: `${label(keys, 'buildings', filter.exceptBuilding)}${label(keys, 'symbols', 'except')}` },
+        { icon: entry(keys, 'symbols', 'except').icon, label: '' },
+      ]
+    : []),
+  ...(filter.builtDuring !== undefined
+    ? [
+        {
+          ...token(keys, 'buildings', filter.builtDuring.building, filter.builtDuring.min),
+          label: `${label(keys, 'buildings', filter.builtDuring.building)}${filter.builtDuring.min}軒${filter.builtDuring.only === true ? 'だけを建てた' : '以上を建てた'}`,
+        },
+      ]
+    : []),
   ...(filter.action !== undefined ? [token(keys, 'actions', filter.action)] : []),
   ...(filter.tier !== undefined ? [token(keys, 'tiers', filter.tier)] : []),
   ...(filter.kind !== undefined ? [token(keys, 'resources', filter.kind === 'regular' ? 'regularWorkers' : 'tempWorkers')] : []),
@@ -222,7 +245,7 @@ const describeCommand = (keys: IconKeys, command: Command): string => {
         ? `${label(keys, 'tracks', command.track)}を${command.amount}${label(keys, 'commands', 'raise')}`
         : `${metricEntry(keys, command.amount.count).label}${command.amount.per}${label(keys, 'symbols', 'per')}${label(keys, 'tracks', command.track)}を${command.amount.times}${label(keys, 'commands', 'raise')}`;
     case 'placeTiles':
-      return `${label(keys, 'commands', 'placeTiles')}（${command.count}枚${command.upTo === true ? label(keys, 'symbols', 'upTo') : ''}、${label(keys, 'terrains', command.tile)}${command.distinct === true ? `、${label(keys, 'symbols', 'distinct')}` : ''}）`;
+      return `${label(keys, 'commands', 'placeTiles')}（${command.count}枚${command.upTo === true ? label(keys, 'symbols', 'upTo') : ''}、${command.onTerrain !== undefined ? `${label(keys, 'terrains', command.onTerrain)}のマスに同じ種類` : label(keys, 'terrains', command.tile)}${command.distinct === true ? `、${label(keys, 'symbols', 'distinct')}` : ''}）`;
     case 'build': {
       const what = command.buildings === null ? '' : `${command.buildings.map((b) => label(keys, 'buildings', b)).join('・')}を`;
       const where = command.terrain === null ? '' : `${label(keys, 'terrains', command.terrain)}に`;
@@ -230,6 +253,12 @@ const describeCommand = (keys: IconKeys, command: Command): string => {
       const verb = command.buildings === null ? label(keys, 'commands', 'build') : '建てる';
       return `${where}${what}${command.max}軒${command.upTo ? label(keys, 'symbols', 'upTo') : ''}${verb}${cost}`;
     }
+    case 'later':
+      return `${label(keys, 'commands', 'later')}、${command.do.map((c) => describeCommand(keys, c)).join('、')}`;
+    case 'buildOnCard':
+      return `${label(keys, 'buildings', command.building)}${command.count}軒を${label(keys, 'commands', 'buildOnCard')}（${label(keys, 'symbols', 'free')}）`;
+    case 'discardRaise':
+      return `文明カードを${command.max}枚${label(keys, 'symbols', 'upTo')}捨て、${label(keys, 'commands', 'discardRaise')}（${label(keys, 'tracks', command.track)}）`;
     case 'playCard':
       return `${label(keys, 'commands', 'playCard')}（${command.count}枚${command.upTo === true ? label(keys, 'symbols', 'upTo') : ''}${command.free ? `、${label(keys, 'symbols', 'free')}` : ''}）`;
     case 'expeditionRewards':
@@ -275,11 +304,12 @@ const describeAbility = (keys: IconKeys, ability: Ability): string => {
   const head = label(keys, 'abilities', ability.ability);
   switch (ability.ability) {
     case 'on': {
-      const { cond, excludeSelf, ...rest } = ability.filter;
+      const { cond, excludeSelf, anyPlayer, ...rest } = ability.filter;
       const filter = filterTokens(keys, rest)
         .map((t) => t.label)
         .filter((l) => l !== '')
         .join('・');
+      const who = anyPlayer === true ? label(keys, 'symbols', 'anyPlayer') : '';
       // 出来事の語は助詞から始まる（「の土地タイルを置く度に」「を建設する度に」）。絞り込みがなければ助詞を落とす。
       const event = label(keys, 'events', ability.event);
       const eventText = filter === '' ? event.replace(/^[のを]/, '') : `${filter}${event}`;
@@ -287,7 +317,7 @@ const describeAbility = (keys: IconKeys, ability: Ability): string => {
       const when = cond !== undefined ? `、${describeCondition(keys, cond)}のとき` : '';
       const once = ability.once === true ? `、${label(keys, 'symbols', 'once')}` : '';
       const self = excludeSelf === true ? `、${label(keys, 'symbols', 'excludeSelf')}` : '';
-      return `${head}（${eventText}${self}${every}${when}${once}）：${describeDo(keys, ability.do)}`;
+      return `${head}（${who}${eventText}${self}${every}${when}${once}）：${describeDo(keys, ability.do)}`;
     }
     case 'freeAction': {
       const parts = [

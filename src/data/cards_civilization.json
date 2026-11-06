@@ -5185,6 +5185,801 @@
         "effectCondition",
         "points"
       ]
+    },
+    {
+      "id": "105",
+      "name": "発明王",
+      "cost": {
+        "gold": 9
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：普及アクション実行後、文明カードを1枚引く。",
+      "clarifications": [
+        {
+          "text": "普及アクションの処理（途中で起きた効果を含む）をすべて終えた後に1枚引く。引いたカードはその普及ではプレイできない。特別市民11 で写した普及も数える。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "on",
+          "event": "actionFinished",
+          "filter": {
+            "action": "spread"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "106",
+      "name": "温故知新",
+      "cost": {
+        "gold": 7
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "プレイ済みの文明カード1枚につき2金を得る。",
+      "clarifications": [
+        {
+          "text": "「プレイ済みの文明カード」はプレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "playedCivCards",
+                "per": 1,
+                "times": 2
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "107",
+      "name": "学術評価",
+      "cost": {
+        "gold": 12
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "プレイ済みの文明カード3枚につき1点を得る。",
+      "clarifications": [
+        {
+          "text": "「プレイ済みの文明カード」はプレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "playedCivCards",
+                "per": 3,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "108",
+      "name": "名誉ある犠牲",
+      "cost": {
+        "gold": 9
+      },
+      "tags": [
+        "military"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：防衛失敗時、点数を失わない。",
+      "clarifications": [
+        {
+          "text": "防衛失敗のとき、基本得点（ラウンド数×−1点）と襲撃カードの点の減少を受けない。金・資材などを失う効果は受ける。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "カードの効果が rules.md と食い違う場合は、カードの効果を優先する。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "noRaidPointLoss"
+          }
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "109",
+      "name": "兵法",
+      "cost": {
+        "gold": 6
+      },
+      "tags": [
+        "military"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "文明カードを2枚まで捨て、捨てた数だけ軍事レベルを上げる。",
+      "clarifications": [
+        {
+          "text": "手札から0〜2枚を選んで捨て、捨てた枚数だけ軍事レベルを上げる。到達報酬は得る。12 を超えた分の得点はない（教練に限る、ユーザー決定 2026-11-03）。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "discardRaise",
+              "max": 2,
+              "track": "military"
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "110",
+      "name": "関税",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：いずれかのプレイヤーが輸入アクションを実行する度に2金を得る。",
+      "clarifications": [
+        {
+          "text": "自分を含むいずれかのプレイヤーが輸入アクションを実行する度に2金を得る。特別市民11 で写した輸入も数える。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "on",
+          "event": "actionExecuted",
+          "filter": {
+            "action": "import",
+            "anyPlayer": true
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 2
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "111",
+      "name": "建設業",
+      "cost": {
+        "gold": 9
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：住宅以外の建物を建設する度に、1軒につき2金を得る。",
+      "clarifications": [
+        {
+          "text": "住宅以外の建物を、建て方（建築アクション・無料建設・カードの効果など）を問わず1軒建てる度に2金を得る。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "on",
+          "event": "built",
+          "filter": {
+            "exceptBuilding": "house"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 2
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "112",
+      "name": "注文住宅",
+      "cost": {
+        "gold": 8
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：1回のアクション中に住宅を2軒以上建設した時、臨時ワーカー1を得る。",
+      "clarifications": [
+        {
+          "text": "1回のアクションの処理中（途中で起きた効果で建てた住宅を含む）に住宅を2軒以上建てたとき、そのアクションを終えた時に臨時ワーカー1人を得る。1回のアクションにつき1回だけ。アクションの外で建てた住宅は数えない。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "ワーカーの「つ」は「人」と読み替える。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "on",
+          "event": "actionFinished",
+          "filter": {
+            "builtDuring": {
+              "building": "house",
+              "min": 2
+            }
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "113",
+      "name": "公務",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：インフラレベルが1上がる度に、1資材を得る。",
+      "clarifications": [
+        {
+          "text": "インフラレベルが実際に1上がる度に1資材を得る。上限で上がらなかった分は得ない。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "on",
+          "event": "trackRaised",
+          "filter": {
+            "track": "infra"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "114",
+      "name": "開拓小屋",
+      "cost": {
+        "gold": 12
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：建設アクションで住宅1軒のみを建設した時、土地タイル1枚を置く。",
+      "clarifications": [
+        {
+          "text": "「建設アクション」は建築アクションである。1回の建築アクションで建てた建物が住宅1軒だけだったとき、アクションを終えた時に土地タイルを1枚置く。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "土地タイルは地形と同じ種類で置き（4-2-2）、資材は支払わない（19-1-1）。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "on",
+          "event": "actionFinished",
+          "filter": {
+            "action": "build",
+            "builtDuring": {
+              "building": "house",
+              "min": 1,
+              "max": 1,
+              "only": true
+            }
+          },
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 1,
+              "tile": "match"
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "115",
+      "name": "山小屋",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "山岳タイル1枚を置く。住宅1軒を無料で建設できる。",
+      "clarifications": [
+        {
+          "text": "土地タイルは山岳のマスにだけ、地形と同じ種類で置く（「地形を無視して」がないため 4-2-2 に従う）。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "資材は支払わず、4-2-1 の隣接に従って配置する。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        },
+        {
+          "text": "住宅は建てなくてもよい。置いた土地タイルの上にも建てられる（処理の順番を選べる）。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 1,
+              "tile": "match",
+              "onTerrain": "mountain"
+            },
+            {
+              "op": "build",
+              "max": 1,
+              "upTo": true,
+              "buildings": [
+                "house"
+              ],
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "116",
+      "name": "繁栄",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "住宅1軒を無料で建設する。建設済みの住宅1軒につき1点を得る。",
+      "clarifications": [
+        {
+          "text": "先に住宅を建て、その住宅を含めて建設済みの住宅1軒につき1点を得る。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "build",
+              "max": 1,
+              "upTo": false,
+              "buildings": [
+                "house"
+              ],
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            },
+            {
+              "op": "later",
+              "do": [
+                {
+                  "op": "gain",
+                  "res": "points",
+                  "amount": {
+                    "count": "houses",
+                    "per": 1,
+                    "times": 1
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "117",
+      "name": "移動住宅",
+      "cost": {
+        "gold": 6
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "住宅2軒をこのカードの上に無料で建設する。",
+      "clarifications": [
+        {
+          "text": "このカードの上の住宅は盤面にない住宅として扱う。建物の数・住宅の数・住宅の上限・建設した時の効果には数え、計画都市・自然公園・建物のない土地・地形ごとの建物の数には数えない。住宅の上限に届く分は建てない。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "buildOnCard",
+              "building": "house",
+              "count": 2
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "118",
+      "name": "森の小屋",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "森林タイル1枚を置く。住宅1軒を無料で建設できる。",
+      "clarifications": [
+        {
+          "text": "土地タイルは森林のマスにだけ、地形と同じ種類で置く（「地形を無視して」がないため 4-2-2 に従う）。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "資材は支払わず、4-2-1 の隣接に従って配置する。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        },
+        {
+          "text": "住宅は建てなくてもよい。置いた土地タイルの上にも建てられる（処理の順番を選べる）。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 1,
+              "tile": "match",
+              "onTerrain": "forest"
+            },
+            {
+              "op": "build",
+              "max": 1,
+              "upTo": true,
+              "buildings": [
+                "house"
+              ],
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "119",
+      "name": "平屋",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "平原タイル1枚を置く。住宅1軒を無料で建設できる。",
+      "clarifications": [
+        {
+          "text": "土地タイルは平原のマスにだけ、地形と同じ種類で置く（「地形を無視して」がないため 4-2-2 に従う）。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "資材は支払わず、4-2-1 の隣接に従って配置する。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        },
+        {
+          "text": "住宅は建てなくてもよい。置いた土地タイルの上にも建てられる（処理の順番を選べる）。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 1,
+              "tile": "match",
+              "onTerrain": "plains"
+            },
+            {
+              "op": "build",
+              "max": 1,
+              "upTo": true,
+              "buildings": [
+                "house"
+              ],
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "120",
+      "name": "水車小屋",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "水場タイル1枚を置く。住宅1軒を無料で建設できる。",
+      "clarifications": [
+        {
+          "text": "土地タイルは水場のマスにだけ、地形と同じ種類で置く（「地形を無視して」がないため 4-2-2 に従う）。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "資材は支払わず、4-2-1 の隣接に従って配置する。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        },
+        {
+          "text": "住宅は建てなくてもよい。置いた土地タイルの上にも建てられる（処理の順番を選べる）。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 1,
+              "tile": "match",
+              "onTerrain": "water"
+            },
+            {
+              "op": "build",
+              "max": 1,
+              "upTo": true,
+              "buildings": [
+                "house"
+              ],
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
     }
   ]
 }

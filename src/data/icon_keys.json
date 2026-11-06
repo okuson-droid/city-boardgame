@@ -90,6 +90,18 @@
     "heroStart": {
       "icon": "cmd.heroStart",
       "label": "山岳に土地タイルと砦を置く"
+    },
+    "later": {
+      "icon": "cmd.later",
+      "label": "選択の後に"
+    },
+    "buildOnCard": {
+      "icon": "cmd.buildOnCard",
+      "label": "このカードの上に建てる"
+    },
+    "discardRaise": {
+      "icon": "cmd.discardRaise",
+      "label": "捨てた枚数だけ上げる"
     }
   },
   "resources": {
@@ -348,6 +360,14 @@
     "raid": {
       "icon": "evt.raid",
       "label": "した時"
+    },
+    "actionFinished": {
+      "icon": "evt.actionFinished",
+      "label": "のアクションを終えた時"
+    },
+    "trackRaised": {
+      "icon": "evt.trackRaised",
+      "label": "が1上がる度に"
     }
   },
   "modifiers": {
@@ -394,6 +414,10 @@
     "expeditionSameReward": {
       "icon": "mod.expeditionSameReward",
       "label": "遠征で同じ報酬を選べる回数"
+    },
+    "noRaidPointLoss": {
+      "icon": "mod.noRaidPointLoss",
+      "label": "防衛失敗で点数を失わない"
     }
   },
   "results": {
@@ -542,6 +566,14 @@
     "distinct": {
       "icon": "sym.distinct",
       "label": "異なる種類"
+    },
+    "except": {
+      "icon": "sym.except",
+      "label": "以外"
+    },
+    "anyPlayer": {
+      "icon": "sym.anyPlayer",
+      "label": "いずれかのプレイヤーが"
     }
   }
 }

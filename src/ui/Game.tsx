@@ -131,7 +131,7 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
   const isOwnerView = handOwner !== null && handOwner === view;
   // 直前の選択で置かれた土地・建物を強調する（ui_design.md 4-1 手順3）。
   const freshCells = new Set(
-    lastEvents.flatMap((e) => ((e.type === 'tilePlaced' || e.type === 'built') && e.player === view ? [e.cell] : [])),
+    lastEvents.flatMap((e) => ((e.type === 'tilePlaced' || e.type === 'built') && e.player === view && e.cell !== null ? [e.cell] : [])),
   );
   const picks = pendingPicks(state);
 
