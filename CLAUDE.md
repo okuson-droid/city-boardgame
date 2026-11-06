@@ -123,7 +123,7 @@ npm run accept:tutorial  # チュートリアルの受け入れ検査
 - 効果スクリプトの正は `src/data/` の JSON である（チューナーで編集し書き戻す）。`npm run import:design` は `design/` 由来の文言だけを更新し、効果スクリプトは既存の値を保つ。`scripts/effect-scripts.ts` は値がないときの初期値としてだけ使う。
 - 軍事力トークンの支払いは `payMilitaryTokens`（core.ts）、払えるかの判定は `tokenBudget` を使う。傭兵団の「金に替える数」（`tokenSwap`、選択肢 `count:<k>`）は `applyMove` が支払いの直後に最上段へ移す。
 - アクションを始めると、その下に自動タスク `actionEnd` を積む。アクションの処理（途中で起きた効果を含む）をすべて終えると `actionFinished` の出来事を起こし、その間に建てた建物を渡す（発明王・注文住宅・開拓小屋）。命令 `later` は自動タスク `later` として、同じ効果の選択タスクより下に積む（繁栄）。
-- 文明カードの上の住宅（移動住宅）は `PlayerState.cardHouses` に持ち、`buildingCount` に数える。盤面のマスを見る処理（計画都市・自然公園・`buildingCells`）には数えない。
+- 文明カードの上の住宅（移動住宅）は `PlayerState.cardHouses`（出どころ `civ:<カード>` ごとの数）に持ち、`buildingCount` に数える。盤面のマスを見る処理（計画都市・自然公園・`buildingCells`）には数えない。画面はプレイ済みのカードの右下に住宅の駒を重ね（`.card-houses`）、個人の情報の建物の吹き出しに盤面とカードの上の内訳を出す（`housesOnCard`・`buildingBreakdown`、queries.ts）。
 - タスクをスタックから取り除くときは `removeTask(state, task)` を使う。処理中に常時効果が上にタスクを積むため、`pop()` では誤って別のタスクを取り除く。
 - 能力の識別子は「出どころ#添字」（例：`sc:09#0`、`char:merchant#1`）。選択肢は `ability:<識別子>`（フリーアクション）・`space:<識別子>`（専用スペース）・`plan:<id>`（計画都市の宣言）・`choose:<i>`・`copy:<action>:<tier>`・`spirit:<terrain>:<cell>`・`hero:<E1|F1>:<cell>`。
 - 骨格のテストは `withoutCharacters` でキャラクターを外して局面を作る。キャラクターの効果がテストに混ざらないようにするためである。

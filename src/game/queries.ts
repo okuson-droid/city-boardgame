@@ -2,9 +2,9 @@
 
 import { GAME_DATA } from '../data/index.ts';
 import { ICON_KEYS } from '../data/icon-keys.ts';
-import type { Action, GameData, Tier, UnlockCondition } from '../data/types.ts';
+import type { Action, Building, GameData, Tier, UnlockCondition } from '../data/types.ts';
 import { buildTotalCost, civCardCost, expeditionTable } from './actions.ts';
-import { buildingCount, landCount, playerOf, regularWorkerCap, usableRegular, usableTemp } from './core.ts';
+import { buildingCount, cardHouseCount, landCount, playerOf, regularWorkerCap, usableRegular, usableTemp } from './core.ts';
 import { decider, isTopUnlocked } from './engine.ts';
 import type { IconToken } from './icons.ts';
 import type { GameState, PlayerState, Task } from './types.ts';
@@ -204,6 +204,15 @@ export const workerSummary = (player: PlayerState, d: GameData = GAME_DATA): Wor
 });
 
 export { buildingCount, landCount, playerOf };
+
+/** プレイ済みの文明カードの上に建てた住宅の数（移動住宅、ユーザー決定 2026-11-06）。 */
+export const housesOnCard = (player: PlayerState, card: string): number => cardHouseCount(player, `civ:${card}`);
+
+/** 建物の数の内訳：盤面に建てた数と、文明カードの上に建てた数（住宅だけ）。合計は buildingCount と同じ。 */
+export const buildingBreakdown = (player: PlayerState, building: Building): { board: number; onCards: number } => {
+  const onCards = building === 'house' ? cardHouseCount(player) : 0;
+  return { board: buildingCount(player, building) - onCards, onCards };
+};
 
 /** 選択中の建設のコスト見込み（割引・軽減を含む、ui_design.md 2-3-1）。建設の選択中でなければ null。 */
 export const pendingBuildCost = (state: GameState, d: GameData = GAME_DATA): { gold: number; materials: number } | null => {

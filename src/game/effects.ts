@@ -177,7 +177,7 @@ const runCommand = (
       state.stack.push({ t: 'later', player: player.index, commands: command.do, source, axis });
       return;
     case 'buildOnCard':
-      buildOnCard(state, d, player, command.building, command.count);
+      buildOnCard(state, d, player, command.building, command.count, source);
       return;
     case 'drawPlannedCity': {
       // デザイナー専用の計画都市カードを共通の山札から引き、公開する（19-5-3）。

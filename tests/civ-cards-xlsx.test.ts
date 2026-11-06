@@ -8,6 +8,7 @@ import { CELL_IDS, type CellId } from '../src/game/board.ts';
 import { terrainOf } from '../src/game/core.ts';
 import { applyMove } from '../src/game/engine.ts';
 import { describeScript, iconSequence } from '../src/game/icons.ts';
+import { buildingBreakdown, housesOnCard } from '../src/game/queries.ts';
 import type { GameState, PlayerState } from '../src/game/types.ts';
 import { edit, firstTurn, ids, me, play, withoutCharacters } from './helpers/game.ts';
 
@@ -485,7 +486,11 @@ describe('推しの解釈で加えた16枚（ユーザー決定 2026-11-06）', 
       before = p.score;
     });
     const p = ownerOf(s, card);
-    expect(p.cardHouses).toBe(2);
+    expect(p.cardHouses).toEqual({ [`civ:${card}`]: 2 });
+    // 画面の内訳（queries.ts）：カードの上の住宅と、盤面の住宅を分けて数える。
+    expect(housesOnCard(p, card)).toBe(2);
+    expect(buildingBreakdown(p, 'house').onCards).toBe(2);
+    expect(buildingBreakdown(p, 'house').board).toBe(CELL_IDS.filter((c) => p.buildings[c] === 'house').length);
     expect(CELL_IDS.filter((c) => p.buildings[c] !== undefined)).toHaveLength(cells);
     // 住宅街：住宅を建設する度に1点。
     expect(p.score).toBe(before + 2);

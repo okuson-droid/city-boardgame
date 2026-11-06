@@ -94,7 +94,7 @@ const newPlayer = (d: GameData, index: number, name: string): PlayerState => {
     bonusTile: null,
     land: {},
     buildings: {},
-    cardHouses: 0,
+    cardHouses: {},
     gold: init.gold,
     materials: init.materials,
     goldProduction: init.goldProduction,

@@ -46,7 +46,11 @@ export const buildingCells = (player: PlayerState): CellId[] =>
 /** 建物の数。文明カードの上の住宅（移動住宅）も数える（ユーザー決定 2026-11-06）。盤面の建物だけは buildingCells で数える。 */
 export const buildingCount = (player: PlayerState, building?: Building): number =>
   buildingCells(player).filter((id) => building === undefined || player.buildings[id] === building).length +
-  (building === undefined || building === 'house' ? (player.cardHouses ?? 0) : 0);
+  (building === undefined || building === 'house' ? cardHouseCount(player) : 0);
+
+/** 文明カードの上の住宅の数（移動住宅）。出どころを指定すればそのカードの上だけを数える。 */
+export const cardHouseCount = (player: PlayerState, source?: string): number =>
+  Object.entries(player.cardHouses ?? {}).reduce((sum, [key, n]) => (source === undefined || key === source ? sum + n : sum), 0);
 
 /** 建物の建っていない開拓済みの土地（5-1-1）。 */
 export const freeLandCells = (player: PlayerState): CellId[] =>
@@ -500,7 +504,14 @@ const noteBuiltDuringAction = (state: GameState, player: PlayerState, building: 
  * 文明カードの上に建物を建てる（移動住宅、ユーザー決定 2026-11-06）。建物の上限までに限る。
  * 盤面のマスを使わないため、地形ボーナスと飯場の軽減はない。建設時効果と「建設した時」の効果は通常どおり起きる。
  */
-export const buildOnCard = (state: GameState, d: GameData, player: PlayerState, building: Building, count: number): void => {
+export const buildOnCard = (
+  state: GameState,
+  d: GameData,
+  player: PlayerState,
+  building: Building,
+  count: number,
+  source: string,
+): void => {
   const room = Math.max(0, d.params.buildings.limits[building] - buildingCount(player, building));
   const n = Math.min(count, room);
   if (n < count) {
@@ -510,7 +521,7 @@ export const buildOnCard = (state: GameState, d: GameData, player: PlayerState, 
     throw new Error(`カードの上に建てられるのは住宅だけである：${building}`);
   }
   for (let i = 0; i < n; i += 1) {
-    player.cardHouses = (player.cardHouses ?? 0) + 1;
+    player.cardHouses = { ...player.cardHouses, [source]: cardHouseCount(player, source) + 1 };
     noteBuiltDuringAction(state, player, building);
     emit(state, d, { type: 'built', player: player.index, cell: null, building });
   }

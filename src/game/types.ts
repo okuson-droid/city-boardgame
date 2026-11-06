@@ -24,8 +24,11 @@ export type PlayerState = {
   /** 配置済みの土地タイル。値は土地タイルの種類（4-1-3-2）。 */
   land: Partial<Record<CellId, Terrain>>;
   buildings: Partial<Record<CellId, Building>>;
-  /** 文明カードの上に建てた住宅（移動住宅）。盤面にはないが、建物の数・住宅の数・上限に数える（ユーザー決定 2026-11-06）。 */
-  cardHouses: number;
+  /**
+   * 文明カードの上に建てた住宅の数（移動住宅）。鍵は出どころ（`civ:<カード>`）。
+   * 盤面にはないが、建物の数・住宅の数・上限に数える（ユーザー決定 2026-11-06）。
+   */
+  cardHouses: Record<string, number>;
   gold: number;
   materials: number;
   goldProduction: number;
