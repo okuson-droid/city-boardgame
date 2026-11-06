@@ -646,6 +646,19 @@ describe('計画都市（第13章、19-1-6、19-4-7）', () => {
     expect(plannedCityMatches(card, p)).toBe(false);
   });
 
+  it('土地種だけを指定したマスにも建物が要る（建物の種類は問わない）', () => {
+    // rules.md v0.8 13-2-1、13-2-2（2. 土地種のみ指定し、建物種は任意）
+    if (card === undefined) throw new Error('PC01 がない');
+    const p = structuredClone(me(base()));
+    satisfy(p);
+    // PC01 の3マス目は「水場（建物の種類は任意）」。建物を外すと満たさない。
+    p.buildings = { E1: 'house', E2: 'shop' };
+    expect(plannedCityMatches(card, p)).toBe(false);
+    // 種類は何でもよい。
+    p.buildings = { E1: 'house', E2: 'shop', E3: 'camp' };
+    expect(plannedCityMatches(card, p)).toBe(true);
+  });
+
   it('達成宣言は手番中の選択肢で、先着順に7・5・3点（自然・環境）と恩恵を得る', () => {
     // rules.md v0.8 13-3-1、13-3-4、13-3-8、17-5-1
     let s = edit(base(), (state, p) => {

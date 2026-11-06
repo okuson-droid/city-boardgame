@@ -8,7 +8,7 @@ import { civCardCost } from '../game/queries.ts';
 import type { PlayerState } from '../game/types.ts';
 import { IconRow } from './Icon.tsx';
 import { ShapeView } from './Board.tsx';
-import { ICON_ART, tagColor } from './icon-art.ts';
+import { ANY_BUILDING_ART, ICON_ART, tagColor } from './icon-art.ts';
 import { Tip } from './Tip.tsx';
 import { useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -140,7 +140,10 @@ const plannedCells = (card: PlannedCityCard) =>
     r: s.r,
     terrain: s.terrain,
     text: '',
-    ...(s.building === null ? {} : { art: ICON_ART[`bld.${s.building}`] ?? '', title: entry('buildings', s.building).label }),
+    // 建物の種類を指定しないマスも建物が要るため、「任意の建物」の図案を描く（rules.md 13-2-2）。
+    ...(s.building === null
+      ? { art: ANY_BUILDING_ART, title: '建物（種類は問わない）' }
+      : { art: ICON_ART[`bld.${s.building}`] ?? '', title: entry('buildings', s.building).label }),
   }));
 
 const plannedBenefit = (card: PlannedCityCard): IconToken[] => [
@@ -198,13 +201,14 @@ const PlannedCityZoom = ({ card, onClose }: { card: PlannedCityCard; onClose: ()
   for (const s of card.slots) {
     const terrain = s.terrain === null ? null : entry('terrains', s.terrain).label;
     const building = s.building === null ? null : entry('buildings', s.building).label;
+    // 種類を指定しないマスにも建物が要る（rules.md 13-2-1、13-2-2）。
     const name =
       terrain !== null && building !== null
         ? `${terrain}の${building}`
         : building !== null
-          ? `${building}（地形は問わない）`
+          ? `${building}（土地は問わない）`
           : terrain !== null
-            ? `${terrain}の土地`
+            ? `${terrain}の建物（種類は問わない）`
             : null;
     if (name !== null) needs.set(name, (needs.get(name) ?? 0) + 1);
   }
@@ -224,7 +228,7 @@ const PlannedCityZoom = ({ card, onClose }: { card: PlannedCityCard; onClose: ()
           </li>
         ))}
       </ul>
-      <p className="muted small">個人ボードに、この形のとおりに建物を並べると達成を宣言できる。回転した配置はよく、裏返した（鏡像の）配置はよくない（rules.md 19-1-6）。</p>
+      <p className="muted small">個人ボードに、この形のとおりに建物を並べると達成を宣言できる。どのマスにも建物が要る（種類を指定しないマスは、どの建物でもよい）。回転した配置はよく、裏返した（鏡像の）配置はよくない（rules.md 13-2、19-1-6）。</p>
     </ZoomOverlay>
   );
 };

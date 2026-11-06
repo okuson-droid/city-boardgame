@@ -1170,6 +1170,9 @@ h3 {
 }
 
 .overlay-box {
+  /* 上部の帯（濃い地に淡い字）の中のボタンから開く窓も、本文の墨色で描く */
+  color: var(--ink);
+  text-shadow: none;
   background: #fff;
   padding: 16px;
   border-radius: 8px;
@@ -1548,6 +1551,7 @@ h3 {
 
 .legend {
   width: min(960px, calc(100% - 32px));
+  font-size: 1.08em;
 }
 
 .legend-head {

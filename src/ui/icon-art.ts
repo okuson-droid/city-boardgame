@@ -236,6 +236,9 @@ export const ICON_ART: Readonly<Record<string, string>> = {
   'scene.draft': `<rect x="3" y="5" width="10" height="14" rx="1.5" fill="#cfd8e6" stroke="#444" stroke-width="1.3" transform="rotate(-12 8 12)"/><rect x="7" y="4" width="10" height="14" rx="1.5" fill="#e6dcc6" stroke="#444" stroke-width="1.3"/><rect x="11" y="5" width="10" height="14" rx="1.5" fill="#fff" stroke="#444" stroke-width="1.3" transform="rotate(12 16 12)"/>`,
 };
 
+/** 計画都市の「建物の種類を問わないマス」の印（ユーザー決定 2026-11-06）：灰色の家の形に「？」。 */
+export const ANY_BUILDING_ART = `<path d="M3 11.5L12 4l9 7.5V21H3z" fill="#9aa1a8" stroke="#3d4248" stroke-width="1.5" stroke-linejoin="round"/><text x="12" y="19" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">?</text>`;
+
 /** 4-2 のアクションの道具（アクションボード・履歴に使う）。開拓と建築は、向きと形が重ならないようにする。 */
 export const ACTION_ART: Readonly<Record<string, string>> = {
   // 開拓：地面に刺したスコップ（茶色の刃）と、開いた土地
