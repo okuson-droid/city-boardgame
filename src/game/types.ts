@@ -31,6 +31,11 @@ export type PlayerState = {
   /** 配置済みの土地タイル。値は土地タイルの種類（4-1-3-2）。 */
   land: Partial<Record<CellId, Terrain>>;
   buildings: Partial<Record<CellId, Building>>;
+  /**
+   * 文明カードの上に建てた住宅の数（移動住宅）。鍵は出どころ（`civ:<カード>`）。
+   * 盤面にはないが、建物の数・住宅の数・上限に数える（ユーザー決定 2026-11-06）。
+   */
+  cardHouses: Record<string, number>;
   gold: number;
   materials: number;
   goldProduction: number;
@@ -91,7 +96,8 @@ export type BuildSpec = {
 /** 選択を伴う効果。複数が同時に発生したときは処理順を尋ねる（decisions.md 3-4）。 */
 export type ChoiceEffect =
   | { readonly k: 'command'; readonly command: Command; readonly source: string }
-  | { readonly k: 'landTiles'; readonly n: number }
+  /** any は地形と異なる種類も置ける（強行軍の遠征報酬）。 */
+  | { readonly k: 'landTiles'; readonly n: number; readonly any?: boolean }
   | { readonly k: 'buildRight' }
   | { readonly k: 'freeBuild'; readonly terrain: Terrain | null }
   | { readonly k: 'specialCitizen' }
@@ -117,6 +123,12 @@ export type Task =
       mismatches: number;
       /** 効果による配置の土地タイル：match は地形と同じ種類、any は任意、地形名はその種類（地形を無視）。 */
       readonly tile: 'match' | 'any' | Terrain;
+      /** 異なる種類の土地タイルだけを置く（大規模開拓）。古い記録の局面では欠ける。 */
+      readonly distinct?: boolean;
+      /** 「配置を終える」（done）を選べる。 */
+      readonly upTo?: boolean;
+      /** この地形のマスにだけ置く（山小屋など）。 */
+      readonly onTerrain?: Terrain;
     }
   | { readonly t: 'build'; readonly player: number; readonly spec: BuildSpec; picks: BuildPick[] }
   | { readonly t: 'importCount'; readonly player: number; readonly tier: Tier }
@@ -133,10 +145,24 @@ export type Task =
     }
   | { readonly t: 'welfareConvert'; readonly player: number }
   | { readonly t: 'migrationCount'; readonly player: number; readonly tier: Tier }
-  | { readonly t: 'discard'; readonly player: number; remaining: number }
+  | {
+      readonly t: 'discard';
+      readonly player: number;
+      remaining: number;
+      /** 兵法：途中で（0枚でも）終えられ、捨てた枚数だけこのトラックを上げる。古い記録の局面では欠ける。 */
+      readonly raise?: 'military' | 'infra';
+      discarded?: number;
+    }
   | { readonly t: 'spreadPlay'; readonly player: number; readonly tier: Tier; played: number }
   | { readonly t: 'chooseSpecialCitizen'; readonly player: number }
-  | { readonly t: 'playCard'; readonly player: number; remaining: number; readonly free: boolean }
+  | {
+      readonly t: 'playCard';
+      readonly player: number;
+      remaining: number;
+      readonly free: boolean;
+      /** true なら「プレイを終える」（done）を選べる。古い記録の局面では欠ける。 */
+      readonly upTo?: boolean;
+    }
   | { readonly t: 'chooseOne'; readonly player: number; readonly options: readonly (readonly Command[])[]; readonly source: string }
   | { readonly t: 'copyAction'; readonly player: number }
   | { readonly t: 'spiritPlace'; readonly player: number }
@@ -145,6 +171,18 @@ export type Task =
   | { readonly t: 'passTile'; readonly player: number; readonly returned: number | null }
   | { readonly t: 'nextTurn'; readonly from: number }
   | { readonly t: 'raidDeclare'; readonly player: number }
+  /**
+   * 傭兵団：払った軍事力トークンのうち何個を金に替えるか（count:<k>）。トークンを k 個戻し、k×率 の金を払う。
+   * 払った時点でまずトークンを使い、足りない分だけ金で払う。替える数は払った直後に尋ねる。
+   */
+  | { readonly t: 'tokenSwap'; readonly player: number; readonly max: number; readonly rate: number }
+  /**
+   * アクションの終わりの印（自動タスク）。アクションの選択タスクより下に積み、処理（途中で起きた効果を含む）を
+   * すべて終えたときに actionFinished の出来事を起こす。built はその間に建てた建物である。
+   */
+  | { readonly t: 'actionEnd'; readonly player: number; readonly action: Action; readonly tier: Tier; built: Building[] }
+  /** 選択を伴う命令の後に処理する命令（自動タスク、命令 later）。 */
+  | { readonly t: 'later'; readonly player: number; readonly commands: readonly Command[]; readonly source: string; readonly axis: ScoreAxis }
   | { readonly t: 'roundEnd' }
   | { readonly t: 'gameEnd' };
 
@@ -167,7 +205,16 @@ export type GameEvent =
       readonly copied: boolean;
     }
   | { readonly type: 'tilePlaced'; readonly player: number; readonly cell: CellId; readonly terrain: Terrain }
-  | { readonly type: 'built'; readonly player: number; readonly cell: CellId; readonly building: Building }
+  /** cell が null の建物は文明カードの上に建てた（移動住宅）。 */
+  | { readonly type: 'built'; readonly player: number; readonly cell: CellId | null; readonly building: Building }
+  | {
+      readonly type: 'actionFinished';
+      readonly player: number;
+      readonly action: Action;
+      readonly tier: Tier;
+      readonly built: readonly Building[];
+    }
+  | { readonly type: 'trackRaised'; readonly player: number; readonly track: 'military' | 'infra'; readonly level: number }
   | { readonly type: 'cardPlayed'; readonly player: number; readonly card: string }
   | { readonly type: 'cardsDrawn'; readonly player: number; readonly count: number }
   | { readonly type: 'workerGained'; readonly player: number; readonly kind: 'regular' | 'temp' }

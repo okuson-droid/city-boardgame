@@ -193,60 +193,54 @@ describe('個人ボード', () => {
 });
 
 describe('文明カード', () => {
-  it('001〜042 の42枚を収録し、各カードは1タグで固有得点は仮置きの1点である', () => {
-    // 指示書 2-1、decisions.md 1-1（タグは配列）
-    const cards = GAME_DATA.civilizationCards;
+  it('001〜042 の42枚を収録し、名称は一覧のとおりで、条件と固有得点は仮置きである', () => {
+    // 指示書 2-1、decisions.md 1-1（タグは配列）、ユーザー決定 2026-11-06（xlsx に合わせる）
+    // 043 以降は 文明カード一覧（120枚）.xlsx から加えたカードである（docs/civ-cards-xlsx.md）。
+    const cards = GAME_DATA.civilizationCards.slice(0, 42);
     expect(cards.map((c) => c.id)).toEqual(Array.from({ length: 42 }, (_, i) => String(i + 1).padStart(3, '0')));
     for (const card of cards) {
-      expect(card.tags).toHaveLength(1);
       expect(card.points).toBe(1);
-      expect(card.name).toBe(`文明カード${card.id}`);
+      expect(card.name).not.toBe(`文明カード${card.id}`);
       expect(card.playCondition).toBeNull();
       expect(card.effectCondition).toBeNull();
       expect(card.provisional).toBe(true);
+      expect(card.provisionalFields).toEqual(['playCondition', 'effectCondition', 'points']);
     }
   });
 
-  it('コスト・タグ・効果の文言は 文明カード一覧_sample.md のとおりである', () => {
-    // 指示書 2-1（文言の扱い）
-    const tagNames: Record<string, string> = {
-      military: '軍事',
-      economy: '経済',
-      academic: '学術',
-      life: '生活',
-      environment: '環境',
-      literature: '文学',
-      art: '美術',
-      music: '音楽',
-    };
-    const rows = readFileSync(designPath('文明カード一覧_sample.md'), 'utf8')
-      .split('\n')
-      .filter((line) => /^\|\s*\d{3}\s*\|/.test(line))
-      .map((line) => line.split('|').slice(1, -1).map((c) => c.trim()));
-    expect(rows).toHaveLength(42);
-    // チューナーで新しく作ったカードは原本にないため、原本の42枚だけを照らす（ユーザー決定 2026-11-04）。
-    rows.forEach(([id, , cost, tag, , text]) => {
+  it('名称・コスト・タグ・文言は 文明カード一覧（120枚）.xlsx のとおりである', () => {
+    // ユーザー決定 2026-11-06（既存の42枚を一覧に合わせる。対応は docs/civ-cards-xlsx.md 2 節）
+    const expected: [string, string, number, string[], string][] = [
+      ['001', '建築学', 11, ['academic'], '建物1軒を無料で建設する。'],
+      ['005', '利回り', 8, ['economy'], '金の生産を5上げる。'],
+      ['011', '水洗トイレ', 7, ['life'], 'インフラレベルを1上げる。'],
+      ['015', '炭鉱', 11, ['economy'], '資材の生産を2上げる。'],
+      ['018', '知識の泉', 10, ['academic'], '常時：音楽タグ、文学タグ、美術タグのいずれかを持つ文明カードをプレイする度に、文明カードを1枚引く。'],
+      ['025', '『未来商店』', 10, ['academic', 'literature'], '所持している文学タグ1つにつき1点を得る。金の生産3につき1金を得る。'],
+      ['026', '『瓦礫から生まれた子』', 10, ['academic', 'literature'], '所持している文学タグ1つにつき1点を得る。襲撃の撃退ライン1につき1金を得る。'],
+      ['027', '『勝利の御旗』', 10, ['academic', 'art'], '所持している美術タグ1つにつき1点を得る。軍事レベルが3以上なら、3資材を得る。6以上なら、もう2資材を得る。'],
+      ['042', '『空に願いを』', 10, ['academic', 'music'], '所持している音楽タグ1つにつき1点を得る。軍事力が撃退ラインより低いなら、文明カードを1枚引く。防衛ラインより低いなら、もう1枚引く。'],
+    ];
+    for (const [id, name, gold, tags, text] of expected) {
       const card = GAME_DATA.civilizationCards.find((c) => c.id === id);
-      expect(card).toBeDefined();
-      expect(`${card?.cost.gold}金`).toBe(cost);
-      expect(card?.tags.map((t) => tagNames[t]).join('、')).toBe(tag);
-      expect(card?.text).toBe(text);
-    });
+      expect(card).toMatchObject({ name, cost: { gold }, tags, text });
+    }
+    const tagsOf = (from: number, to: number): string[][] =>
+      GAME_DATA.civilizationCards.slice(from - 1, to).map((c) => [...c.tags]);
+    expect(tagsOf(19, 26).every((t) => t.join() === 'academic,literature')).toBe(true);
+    expect(tagsOf(27, 34).every((t) => t.join() === 'academic,art')).toBe(true);
+    expect(tagsOf(35, 42).every((t) => t.join() === 'academic,music')).toBe(true);
   });
 
-  it('011 の「生活レベル」はインフラレベルとして扱う', () => {
-    // decisions.md 1-1、指示書 2-1
-    const card = GAME_DATA.civilizationCards.find((c) => c.id === '011');
-    expect(card?.clarifications.map((c) => c.text).join()).toContain('インフラレベル');
-    expect(card?.clarifications.every((c) => !c.provisional)).toBe(true);
-  });
-
-  it('指示書 2-1 の仮置きの解釈を持つ', () => {
-    // 指示書 2-1（003、006〜009、026、034・042。027 は原文が「軍事レベル」で解釈を要しない）
+  it('仮置きの解釈を持つ', () => {
+    // 指示書 2-1（003、006〜009）、2026-11-06 の取り込み（018 の複数分類、019〜042 の得点の評価軸）
     const provisionalIds = GAME_DATA.civilizationCards
+      .slice(0, 42)
       .filter((c) => c.clarifications.some((x) => x.provisional))
       .map((c) => c.id);
-    expect(provisionalIds).toEqual(['003', '006', '007', '008', '009', '026', '034', '042']);
+    const range = (from: number, to: number): string[] =>
+      Array.from({ length: to - from + 1 }, (_, i) => String(from + i).padStart(3, '0'));
+    expect(provisionalIds).toEqual(['003', '006', '007', '008', '009', '018', ...range(19, 42)]);
   });
 });
 
@@ -266,10 +260,8 @@ describe('文明カードの解釈（ユーザー決定 2026-11-03）', () => {
     expect(textsOf('017')).toContain('指揮官の追加報酬（19-2-6）も選べる');
   });
 
-  it('018 は自身のプレイでは引かない', () => {
-    // rules.md v0.8 9-2-4、9-2-9
-    expect(textsOf('018')).toContain('018 自身をプレイしたときには');
-  });
+  // 018 の「自身のプレイでは引かない」（2026-11-03）は、2026-11-06 に 018 の条件が音楽・文学・美術に変わり、
+  // 018（学術だけ）が自身に反応しなくなったため、解釈から外した。
 
   it('032・040 の2段目は通常ワーカー8人以上だけで満たす', () => {
     // rules.md v0.8 9-2-7（各効果の適用条件を個別に判定する）

@@ -6,7 +6,7 @@ import { BUILDINGS, SCORE_AXES, type ScoreAxis } from '../data/types.ts';
 import { explain } from '../game/explain.ts';
 import type { IconToken } from '../game/icons.ts';
 import { abilitiesOf } from '../game/abilities.ts';
-import { buildingCount, isTopUnlocked, workerSummary } from '../game/queries.ts';
+import { buildingBreakdown, buildingCount, housesOnCard, isTopUnlocked, workerSummary } from '../game/queries.ts';
 import { finalScores } from '../game/scoring.ts';
 import type { GameEvent, GameState, PlayerState } from '../game/types.ts';
 import { ACTIONS } from '../data/types.ts';
@@ -295,10 +295,7 @@ export const PersonalInfo = ({
         />
       </InfoRow>
       <InfoRow label="建物">
-        <IconRow
-          size="sm"
-          tokens={BUILDINGS.map((b) => tok('buildings', b, `${buildingCount(player, b)}/${GAME_DATA.params.buildings.limits[b]}`))}
-        />
+        <BuildingCounts player={player} />
       </InfoRow>
       <InfoRow label="最上位">
         <span className="unlocks">
@@ -323,6 +320,7 @@ export const PersonalInfo = ({
           {player.played.map((card, i) => (
             <div key={`${card}-${i}`} className="card civ" data-played-card={card}>
               <CivCardView card={card} player={player} />
+              <CardHouses count={housesOnCard(player, card)} />
             </div>
           ))}
         </div>
@@ -330,6 +328,32 @@ export const PersonalInfo = ({
     </div>
   );
 };
+
+/** 建物の数。カードの上の住宅（移動住宅）があれば、住宅の吹き出しに盤面とカードの上の内訳を出す。 */
+const BuildingCounts = ({ player }: { player: PlayerState }) => {
+  const house = buildingBreakdown(player, 'house');
+  const counts = <IconRow size="sm" tokens={BUILDINGS.map((b) => tok('buildings', b, `${buildingCount(player, b)}/${GAME_DATA.params.buildings.limits[b]}`))} />;
+  if (house.onCards === 0) return counts;
+  return (
+    <Tip text={`住宅：盤面に${house.board}軒、カードの上に${house.onCards}軒（どちらも住宅の数と上限に数える）`}>
+      <span className="building-counts" data-card-houses={house.onCards}>
+        {counts}
+      </span>
+    </Tip>
+  );
+};
+
+/** 文明カードの上に建てた住宅（移動住宅）。カードの面の下側に住宅の駒を並べる。 */
+const CardHouses = ({ count }: { count: number }) =>
+  count === 0 ? null : (
+    <Tip text={`このカードの上の住宅：${count}軒（盤面にはないが、住宅の数と上限に数える）`}>
+      <div className="card-houses" data-card-houses={count} aria-label={`カードの上の住宅 ${count}軒`}>
+        {Array.from({ length: count }, (_, i) => (
+          <Icon key={i} token={tok('buildings', 'house')} size="sm" />
+        ))}
+      </div>
+    </Tip>
+  );
 
 // ---------------------------------------------------------------------------
 // 手持ち（下帯、5-2）

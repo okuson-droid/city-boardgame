@@ -163,13 +163,22 @@ export const applyPlan = (state: GameState, d: GameData, player: PlayerState, id
 
 export const playCardOptions = (d: GameData, state: GameState, task: TaskOf<'playCard'>): Option[] => {
   const player = playerOf(state, task.player);
-  return [...new Set(player.hand)]
+  const options = [...new Set(player.hand)]
     .filter((card) => task.free || civCardCost(d, player, card) <= player.gold)
     .map((card) => opt(task.player, `card:${card}`, `${card} をプレイする`));
+  // 「〜枚まで」「プレイしてもよい」は、プレイできるカードがあっても終えられる。
+  if (task.upTo === true && options.length > 0) {
+    options.push(opt(task.player, 'done', 'プレイを終える'));
+  }
+  return options;
 };
 
 export const applyPlayCard = (state: GameState, d: GameData, task: TaskOf<'playCard'>, id: string): void => {
   const player = playerOf(state, task.player);
+  if (id === 'done') {
+    removeTask(state, task);
+    return;
+  }
   task.remaining -= 1;
   if (task.remaining <= 0 || player.hand.length <= 1) removeTask(state, task);
   playCivCard(state, d, player, id.slice('card:'.length), task.free);
@@ -216,21 +225,22 @@ export const applySpiritPlace = (state: GameState, d: GameData, task: TaskOf<'sp
   processEffects(state, d, player, squareBonusEffects(d, player, [cell]));
 };
 
-/** 英雄の初期配置（19-5-1）：E1・F1 のうち1枚の代わりに、任意の山岳マスへ山岳の土地タイルと砦を置く。 */
+/**
+ * 英雄の初期配置：初期配置のタイル（E1・F1）を置かず、代わりに任意の山岳マスへ山岳の土地タイルを置き、砦を無料で建てる。
+ * 隣接は要らない（ユーザー決定 2026-11-06。rules.md v0.8 19-5-1 の「E1・F1 のうち1枚の代わり」からの変更）。
+ */
 export const heroStartOptions = (d: GameData, state: GameState, task: TaskOf<'heroStart'>): Option[] => {
   const player = playerOf(state, task.player);
   const board = boardOf(d, player);
-  const mountains = CELL_IDS.filter((c) => board.squares[c]?.terrain === 'mountain' && player.land[c] === undefined);
-  return d.params.board.initialCells
-    .filter((c) => player.land[c] !== undefined)
-    .flatMap((replaced) => mountains.map((cell) => opt(task.player, `hero:${replaced}:${cell}`, `${replaced} の代わりに ${cell}`)));
+  return CELL_IDS.filter((c) => board.squares[c]?.terrain === 'mountain' && player.land[c] === undefined).map((cell) =>
+    opt(task.player, `hero:${cell}`, `${cell} に山岳タイルと砦を置く`),
+  );
 };
 
 export const applyHeroStart = (state: GameState, d: GameData, task: TaskOf<'heroStart'>, id: string): void => {
   removeTask(state, task);
-  const [, replaced, cell] = id.split(':') as [string, CellId, CellId];
+  const cell = id.slice('hero:'.length) as CellId;
   const player = playerOf(state, task.player);
-  delete player.land[replaced];
   putLandTile(state, d, player, cell, 'mountain');
   processEffects(state, d, player, squareBonusEffects(d, player, [cell]));
   // 砦の建設時効果と地形ボーナスは 5-6-7 に従って適用する。

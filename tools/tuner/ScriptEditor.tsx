@@ -3,6 +3,7 @@
 
 import {
   ABILITY_NAMES,
+  ACTIONS,
   BUILDINGS,
   CIV_TAGS,
   COMMAND_OPS,
@@ -28,6 +29,7 @@ const METRICS: readonly string[] = [
   ...SIMPLE_METRICS,
   ...BUILDINGS.map((b) => `buildingsOfType:${b}`),
   ...TERRAINS.map((t) => `buildingsOnTerrain:${t}`),
+  ...CIV_TAGS.map((t) => `tagsOf:${t}`),
 ];
 
 // ---------------------------------------------------------------------------
@@ -44,6 +46,9 @@ const COMMAND_TEMPLATES: Record<(typeof COMMAND_OPS)[number], Command> = {
   chooseOne: { op: 'chooseOne', options: [[{ op: 'gain', res: 'gold', amount: 1 }]] },
   if: { op: 'if', cond: { left: 'militaryLevel', op: '>=', right: 1 }, then: [{ op: 'gain', res: 'gold', amount: 1 }] },
   copyAction: { op: 'copyAction' },
+  later: { op: 'later', do: [{ op: 'gain', res: 'points', amount: 1 }] },
+  buildOnCard: { op: 'buildOnCard', building: 'house', count: 1 },
+  discardRaise: { op: 'discardRaise', max: 1, track: 'military' },
   drawPlannedCity: { op: 'drawPlannedCity', count: 1 },
   spiritPlace: { op: 'spiritPlace' },
   heroStart: { op: 'heroStart' },
@@ -69,6 +74,11 @@ const MODIFIER_TEMPLATES: Record<(typeof MODIFIER_KINDS)[number], J> = {
   natureParkPoints: { kind: 'natureParkPoints', table: { '2': 5, '3': 10, '4': 15 } },
   expeditionRewards: { kind: 'expeditionRewards', add: [] },
   noBuildOnSpiritLand: { kind: 'noBuildOnSpiritLand' },
+  expeditionTilesAnyTerrain: { kind: 'expeditionTilesAnyTerrain' },
+  tokensByGold: { kind: 'tokensByGold', gold: 2 },
+  skipRaid: { kind: 'skipRaid' },
+  noRaidPointLoss: { kind: 'noRaidPointLoss' },
+  expeditionSameReward: { kind: 'expeditionSameReward', maxSame: { normal: 2, upper: 2, top: 3 } },
 };
 
 // ---------------------------------------------------------------------------
@@ -208,7 +218,7 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
             <Select value={String(value['track'])} kind="track" options={['military', 'infra']} onChange={(t) => set('track', t)} />
           </Field>
           <Field label="数">
-            <Int value={value['amount']} onChange={(n) => set('amount', n)} />
+            <AmountEditor value={value['amount']} onChange={(a) => set('amount', a)} />
           </Field>
         </>
       ) : null}
@@ -219,6 +229,11 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
           </Field>
           <Field label="種類">
             <Select value={String(value['tile'])} kind="tile" options={['match', 'any', ...TERRAINS]} onChange={(t) => set('tile', t)} />
+          </Field>
+          <Check label="異なる種類" value={value['distinct']} onChange={(b) => (b ? set('distinct', true) : unset('distinct'))} />
+          <Check label="まで" value={value['upTo']} onChange={(b) => (b ? set('upTo', true) : unset('upTo'))} />
+          <Field label="置けるマスの地形">
+            <Select value={value['onTerrain'] as string | undefined} kind="terrain" options={TERRAINS} empty="（指定なし）" onChange={(t) => (t === null ? unset('onTerrain') : set('onTerrain', t))} />
           </Field>
         </>
       ) : null}
@@ -260,6 +275,7 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
           <Field label="枚数">
             <Int value={value['count']} onChange={(n) => set('count', n)} />
           </Field>
+          <Check label="まで" value={value['upTo']} onChange={(b) => (b ? set('upTo', true) : unset('upTo'))} />
           <Check label="無料" value={value['free']} onChange={(b) => set('free', b)} />
         </>
       ) : null}
@@ -267,6 +283,28 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
         <Field label="数">
           <Int value={value['count']} onChange={(n) => set('count', n)} />
         </Field>
+      ) : null}
+      {op === 'later' ? (
+        <div className="nested">
+          <span className="muted">選択の後に</span>
+          <CommandList value={(value['do'] as J[]) ?? []} onChange={(c) => set('do', c)} />
+        </div>
+      ) : null}
+      {op === 'buildOnCard' ? (
+        <>
+          <Select value={String(value['building'])} kind="building" options={BUILDINGS} onChange={(b) => set('building', b)} />
+          <Field label="軒数">
+            <Int value={value['count']} onChange={(n) => set('count', n)} />
+          </Field>
+        </>
+      ) : null}
+      {op === 'discardRaise' ? (
+        <>
+          <Field label="捨てる枚数の上限">
+            <Int value={value['max']} onChange={(n) => set('max', n)} />
+          </Field>
+          <Select value={String(value['track'])} kind="track" options={['military', 'infra']} onChange={(t) => set('track', t)} />
+        </>
       ) : null}
       {op === 'if' ? (
         <div className="nested">
@@ -319,12 +357,17 @@ const CommandList = ({ value, onChange }: { value: J[]; onChange: (v: J[]) => vo
 // 能力
 // ---------------------------------------------------------------------------
 
-const FILTER_FIELDS: { key: string; options: readonly string[] | 'bool' | 'cond' }[] = [
+const FILTER_FIELDS: { key: string; options: readonly string[] | 'bool' | 'cond' | 'tags' }[] = [
   { key: 'terrain', options: TERRAINS },
   { key: 'tag', options: CIV_TAGS },
+  { key: 'tags', options: 'tags' },
   { key: 'excludeSelf', options: 'bool' },
   { key: 'tier', options: TIERS },
+  { key: 'action', options: ACTIONS },
   { key: 'building', options: BUILDINGS },
+  { key: 'exceptBuilding', options: BUILDINGS },
+  { key: 'track', options: ['military', 'infra'] },
+  { key: 'anyPlayer', options: 'bool' },
   { key: 'kind', options: ['regular', 'temp'] },
   { key: 'result', options: ['defenseFailed', 'defended', 'repelled'] },
   { key: 'cond', options: 'cond' },
@@ -343,6 +386,25 @@ const FilterEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void 
             <input type="checkbox" checked={value[key] === true} onChange={(e) => set(key, e.target.checked)} />
           ) : options === 'cond' ? (
             <ConditionEditor value={value[key]} onChange={(c) => set(key, c)} nullable />
+          ) : options === 'tags' ? (
+            <span className="checks">
+              {CIV_TAGS.map((t) => {
+                const list = Array.isArray(value[key]) ? (value[key] as string[]) : [];
+                return (
+                  <label key={t}>
+                    <input
+                      type="checkbox"
+                      checked={list.includes(t)}
+                      onChange={(e) => {
+                        const next = e.target.checked ? [...list, t] : list.filter((x) => x !== t);
+                        set(key, next.length === 0 ? null : next);
+                      }}
+                    />
+                    {valueLabel(t, 'tag')}
+                  </label>
+                );
+              })}
+            </span>
           ) : (
             <Select value={value[key] as string | undefined} kind={key} options={options} empty="（指定なし）" onChange={(v) => set(key, v)} />
           )}
@@ -374,6 +436,21 @@ const ModifierEditor = ({ value, onChange }: { value: J; onChange: (v: J) => voi
       {kind === 'natureParkPoints' ? (
         <JsonEditor value={value['table']} base={value['table']} path={[]} onSet={(_, v) => set('table', v)} />
       ) : null}
+      {kind === 'tokensByGold' ? (
+        <Field label="トークン1つの代わりの金">
+          <Int value={value['gold']} onChange={(n) => set('gold', n)} />
+        </Field>
+      ) : null}
+      {kind === 'expeditionSameReward'
+        ? TIERS.map((t) => {
+            const table = (value['maxSame'] as J | undefined) ?? {};
+            return (
+              <Field key={t} label={`${valueLabel(t, 'tier')}の上限`}>
+                <Int value={table[t]} onChange={(n) => set('maxSame', { ...table, [t]: n })} />
+              </Field>
+            );
+          })
+        : null}
       {kind === 'expeditionRewards' ? (
         <div className="nested">
           {((value['add'] as J[]) ?? []).map((entry, i, all) => (

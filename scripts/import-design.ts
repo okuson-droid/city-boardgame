@@ -7,7 +7,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CHARACTER_SCRIPTS, CIV_SCRIPTS, SPECIAL_CITIZEN_SCRIPTS } from './effect-scripts.ts';
+import { CHARACTER_SCRIPTS, SPECIAL_CITIZEN_SCRIPTS } from './effect-scripts.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const designDir = join(root, 'design');
@@ -155,135 +155,8 @@ const RAID_STRUCTURED: Record<number, Record<string, unknown>> = {
 }
 
 // ---------------------------------------------------------------------------
-// 文明カード：文明カード一覧_sample.md の表を取り込む（指示書 2-1）
+// 文明カード：取り込まない
 // ---------------------------------------------------------------------------
-
-const TAG_IDS: Record<string, string> = {
-  軍事: 'military',
-  経済: 'economy',
-  学術: 'academic',
-  生活: 'life',
-  環境: 'environment',
-  文学: 'literature',
-  美術: 'art',
-  音楽: 'music',
-};
-
-type ClarificationJson = { text: string; source: string; provisional: boolean };
-
-const decided = (text: string, source: string): ClarificationJson => ({ text, source, provisional: false });
-const provisional = (text: string): ClarificationJson => ({
-  text,
-  source: '指示書_2026-11-03_初期実装.md 2-1（仮置き）',
-  provisional: true,
-});
-
-const TERM_SOURCE = 'rules.md v0.8 19-6-4（表記の読み替え）';
-
-const civClarifications = (id: string, text: string): ClarificationJson[] => {
-  const list: ClarificationJson[] = [];
-  if (id === '011') {
-    list.push(decided('「生活レベル」はインフラレベルである。', 'decisions.md 1-1（ユーザー決定）'));
-  }
-  if (id === '012') {
-    list.push(decided('「市民カード」は特別な市民カードである。公開カードから1枚を選び、山札から1枚補充する（9-3-2-2）。', TERM_SOURCE));
-  }
-  if (text.includes('軍事トークン')) {
-    list.push(decided('「軍事トークン」は軍事力トークンである。', TERM_SOURCE));
-  }
-  if (text.includes('臨時ワーカーを2つ') || text.includes('通常ワーカー1つ')) {
-    list.push(decided('ワーカーの「つ」は「人」と読み替える。', TERM_SOURCE));
-  }
-  if (text.includes('金の生産') || text.includes('資材の生産')) {
-    list.push(decided('「金の生産」「資材の生産」は金・資材の生産力である。', TERM_SOURCE));
-  }
-  if (text.includes('軍事力が')) {
-    list.push(provisional('「軍事力」は軍事レベルである。'));
-  }
-  if (id === '026') {
-    list.push(provisional('「襲撃の撃退に必要な軍事力」は、そのラウンドの撃退ライン − 軍事レベル（0未満は0）である。'));
-  }
-  if (id === '003') {
-    list.push(provisional('建設コストのうち金だけを免除し、資材は支払う。'));
-  }
-  if (['006', '007', '008', '009'].includes(id)) {
-    list.push(provisional('資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。'));
-  }
-  const USER_DECISION = 'ユーザー決定（2026-11-03）';
-  if (id === '017') {
-    list.push(
-      decided(
-        '遠征報酬の獲得では目標値の宣言と軍事力トークンの消費を行わない。選べるのは現在の軍事レベル以下の報酬に限る。同じ報酬を重ねて取ることはできず、異なる報酬を4つまで獲得する。指揮官は指揮官の追加報酬（19-2-6）も選べる。',
-        USER_DECISION,
-      ),
-    );
-  }
-  if (id === '018') {
-    list.push(decided('018 自身をプレイしたときには、この常時効果でカードを引かない。', USER_DECISION));
-  }
-  if (id === '032' || id === '040') {
-    list.push(decided('2段目は通常ワーカーが8人以上であれば満たし、1段目（住宅4軒以上）の成否を問わない。', USER_DECISION));
-  }
-  if (id === '034' || id === '042') {
-    list.push(decided('撃退ライン・防衛ラインは、そのラウンドまでに累積した値である（026 と同じ扱い）。', USER_DECISION));
-  }
-  if (id === '002') {
-    list.push(decided('資材は支払わず、4-2 に従って配置する。', 'rules.md v0.8 19-1-1'));
-  }
-  return list;
-};
-
-{
-  const markdown = readFileSync(join(designDir, '文明カード一覧_sample.md'), 'utf8');
-  const existingCiv = existingItems('cards_civilization.json', 'cards');
-  const rows = markdown
-    .split('\n')
-    .filter((line) => /^\|\s*\d{3}\s*\|/.test(line))
-    .map((line) =>
-      line
-        .split('|')
-        .slice(1, -1)
-        .map((cell) => cell.trim()),
-    );
-  const cards = rows.map((cells) => {
-    const [id = '', , costText = '', tagText = '', , text = ''] = cells;
-    const gold = Number(costText.replace('金', ''));
-    if (!Number.isInteger(gold)) {
-      throw new Error(`コストを読めない：${id} ${costText}`);
-    }
-    const tags = tagText.split(/[、,／/]/).map((tag) => {
-      const tagId = TAG_IDS[tag.trim()];
-      if (tagId === undefined) {
-        throw new Error(`未知のタグ：${id} ${tag}`);
-      }
-      return tagId;
-    });
-    // 仮置きの項目（名称・条件・固有得点）は、既存の値があれば保つ（チューナーの調整を消さない）。
-    const kept = existingCiv.get(id) ?? {};
-    return {
-      id,
-      name: kept['name'] ?? `文明カード${id}`,
-      cost: { gold },
-      tags,
-      playCondition: kept['playCondition'] ?? null,
-      effectCondition: kept['effectCondition'] ?? null,
-      points: kept['points'] ?? 1,
-      text,
-      clarifications: civClarifications(id, text),
-      script: scriptOf(CIV_SCRIPTS, existingCiv, id),
-      provisional: true,
-      provisionalFields: ['name', 'playCondition', 'effectCondition', 'points'],
-    };
-  });
-  writeJson('cards_civilization.json', {
-    importedFrom: 'design/文明カード一覧_sample.md',
-    provisional: true,
-    notes: [
-      '001〜042 の42枚をデッキとする。総枚数は未決である（指示書 2-1）。',
-      'cost・tags・text は原本のまま。tags は原本のタグを識別子に置き換えたものである。',
-      '名称・プレイ条件・効果適用条件・固有得点は仮置きである（provisionalFields）。',
-      '効果の命令セット化は段階3（feat/effects）で行う。',
-    ],
-    cards: [...cards, ...tunerItems(existingCiv, cards.map((card) => card.id))],
-  });
-}
+// 文明カードの正は 文明カード一覧（120枚）.xlsx に合わせた src/data/cards_civilization.json である
+// （ユーザー決定 2026-11-06、docs/civ-cards-xlsx.md）。design/文明カード一覧_sample.md は古い版のため、
+// ここから取り込み直すと名称・コスト・タグ・文言が古い値に戻る。よって文明カードは取り込まない。

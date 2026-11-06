@@ -90,6 +90,18 @@
     "heroStart": {
       "icon": "cmd.heroStart",
       "label": "山岳に土地タイルと砦を置く"
+    },
+    "later": {
+      "icon": "cmd.later",
+      "label": "選択の後に"
+    },
+    "buildOnCard": {
+      "icon": "cmd.buildOnCard",
+      "label": "このカードの上に建てる"
+    },
+    "discardRaise": {
+      "icon": "cmd.discardRaise",
+      "label": "捨てた枚数だけ上げる"
     }
   },
   "resources": {
@@ -310,6 +322,18 @@
     "buildingsOnTerrain": {
       "icon": "met.buildingsOnTerrain",
       "label": "に建てた建物"
+    },
+    "buildingTypes": {
+      "icon": "met.buildingTypes",
+      "label": "建設済みの建物の種類"
+    },
+    "freeLandTerrains": {
+      "icon": "met.freeLandTerrains",
+      "label": "建物のない土地タイルの種類"
+    },
+    "tagsOf": {
+      "icon": "met.tagsOf",
+      "label": "タグ"
     }
   },
   "events": {
@@ -336,6 +360,14 @@
     "raid": {
       "icon": "evt.raid",
       "label": "した時"
+    },
+    "actionFinished": {
+      "icon": "evt.actionFinished",
+      "label": "のアクションを終えた時"
+    },
+    "trackRaised": {
+      "icon": "evt.trackRaised",
+      "label": "が1上がる度に"
     }
   },
   "modifiers": {
@@ -366,6 +398,26 @@
     "noBuildOnSpiritLand": {
       "icon": "mod.noBuildOnSpiritLand",
       "label": "精霊チップのある土地に建設できない"
+    },
+    "expeditionTilesAnyTerrain": {
+      "icon": "mod.expeditionTilesAnyTerrain",
+      "label": "遠征報酬の土地タイルは地形と異なる種類も置ける"
+    },
+    "tokensByGold": {
+      "icon": "mod.tokensByGold",
+      "label": "軍事力トークンの代わりに金を払える"
+    },
+    "skipRaid": {
+      "icon": "mod.skipRaid",
+      "label": "自分の襲撃の処理を行わないことを選べる"
+    },
+    "expeditionSameReward": {
+      "icon": "mod.expeditionSameReward",
+      "label": "遠征で同じ報酬を選べる回数"
+    },
+    "noRaidPointLoss": {
+      "icon": "mod.noRaidPointLoss",
+      "label": "防衛失敗で点数を失わない"
     }
   },
   "results": {
@@ -394,6 +446,48 @@
     "top": {
       "icon": "tier.top",
       "label": "最上位"
+    }
+  },
+  "actions": {
+    "pioneer": {
+      "icon": "act.pioneer",
+      "label": "開拓"
+    },
+    "build": {
+      "icon": "act.build",
+      "label": "建築"
+    },
+    "import": {
+      "icon": "act.import",
+      "label": "輸入"
+    },
+    "export": {
+      "icon": "act.export",
+      "label": "輸出"
+    },
+    "drill": {
+      "icon": "act.drill",
+      "label": "教練"
+    },
+    "expedition": {
+      "icon": "act.expedition",
+      "label": "遠征"
+    },
+    "welfare": {
+      "icon": "act.welfare",
+      "label": "福祉"
+    },
+    "migration": {
+      "icon": "act.migration",
+      "label": "移住"
+    },
+    "research": {
+      "icon": "act.research",
+      "label": "研究"
+    },
+    "spread": {
+      "icon": "act.spread",
+      "label": "普及"
     }
   },
   "symbols": {
@@ -468,6 +562,18 @@
     "discard": {
       "icon": "sym.discard",
       "label": "文明カードを捨てる"
+    },
+    "distinct": {
+      "icon": "sym.distinct",
+      "label": "異なる種類"
+    },
+    "except": {
+      "icon": "sym.except",
+      "label": "以外"
+    },
+    "anyPlayer": {
+      "icon": "sym.anyPlayer",
+      "label": "いずれかのプレイヤーが"
     }
   }
 }

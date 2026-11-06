@@ -23,7 +23,8 @@ export const me = (state: GameState): PlayerState => {
   return playerOf(state, p);
 };
 
-const AVOID = new Set(['draft:bonus:1', 'draft:bonus:4']);
+// 準備で資源・生産力が変わるボーナスタイルを避ける（8 は金の生産力が上がり、生産力を前提にしたテストが崩れる）。
+const AVOID = new Set(['draft:bonus:1', 'draft:bonus:4', 'draft:bonus:8']);
 
 /** 骨格のテストに効果が混ざりにくいキャラクター（準備時と最初の手番開始時の効果を持たない順）。 */
 const NEUTRAL_CHARACTERS = ['commander', 'spirit_caller', 'bureaucrat', 'capitalist'];

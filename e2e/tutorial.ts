@@ -73,8 +73,13 @@ const run = async (label: string, viewport: { width: number; height: number }): 
     // 一度だけ、光っていない所作を押して受け付けないことを確かめる。
     if (!warned && state.title === '土地を開拓する') {
       warned = true;
-      await clickTarget(page, 'act:build:normal');
-      const warning = await page.$eval('.coach-warning', (el) => el.textContent ?? '').catch(() => '');
+      // 選べるが光っていないアクションを押す。キャラクターによって選べるアクションが違う（英雄は最初、建物を建てる空き地がない）ため、候補を順に試す。
+      let warning = '';
+      for (const target of ['act:build:normal', 'act:import:normal', 'act:research:normal', 'act:drill:normal']) {
+        await clickTarget(page, target);
+        warning = await page.$eval('.coach-warning', (el) => el.textContent ?? '').catch(() => '');
+        if (warning.includes('光っている')) break;
+      }
       if (!warning.includes('光っている')) problems.push('光っていない所作を押しても警告が出ない');
     }
     if (targets.length === 0) {

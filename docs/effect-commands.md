@@ -37,41 +37,53 @@
 | `natureParkPoints` | `table`（枚数→得点） | 特別市民08 |
 | `expeditionRewards` | `add`（レベルと報酬） | 指揮官（19-2-6） |
 | `noBuildOnSpiritLand` | なし | 精霊使い |
+| `expeditionTilesAnyTerrain` | なし | 強行軍（遠征報酬の土地タイルは地形と異なる種類も置ける、2026-11-06） |
+| `tokensByGold` | `gold` | 傭兵団（軍事力トークン1つの代わりに払う金、2026-11-06） |
+| `skipRaid` | なし | 雲隠れ（襲撃の処理を行わないことを選べる、2026-11-06） |
+| `expeditionSameReward` | `maxSame`（段階ごと） | 特別任務（遠征で同じ報酬を選べる回数、2026-11-06） |
+| `noRaidPointLoss` | なし | 名誉ある犠牲（防衛失敗で点数を失わない、2026-11-06） |
 
 ## 2. 命令
 
 | 命令 | 引数 | 意味 |
 |---|---|---|
 | `gain` | `res`、`amount`、`axis?` | 資源・生産力・得点・カードを得る。`res` は gold・materials・militaryTokens・tempWorkers・regularWorkers・goldProduction・materialProduction・drawCivCards・specialCitizen・points |
-| `raise` | `track`（military・infra）、`amount` | トラックを上げる（到達報酬を含む） |
-| `placeTiles` | `count`、`tile`（`match`・`any`・地形名） | 土地タイルを置く。資材は払わない（19-1-1） |
+| `raise` | `track`（military・infra）、`amount` | トラックを上げる（到達報酬を含む）。`amount` は数値か「指標 n につき m」（2026-11-06 追加） |
+| `placeTiles` | `count`、`tile`（`match`・`any`・地形名）、`distinct?`、`upTo?` | 土地タイルを置く。資材は払わない（19-1-1）。`distinct` は異なる種類だけ、`upTo` は途中で終えられる、`onTerrain` はその地形のマスにだけ置く（2026-11-06 追加） |
 | `build` | `max`、`buildings?`、`terrain?`、`payGold`、`payMaterials` | 建物を建てる。001・09（無料1軒）、003（金なし3軒まで）、特別市民13（住宅2軒まで無料）、建設の権利、軍事レベル12 を表す |
-| `playCard` | `count`、`free` | 文明カードをプレイする（特別市民10、芸術家） |
+| `playCard` | `count`、`free`、`upTo?` | 文明カードをプレイする（特別市民10、芸術家）。`upTo` が真なら「プレイを終える」を選べる（2026-11-06 追加） |
 | `expeditionRewards` | `count`、`distinct`、`payTokens` | 遠征の報酬を得る（017） |
 | `chooseOne` | `options`（命令の列の列） | いずれか1つを選ぶ（学者） |
 | `if` | `cond`、`then` | 条件を満たせば実行する（027〜042）。各条件は個別に判定する（9-2-7） |
 | `copyAction` | なし | 任意のアクションスペースの効果を使う（特別市民11、19-2-11） |
+| `later` | `do` | 同じ効果の選択を伴う命令をすべて処理した後に処理する（繁栄、2026-11-06） |
+| `buildOnCard` | `building`、`count` | 建物をこのカードの上に建てる（移動住宅、2026-11-06）。建物の数・上限・建設した時の効果に数える |
+| `discardRaise` | `max`、`track` | 手札を max 枚まで捨て、捨てた枚数だけトラックを上げる（兵法、2026-11-06） |
 | `drawPlannedCity` | `count` | 専用の計画都市カードを引く（デザイナー、19-5-3） |
 | `spiritPlace` | なし | 精霊チップと土地タイルを置く（精霊使い、19-5-7） |
-| `heroStart` | なし | 英雄の初期配置（19-5-1） |
+| `heroStart` | なし | 英雄の初期配置。初期配置のタイル（E1・F1）を置かず、任意の山岳マスに山岳タイルと砦を置く（ユーザー決定 2026-11-06、19-5-1 からの変更） |
 
 `amount` は数値か、`{ count: 指標, per: n, times: m }`（指標 n につき m）とする。019〜026・特別市民05〜07・16・18・資本家の終了時効果に使う。
 
 `cond` は `{ left: 指標, op: '>=' | '<', right: 数値または指標 }` とする。034・042 は右辺に撃退ライン・防衛ラインの指標を置く。
 
-指標の一覧：regularWorkers、tempWorkers、landTiles、freeLandTiles、buildings、buildingsOfType:建物、buildingsOnTerrain:地形、maxedBuildingTypes、houses、militaryLevel、infraLevel、militaryTokens、goldProduction、materialProduction、repelLine、defenseLine、repelShortfall（撃退ライン−軍事レベル、0未満は0）、playedCivCards。
+指標の一覧：regularWorkers、tempWorkers、landTiles、freeLandTiles、buildings、buildingsOfType:建物、buildingsOnTerrain:地形、maxedBuildingTypes、houses、militaryLevel、infraLevel、militaryTokens、goldProduction、materialProduction、repelLine、defenseLine、repelShortfall（撃退ライン−軍事レベル、0未満は0）、playedCivCards、buildingTypes（建設済みの建物の種類の数）、freeLandTerrains（建物のない土地タイルの地形の種類の数）、tagsOf:分類（プレイ済みの文明カードのうちその分類のタグを持つ枚数、プレイ中の自身を含む）。後の3つは 2026-11-06 に追加した（docs/civ-cards-xlsx.md）。
 
 `on` の出来事と絞り込み：
 
 | 出来事 | 絞り込み | 使う箇所 |
 |---|---|---|
 | `tilePlaced` | `terrain` | 特別市民01（森林）、資本家（山岳） |
-| `cardPlayed` | `tag?`、`excludeSelf?` | 018（学術、自身を除く）、特別市民03、芸術家、学者（`every: 3`） |
-| `actionExecuted` | `tier` | 特別市民02（最上位、特別市民11の写しを含む） |
+| `cardPlayed` | `tag?`、`tags?`、`excludeSelf?` | 018（音楽・文学・美術のいずれか、`tags`、2026-11-06）、特別市民03、芸術家、学者（`every: 3`） |
+| `actionExecuted` | `tier`、`action` | 特別市民02（最上位、特別市民11の写しを含む）、開発サイクル（研究、2026-11-06 追加） |
 | `built` | `building` | 指揮官（砦）、官僚（役所） |
 | `workerGained` | `kind` | 聖女（通常、上限超過の破棄分は数えない 16-1-5） |
 | `raid` | `result` | 英雄（撃退成功） |
 | `threshold` | `cond` | 聖女（通常ワーカー10人、`once`） |
+| `actionFinished` | `action`、`tier`、`builtDuring` | アクションの処理をすべて終えた時（発明王・注文住宅・開拓小屋、2026-11-06） |
+| `trackRaised` | `track` | トラックが1上がった時。上限で上がらなかった分は起きない（公務、2026-11-06） |
+
+絞り込みの `anyPlayer` が真なら、どのプレイヤーの出来事にも反応する（関税）。`built` の `exceptBuilding` はその建物以外（建設業）。いずれも 2026-11-06 に追加した。
 
 ## 3. 書き方の例
 

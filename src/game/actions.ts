@@ -26,6 +26,8 @@ import {
   terrainOf,
   usableTemp,
   type Effect,
+  payMilitaryTokens,
+  tokenBudget,
 } from './core.ts';
 import { hasModifier, mismatchExtraMaterials, modifiersOf } from './abilities.ts';
 import { runCommands } from './effects.ts';
@@ -98,10 +100,14 @@ export const placeTilesOptions = (d: GameData, state: GameState, task: TaskOf<'p
   const options: Option[] = [];
   for (const cell of placeableCells(player)) {
     const terrain = terrainOf(d, player, cell);
+    // 山小屋など：その地形のマスにだけ置く（ユーザー決定 2026-11-06、4-2-2）。
+    if (task.onTerrain !== undefined && terrain !== task.onTerrain) continue;
     if (task.mode === 'effect') {
       // 効果による配置は資材を払わない（19-1-1）。種類は地形と同じ（4-2-2）か、効果の特記に従う（4-2-3、4-2-5）。
       const tiles = task.tile === 'match' ? [terrain] : task.tile === 'any' ? [...TERRAINS] : [task.tile];
-      for (const tile of tiles) {
+      // 大規模開拓：この配置で置いた種類は置けない。置く順番は選べる（ユーザー決定 2026-11-06）。
+      const used = task.distinct === true ? new Set(task.placed.map((c) => player.land[c])) : new Set<Terrain | undefined>();
+      for (const tile of tiles.filter((t) => !used.has(t))) {
         options.push(opt(task.player, `tile:${cell}:${tile}`, `${cell} に ${tile}`));
       }
       continue;
@@ -116,10 +122,20 @@ export const placeTilesOptions = (d: GameData, state: GameState, task: TaskOf<'p
       }
     }
   }
+  // 「〜枚まで」は途中で（0枚でも）配置を終えられる。
+  if (task.upTo === true && options.length > 0) {
+    options.push(opt(task.player, 'done', '配置を終える'));
+  }
   return options;
 };
 
 export const applyPlaceTile = (state: GameState, d: GameData, task: TaskOf<'placeTiles'>, id: string): void => {
+  if (id === 'done') {
+    // 自分で終えた残りは不発ではない。
+    task.remaining = 0;
+    finishPlaceTiles(state, d, task);
+    return;
+  }
   const [cellText, tileText] = parseParts(id, 'tile');
   const player = playerOf(state, task.player);
   const cell = cellText as CellId;
@@ -336,7 +352,7 @@ const drillTokenCost = (d: GameData, player: PlayerState): number => {
 export const drillRaiseOptions = (d: GameData, state: GameState, task: TaskOf<'drillRaise'>): Option[] => {
   const player = playerOf(state, task.player);
   const cost = drillTokenCost(d, player);
-  const max = Math.min(d.params.actions.drill[task.tier].maxRaises, Math.floor(player.militaryTokens / cost));
+  const max = Math.min(d.params.actions.drill[task.tier].maxRaises, Math.floor(tokenBudget(d, player) / cost));
   return range(0, max).map((k) => opt(task.player, `count:${k}`, `上昇処理を${k}回行う`));
 };
 
@@ -344,7 +360,7 @@ export const applyDrillRaise = (state: GameState, d: GameData, task: TaskOf<'dri
   removeTask(state, task);
   const player = playerOf(state, task.player);
   const raises = parseCount(id);
-  player.militaryTokens -= raises * drillTokenCost(d, player);
+  payMilitaryTokens(state, d, player, raises * drillTokenCost(d, player));
   if (raises > 0) {
     processEffects(state, d, player, [{ k: 'military', n: raises, overflowPoints: true, source: 'drill' }]);
   }
@@ -406,15 +422,21 @@ const expeditionCanAdd = (
     return entry.level <= player.militaryLevel && same === 0 && picks.length < task.count;
   }
   const selection = d.params.actions.expedition.selection[task.tier];
-  if (selection.mode === 'distinct') {
-    if (same > 0 || picks.length >= selection.max) {
-      return false;
-    }
-  } else if (picks.length >= selection.total || same >= selection.maxSame) {
+  const total = selection.mode === 'distinct' ? selection.max : selection.total;
+  // 特別任務：同じ報酬を選べる回数の上限を補正で置き換える（カードの効果が 6-3-6-6 に優先する、ユーザー決定 2026-11-06）。
+  const maxSame = sameRewardLimit(d, player, task.tier) ?? (selection.mode === 'distinct' ? 1 : selection.maxSame);
+  if (picks.length >= total || same >= maxSame) {
     return false;
   }
-  return expeditionTokenCost(table, player, [...picks, index]) <= player.militaryTokens;
+  return expeditionTokenCost(table, player, [...picks, index]) <= tokenBudget(d, player);
 };
+
+/** 特別任務の補正による、同じ報酬を選べる回数の上限。複数あれば大きいほう。補正がなければ null。 */
+const sameRewardLimit = (d: GameData, player: PlayerState, tier: Tier): number | null =>
+  modifiersOf(d, player).reduce<number | null>(
+    (limit, m) => (m.kind === 'expeditionSameReward' ? Math.max(limit ?? 0, m.maxSame[tier]) : limit),
+    null,
+  );
 
 const expeditionCandidates = (d: GameData, player: PlayerState, task: TaskOf<'expeditionPick'>): number[] =>
   expeditionTable(d, player)
@@ -453,7 +475,7 @@ export const applyExpedition = (state: GameState, d: GameData, task: TaskOf<'exp
   removeTask(state, task);
   const table = expeditionTable(d, player);
   if (task.mode === 'action') {
-    player.militaryTokens -= expeditionTokenCost(table, player, task.picks);
+    payMilitaryTokens(state, d, player, expeditionTokenCost(table, player, task.picks));
   }
   const effects: Effect[] = [];
   const commands: Command[] = [];
@@ -541,18 +563,40 @@ export const applyMigrationCount = (state: GameState, d: GameData, task: TaskOf<
 
 export const discardOptions = (state: GameState, task: TaskOf<'discard'>): Option[] => {
   const player = playerOf(state, task.player);
-  return [...new Set(player.hand)].map((card) => opt(task.player, `card:${card}`, `${card} を捨てる`));
+  const options = [...new Set(player.hand)].map((card) => opt(task.player, `card:${card}`, `${card} を捨てる`));
+  // 兵法：「〜枚まで」は途中で（0枚でも）終えられる。
+  if (task.raise !== undefined && options.length > 0) {
+    options.push(opt(task.player, 'done', '捨てるのを終える'));
+  }
+  return options;
 };
 
-export const applyDiscard = (state: GameState, task: TaskOf<'discard'>, id: string): void => {
+/** 兵法の終わり：捨てた枚数だけトラックを上げる（12 を超えた分の得点はない、ユーザー決定 2026-11-03）。 */
+export const finishDiscardRaise = (state: GameState, d: GameData, task: TaskOf<'discard'>): void => {
+  removeTask(state, task);
+  const n = task.discarded ?? 0;
+  if (task.raise === undefined || n <= 0) return;
+  const player = playerOf(state, task.player);
+  processEffects(state, d, player, [
+    task.raise === 'military' ? { k: 'military', n, overflowPoints: false, source: 'discardRaise' } : { k: 'infra', n },
+  ]);
+};
+
+export const applyDiscard = (state: GameState, d: GameData, task: TaskOf<'discard'>, id: string): void => {
+  if (id === 'done') {
+    finishDiscardRaise(state, d, task);
+    return;
+  }
   const player = playerOf(state, task.player);
   const card = parseParts(id, 'card')[0] ?? '';
   player.hand.splice(player.hand.indexOf(card), 1);
   state.civDiscard.push(card);
   task.remaining -= 1;
+  if (task.raise !== undefined) task.discarded = (task.discarded ?? 0) + 1;
   // 手札が尽きたら、あるだけ捨てて終える（ユーザー決定 2026-11-03）。
   if (task.remaining === 0 || player.hand.length === 0) {
-    removeTask(state, task);
+    if (task.raise !== undefined) finishDiscardRaise(state, d, task);
+    else removeTask(state, task);
   }
 };
 
@@ -657,6 +701,8 @@ export const startAction = (
 ): void => {
   const a = d.params.actions;
   const p = player.index;
+  // アクションの終わりの印を、アクションの選択タスクと途中で起きる効果より下に積む（発明王・注文住宅・開拓小屋）。
+  state.stack.push({ t: 'actionEnd', player: p, action, tier, built: [] });
   emit(state, d, { type: 'action', player: p, action, tier, copied });
   switch (action) {
     case 'pioneer':

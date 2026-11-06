@@ -6,6 +6,7 @@ import { CELL_IDS, neighborsOf } from './board.ts';
 import { abilitiesOf, type OwnedAbility } from './abilities.ts';
 import {
   addScore,
+  buildOnCard,
   buildingCount,
   currentTurnPlayer,
   drawCivCards,
@@ -78,8 +79,17 @@ export const metricValue = (state: GameState, d: GameData, player: PlayerState, 
       return player.played.length;
     case 'spiritAdjacency':
       return spiritAdjacency(player);
+    case 'buildingTypes':
+      // 建設済みの建物の種類の数（文明カード「建設済みの建物1種類につき」）。
+      return BUILDINGS.filter((b) => buildingCount(player, b) > 0).length;
+    case 'freeLandTerrains':
+      // 建物のない土地タイルの種類の数（文明カード「建物がない土地タイル1種類につき」）。
+      return new Set(freeLandCells(player).map((c) => player.land[c])).size;
     case 'buildingsOfType':
       return buildingCount(player, BUILDINGS.find((b) => b === arg));
+    case 'tagsOf':
+      // プレイ済みの文明カードのうち、その分類のタグを持つ枚数。プレイ中の自身を含む（ユーザー決定 2026-11-06）。
+      return player.played.filter((id) => d.civilizationCards.find((c) => c.id === id)?.tags.some((t) => t === arg) ?? false).length;
     case 'buildingsOnTerrain':
       return CELL_IDS.filter((c) => player.buildings[c] !== undefined && player.land[c] === TERRAINS.find((t) => t === arg)).length;
     default:
@@ -104,7 +114,7 @@ export const conditionHolds = (state: GameState, d: GameData, player: PlayerStat
 
 /** 選択を伴う命令か。 */
 export const isChoiceCommand = (command: Command): boolean =>
-  ['placeTiles', 'build', 'playCard', 'expeditionRewards', 'chooseOne', 'copyAction', 'spiritPlace', 'heroStart'].includes(
+  ['placeTiles', 'build', 'playCard', 'expeditionRewards', 'chooseOne', 'copyAction', 'spiritPlace', 'heroStart', 'discardRaise'].includes(
     command.op,
   ) ||
   (command.op === 'gain' && command.res === 'specialCitizen');
@@ -147,10 +157,12 @@ const runCommand = (
       }
     }
     case 'raise': {
+      const n = amountValue(state, d, player, command.amount);
+      if (n <= 0) {
+        return;
+      }
       const effect: Effect =
-        command.track === 'military'
-          ? { k: 'military', n: command.amount, overflowPoints: false, source }
-          : { k: 'infra', n: command.amount };
+        command.track === 'military' ? { k: 'military', n, overflowPoints: false, source } : { k: 'infra', n };
       processEffects(state, d, player, [effect], choices);
       return;
     }
@@ -159,6 +171,13 @@ const runCommand = (
       if (conditionHolds(state, d, player, command.cond)) {
         for (const inner of command.then) runCommand(state, d, player, inner, source, axis, choices);
       }
+      return;
+    case 'later':
+      // 選択を伴う命令（この後に積む）より下に置き、それらをすべて処理した後に処理する（繁栄）。
+      state.stack.push({ t: 'later', player: player.index, commands: command.do, source, axis });
+      return;
+    case 'buildOnCard':
+      buildOnCard(state, d, player, command.building, command.count, source);
       return;
     case 'drawPlannedCity': {
       // デザイナー専用の計画都市カードを共通の山札から引き、公開する（19-5-3）。
@@ -228,14 +247,29 @@ const eventMatches = (d: GameData, owned: OwnedAbility, filter: EventFilter, eve
       return filter.terrain === undefined || filter.terrain === event.terrain;
     case 'cardPlayed': {
       if (filter.excludeSelf === true && owned.source === `civ:${event.card}`) return false;
-      if (filter.tag === undefined) return true;
+      if (filter.tag === undefined && filter.tags === undefined) return true;
       const card = d.civilizationCards.find((c) => c.id === event.card);
-      return card?.tags.some((t) => t === filter.tag) ?? false;
+      const wanted = [...(filter.tag !== undefined ? [filter.tag] : []), ...(filter.tags ?? [])];
+      return card?.tags.some((t) => wanted.includes(t)) ?? false;
     }
     case 'action':
-      return filter.tier === undefined || filter.tier === event.tier;
+      return (filter.tier === undefined || filter.tier === event.tier) && (filter.action === undefined || filter.action === event.action);
     case 'built':
-      return filter.building === undefined || filter.building === event.building;
+      return (
+        (filter.building === undefined || filter.building === event.building) &&
+        (filter.exceptBuilding === undefined || filter.exceptBuilding !== event.building)
+      );
+    case 'actionFinished': {
+      if (filter.action !== undefined && filter.action !== event.action) return false;
+      if (filter.tier !== undefined && filter.tier !== event.tier) return false;
+      const want = filter.builtDuring;
+      if (want === undefined) return true;
+      const n = event.built.filter((b) => b === want.building).length;
+      if (want.only === true && n !== event.built.length) return false;
+      return n >= want.min && (want.max === undefined || n <= want.max);
+    }
+    case 'trackRaised':
+      return filter.track === undefined || filter.track === event.track;
     case 'workerGained':
       return filter.kind === undefined || filter.kind === event.kind;
     case 'raid':
@@ -252,16 +286,26 @@ const EVENT_TYPES: Record<string, GameEvent['type']> = {
   built: 'built',
   workerGained: 'workerGained',
   raid: 'raid',
+  actionFinished: 'actionFinished',
+  trackRaised: 'trackRaised',
 };
 
 const react = (state: GameState, d: GameData, event: GameEvent): void => {
   if (!('player' in event) || state.phase === 'draft') {
     return;
   }
-  const player = playerOf(state, event.player);
+  // 出来事の持ち主の能力に加え、「いずれかのプレイヤーが」（anyPlayer）の能力は他のプレイヤーのものも反応する。手番順に処理する。
+  reactFor(state, d, event, playerOf(state, event.player), false);
+  for (const index of state.turnOrder) {
+    if (index !== event.player) reactFor(state, d, event, playerOf(state, index), true);
+  }
+};
+
+const reactFor = (state: GameState, d: GameData, event: GameEvent, player: PlayerState, othersOnly: boolean): void => {
   for (const owned of abilitiesOf(d, player)) {
     const ability = owned.ability;
     if (ability.ability !== 'on' || EVENT_TYPES[ability.event] !== event.type) continue;
+    if (othersOnly && ability.filter.anyPlayer !== true) continue;
     if (!eventMatches(d, owned, ability.filter, event)) continue;
     if (ability.filter.cond !== undefined && !conditionHolds(state, d, player, ability.filter.cond)) continue;
     if (ability.once === true) {

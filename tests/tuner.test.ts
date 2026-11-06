@@ -181,7 +181,7 @@ describe('新しいカード（ユーザー決定 2026-11-04）', () => {
     // 指示書 3-5、指示書 1（仮置きの印）
     const cards = getAt(base['cards_civilization.json'], ['cards']) as Record<string, unknown>[];
     const created = newItemFrom(cards, 0) as Record<string, unknown>;
-    expect(created['id']).toBe('043');
+    expect(created['id']).toBe(String(cards.length + 1).padStart(3, '0'));
     expect(created['name']).toBe(`${String(cards[0]?.['name'])}（写し）`);
     expect(created['provisional']).toBe(true);
     expect(created['clarifications']).toEqual([]);
@@ -194,9 +194,11 @@ describe('新しいカード（ユーザー決定 2026-11-04）', () => {
     const cards = getAt(base['cards_civilization.json'], ['cards']) as unknown[];
     const after = [...cards, newItemFrom(cards, 0)];
     const summary = summarizeChange({ file: 'cards_civilization.json', path: ['cards'], before: cards, after });
-    expect(summary).toEqual({ before: '42件', after: '43件', note: '追加：043' });
+    const n = cards.length;
+    const id = String(n + 1).padStart(3, '0');
+    expect(summary).toEqual({ before: `${n}件`, after: `${n + 1}件`, note: `追加：${id}` });
     const work = setInFiles(base, 'cards_civilization.json', ['cards'], after);
-    expect(toMarkdown(proposalFromWork({ name: '新カード', createdAt: '2026-11-04' }, base, work), base)).toContain('`43件（追加：043）`');
+    expect(toMarkdown(proposalFromWork({ name: '新カード', createdAt: '2026-11-04' }, base, work), base)).toContain(`\`${n + 1}件（追加：${id}）\``);
   });
 
   it('新しい文明カード・キャラクターを加えたデータは検査を通り、乱択プレイアウトが終局する', () => {
@@ -214,7 +216,8 @@ describe('新しいカード（ユーザー決定 2026-11-04）', () => {
     }
     expect(validateFiles(files)).toEqual([]);
     const data = loadGameData(rawFromFiles(files));
-    expect(data.civilizationCards.some((c) => c.id === '043')).toBe(true);
+    const added = String((getAt(base['cards_civilization.json'], ['cards']) as unknown[]).length + 1).padStart(3, '0');
+    expect(data.civilizationCards.some((c) => c.id === added)).toBe(true);
     for (const seed of [1, 2]) {
       const result = playout(4, seed, 4000, data);
       expect(result.stuck).toBe(false);
