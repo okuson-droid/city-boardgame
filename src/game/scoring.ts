@@ -16,7 +16,10 @@ export type FinalScore = {
   readonly base: number;
   /** 評価軸ごとの得点。ゲーム中の得点を含む。「その他」は 17-0-2。 */
   readonly axes: Readonly<Record<ScoreAxis, number>>;
-  /** 経済・産業の金換算後、得点に換算されずに残った金（17-7-2 の1段目）。 */
+  /**
+   * 得点に換算されずに残った金（17-7-2 の1段目）。経済・産業を収入で数えるため（ユーザー決定 2026-11-06）、
+   * 残った金はすべて換算されずに残る。
+   */
   readonly leftoverGold: number;
   /** 順位（1始まり）。17-7-2 の比較でも並ぶ場合は同じ順位とする。 */
   readonly rank: number;
@@ -47,7 +50,8 @@ const scorePlayer = (state: GameState, d: GameData, player: PlayerState): Omit<F
     Math.floor(buildingCount(player) / s.base.buildingsPerPoint) +
     Math.floor(player.regularWorkers / s.base.regularWorkersPerPoint);
 
-  // 経済・産業（17-2）。
+  // 経済・産業（17-2 からの変更、ユーザー決定 2026-11-06）：残った金・資材ではなく、収入（金の生産力・資材の生産力）を
+  // 商店・工房の数による換算率（17-2-2、17-2-3 の表のまま）で得点にする。残った金・資材は得点にしない。
   const goldRate = tableAt(s.goldPerPointByShops, buildingCount(player, 'shop'));
   const materialRate = tableAt(s.materialsPerPointByWorkshops, buildingCount(player, 'workshop'));
   // 特別市民04：商店の件数によって金から得る点数が2倍になる。
@@ -55,8 +59,9 @@ const scorePlayer = (state: GameState, d: GameData, player: PlayerState): Omit<F
     (value, m) => (m.kind === 'goldPointsMultiplier' ? value * m.value : value),
     1,
   );
-  axes.economy += Math.floor(player.gold / goldRate) * goldMultiplier + Math.floor(player.materials / materialRate);
-  const leftoverGold = player.gold % goldRate;
+  axes.economy += Math.floor(player.goldProduction / goldRate) * goldMultiplier + Math.floor(player.materialProduction / materialRate);
+  // 同点判定の1段目は、いまのルールどおり残った金で比べる（ユーザー決定 2026-11-06）。
+  const leftoverGold = player.gold;
 
   // 文化・学術（17-3）。
   const cardPoints = player.played.reduce(

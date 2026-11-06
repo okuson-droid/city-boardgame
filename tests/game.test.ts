@@ -966,10 +966,13 @@ describe('ゲーム終了と得点計算（第17章）', () => {
 
   it('基礎得点・経済・文化・生活の計算と内訳の合計', () => {
     // rules.md v0.8 17-1-3、17-2-2、17-2-3、17-3-1、17-4-1、17-0-3
+    // 経済・産業は収入（生産力）で数える（17-2 からの変更、ユーザー決定 2026-11-06）。残った金・資材は得点にしない。
     const s = structuredClone(passToEnd(firstTurn()));
     const p = playerOf(s, 0);
     p.gold = 23;
     p.materials = 11;
+    p.goldProduction = 23;
+    p.materialProduction = 11;
     p.regularWorkers = 7;
     p.played = ['001', '002', '003', '004', '005'];
     p.buildings = { E1: 'shop', F1: 'office' };
@@ -978,12 +981,30 @@ describe('ゲーム終了と得点計算（第17章）', () => {
     const inGame = s.events.filter((e) => e.type === 'score' && e.player === 0);
     const sumOf = (axis: string) => inGame.filter((e) => e.type === 'score' && e.axis === axis).reduce((a, e) => a + (e.type === 'score' ? e.points : 0), 0);
     expect(score?.axes.economy).toBe(2 + 1 + sumOf('economy'));
-    expect(score?.leftoverGold).toBe(3);
+    // 同点判定の1段目は残った金（すべて換算されずに残る）。
+    expect(score?.leftoverGold).toBe(23);
     expect(score?.axes.culture).toBe(5 + 1 + sumOf('culture'));
     expect(score?.axes.welfare).toBe(2 + sumOf('welfare'));
     const axesSum = Object.values(score?.axes ?? {}).reduce((a, b) => a + b, 0);
     expect(score?.total).toBe((score?.base ?? 0) + axesSum);
     expect(buildingCount(p)).toBe(2);
+  });
+
+  it('経済・産業は残った金・資材ではなく収入で数える', () => {
+    // rules.md v0.8 17-2 からの変更（ユーザー決定 2026-11-06）。換算率は 17-2-2・17-2-3 の表のまま。
+    const s = structuredClone(passToEnd(firstTurn()));
+    s.events = s.events.filter((e) => e.type !== 'score');
+    const p = playerOf(s, 0);
+    p.buildings = {};
+    p.gold = 999;
+    p.materials = 999;
+    p.goldProduction = 0;
+    p.materialProduction = 0;
+    expect(finalScores(s).find((f) => f.player === 0)?.axes.economy).toBe(0);
+    // 商店0軒は20金につき1点、工房0軒は10資材につき1点。
+    p.goldProduction = 41;
+    p.materialProduction = 25;
+    expect(finalScores(s).find((f) => f.player === 0)?.axes.economy).toBe(2 + 2);
   });
 
   it('同点は残った金、基礎得点の順に比べ、それでも同じなら同順位', () => {
@@ -993,6 +1014,8 @@ describe('ゲーム終了と得点計算（第17章）', () => {
     for (const p of s.players) {
       p.gold = 0;
       p.materials = 0;
+      p.goldProduction = 0;
+      p.materialProduction = 0;
       p.played = [];
       p.buildings = {};
       p.regularWorkers = 5;
@@ -1009,7 +1032,8 @@ describe('ゲーム終了と得点計算（第17章）', () => {
     // 合計が同じで残った金も同じ（0金）なら、基礎得点の高いほうが上位。
     p1.gold = 0;
     playerOf(s, 2).land = { E1: 'forest', F1: 'forest', D1: 'forest', D2: 'forest' };
-    playerOf(s, 0).gold = 20;
+    // 席0は金の生産力20で経済・産業1点（収入で数える、ユーザー決定 2026-11-06）、残った金は0。
+    playerOf(s, 0).goldProduction = 20;
     scores = finalScores(s);
     expect(scores.find((f) => f.player === 2)?.total).toBe(scores.find((f) => f.player === 0)?.total);
     expect(scores.find((f) => f.player === 0)?.leftoverGold).toBe(0);

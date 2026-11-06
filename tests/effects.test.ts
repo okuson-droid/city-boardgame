@@ -750,10 +750,10 @@ describe('自然公園（第14章、19-1-5、19-4-8）', () => {
 
 describe('終了時の得点の補正', () => {
   it('特別市民04：金から得る点数が2倍', () => {
-    // data_special_citizens.json 04
+    // data_special_citizens.json 04。金の点は収入（金の生産力）から数える（ユーザー決定 2026-11-06）。
     const s = structuredClone(base());
     const p = playerOf(s, 0);
-    p.gold = 40;
+    p.goldProduction = 40;
     p.buildings = {};
     const before = finalScores(s).find((f) => f.player === 0)?.axes.economy ?? 0;
     p.specialCitizens = ['04'];
@@ -761,7 +761,8 @@ describe('終了時の得点の補正', () => {
     expect(after - before).toBe(2);
   });
 
-  it('特別市民05〜07 と資本家は 17-0-1 手順4 で処理し、資本家の資材は経済の換算に含まれる', () => {
+  it('特別市民05〜07 と資本家は 17-0-1 手順4 で処理する（資本家は終了時に資材を得る）', () => {
+    // 経済・産業を収入で数えるようにしたため（ユーザー決定 2026-11-06）、資本家の終了時の資材は得点にならない。
     // rules.md v0.8 17-0-1、19-5-5
     let s = edit(base(), (state) => {
       state.round = 5;

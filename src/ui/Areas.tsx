@@ -532,7 +532,11 @@ export const FinalScores = ({ state, onRestart }: { state: GameState; onRestart:
             </tr>
             {SCORE_AXES.map((axis) => (
               <tr key={axis}>
-                <th>{AXIS_LABELS[axis]}</th>
+                <th>
+                  {AXIS_LABELS[axis]}
+                  {/* 経済・産業は収入（生産力）で数える（ユーザー決定 2026-11-06）。 */}
+                  {axis === 'economy' ? <span className="muted small">（収入から）</span> : null}
+                </th>
                 {scores.map((s) => (
                   <td key={s.player}>{s.axes[axis]}</td>
                 ))}
