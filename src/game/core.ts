@@ -6,7 +6,7 @@ import { shuffle } from './rng.ts';
 import type { Building, GameData, Grant, ScoreAxis, Terrain } from '../data/types.ts';
 import type { BuildSpec, ChoiceEffect, GameEvent, GameState, PlayerState, Task } from './types.ts';
 import type { Command } from '../data/script.ts';
-import { buildCostMaterialsModifier, hasModifier } from './abilities.ts';
+import { buildCostMaterialsModifier, hasModifier, modifiersOf } from './abilities.ts';
 
 // ---------------------------------------------------------------------------
 // 読み取り
@@ -227,7 +227,18 @@ const buildTask = (player: number, spec: BuildSpec): Task => ({ t: 'build', play
 const commandTask = (player: number, command: Command, source: string): Task => {
   switch (command.op) {
     case 'placeTiles':
-      return { t: 'placeTiles', player, remaining: command.count, placed: [], mode: 'effect', tier: null, mismatches: 0, tile: command.tile };
+      return {
+        t: 'placeTiles',
+        player,
+        remaining: command.count,
+        placed: [],
+        mode: 'effect',
+        tier: null,
+        mismatches: 0,
+        tile: command.tile,
+        ...(command.distinct === true ? { distinct: true } : {}),
+        ...(command.upTo === true ? { upTo: true } : {}),
+      };
     case 'build':
       return buildTask(player, {
         min: command.upTo ? 0 : command.max,
@@ -266,7 +277,7 @@ const choiceTask = (player: number, effect: ChoiceEffect): Task => {
     case 'command':
       return commandTask(player, effect.command, effect.source);
     case 'landTiles':
-      return { t: 'placeTiles', player, remaining: effect.n, placed: [], mode: 'effect', tier: null, mismatches: 0, tile: 'match' };
+      return { t: 'placeTiles', player, remaining: effect.n, placed: [], mode: 'effect', tier: null, mismatches: 0, tile: effect.any === true ? 'any' : 'match' };
     case 'buildRight':
       return buildTask(player, { min: 1, max: 1, tier: null, buildings: null, terrain: null, payGold: true, payMaterials: true });
     case 'freeBuild':
@@ -412,7 +423,12 @@ const applyGrant = (
       addScore(state, d, player, grant.amount, axis, source);
       return;
     case 'landTiles':
-      choices.push({ k: 'landTiles', n: grant.amount });
+      // 強行軍：遠征報酬（017 の遠征報酬を含む）の土地タイルは地形と異なる種類でも置ける（カードの効果が 4-2-2 に優先する）。
+      choices.push({
+        k: 'landTiles',
+        n: grant.amount,
+        ...(source === 'expedition' && hasModifier(d, player, 'expeditionTilesAnyTerrain') ? { any: true } : {}),
+      });
       return;
     case 'buildRight':
       for (let i = 0; i < grant.amount; i += 1) {
@@ -496,4 +512,41 @@ export const buildEffects = (d: GameData, player: PlayerState, picks: readonly {
     }
   }
   return effects;
+};
+
+// ---------------------------------------------------------------------------
+// 軍事力トークンの支払い（傭兵団、ユーザー決定 2026-11-06）
+// ---------------------------------------------------------------------------
+
+/** 傭兵団の補正による、トークン1つの代わりの金。複数あれば安いほう。補正がなければ null。 */
+export const goldPerToken = (d: GameData, player: PlayerState): number | null =>
+  modifiersOf(d, player).reduce<number | null>((rate, m) => (m.kind === 'tokensByGold' ? Math.min(rate ?? m.gold, m.gold) : rate), null);
+
+/** 払える軍事力トークンの数。傭兵団があれば、金で替えられる分を加える。 */
+export const tokenBudget = (d: GameData, player: PlayerState): number => {
+  const rate = goldPerToken(d, player);
+  return player.militaryTokens + (rate === null ? 0 : Math.floor(player.gold / rate));
+};
+
+/**
+ * 軍事力トークンを n 個払う。トークンを先に使い、足りない分は傭兵団の率で金を払う。
+ * 傭兵団があり、使ったトークンをさらに金に替えられるときは、替える数を尋ねるタスク（tokenSwap）を積む。
+ * tokenSwap は applyMove の終わりに最上段へ移し、支払いの直後に尋ねる（engine.ts）。
+ */
+export const payMilitaryTokens = (state: GameState, d: GameData, player: PlayerState, n: number): void => {
+  if (n <= 0) {
+    return;
+  }
+  const rate = goldPerToken(d, player);
+  const used = Math.min(player.militaryTokens, n);
+  player.militaryTokens -= used;
+  if (n > used) {
+    if (rate === null) {
+      throw new Error(`軍事力トークンが足りない：${n} 個に対して ${used} 個`);
+    }
+    player.gold -= (n - used) * rate;
+  }
+  if (rate !== null && used > 0 && player.gold >= rate) {
+    state.stack.push({ t: 'tokenSwap', player: player.index, max: used, rate });
+  }
 };

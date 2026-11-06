@@ -197,6 +197,14 @@ export const ICON_ART: Readonly<Record<string, string>> = {
   'mod.goldPointsMultiplier': `${coin(8.5, 12, 6.5)}<path d="M15.5 9l5 6M20.5 9l-5 6" stroke="#222" stroke-width="2" stroke-linecap="round"/>`,
   'mod.natureParkPoints': `<path d="M12 2L4.5 13h4L5 18h14l-3.5-5h4z" fill="${AXIS_COLORS.nature}" stroke="#2a5a3a" stroke-width="1.3" stroke-linejoin="round"/><rect x="10.5" y="18" width="3" height="4" fill="#7a5230"/>`,
   'mod.expeditionRewards': `<path d="M5 21V3M5 4h10l-3 4 3 4H5" ${S} stroke="${AXIS_COLORS.military}"/><path d="M19 13v7M15.5 16.5h7" stroke="#222" stroke-width="2" stroke-linecap="round"/>`,
+  // 強行軍：遠征の旗と、2色に分かれた土地タイル（地形と異なる種類も置ける）。
+  'mod.expeditionTilesAnyTerrain': `<path d="M4 13V2.5M4 3.5h7l-2 2.7 2 2.8H4" ${S} stroke="${AXIS_COLORS.military}"/>${hexAt(15.5, 15, 6.5, '#e9d66b')}<path d="M15.5 8.5v13l5.6-3.2v-6.5z" fill="#7fc4e8"/><polygon points="15.5,8.5 21.1,11.75 21.1,18.25 15.5,21.5 9.9,18.25 9.9,11.75" fill="none" stroke="#444" stroke-width="1.3"/>`,
+  // 傭兵団：金貨から軍事力トークンへの矢（トークンの代わりに金を払う）。
+  'mod.tokensByGold': `${coin(6.5, 12, 5)}<path d="M12 12h3.5M14 9.8l2.2 2.2-2.2 2.2" ${S} stroke="#222" stroke-width="1.6"/><path d="M19.5 6.5l3 1.1v2.6c0 2.1-1.3 3.7-3 4.6-1.7-.9-3-2.5-3-4.6V7.6z" transform="translate(-1.5 2.5)" fill="${AXIS_COLORS.military}" stroke="#5e1f1a" stroke-width="1"/>`,
+  // 雲隠れ：雲に隠れた剣（襲撃の処理を行わない）。
+  'mod.skipRaid': `${SWORD}<path d="M5 19.5a3.5 3.5 0 0 1 .6-6.9 4.6 4.6 0 0 1 8.7-1.3 3.6 3.6 0 0 1 4.6 3.4 3 3 0 0 1-.4 4.8z" fill="#f1f3f6" stroke="#7c8796" stroke-width="1.4" stroke-linejoin="round"/>`,
+  // 特別任務：遠征の旗と「×2」の印（同じ報酬を重ねて選べる）。
+  'mod.expeditionSameReward': `<path d="M5 21V3M5 4h10l-3 4 3 4H5" ${S} stroke="${AXIS_COLORS.military}"/><path d="M14.5 15l5 5M19.5 15l-5 5" stroke="#222" stroke-width="1.8" stroke-linecap="round"/>`,
   'mod.noBuildOnSpiritLand': `${smallArt(BUILDING_ART.house, 3, 3, 0.75)}<circle cx="12" cy="12" r="10" fill="none" stroke="#c8453b" stroke-width="2.2"/><path d="M5 19L19 5" stroke="#c8453b" stroke-width="2.2"/>`,
   // 襲撃の結果（7-4-5）
   'raid.defenseFailed': `<path d="${shieldPath}" fill="#9a9a9a" stroke="#555" stroke-width="1.5"/><path d="M12.5 4.5l-2.5 5.5 3.2 2.2-2.6 6.3" ${W} stroke-width="1.8"/>`,
@@ -224,6 +232,8 @@ export const ICON_ART: Readonly<Record<string, string>> = {
   'sym.discard': `<rect x="10.5" y="0.8" width="7" height="9.5" rx="1.2" fill="#2f4a7a" stroke="#1d2f50" stroke-width="1.2" transform="rotate(20 14 5.5)"/><rect x="3.5" y="8.2" width="14" height="2.6" rx="1" fill="#777" stroke="#333" stroke-width="1.3"/><path d="M8.5 8.2V6.8h4v1.4" fill="none" stroke="#333" stroke-width="1.3"/><path d="M5 10.8h11l-1.2 11H6.2z" fill="#9a9a9a" stroke="#333" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.6 13.5v5.8M10.5 13.5v5.8M12.4 13.5v5.8" stroke="#555" stroke-width="1.2" stroke-linecap="round"/>`,
   'sym.workers': meeple('#888'),
   'sym.every': `<path d="M4.5 10a8 8 0 0 1 14-3.5M19.5 14a8 8 0 0 1-14 3.5" ${S} stroke="#444"/><path d="M19 3v4h-4M5 21v-4h4" ${S} stroke="#444"/>`,
+  // 異なる種類：色の違う3枚の土地タイル（同じ種類は置けない）。
+  'sym.distinct': `${hexAt(7, 8, 5, '#e9d66b')}${hexAt(17, 8, 5, '#4f9a4f')}${hexAt(12, 16.5, 5, '#7fc4e8')}`,
   'sym.excludeSelf': `${card(`<path d="M8.5 8h7M8.5 11.5h7M8.5 15h4.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>`)}<path d="M3 21L21 3" stroke="#c8453b" stroke-width="2.4" stroke-linecap="round"/>`,
   'sym.axis': `<polygon points="12,2.5 21,9 17.6,19.8 6.4,19.8 3,9" fill="none" stroke="#444" stroke-width="1.5" stroke-linejoin="round"/><polygon points="12,6 17,10.5 15,16.5 8.5,15.5 6.5,10" fill="#9fc4e8" stroke="${BLUE}" stroke-width="1.3" stroke-linejoin="round"/>`,
   // パス時：手のひら（待った）

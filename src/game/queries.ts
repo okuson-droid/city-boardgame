@@ -49,6 +49,7 @@ const SCENES: Partial<Record<Task['t'], { icon: string; heading: string }>> = {
   heroStart: { icon: 'scene.tile', heading: '初期の山岳を選ぶ' },
   passTile: { icon: 'scene.bonus', heading: '次のタイルを選ぶ' },
   raidDeclare: { icon: 'scene.raid', heading: '襲撃の目標を宣言' },
+  tokenSwap: { icon: 'scene.count', heading: '金に替えるトークンの数を選ぶ' },
 };
 
 /** いま何を選ぶ場面か。見出しは選択肢の種類（タスク）から組み立てる。 */

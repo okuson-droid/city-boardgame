@@ -71,7 +71,13 @@ const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
         ? [token(keys, 'tracks', command.track, `+${command.amount}`)]
         : amountTokens(keys, command.amount, token(keys, 'tracks', command.track));
     case 'placeTiles':
-      return [token(keys, 'commands', 'placeTiles', command.count), token(keys, 'terrains', command.tile)];
+      return [
+        ...(command.upTo === true
+          ? [token(keys, 'commands', 'placeTiles'), token(keys, 'symbols', 'upTo'), { icon: 'num', value: command.count, label: String(command.count) }]
+          : [token(keys, 'commands', 'placeTiles', command.count)]),
+        token(keys, 'terrains', command.tile),
+        ...(command.distinct === true ? [token(keys, 'symbols', 'distinct')] : []),
+      ];
     case 'build':
       // 「〜まで」は数字の前に ≤ を付ける（4-3-5）。
       return [
@@ -143,6 +149,11 @@ const modifierTokens = (keys: IconKeys, modifier: Modifier): IconToken[] => {
       return [head, ...Object.entries(modifier.table).map(([size, points]) => token(keys, 'resources', 'points', `${size}:${points}`))];
     case 'expeditionRewards':
       return [head, ...modifier.add.flatMap((a) => [token(keys, 'tracks', 'military', a.level), ...commandTokens(keys, a.command)])];
+    case 'tokensByGold':
+      // トークン1つの代わりに金を払う。支払いは矢の左に置く（4-3）。
+      return [head, token(keys, 'resources', 'gold', modifier.gold), token(keys, 'symbols', 'then'), token(keys, 'resources', 'militaryTokens', 1)];
+    case 'expeditionSameReward':
+      return [head, ...(['normal', 'upper', 'top'] as const).map((t) => token(keys, 'tiers', t, `×${modifier.maxSame[t]}`))];
     default:
       return [head];
   }
@@ -211,7 +222,7 @@ const describeCommand = (keys: IconKeys, command: Command): string => {
         ? `${label(keys, 'tracks', command.track)}を${command.amount}${label(keys, 'commands', 'raise')}`
         : `${metricEntry(keys, command.amount.count).label}${command.amount.per}${label(keys, 'symbols', 'per')}${label(keys, 'tracks', command.track)}を${command.amount.times}${label(keys, 'commands', 'raise')}`;
     case 'placeTiles':
-      return `${label(keys, 'commands', 'placeTiles')}（${command.count}枚、${label(keys, 'terrains', command.tile)}）`;
+      return `${label(keys, 'commands', 'placeTiles')}（${command.count}枚${command.upTo === true ? label(keys, 'symbols', 'upTo') : ''}、${label(keys, 'terrains', command.tile)}${command.distinct === true ? `、${label(keys, 'symbols', 'distinct')}` : ''}）`;
     case 'build': {
       const what = command.buildings === null ? '' : `${command.buildings.map((b) => label(keys, 'buildings', b)).join('・')}を`;
       const where = command.terrain === null ? '' : `${label(keys, 'terrains', command.terrain)}に`;
@@ -245,6 +256,10 @@ const describeModifier = (keys: IconKeys, modifier: Modifier): string => {
       return `${head}を${Object.entries(modifier.table)
         .map(([size, points]) => `${size}枚${points}点`)
         .join('・')}にする`;
+    case 'tokensByGold':
+      return `${head}（トークン1つにつき${modifier.gold}金）`;
+    case 'expeditionSameReward':
+      return `${head}：${(['normal', 'upper', 'top'] as const).map((t) => `${label(keys, 'tiers', t)}は${modifier.maxSame[t]}回まで`).join('、')}`;
     case 'expeditionRewards':
       return `${head}：${modifier.add
         .map((a) => `${label(keys, 'tracks', 'military')}${a.level}で${describeCommand(keys, a.command)}`)

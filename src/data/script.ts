@@ -66,7 +66,15 @@ export type GainResource = (typeof GAIN_RESOURCES)[number];
 export type Command =
   | { readonly op: 'gain'; readonly res: GainResource; readonly amount: Amount; readonly axis?: ScoreAxis }
   | { readonly op: 'raise'; readonly track: 'military' | 'infra'; readonly amount: Amount }
-  | { readonly op: 'placeTiles'; readonly count: number; readonly tile: 'match' | 'any' | Terrain }
+  | {
+      readonly op: 'placeTiles';
+      readonly count: number;
+      readonly tile: 'match' | 'any' | Terrain;
+      /** true なら異なる種類の土地タイルだけを置く（文明カード「異なる種類の土地タイルを4枚まで」）。 */
+      readonly distinct?: boolean;
+      /** true なら途中で（0枚でも）配置を終えられる（「〜枚まで」）。 */
+      readonly upTo?: boolean;
+    }
   | {
       readonly op: 'build';
       readonly max: number;
@@ -141,7 +149,15 @@ export type Modifier =
       readonly kind: 'expeditionRewards';
       readonly add: readonly { readonly level: number; readonly command: Command }[];
     }
-  | { readonly kind: 'noBuildOnSpiritLand' };
+  | { readonly kind: 'noBuildOnSpiritLand' }
+  /** 遠征報酬の土地タイルを地形と異なる種類でも置ける（文明カード「強行軍」）。 */
+  | { readonly kind: 'expeditionTilesAnyTerrain' }
+  /** 軍事力トークンを払うとき、トークン1つの代わりに gold 金を払ってよい（文明カード「傭兵団」）。 */
+  | { readonly kind: 'tokensByGold'; readonly gold: number }
+  /** 自分の襲撃の処理を行わないことを選べる（文明カード「雲隠れ」）。 */
+  | { readonly kind: 'skipRaid' }
+  /** 遠征アクションで同じ報酬を選べる回数の上限（文明カード「特別任務」）。 */
+  | { readonly kind: 'expeditionSameReward'; readonly maxSame: Readonly<Record<'normal' | 'upper' | 'top', number>> };
 
 export const MODIFIER_KINDS = [
   'buildCost',
@@ -151,6 +167,10 @@ export const MODIFIER_KINDS = [
   'natureParkPoints',
   'expeditionRewards',
   'noBuildOnSpiritLand',
+  'expeditionTilesAnyTerrain',
+  'tokensByGold',
+  'skipRaid',
+  'expeditionSameReward',
 ] as const;
 
 export type Ability =
@@ -295,6 +315,8 @@ export const readCommand = (v: unknown, path: string): Command => {
         op,
         count: int(o['count'], p('count')),
         tile: tile === 'match' || tile === 'any' ? tile : oneOf(TERRAINS, tile, p('tile')),
+        ...optional(o, 'distinct', bool, path),
+        ...optional(o, 'upTo', bool, path),
       };
     }
     case 'build':
@@ -373,8 +395,17 @@ const readModifier = (v: unknown, path: string): Modifier => {
           return { level: int(a['level'], `${path}.add[${i}].level`), command: readCommand(a['command'], `${path}.add[${i}].command`) };
         }),
       };
+    case 'tokensByGold':
+      return { kind, gold: int(o['gold'], `${path}.gold`) || fail(`${path}.gold`, '1以上でなければならない') };
+    case 'expeditionSameReward': {
+      const table = obj(o['maxSame'], `${path}.maxSame`);
+      const tier = (t: 'normal' | 'upper' | 'top'): number => int(table[t], `${path}.maxSame.${t}`) || fail(`${path}.maxSame.${t}`, '1以上でなければならない');
+      return { kind, maxSame: { normal: tier('normal'), upper: tier('upper'), top: tier('top') } };
+    }
     case 'regularWorkersImmediate':
     case 'noBuildOnSpiritLand':
+    case 'expeditionTilesAnyTerrain':
+    case 'skipRaid':
       return { kind };
   }
 };

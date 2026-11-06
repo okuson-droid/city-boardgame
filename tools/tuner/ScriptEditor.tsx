@@ -71,6 +71,10 @@ const MODIFIER_TEMPLATES: Record<(typeof MODIFIER_KINDS)[number], J> = {
   natureParkPoints: { kind: 'natureParkPoints', table: { '2': 5, '3': 10, '4': 15 } },
   expeditionRewards: { kind: 'expeditionRewards', add: [] },
   noBuildOnSpiritLand: { kind: 'noBuildOnSpiritLand' },
+  expeditionTilesAnyTerrain: { kind: 'expeditionTilesAnyTerrain' },
+  tokensByGold: { kind: 'tokensByGold', gold: 2 },
+  skipRaid: { kind: 'skipRaid' },
+  expeditionSameReward: { kind: 'expeditionSameReward', maxSame: { normal: 2, upper: 2, top: 3 } },
 };
 
 // ---------------------------------------------------------------------------
@@ -222,6 +226,8 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
           <Field label="種類">
             <Select value={String(value['tile'])} kind="tile" options={['match', 'any', ...TERRAINS]} onChange={(t) => set('tile', t)} />
           </Field>
+          <Check label="異なる種類" value={value['distinct']} onChange={(b) => (b ? set('distinct', true) : unset('distinct'))} />
+          <Check label="まで" value={value['upTo']} onChange={(b) => (b ? set('upTo', true) : unset('upTo'))} />
         </>
       ) : null}
       {op === 'build' ? (
@@ -398,6 +404,21 @@ const ModifierEditor = ({ value, onChange }: { value: J; onChange: (v: J) => voi
       {kind === 'natureParkPoints' ? (
         <JsonEditor value={value['table']} base={value['table']} path={[]} onSet={(_, v) => set('table', v)} />
       ) : null}
+      {kind === 'tokensByGold' ? (
+        <Field label="トークン1つの代わりの金">
+          <Int value={value['gold']} onChange={(n) => set('gold', n)} />
+        </Field>
+      ) : null}
+      {kind === 'expeditionSameReward'
+        ? TIERS.map((t) => {
+            const table = (value['maxSame'] as J | undefined) ?? {};
+            return (
+              <Field key={t} label={`${valueLabel(t, 'tier')}の上限`}>
+                <Int value={table[t]} onChange={(n) => set('maxSame', { ...table, [t]: n })} />
+              </Field>
+            );
+          })
+        : null}
       {kind === 'expeditionRewards' ? (
         <div className="nested">
           {((value['add'] as J[]) ?? []).map((entry, i, all) => (

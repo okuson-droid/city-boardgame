@@ -378,6 +378,22 @@
     "noBuildOnSpiritLand": {
       "icon": "mod.noBuildOnSpiritLand",
       "label": "精霊チップのある土地に建設できない"
+    },
+    "expeditionTilesAnyTerrain": {
+      "icon": "mod.expeditionTilesAnyTerrain",
+      "label": "遠征報酬の土地タイルは地形と異なる種類も置ける"
+    },
+    "tokensByGold": {
+      "icon": "mod.tokensByGold",
+      "label": "軍事力トークンの代わりに金を払える"
+    },
+    "skipRaid": {
+      "icon": "mod.skipRaid",
+      "label": "自分の襲撃の処理を行わないことを選べる"
+    },
+    "expeditionSameReward": {
+      "icon": "mod.expeditionSameReward",
+      "label": "遠征で同じ報酬を選べる回数"
     }
   },
   "results": {
@@ -522,6 +538,10 @@
     "discard": {
       "icon": "sym.discard",
       "label": "文明カードを捨てる"
+    },
+    "distinct": {
+      "icon": "sym.distinct",
+      "label": "異なる種類"
     }
   }
 }

@@ -84,7 +84,8 @@ export type BuildSpec = {
 /** 選択を伴う効果。複数が同時に発生したときは処理順を尋ねる（decisions.md 3-4）。 */
 export type ChoiceEffect =
   | { readonly k: 'command'; readonly command: Command; readonly source: string }
-  | { readonly k: 'landTiles'; readonly n: number }
+  /** any は地形と異なる種類も置ける（強行軍の遠征報酬）。 */
+  | { readonly k: 'landTiles'; readonly n: number; readonly any?: boolean }
   | { readonly k: 'buildRight' }
   | { readonly k: 'freeBuild'; readonly terrain: Terrain | null }
   | { readonly k: 'specialCitizen' }
@@ -110,6 +111,10 @@ export type Task =
       mismatches: number;
       /** 効果による配置の土地タイル：match は地形と同じ種類、any は任意、地形名はその種類（地形を無視）。 */
       readonly tile: 'match' | 'any' | Terrain;
+      /** 異なる種類の土地タイルだけを置く（大規模開拓）。古い記録の局面では欠ける。 */
+      readonly distinct?: boolean;
+      /** 「配置を終える」（done）を選べる。 */
+      readonly upTo?: boolean;
     }
   | { readonly t: 'build'; readonly player: number; readonly spec: BuildSpec; picks: BuildPick[] }
   | { readonly t: 'importCount'; readonly player: number; readonly tier: Tier }
@@ -145,6 +150,11 @@ export type Task =
   | { readonly t: 'passTile'; readonly player: number; readonly returned: number | null }
   | { readonly t: 'nextTurn'; readonly from: number }
   | { readonly t: 'raidDeclare'; readonly player: number }
+  /**
+   * 傭兵団：払った軍事力トークンのうち何個を金に替えるか（count:<k>）。トークンを k 個戻し、k×率 の金を払う。
+   * 払った時点でまずトークンを使い、足りない分だけ金で払う。替える数は払った直後に尋ねる。
+   */
+  | { readonly t: 'tokenSwap'; readonly player: number; readonly max: number; readonly rate: number }
   | { readonly t: 'roundEnd' }
   | { readonly t: 'gameEnd' };
 

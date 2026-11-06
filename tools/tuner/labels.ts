@@ -372,6 +372,7 @@ const KEY_LABELS: Table = {
   track: 'トラック',
   tile: '土地タイル',
   upTo: '「まで」',
+  distinct: '異なる種類だけ',
   free: '無料',
   options: '選択肢',
   cond: '条件',

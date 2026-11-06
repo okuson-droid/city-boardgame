@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { GAME_DATA } from '../src/data/index.ts';
 import { CELL_IDS, type CellId } from '../src/game/board.ts';
+import { terrainOf } from '../src/game/core.ts';
 import { applyMove } from '../src/game/engine.ts';
 import { describeScript, iconSequence } from '../src/game/icons.ts';
 import type { GameState, PlayerState } from '../src/game/types.ts';
@@ -36,6 +37,8 @@ const playCard = (state: GameState, card: string, setup: (p: PlayerState) => voi
 };
 
 /** 土地タイルのある空きマスを返す。 */
+const terrainOfCell = (p: PlayerState, cell: CellId): string => terrainOf(d, p, cell);
+
 const landCells = (p: PlayerState): CellId[] => CELL_IDS.filter((c) => p.land[c] !== undefined && p.buildings[c] === undefined);
 
 describe('xlsx から加えた文明カードのデータ', () => {
@@ -161,5 +164,115 @@ describe('所持しているタグ（ユーザー決定 2026-11-06）', () => {
     expect(gold([])).toBe(100 - costOf(card));
     expect(gold(['002'])).toBe(100 - costOf(card) + 10);
     expect(gold(['002', '006', '007'])).toBe(100 - costOf(card) + 20);
+  });
+});
+
+describe('カードの効果が rules.md に優先する5枚（ユーザー決定 2026-11-06）', () => {
+  /** 手番のプレイヤーにプレイ済みのカードを持たせる。 */
+  const holding = (card: string, setup: (p: PlayerState) => void = () => undefined): GameState =>
+    edit(base(), (_, p) => {
+      p.played = [card];
+      p.gold = 100;
+      setup(p);
+    });
+
+  it('大規模開拓：地形と同じ種類だけを、種類ごとに1枚まで置き、途中で終えられる', () => {
+    // ユーザー決定 2026-11-06（4種を1枚ずつ、地形と異なる種類は置けない、順番は選べる）、rules.md v0.8 4-2-2
+    const card = idOf('大規模開拓');
+    let s = playCard(base(), card);
+    const p0 = me(s);
+    const tiles = ids(s).filter((id) => id.startsWith('tile:'));
+    expect(tiles.length).toBeGreaterThan(0);
+    // 地形と異なる種類の選択肢はない。
+    for (const id of tiles) {
+      const [, cell, tile] = id.split(':');
+      expect(tile).toBe(terrainOfCell(p0, cell as CellId));
+    }
+    expect(ids(s)).toContain('done');
+    const first = tiles[0] ?? '';
+    const used = first.split(':')[2];
+    s = applyMove(s, first);
+    // 置いた種類はもう置けない。
+    expect(ids(s).filter((id) => id.startsWith('tile:')).every((id) => id.split(':')[2] !== used)).toBe(true);
+    s = applyMove(s, 'done');
+    expect(s.stack.some((t) => t.t === 'placeTiles')).toBe(false);
+  });
+
+  it('強行軍：遠征報酬の土地タイルは地形と異なる種類も置ける', () => {
+    // ユーザー決定 2026-11-06（4-2-2 に優先する）、rules.md v0.8 6-3-6-2
+    const reward = d.params.actions.expedition.rewards.findIndex((r) => r.grants.some((g) => g.kind === 'landTiles'));
+    const level = d.params.actions.expedition.rewards[reward]?.level ?? 0;
+    const tileOptions = (card: string | null): string[] => {
+      let s = edit(base(), (_, p) => {
+        p.played = card === null ? [] : [card];
+        p.militaryLevel = level;
+      });
+      s = play(s, 'act:expedition:normal', `reward:${reward}`);
+      if (ids(s).includes('done')) s = applyMove(s, 'done');
+      return ids(s).filter((id) => id.startsWith('tile:'));
+    };
+    const without = tileOptions(null);
+    const withCard = tileOptions(idOf('強行軍'));
+    expect(new Set(without.map((id) => id.split(':')[2])).size).toBeLessThanOrEqual(new Set(without.map((id) => id.split(':')[1])).size);
+    expect(withCard.length).toBe(new Set(withCard.map((id) => id.split(':')[1])).size * 4);
+    expect(withCard.length).toBeGreaterThan(without.length);
+  });
+
+  it('傭兵団：トークンが足りない分は2金で払い、使ったトークンも支払いの直後に金に替えられる', () => {
+    // ユーザー決定 2026-11-06（軍事力トークンを使うすべての場面、替える数は選べる）、rules.md v0.8 6-3-6-4
+    const card = idOf('傭兵団');
+    const top = d.params.actions.expedition.rewards.reduce((a, r) => Math.max(a, r.level), 0);
+    const reward = d.params.actions.expedition.rewards.findIndex((r) => r.level === top);
+    let s = holding(card, (p) => {
+      p.militaryLevel = 0;
+      p.militaryTokens = 1;
+    });
+    // トークン1つでも、金で補えば最高レベルの報酬を選べる。
+    s = applyMove(s, 'act:expedition:normal');
+    expect(ids(s)).toContain(`reward:${reward}`);
+    const gold = me(s).gold;
+    s = applyMove(s, `reward:${reward}`);
+    if (ids(s).includes('done')) s = applyMove(s, 'done');
+    // トークン1つを使い、残り top−1 個を金で払った。使った1つを金に替えるかを尋ねる。
+    expect(s.stack.at(-1)?.t).toBe('tokenSwap');
+    const owner = s.players.find((q) => q.played.includes(card));
+    expect(owner?.militaryTokens).toBe(0);
+    expect(owner?.gold).toBe(gold - (top - 1) * 2);
+    expect(ids(s)).toEqual(['count:0', 'count:1']);
+    s = applyMove(s, 'count:1');
+    const after = s.players.find((q) => q.played.includes(card));
+    expect(after?.militaryTokens).toBe(1);
+    expect(after?.gold).toBe(gold - top * 2);
+  });
+
+  it('雲隠れ：襲撃の処理をすべて行わないことを選べる', () => {
+    // ユーザー決定 2026-11-06（宣言・判定・得点・カードの効果をすべて行わない）、rules.md v0.8 7-3
+    const card = idOf('雲隠れ');
+    let s = edit(base(), (state) => {
+      for (const p of state.players) p.played = [card];
+    });
+    while (s.stack.at(-1)?.t !== 'raidDeclare') s = applyMove(s, s.stack.at(-1)?.t === 'turn' ? 'pass' : (ids(s)[0] ?? ''));
+    expect(ids(s)).toContain('raid:skip');
+    const player = me(s);
+    const score = player.score;
+    const events = s.events.length;
+    s = applyMove(s, 'raid:skip');
+    expect(s.players[player.index]?.score).toBe(score);
+    expect(s.events.slice(events).some((e) => e.type === 'raid' && e.player === player.index)).toBe(false);
+  });
+
+  it('特別任務：通常の遠征で同じ報酬を2回選べる', () => {
+    // ユーザー決定 2026-11-06（書いてあるとおり）、rules.md v0.8 6-3-6-6
+    const free = d.params.actions.expedition.rewards.findIndex((r) => r.level === 0);
+    const picks = (card: string | null): string[] => {
+      let s = edit(base(), (_, p) => {
+        p.played = card === null ? [] : [card];
+        p.militaryLevel = 0;
+      });
+      s = play(s, 'act:expedition:normal', `reward:${free}`);
+      return ids(s);
+    };
+    expect(picks(null)).not.toContain(`reward:${free}`);
+    expect(picks(idOf('特別任務'))).toContain(`reward:${free}`);
   });
 });

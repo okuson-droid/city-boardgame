@@ -37,6 +37,10 @@
 | `natureParkPoints` | `table`（枚数→得点） | 特別市民08 |
 | `expeditionRewards` | `add`（レベルと報酬） | 指揮官（19-2-6） |
 | `noBuildOnSpiritLand` | なし | 精霊使い |
+| `expeditionTilesAnyTerrain` | なし | 強行軍（遠征報酬の土地タイルは地形と異なる種類も置ける、2026-11-06） |
+| `tokensByGold` | `gold` | 傭兵団（軍事力トークン1つの代わりに払う金、2026-11-06） |
+| `skipRaid` | なし | 雲隠れ（襲撃の処理を行わないことを選べる、2026-11-06） |
+| `expeditionSameReward` | `maxSame`（段階ごと） | 特別任務（遠征で同じ報酬を選べる回数、2026-11-06） |
 
 ## 2. 命令
 
@@ -44,7 +48,7 @@
 |---|---|---|
 | `gain` | `res`、`amount`、`axis?` | 資源・生産力・得点・カードを得る。`res` は gold・materials・militaryTokens・tempWorkers・regularWorkers・goldProduction・materialProduction・drawCivCards・specialCitizen・points |
 | `raise` | `track`（military・infra）、`amount` | トラックを上げる（到達報酬を含む）。`amount` は数値か「指標 n につき m」（2026-11-06 追加） |
-| `placeTiles` | `count`、`tile`（`match`・`any`・地形名） | 土地タイルを置く。資材は払わない（19-1-1） |
+| `placeTiles` | `count`、`tile`（`match`・`any`・地形名）、`distinct?`、`upTo?` | 土地タイルを置く。資材は払わない（19-1-1）。`distinct` は異なる種類だけ、`upTo` は途中で終えられる（2026-11-06 追加） |
 | `build` | `max`、`buildings?`、`terrain?`、`payGold`、`payMaterials` | 建物を建てる。001・09（無料1軒）、003（金なし3軒まで）、特別市民13（住宅2軒まで無料）、建設の権利、軍事レベル12 を表す |
 | `playCard` | `count`、`free`、`upTo?` | 文明カードをプレイする（特別市民10、芸術家）。`upTo` が真なら「プレイを終える」を選べる（2026-11-06 追加） |
 | `expeditionRewards` | `count`、`distinct`、`payTokens` | 遠征の報酬を得る（017） |

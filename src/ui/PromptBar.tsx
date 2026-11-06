@@ -32,11 +32,17 @@ const panelTokens = (state: GameState, choice: Choice): IconToken[] => {
     case 'workers':
       return [tok('resources', 'tempWorkers', Number(t.value))];
     case 'count':
+      // 傭兵団：払った金の分だけトークンが戻る（支払いは矢の左に置く）。
+      if (task?.t === 'tokenSwap') {
+        const k = Number(t.value);
+        return k === 0 ? [{ icon: 'sym.none', label: '替えない' }] : [tok('resources', 'gold', k * task.rate), tok('symbols', 'then'), tok('resources', 'militaryTokens', k)];
+      }
       return [{ icon: 'num', value: Number(t.value), label: t.value }];
     case 'convert':
       return t.value === '1' ? [tok('resources', 'tempWorkers', 1), tok('symbols', 'then'), tok('resources', 'materials')] : [{ icon: 'sym.none', label: 'しない' }];
     case 'raid': {
       if (t.value === 'none') return [{ icon: 'sym.none', label: '宣言しない' }];
+      if (t.value === 'skip') return [tok('modifiers', 'skipRaid')];
       return [tok('metrics', t.value === 'defense' ? 'defenseLine' : 'repelLine', t.value === 'defense' ? state.defenseLine : state.repelLine)];
     }
     case 'reward': {

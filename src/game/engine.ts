@@ -46,7 +46,11 @@ import {
   usableRegular,
   usableTemp,
   type Effect,
+  payMilitaryTokens,
+  removeTask,
+  tokenBudget,
 } from './core.ts';
+import { hasModifier } from './abilities.ts';
 import { isCheckpoint } from './history.ts';
 import { recordDeltas, snapshot } from './deltas.ts';
 import { onSpecialCitizenAcquired, runAbilities } from './effects.ts';
@@ -469,7 +473,7 @@ const freeActionOptions = (state: GameState, d: GameData, player: PlayerState): 
         if (player.materials >= conv.pay.amount) options.push(opt(player.index, `free:${conv.id}`, label));
         break;
       case 'militaryTokens':
-        if (player.militaryTokens >= conv.pay.amount) options.push(opt(player.index, `free:${conv.id}`, label));
+        if (tokenBudget(d, player) >= conv.pay.amount) options.push(opt(player.index, `free:${conv.id}`, label));
         break;
       case 'tempWorkers':
         if (usableTemp(player) >= conv.pay.amount) options.push(opt(player.index, `free:${conv.id}`, label));
@@ -587,7 +591,7 @@ const applyFreeAction = (state: GameState, d: GameData, player: PlayerState, id:
       player.materials -= conv.pay.amount;
       break;
     case 'militaryTokens':
-      player.militaryTokens -= conv.pay.amount;
+      payMilitaryTokens(state, d, player, conv.pay.amount);
       break;
     case 'tempWorkers':
       player.tempWorkers -= conv.pay.amount;
@@ -656,27 +660,49 @@ const passTileOptions = (state: GameState, task: TaskOf<'passTile'>): Option[] =
 
 const raidNeed = (player: PlayerState, line: number): number => Math.max(0, line - player.militaryLevel);
 
-const raidOptions = (state: GameState, task: TaskOf<'raidDeclare'>): Option[] => {
+const raidOptions = (state: GameState, d: GameData, task: TaskOf<'raidDeclare'>): Option[] => {
   const player = playerOf(state, task.player);
   // 宣言できるのは不足分のトークンを払える目標に限る。宣言しないことも選べる（19-3-2）。
   const options = [opt(task.player, 'raid:none', '宣言しない')];
-  if (raidNeed(player, state.defenseLine) <= player.militaryTokens) {
+  if (raidNeed(player, state.defenseLine) <= tokenBudget(d, player)) {
     options.push(opt(task.player, 'raid:defense', `防衛ライン ${state.defenseLine} を宣言する`));
   }
-  if (raidNeed(player, state.repelLine) <= player.militaryTokens) {
+  if (raidNeed(player, state.repelLine) <= tokenBudget(d, player)) {
     options.push(opt(task.player, 'raid:repel', `撃退ライン ${state.repelLine} を宣言する`));
   }
+  // 雲隠れ：自分の襲撃の処理（宣言・判定・得点・カードの効果・判定結果への反応）をすべて行わない（ユーザー決定 2026-11-06）。
+  if (hasModifier(d, player, 'skipRaid')) {
+    options.push(opt(task.player, 'raid:skip', '襲撃の処理を行わない'));
+  }
   return options;
+};
+
+const tokenSwapOptions = (state: GameState, task: TaskOf<'tokenSwap'>): Option[] => {
+  const player = playerOf(state, task.player);
+  const max = Math.min(task.max, Math.floor(player.gold / task.rate));
+  return Array.from({ length: max + 1 }, (_, k) => k).map((k) => opt(task.player, `count:${k}`, k === 0 ? '金に替えない' : `トークン${k}個を${k * task.rate}金に替える`));
+};
+
+const applyTokenSwap = (state: GameState, task: TaskOf<'tokenSwap'>, id: string): void => {
+  removeTask(state, task);
+  const player = playerOf(state, task.player);
+  const k = Number(id.slice('count:'.length));
+  player.militaryTokens += k;
+  player.gold -= k * task.rate;
 };
 
 const applyRaid = (state: GameState, d: GameData, task: TaskOf<'raidDeclare'>, id: string): void => {
   state.stack.pop();
   const player = playerOf(state, task.player);
+  if (id === 'raid:skip') {
+    emit(state, d, { type: 'fizzle', player: task.player, what: 'raid' });
+    return;
+  }
   const declared = id.split(':')[1] as RaidDeclaration;
   let strength = player.militaryLevel;
   if (declared !== 'none') {
     const line = declared === 'defense' ? state.defenseLine : state.repelLine;
-    player.militaryTokens -= raidNeed(player, line);
+    payMilitaryTokens(state, d, player, raidNeed(player, line));
     strength = Math.max(strength, line);
   }
   const result: RaidResult =
@@ -831,7 +857,9 @@ const optionsFor = (state: GameState, d: GameData, task: Task): Option[] => {
     case 'passTile':
       return passTileOptions(state, task);
     case 'raidDeclare':
-      return raidOptions(state, task);
+      return raidOptions(state, d, task);
+    case 'tokenSwap':
+      return tokenSwapOptions(state, task);
     default:
       return [];
   }
@@ -889,6 +917,8 @@ const applyTask = (state: GameState, d: GameData, task: Task, id: string): void 
       return;
     case 'raidDeclare':
       return applyRaid(state, d, task, id);
+    case 'tokenSwap':
+      return applyTokenSwap(state, task, id);
     default:
       throw new Error(`選択を受け付けないタスクである：${task.t}`);
   }
@@ -979,6 +1009,13 @@ export const getOptions = (state: GameState, d: GameData = GAME_DATA): Option[] 
   return optionsFor(state, d, task);
 };
 
+/** 傭兵団の「金に替える数」は支払いの直後に尋ねる。支払いの後に積まれたタスクより先に置く（core.ts の payMilitaryTokens）。 */
+const hoistTokenSwaps = (state: GameState): void => {
+  const swaps = state.stack.filter((t) => t.t === 'tokenSwap');
+  if (swaps.length === 0) return;
+  state.stack = [...state.stack.filter((t) => t.t !== 'tokenSwap'), ...swaps];
+};
+
 /** 選択を適用した新しい状態を返す。元の状態は変更しない。 */
 export const applyMove = (state: GameState, optionId: string, d: GameData = GAME_DATA): GameState => {
   const options = getOptions(state, d);
@@ -992,6 +1029,7 @@ export const applyMove = (state: GameState, optionId: string, d: GameData = GAME
   }
   const before = snapshot(next);
   applyTask(next, d, task, optionId);
+  hoistTokenSwaps(next);
   // 選択1つの処理の増減（ui_design.md 4-1 の「−5 金 ＋2 資材」）。自動の処理は runAuto が別に記録する。
   recordDeltas(next, before, 'move');
   advance(next, d);
