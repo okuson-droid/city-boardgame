@@ -123,7 +123,8 @@ h3 {
    * （ユーザー決定 2026-11-05、スイーツランドに倣う）。
    */
   grid-template-columns: 34% minmax(0, 1fr) 30%;
-  grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 200px);
+  /* 下の帯は大きくしたカードが収まる高さ。低い画面では盤面を残すため 200px まで縮める。 */
+  grid-template-rows: auto minmax(0, 1fr) auto minmax(0, clamp(200px, 26vh, 240px));
   grid-template-areas:
     'top top top'
     'left center info'
@@ -573,8 +574,9 @@ h3 {
  * （幅：高さ ≒ 5：7）、キャラクターは横長の一定の大きさにする。中身が収まらないときはカードの中でスクロールする。
  */
 :root {
-  --card-w: 9.6em;
-  --card-h: 13.4em;
+  /* カードを大きくした（ユーザー決定 2026-11-06。9.6em×13.4em から）。比は 5：7 のまま。 */
+  --card-w: 11.2em;
+  --card-h: 15.7em;
   --char-w: 19em;
   --char-h: 13.4em;
 }
@@ -1764,7 +1766,7 @@ h3 {
 
 .info-row {
   display: grid;
-  grid-template-columns: 4.5em minmax(0, 1fr);
+  grid-template-columns: 5em minmax(0, 1fr);
   align-items: start;
   gap: 4px;
   padding-top: 4px;
@@ -2143,4 +2145,100 @@ h3 {
 /* 最後の段の報酬（アイコンが2つ）は右寄せにして、列からはみ出さないようにする */
 .track-grid > :last-child {
   justify-content: flex-end;
+}
+
+/* ---------- キャラクターのアイコンを大きく（ユーザー決定 2026-11-06：カードの大きさは変えない） ---------- */
+
+.card.character .script {
+  font-size: 1.28em;
+}
+
+/* ---------- 計画都市の形を大きく、拡大表示（ユーザー決定 2026-11-06） ---------- */
+
+.card.pc .pc-shape {
+  display: flex;
+  justify-content: center;
+}
+
+.card.pc .shape {
+  width: 100%;
+  height: 6.2em;
+}
+
+.pc-zoom-btn {
+  margin-left: auto;
+  flex: none;
+  width: 1.6em;
+  height: 1.6em;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  font: inherit;
+  font-size: 0.85em;
+  line-height: 1;
+  cursor: zoom-in;
+}
+
+.pc-zoom-overlay {
+  z-index: 90;
+}
+
+.pc-zoom {
+  width: min(560px, calc(100vw - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pc-zoom-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pc-zoom-head .btn {
+  margin-left: auto;
+}
+
+.pc-zoom-shape {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #f7fbff;
+  background-image: linear-gradient(#e3edf6 1px, transparent 1px), linear-gradient(90deg, #e3edf6 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.pc-zoom-shape .shape {
+  width: 100%;
+  height: min(46vh, 320px);
+}
+
+.pc-zoom-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pc-zoom-needs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+
+.pc-zoom-needs li {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #eef3f8;
+  border: 1px solid #c9d6e3;
+}
+
+.pc-zoom p {
+  margin: 0;
 }
