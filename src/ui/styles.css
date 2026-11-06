@@ -175,8 +175,76 @@ h3 {
   background: #fff6e5;
 }
 
-.tab.turn {
-  box-shadow: 0 0 0 2px var(--select);
+/* 手番の人のタブ（ユーザー決定 2026-11-06：誰の手番かを分かりやすく）。プレイヤーの色の地に白い字、外側に脈打つ輪。
+   装飾（deco.css の :root .tab・:root .tab.active）より優先するため .game から書く。 */
+.game .topbar .tab.turn {
+  background: var(--pc);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--pc);
+  animation: turn-pulse 1.6s ease-in-out infinite;
+}
+
+.game .topbar .tab.turn .muted,
+.game .topbar .tab.turn .tab-score {
+  color: #fff;
+}
+
+.game .topbar .tab.turn .worker-dot {
+  box-shadow: 0 0 0 1.5px #fff;
+}
+
+.turn-flag {
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--pc);
+  font-size: 0.75em;
+  font-weight: 800;
+}
+
+@keyframes turn-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--pc); }
+  50% { box-shadow: 0 0 0 2px #fff, 0 0 0 7px color-mix(in srgb, var(--pc) 35%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game .topbar .tab.turn {
+    animation: none;
+  }
+}
+
+/* 下の帯の左端：誰の番か */
+.prompt[style] {
+  border-left: 6px solid var(--pc);
+}
+
+.prompt-turn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--pc);
+  color: #fff;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.prompt-turn .worker-dot {
+  box-shadow: 0 0 0 1.5px #fff;
+}
+
+.prompt-turn.waiting {
+  background: color-mix(in srgb, var(--pc) 18%, #fff);
+  color: #333;
+  border: 1.5px solid var(--pc);
+}
+
+.prompt-turn-wait {
+  font-weight: 400;
+  font-size: 0.85em;
 }
 
 .tab-score {

@@ -82,6 +82,7 @@ export const PromptBar = ({
   onBuildType,
   freeOpen,
   onToggleFree,
+  turn,
 }: {
   state: GameState;
   model: UiModel;
@@ -92,6 +93,8 @@ export const PromptBar = ({
   onBuildType: (b: Building) => void;
   freeOpen: boolean;
   onToggleFree: () => void;
+  /** いま選ぶ人（手番）。mine はこの画面の持ち主が選ぶか（ローカル版は常に真）。 */
+  turn: { name: string; color: string; mine: boolean; online: boolean } | null;
 }) => {
   const scene = sceneOf(state);
   const panelChoices = model.choices.filter((c) => c.target.kind === 'panel');
@@ -104,7 +107,14 @@ export const PromptBar = ({
     ...new Set(model.choices.flatMap((c) => (c.target.kind === 'cell' && c.target.variantKind === 'building' && c.target.variant ? [c.target.variant] : []))),
   ] as Building[];
   return (
-    <div className="prompt" data-scene={scene.heading}>
+    <div className="prompt" data-scene={scene.heading} style={turn !== null ? { ['--pc' as string]: turn.color } : undefined}>
+      {turn !== null ? (
+        <span className={`prompt-turn${turn.mine ? '' : ' waiting'}`} data-ui="prompt-turn">
+          <span className="worker-dot" style={{ background: turn.color }} />
+          {turn.online && turn.mine ? 'あなたの番' : `${turn.name}の番`}
+          {turn.mine ? null : <span className="prompt-turn-wait">（待っています）</span>}
+        </span>
+      ) : null}
       <div className="prompt-left">
         <Icon token={{ icon: scene.icon, label: scene.heading }} />
         <span className="prompt-heading">{scene.heading}</span>

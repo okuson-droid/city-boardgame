@@ -74,6 +74,8 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
   /** ドラフトの専用画面を畳んで盤面を見ているか。選ぶ人が変わると開き直す。 */
   const [draftFolded, setDraftFolded] = useState(false);
   const drafting = state.stack[state.stack.length - 1]?.t === 'draftPick';
+  // 手番（いま選ぶ人）の席。上部のタブと下の帯で目立たせる（ユーザー決定 2026-11-06）。
+  const turnSeat = isGameOver(state) ? null : ctl.seat !== null ? decider(state) : owner;
   const draftPicker = drafting ? decider(state) : null;
   useEffect(() => setDraftFolded(false), [draftPicker]);
 
@@ -182,15 +184,18 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
           {state.turnOrder.map((p) => {
             const player = state.players[p];
             if (player === undefined) return null;
+            const isTurn = p === turnSeat;
             return (
               <button
                 key={p}
                 type="button"
                 data-ui={`tab-${p}`}
-                className={`tab${p === view ? ' active' : ''}${p === (ctl.seat !== null ? decider(state) : owner) ? ' turn' : ''}${p === ctl.seat ? ' mine' : ''}`}
-                style={{ borderColor: colorOf(p) }}
+                className={`tab${p === view ? ' active' : ''}${isTurn ? ' turn' : ''}${p === ctl.seat ? ' mine' : ''}`}
+                style={{ borderColor: colorOf(p), ['--pc' as string]: colorOf(p) }}
+                aria-current={isTurn ? 'true' : undefined}
                 onClick={() => setView(p)}
               >
+                {isTurn ? <span className="turn-flag">手番</span> : null}
                 <span className="worker-dot" style={{ background: colorOf(p) }} />
                 {player.name}
                 <span className="tab-score">{player.score}点</span>
@@ -277,6 +282,11 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
       {ctl.message ? <div className="online-message">{ctl.message}</div> : null}
       <PromptBar
         state={state}
+        turn={
+          turnSeat !== null && state.players[turnSeat] !== undefined
+            ? { name: state.players[turnSeat].name, color: colorOf(turnSeat), mine: ctl.seat === null || ctl.seat === turnSeat, online: ctl.seat !== null }
+            : null
+        }
         model={model}
         onChoose={choose}
         chooser={chooser}
