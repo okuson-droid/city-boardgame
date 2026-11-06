@@ -11,7 +11,20 @@ import { LegendButton } from './Legend.tsx';
 import { HoverTip } from './Tip.tsx';
 import { TutorialGame } from './Tutorial.tsx';
 
+/**
+ * 装飾の段階（ユーザーの選定待ち、2026-11-06）。URL の #deco=1|2|3 で選ぶ。0（既定）は従来の見た目である。
+ * 段階 n では data-deco に 1〜n を並べ、deco.css は [data-deco~='n'] で段階 n 以上に効く規則を書く。
+ */
+const applyDeco = (): void => {
+  const level = Number(new URLSearchParams(window.location.hash.slice(1)).get('deco') ?? '0');
+  const n = Number.isInteger(level) ? Math.max(0, Math.min(3, level)) : 0;
+  const value = Array.from({ length: n }, (_, i) => String(i + 1)).join(' ');
+  if (value === '') document.documentElement.removeAttribute('data-deco');
+  else document.documentElement.setAttribute('data-deco', value);
+};
+
 const readSettings = (): Settings => {
+  applyDeco();
   const params = new URLSearchParams(window.location.hash.slice(1));
   const speed = params.get('speed');
   return {

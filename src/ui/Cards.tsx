@@ -139,6 +139,7 @@ export const PlannedCityView = ({ card }: { card: PlannedCityCard }) => (
       <span className="card-name">{card.name}</span>
       {card.provisional ? <span className="provisional-badge">仮</span> : null}
     </div>
+    <div className="pc-shape">
     <ShapeView
       cells={card.slots.map((s) => ({
         q: s.q,
@@ -148,7 +149,11 @@ export const PlannedCityView = ({ card }: { card: PlannedCityCard }) => (
         ...(s.building === null ? {} : { art: ICON_ART[`bld.${s.building}`] ?? '', title: entry('buildings', s.building).label }),
       }))}
     />
-    <IconRow tokens={[tok('resources', card.benefit.kind === 'drawCivCards' ? 'drawCivCards' : card.benefit.kind, card.benefit.amount)]} size="sm" />
+    </div>
+    <div className="pc-reward">
+      <span className="civ-section-label">達成</span>
+      <IconRow tokens={[tok('resources', card.benefit.kind === 'drawCivCards' ? 'drawCivCards' : card.benefit.kind, card.benefit.amount)]} size="sm" />
+    </div>
   </>
 );
 

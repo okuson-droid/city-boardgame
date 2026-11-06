@@ -42,13 +42,13 @@ export const ActionBoard = ({
       <div className="ab-head">
         <span />
         {TIERS.map((tier) => (
-          <span key={tier} className="ab-tier">
+          <span key={tier} className="ab-tier" data-tier={tier}>
             {tierLabel(tier)}・{GAME_DATA.params.actions.workerCost[tier]}人
           </span>
         ))}
       </div>
       {ACTIONS.map((action) => (
-        <div key={action} className="ab-row">
+        <div key={action} className="ab-row" data-action={action}>
           <span className="ab-action">{ACTION_LABELS[action]}</span>
           {TIERS.map((tier) => {
             const option = model.find((t) => t.kind === 'actionSpace' && t.action === action && t.tier === tier);
@@ -61,6 +61,7 @@ export const ActionBoard = ({
                 <button
                   type="button"
                   className={`ab-space${shared ? ' ab-shared' : ''}${option ? ' selectable' : ' disabled'}`}
+                  data-tier={tier}
                   aria-disabled={option === undefined}
                   {...(option ? { 'data-target': option.id } : {})}
                   onClick={() => option && onChoose(option.id)}

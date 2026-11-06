@@ -1,0 +1,470 @@
+/*
+ * 装飾の段階（ユーザーの選定待ち、2026-11-06）。URL の #deco=1|2|3 で選ぶ（App.tsx の applyDeco）。
+ * 段階 n のとき :root の data-deco は「1 … n」を並べる。[data-deco~='n'] の規則は段階 n 以上に効く。
+ *   1 控えめ：カード類（特別な市民・計画都市・自然公園・キャラクター・ボーナスタイル・裏面）を文明カードと同じ作りにそろえる。
+ *   2 標準　：1 に加え、アクションボード・見出し・畳んだ欄・襲撃・個人の情報・プレイヤーのタブを飾る。
+ *   3 凝った：2 に加え、紙と卓の質感、金の縁と四隅の飾り、浮き出し、上部の帯を加える。
+ * 規則は見た目だけを変え、要素の大きさ（カードの一定の大きさ）と配置は変えない。
+ */
+
+/* ======================================================================
+ * 段階1：カード類を文明カードと同じ作り（色の帯・囲んだ中身・紙の地）にそろえる
+ * ====================================================================== */
+
+[data-deco~='1'] .card.sc,
+[data-deco~='1'] .card.pc,
+[data-deco~='1'] .card.np,
+[data-deco~='1'] .card.character {
+  padding: 0;
+  gap: 0;
+  position: relative;
+  border: 2px solid var(--kind-dark);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fffdf6 0%, #f6efdc 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), inset 0 0 0 2px #fffaf0;
+}
+
+[data-deco~='1'] .card.sc {
+  --kind: #4f5f96;
+  --kind-dark: #36406a;
+}
+
+[data-deco~='1'] .card.pc {
+  --kind: #4f7391;
+  --kind-dark: #34506a;
+}
+
+[data-deco~='1'] .card.np {
+  --kind: #3f7d4f;
+  --kind-dark: #2b5937;
+}
+
+[data-deco~='1'] .card.character {
+  --kind: #8a6526;
+  --kind-dark: #5e4313;
+}
+
+/* 帯：種類の色の地に名前 */
+[data-deco~='1'] .card.sc > .card-head,
+[data-deco~='1'] .card.pc > .card-head,
+[data-deco~='1'] .card.np > .card-head,
+[data-deco~='1'] .card.character > .card-head {
+  min-height: 1.9em;
+  padding: 2px 6px;
+  border-radius: 5px 5px 0 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--kind) 85%, #fff) 0%, var(--kind) 100%);
+  border-bottom: 2px solid var(--kind-dark);
+  color: #fff;
+}
+
+[data-deco~='1'] .card.sc > .card-head .card-name,
+[data-deco~='1'] .card.pc > .card-head .card-name,
+[data-deco~='1'] .card.np > .card-head .card-name,
+[data-deco~='1'] .card.character > .card-head .card-name {
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+/* 中身：白い囲み枠 */
+[data-deco~='1'] .card.sc > .script,
+[data-deco~='1'] .card.character > .script,
+[data-deco~='1'] .card.np > .np-sets,
+[data-deco~='1'] .card.pc > .pc-shape {
+  margin: 4px;
+  padding: 3px;
+  border: 1px solid #d8ccb0;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+[data-deco~='1'] .card.sc > .script,
+[data-deco~='1'] .card.character > .script {
+  flex: 1;
+}
+
+/* 計画都市の形は方眼紙の地に置く */
+[data-deco~='1'] .card.pc > .pc-shape {
+  display: flex;
+  justify-content: center;
+  background-color: #f7fbff;
+  background-image: linear-gradient(#e3edf6 1px, transparent 1px), linear-gradient(90deg, #e3edf6 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+[data-deco~='1'] .card.np > .np-sets {
+  justify-content: space-around;
+  background: #f6fbf3;
+}
+
+[data-deco~='1'] .pc-reward {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0 4px 3px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--kind) 12%, #fff);
+  border: 1px solid color-mix(in srgb, var(--kind) 35%, transparent);
+  align-self: flex-start;
+}
+
+[data-deco~='1'] .card.pc > .muted,
+[data-deco~='1'] .card.pc > .claims {
+  margin: 0 4px;
+}
+
+[data-deco~='1'] .card .ability-buttons {
+  margin: 0 4px 4px;
+}
+
+/* ボーナスタイル：厚みのある札 */
+[data-deco~='1'] .card.tile {
+  border: 2px solid #8a6f3c;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #fff8e4 0%, #f1e2b8 100%);
+  box-shadow: 0 2px 0 #b89a5e, 0 3px 4px rgba(0, 0, 0, 0.18);
+  padding: 3px 6px;
+}
+
+[data-deco~='1'] .card.tile .tile-id {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  background: #8a6f3c;
+  color: #fff8e4;
+  font-size: 0.85em;
+}
+
+/* 裏面：縁取りと紋 */
+[data-deco~='1'] .card.card-back {
+  border: 2px solid #5e4a2a;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 50% 50%, #e9cf8a 0 18%, transparent 19%),
+    repeating-linear-gradient(45deg, #7a5f35 0 4px, #8d7142 4px 8px);
+  box-shadow: inset 0 0 0 2px #e9cf8a;
+}
+
+/* ======================================================================
+ * 段階2：盤面・見出し・欄を飾る
+ * ====================================================================== */
+
+/* アクションの色（2つずつ組にした系統の色） */
+[data-deco~='2'] .ab-row[data-action='pioneer'],
+[data-deco~='2'] .ab-row[data-action='build'] {
+  --act: #6b8a3a;
+}
+
+[data-deco~='2'] .ab-row[data-action='import'],
+[data-deco~='2'] .ab-row[data-action='export'] {
+  --act: #b8901a;
+}
+
+[data-deco~='2'] .ab-row[data-action='drill'],
+[data-deco~='2'] .ab-row[data-action='expedition'] {
+  --act: #a8473c;
+}
+
+[data-deco~='2'] .ab-row[data-action='welfare'],
+[data-deco~='2'] .ab-row[data-action='migration'] {
+  --act: #d07a2c;
+}
+
+[data-deco~='2'] .ab-row[data-action='research'],
+[data-deco~='2'] .ab-row[data-action='spread'] {
+  --act: #6a4f9a;
+}
+
+/* アクション名：色の付いた札 */
+[data-deco~='2'] .ab-action {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px 2px 2px 6px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--act) 80%, #fff) 0%, var(--act) 100%);
+  color: #fff;
+  font-size: 0.9em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+}
+
+/* スペース：系統の色の左縁と薄い地 */
+[data-deco~='2'] .ab-space {
+  border-color: color-mix(in srgb, var(--act) 35%, #d8d2c4);
+  border-left: 3px solid var(--act);
+  background: linear-gradient(180deg, #fff 0%, color-mix(in srgb, var(--act) 6%, #fff) 100%);
+}
+
+[data-deco~='2'] .ab-space.ab-shared {
+  border-left-style: dashed;
+}
+
+/* 段階の見出し：銅・銀・金の札 */
+[data-deco~='2'] .ab-tier {
+  justify-self: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  color: #3d3424;
+  font-weight: 700;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+[data-deco~='2'] .ab-tier[data-tier='normal'] {
+  background: linear-gradient(180deg, #f3d6b8, #d8a777);
+}
+
+[data-deco~='2'] .ab-tier[data-tier='upper'] {
+  background: linear-gradient(180deg, #f2f4f6, #c4cbd2);
+}
+
+[data-deco~='2'] .ab-tier[data-tier='top'] {
+  background: linear-gradient(180deg, #fff1b8, #e3bb45);
+}
+
+[data-deco~='2'] .ab-space[data-tier='top'] {
+  box-shadow: inset 0 0 0 1px #ecd27a;
+}
+
+/* 欄と見出し：紙の地と二重の罫 */
+[data-deco~='2'] .panel-box {
+  border-color: #cdbf9e;
+  background: linear-gradient(180deg, #fffdf7 0%, #faf3e2 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+[data-deco~='2'] .panel-box > h3,
+[data-deco~='2'] .hand-area h3 {
+  padding-bottom: 2px;
+  border-bottom: 3px double #d6c79f;
+}
+
+[data-deco~='2'] .fold-label::before {
+  content: '◆';
+  margin-right: 4px;
+  color: #b08a3c;
+  font-size: 0.75em;
+}
+
+/* 襲撃：赤い帯の札 */
+[data-deco~='2'] .raid-card {
+  padding: 3px 6px;
+  border: 2px solid #7f2e26;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #fbe9e4 0%, #fff8f5 60%);
+  box-shadow: inset 4px 0 0 #a8473c;
+}
+
+/* 個人の情報：見出しの札と名前の帯 */
+[data-deco~='2'] .info-label {
+  align-self: start;
+  justify-self: start;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #efe6cf;
+  color: #5c4f33;
+  font-weight: 700;
+}
+
+[data-deco~='2'] .info-name {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f3ead2 0%, transparent 100%);
+}
+
+/* プレイヤーのタブ：上縁にプレイヤーの色 */
+[data-deco~='2'] .tab {
+  border-top-width: 4px;
+  border-radius: 6px 6px 4px 4px;
+  background: linear-gradient(180deg, #fff 0%, #f7f2e6 100%);
+}
+
+[data-deco~='2'] .tab.active {
+  background: linear-gradient(180deg, #fff8e8 0%, #ffe9bf 100%);
+}
+
+/* ======================================================================
+ * 段階3：質感・金の縁・四隅の飾り・浮き出し
+ * ====================================================================== */
+
+/* 卓：左は布張り、中央は地図の台、右と下は紙 */
+[data-deco~='3'] body {
+  background-color: #efe7d4;
+  background-image:
+    radial-gradient(rgba(120, 95, 50, 0.07) 1px, transparent 1px),
+    radial-gradient(rgba(120, 95, 50, 0.05) 1px, transparent 1px);
+  background-size: 7px 7px, 13px 13px;
+  background-position: 0 0, 3px 5px;
+}
+
+[data-deco~='3'] .col-left {
+  background: linear-gradient(180deg, rgba(64, 92, 72, 0.1), rgba(64, 92, 72, 0.04));
+  border-right: 3px double #a68b52;
+}
+
+[data-deco~='3'] .col-center {
+  background: radial-gradient(ellipse at 50% 45%, #f7f0dc 0%, #e8dcc0 70%, #dccdaa 100%);
+  box-shadow: inset 0 0 18px rgba(90, 70, 30, 0.25);
+}
+
+[data-deco~='3'] .col-info {
+  background: linear-gradient(180deg, #fffaf0, #f6eedb);
+  border-left: 3px double #a68b52;
+}
+
+[data-deco~='3'] .bottom {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0)),
+    repeating-linear-gradient(90deg, #efe2c2 0 2px, #f3e8cc 2px 5px);
+  border-top: 3px double #a68b52;
+}
+
+/* 上部の帯：濃い地に金の罫 */
+[data-deco~='3'] .topbar {
+  background: linear-gradient(180deg, #4a3a22 0%, #33281a 100%);
+  border-bottom: 2px solid #c9a24a;
+  color: #f6ead0;
+}
+
+[data-deco~='3'] .topbar .round {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #f3d58a;
+}
+
+[data-deco~='3'] .topbar .btn {
+  background: linear-gradient(180deg, #fff8e6, #ead9b0);
+  border-color: #c9a24a;
+}
+
+[data-deco~='3'] .tab {
+  color: #2f2615;
+}
+
+/* アクションボード：金の縁の額 */
+[data-deco~='3'] .action-board {
+  padding: 5px;
+  border: 2px solid #8a6b2e;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fffaf0, #f3e7c8);
+  box-shadow: inset 0 0 0 2px #f6e3a8, 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+[data-deco~='3'] .ab-space {
+  box-shadow: inset 0 1px 0 #fff, 0 1px 1px rgba(0, 0, 0, 0.12);
+}
+
+[data-deco~='3'] .ab-space[data-tier='top'] {
+  box-shadow: inset 0 0 0 1px #e3bb45, inset 0 1px 0 #fff, 0 1px 1px rgba(0, 0, 0, 0.12);
+}
+
+/* カード：金の縁と四隅の飾り、浮き出し */
+[data-deco~='3'] .card.civ,
+[data-deco~='3'] .card.sc,
+[data-deco~='3'] .card.pc,
+[data-deco~='3'] .card.np,
+[data-deco~='3'] .card.character {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25), inset 0 0 0 2px #fffaf0, inset 0 0 0 3px #d9b75c;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+[data-deco~='3'] .card.civ:hover,
+[data-deco~='3'] .card.sc:hover,
+[data-deco~='3'] .card.pc:hover,
+[data-deco~='3'] .card.np:hover,
+[data-deco~='3'] .card.character:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.28), inset 0 0 0 2px #fffaf0, inset 0 0 0 3px #d9b75c;
+}
+
+[data-deco~='3'] .card.civ::before,
+[data-deco~='3'] .card.sc::before,
+[data-deco~='3'] .card.pc::before,
+[data-deco~='3'] .card.np::before,
+[data-deco~='3'] .card.character::before,
+[data-deco~='3'] .card.civ::after,
+[data-deco~='3'] .card.sc::after,
+[data-deco~='3'] .card.pc::after,
+[data-deco~='3'] .card.np::after,
+[data-deco~='3'] .card.character::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-color: #c9a24a;
+  border-style: solid;
+  pointer-events: none;
+}
+
+/* 四隅のうち、左下と右上に鉤の飾りを置く（左上は帯、右下は仮置きの印があるため） */
+[data-deco~='3'] .card.civ::before,
+[data-deco~='3'] .card.sc::before,
+[data-deco~='3'] .card.pc::before,
+[data-deco~='3'] .card.np::before,
+[data-deco~='3'] .card.character::before {
+  left: 3px;
+  bottom: 3px;
+  border-width: 0 0 2px 2px;
+}
+
+[data-deco~='3'] .card.civ::after,
+[data-deco~='3'] .card.sc::after,
+[data-deco~='3'] .card.pc::after,
+[data-deco~='3'] .card.np::after,
+[data-deco~='3'] .card.character::after {
+  right: 3px;
+  top: 3px;
+  border-width: 2px 2px 0 0;
+  border-color: #f3d58a;
+}
+
+/* 帯：光沢 */
+[data-deco~='3'] .civ-band,
+[data-deco~='3'] .card.sc > .card-head,
+[data-deco~='3'] .card.pc > .card-head,
+[data-deco~='3'] .card.np > .card-head,
+[data-deco~='3'] .card.character > .card-head {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* 見出し：飾りの記号と、両端の薄れる罫 */
+[data-deco~='3'] .panel-box > h3,
+[data-deco~='3'] .hand-area h3 {
+  border-bottom: none;
+  background: linear-gradient(90deg, transparent, #c9a24a 15%, #c9a24a 85%, transparent) bottom / 100% 1px no-repeat;
+  padding-bottom: 3px;
+}
+
+[data-deco~='3'] .panel-box > h3::before,
+[data-deco~='3'] .hand-area h3::before {
+  content: '❖';
+  margin-right: 4px;
+  color: #b08a3c;
+  font-size: 0.85em;
+}
+
+[data-deco~='3'] .panel-box {
+  border: 1px solid #b89a5e;
+  box-shadow: inset 0 0 0 2px #fffaf0, inset 0 0 0 3px #eadcb6, 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 襲撃：剣の紋を添えた重い札 */
+[data-deco~='3'] .raid-card {
+  background: linear-gradient(90deg, #f7d9d1 0%, #fff4ef 70%);
+  box-shadow: inset 5px 0 0 #8f3a30, 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* 個人の情報：名前を額に入れる */
+[data-deco~='3'] .info-name {
+  border: 1px solid #c9a24a;
+  background: linear-gradient(90deg, #f6e8bf 0%, #fffaf0 100%);
+  box-shadow: inset 0 0 0 2px #fffaf0;
+}
+
+[data-deco~='3'] .info-row {
+  border-top: 1px solid transparent;
+  background: linear-gradient(90deg, transparent, #d8c28a 20%, #d8c28a 80%, transparent) top / 100% 1px no-repeat;
+}
