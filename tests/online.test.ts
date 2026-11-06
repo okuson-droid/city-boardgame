@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { decider, getOptions, isGameOver } from '../src/game/engine.ts';
-import { assertDataVersion, createRoom, joinRoom, loadRoom, moveInRoom, RoomError, summaryOf, undoInRoom, viewFor, type Room } from '../src/online/rooms.ts';
+import { assertDataVersion, createRoom, joinRoom, loadRoom, moveInRoom, parseVariants, RoomError, summaryOf, undoInRoom, viewFor, type Room } from '../src/online/rooms.ts';
 
 const now = new Date('2026-11-03T00:00:00Z');
 
@@ -30,6 +30,22 @@ describe('部屋（オンライン版）', () => {
     expect(joinRoom(room, 'う', 'k2', 42)).toBe(2);
     expect(room.state?.players.map((p) => p.name)).toEqual(['あ', 'い', 'う']);
     expect(() => joinRoom(room, 'え', 'k3', 42)).toThrow(RoomError);
+  });
+
+  it('部屋のヴァリアントは記録に残り、対局の開始と記録の再生の両方で使う', () => {
+    // rules.md v0.8 2-6-7 のヴァリアント（ユーザー決定 2026-11-06）
+    const room = createRoom('SNAKE1', 3, 'あ', 'k0', now, undefined, parseVariants({ snakeDraft: true, unknown: 1 }));
+    expect(room.record.variants).toEqual({ snakeDraft: true });
+    joinRoom(room, 'い', 'k1', 42);
+    joinRoom(room, 'う', 'k2', 42);
+    expect(room.state?.config.variants).toEqual({ snakeDraft: true });
+    for (let i = 0; i < 5; i += 1) step(room);
+    const replayed = loadRoom(JSON.parse(JSON.stringify(room.record)));
+    expect(replayed.state).toEqual(room.state);
+    expect(summaryOf(room).variants).toEqual({ snakeDraft: true });
+    // 指定がない・知らない項目だけのときは記録に残さない（古い記録と同じ形）
+    expect(parseVariants({ snakeDraft: 'yes' })).toBeUndefined();
+    expect(createRoom('PLAIN1', 3, 'あ', 'k0', now).record.variants).toBeUndefined();
   });
 
   it('対応していない人数・空の名前は拒む', () => {

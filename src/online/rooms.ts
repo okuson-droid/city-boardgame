@@ -6,7 +6,7 @@ import { DATA_VERSION, GAME_DATA } from '../data/index.ts';
 import type { GameData } from '../data/types.ts';
 import { applyMove, createGame, decider, getOptions } from '../game/engine.ts';
 import { undoLast } from '../game/history.ts';
-import type { GameState } from '../game/types.ts';
+import type { GameConfig, GameState, GameVariants } from '../game/types.ts';
 
 export type SeatRecord = { readonly name: string; readonly keyHash: string };
 
@@ -17,6 +17,8 @@ export type RoomRecord = {
   readonly createdAt: string;
   /** 部屋を作ったときのデータの版（DATA_VERSION）。この版と異なるデータでは対局を続けない。古い記録には無い。 */
   readonly dataVersion?: string;
+  /** 採用したヴァリアントルール。採用しないときと古い記録には無い。 */
+  readonly variants?: GameVariants;
   seats: SeatRecord[];
   /** 全席が埋まって対局を始めたときのシード。始まる前は null。 */
   seed: number | null;
@@ -31,6 +33,7 @@ export type RoomSummary = {
   readonly playerCount: number;
   readonly names: readonly string[];
   readonly started: boolean;
+  readonly variants: GameVariants;
 };
 
 export class RoomError extends Error {
@@ -48,7 +51,21 @@ export const summaryOf = (room: Room): RoomSummary => ({
   playerCount: room.record.playerCount,
   names: room.record.seats.map((s) => s.name),
   started: room.state !== null,
+  variants: room.record.variants ?? {},
 });
+
+/** 対局の設定（人数・名前・ヴァリアント）。始めるときと記録の再生で同じものを使う。 */
+const configOf = (record: RoomRecord): GameConfig => ({
+  playerCount: record.playerCount,
+  playerNames: record.seats.map((s) => s.name),
+  ...(record.variants !== undefined ? { variants: record.variants } : {}),
+});
+
+/** 送られてきたヴァリアントの指定を、知っている項目の真偽値だけに絞る。採用するものが無ければ undefined。 */
+export const parseVariants = (value: unknown): GameVariants | undefined => {
+  const v = typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
+  return v['snakeDraft'] === true ? { snakeDraft: true } : undefined;
+};
 
 const validName = (name: string): string => {
   const trimmed = name.trim();
@@ -63,6 +80,7 @@ export const createRoom = (
   keyHash: string,
   now: Date,
   d: GameData = GAME_DATA,
+  variants?: GameVariants,
 ): Room => {
   if (playerCount < d.params.playerCount.min || playerCount > d.params.playerCount.max) {
     throw new RoomError(400, `対応していないプレイ人数である：${playerCount}`);
@@ -73,6 +91,7 @@ export const createRoom = (
       playerCount,
       createdAt: now.toISOString(),
       dataVersion: DATA_VERSION,
+      ...(variants !== undefined ? { variants } : {}),
       seats: [{ name: validName(name), keyHash }],
       seed: null,
       moves: [],
@@ -88,7 +107,7 @@ export const joinRoom = (room: Room, name: string, keyHash: string, seed: number
   const seat = room.record.seats.length - 1;
   if (room.record.seats.length === room.record.playerCount) {
     room.record.seed = seed;
-    room.state = createGame({ playerCount: room.record.playerCount, playerNames: room.record.seats.map((s) => s.name) }, seed, d);
+    room.state = createGame(configOf(room.record), seed, d);
   }
   return seat;
 };
@@ -107,7 +126,7 @@ export const assertDataVersion = (record: RoomRecord, current: string = DATA_VER
 export const loadRoom = (record: RoomRecord, d: GameData = GAME_DATA, version: string = DATA_VERSION): Room => {
   assertDataVersion(record, version);
   if (record.seed === null) return { record, state: null };
-  let state = createGame({ playerCount: record.playerCount, playerNames: record.seats.map((s) => s.name) }, record.seed, d);
+  let state = createGame(configOf(record), record.seed, d);
   for (const { move } of record.moves) state = applyMove(state, move, d);
   return { record, state };
 };

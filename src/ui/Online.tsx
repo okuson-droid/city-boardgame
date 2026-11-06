@@ -11,6 +11,7 @@ import { Game, type GameController, type Settings } from './Game.tsx';
 export const OnlineEntry = ({ transport, onEnter }: { transport: Transport; onEnter: (session: Session) => void }) => {
   const [name, setName] = useState('');
   const [players, setPlayers] = useState(GAME_DATA.params.playerCount.min);
+  const [snakeDraft, setSnakeDraft] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [sessions, setSessions] = useState(loadSessions);
@@ -42,10 +43,17 @@ export const OnlineEntry = ({ transport, onEnter }: { transport: Transport; onEn
           type="button"
           className="btn primary"
           data-ui="online-create"
-          onClick={() => transport.create(players, name).then(enter, (e: unknown) => setError(String(e)))}
+          onClick={() => transport.create(players, name, snakeDraft ? { snakeDraft: true } : undefined).then(enter, (e: unknown) => setError(String(e)))}
         >
           作る
         </button>
+      </div>
+      <div className="start-row">
+        <span>ヴァリアント</span>
+        <label className="variant-toggle">
+          <input type="checkbox" data-ui="online-variant-snake" checked={snakeDraft} onChange={(e) => setSnakeDraft(e.target.checked)} />
+          スネークドラフト（2巡目だけ選ぶ順番が逆になる）
+        </label>
       </div>
       <div className="start-row">
         <span>部屋に入る</span>
@@ -132,6 +140,7 @@ export const OnlineGame = ({
         <p>
           ルームコード <strong data-ui="room-code">{session.code}</strong> を他のプレイヤーに伝え、全員がそろうと始まる。
         </p>
+        {message?.summary.variants?.snakeDraft === true ? <p className="muted">ヴァリアント：スネークドラフト</p> : null}
         {message ? (
           <ol>
             {Array.from({ length: message.summary.playerCount }, (_, i) => (

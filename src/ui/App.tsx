@@ -10,6 +10,8 @@ import { OnlineEntry, OnlineGame } from './Online.tsx';
 import { LegendButton } from './Legend.tsx';
 import { HoverTip } from './Tip.tsx';
 import { TutorialGame } from './Tutorial.tsx';
+import { Catalog, type CatalogView } from './Catalog.tsx';
+import { RulesButton } from './RulesDeck.tsx';
 
 const readSettings = (): Settings => {
   const params = new URLSearchParams(window.location.hash.slice(1));
@@ -37,6 +39,8 @@ const Screen = () => {
   const [transport, setTransport] = useState<Transport | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [tutorial, setTutorial] = useState(false);
+  const [catalog, setCatalog] = useState<CatalogView | null>(null);
+  const [snakeDraft, setSnakeDraft] = useState(false);
   useEffect(() => {
     // 試遊（調整案のデータ）ではオンライン版を出さない。サーバーのデータと食い違うためである。
     if (!TUNER_PLAYTEST) void detectTransport().then(setTransport);
@@ -64,6 +68,21 @@ const Screen = () => {
           <span className="muted">実際に1ラウンド遊びながら、ルールを一手ずつ案内する。</span>
         </div>
       ) : null}
+      <div className="start-row read-row">
+        <RulesButton />
+        {(
+          [
+            ['cards', 'カード一覧'],
+            ['characters', 'キャラクター一覧'],
+            ['boards', 'ボード一覧'],
+          ] as const
+        ).map(([view, label]) => (
+          <button key={view} type="button" className="btn" data-ui={`open-catalog-${view}`} onClick={() => setCatalog(view)}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {catalog !== null ? <Catalog initial={catalog} onClose={() => setCatalog(null)} /> : null}
       <div className="start-row">
         <span>人数</span>
         {Array.from(
@@ -91,7 +110,14 @@ const Screen = () => {
           {settings.follow ? '入' : '切'}
         </button>
       </div>
-      <button type="button" className="btn primary" data-target="start" onClick={() => setGame(createGame({ playerCount: players }, seed))}>
+      <div className="start-row">
+        <span>ヴァリアント</span>
+        <label className="variant-toggle">
+          <input type="checkbox" data-ui="variant-snake" checked={snakeDraft} onChange={(e) => setSnakeDraft(e.target.checked)} />
+          スネークドラフト（準備のドラフトで、2巡目だけ選ぶ順番が逆になる。スイーツランドと同じ）
+        </label>
+      </div>
+      <button type="button" className="btn primary" data-target="start" onClick={() => setGame(createGame({ playerCount: players, ...(snakeDraft ? { variants: { snakeDraft: true } } : {}) }, seed))}>
         はじめる
       </button>
       <div className="start-row">

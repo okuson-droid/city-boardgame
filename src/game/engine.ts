@@ -2,6 +2,7 @@
 // 準備とドラフト（第2章）、ラウンドの進行（第12章）、手番・パス・ボーナスタイル（第11章）、
 // ワーカーの配置と占有（6-1、6-2）、フリーアクション（第10章）、襲撃（7-3〜7-6、19-3）を扱う。
 
+import { draftPickOrder } from './draft.ts';
 import { GAME_DATA } from '../data/index.ts';
 import { ACTIONS, BUILDINGS, TIERS, type Action, type GameData, type Tier } from '../data/types.ts';
 import {
@@ -193,11 +194,8 @@ export const createGame = (config: GameConfig, seed: number, d: GameData = GAME_
   });
 
   // ドラフトは手番順の最後のプレイヤーから逆順に選び、一巡したら再び最後から選ぶ（2-6-7）。
-  const draftOrder = [...turnOrder].reverse();
-  const picks: number[] = [];
-  for (let round = 0; round < 3; round += 1) {
-    picks.push(...draftOrder);
-  }
+  // ヴァリアントのスネークドラフトでは2巡目だけ向きを反転する（draft.ts）。
+  const picks = draftPickOrder(turnOrder, config.variants);
   state.stack.push({ t: 'setupFinish' });
   for (const p of [...picks].reverse()) {
     state.stack.push({ t: 'draftPick', player: p });
