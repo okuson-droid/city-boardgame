@@ -185,6 +185,8 @@ export const ICON_ART: Readonly<Record<string, string>> = {
   'met.buildingTypes': `${smallArt(BUILDING_ART.house, 0, 0, 0.5)}${smallArt(BUILDING_ART.shop, 12, 0, 0.5)}${smallArt(BUILDING_ART.fort, 0, 12, 0.5)}<path d="M16.5 13.5l-1 8M20 13.5l-1 8M14 16h7.5M13.5 19.5h7.5" ${S} stroke="#444" stroke-width="1.3"/>`,
   'met.freeLandTerrains': `${hexAt(6.5, 7, 5, '#e9d66b')}${hexAt(16.5, 7, 5, '#4f9a4f')}${hexAt(6.5, 17, 5, '#7fc4e8')}<path d="M16.5 13.5l-1 8M20 13.5l-1 8M14 16h7.5M13.5 19.5h7.5" ${S} stroke="#444" stroke-width="1.3"/>`,
   'met.buildingsOfType': `<path d="M9 4L7 20M17 4l-2 16M4.5 9h16M3.5 15h16" ${S} stroke="#444"/>`,
+  // プレイ済みの文明カードの分類：右下に伏せたカードを重ね、分類の札と合成する（compositeArt）。
+  'met.tagsOf': `<rect x="13.5" y="11.5" width="8" height="11" rx="1.3" fill="#f4efe0" stroke="#6b5a2e" stroke-width="1.2"/><path d="M15.5 15h4M15.5 17.5h4M15.5 20h2.5" stroke="#6b5a2e" stroke-width="1"/>`,
   'met.buildingsOnTerrain': `${hex('#e9d66b')}${smallArt(BUILDING_ART.house, 5.5, 5, 0.55)}`,
   // 出来事（〜した時）
   'evt.actionExecuted': `<rect x="3" y="12" width="18" height="9" rx="2" fill="#eee" stroke="#444" stroke-width="1.5"/>${smallMeeple(7.5, 1, 0.38, '#222')}<path d="M12 9.5v3" stroke="#444" stroke-width="1.5"/>`,
@@ -277,6 +279,9 @@ export const compositeArt = (icon: string): string | undefined => {
   }
   if (base === 'met.buildingsOnTerrain') {
     return `${targetArt}${smallArt(BUILDING_ART.house, 5.5, 5, 0.55)}`;
+  }
+  if (base === 'met.tagsOf') {
+    return `${smallArt(targetArt, 0, 0, 0.8)}${ICON_ART['met.tagsOf'] ?? ''}`;
   }
   return undefined;
 };

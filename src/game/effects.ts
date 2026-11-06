@@ -86,6 +86,9 @@ export const metricValue = (state: GameState, d: GameData, player: PlayerState, 
       return new Set(freeLandCells(player).map((c) => player.land[c])).size;
     case 'buildingsOfType':
       return buildingCount(player, BUILDINGS.find((b) => b === arg));
+    case 'tagsOf':
+      // プレイ済みの文明カードのうち、その分類のタグを持つ枚数。プレイ中の自身を含む（ユーザー決定 2026-11-06）。
+      return player.played.filter((id) => d.civilizationCards.find((c) => c.id === id)?.tags.some((t) => t === arg) ?? false).length;
     case 'buildingsOnTerrain':
       return CELL_IDS.filter((c) => player.buildings[c] !== undefined && player.land[c] === TERRAINS.find((t) => t === arg)).length;
     default:
@@ -236,9 +239,10 @@ const eventMatches = (d: GameData, owned: OwnedAbility, filter: EventFilter, eve
       return filter.terrain === undefined || filter.terrain === event.terrain;
     case 'cardPlayed': {
       if (filter.excludeSelf === true && owned.source === `civ:${event.card}`) return false;
-      if (filter.tag === undefined) return true;
+      if (filter.tag === undefined && filter.tags === undefined) return true;
       const card = d.civilizationCards.find((c) => c.id === event.card);
-      return card?.tags.some((t) => t === filter.tag) ?? false;
+      const wanted = [...(filter.tag !== undefined ? [filter.tag] : []), ...(filter.tags ?? [])];
+      return card?.tags.some((t) => wanted.includes(t)) ?? false;
     }
     case 'action':
       return (filter.tier === undefined || filter.tier === event.tier) && (filter.action === undefined || filter.action === event.action);

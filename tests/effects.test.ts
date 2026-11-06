@@ -103,6 +103,9 @@ describe('効果スクリプトのデータ', () => {
     // 条件はカプセル（grp.cond）で囲み、コロンで効果につなぐ（docs/styleguide-icons.md 4-3-3）。
     expect(tokens.map((t) => [t.icon, t.value])).toEqual([
       ['ability.onPlay', undefined],
+      ['met.tagsOf:tag.art', 1],
+      ['sym.per', undefined],
+      ['res.points', 1],
       ['grp.cond.open', undefined],
       ['track.military', undefined],
       ['sym.ge', undefined],
@@ -119,7 +122,7 @@ describe('効果スクリプトのデータ', () => {
       ['res.materials', 2],
     ]);
     expect(describeScript(card027?.script ?? [])).toEqual([
-      'プレイ時：軍事レベルが3以上なら、資材3を得る。軍事レベルが6以上なら、資材2を得る',
+      'プレイ時：美術タグ1につき1点を得る。軍事レベルが3以上なら、資材3を得る。軍事レベルが6以上なら、資材2を得る',
     ]);
   });
 });
@@ -139,13 +142,23 @@ describe('命令：gain・raise・if（文明カード）', () => {
     expect(me(s).gold).toBe(100 - 10 + me(s).regularWorkers);
   });
 
-  it('026：撃退ライン − 軍事レベル（0未満は0）につき1金', () => {
-    // 指示書 2-1（仮置きの解釈）、rules.md v0.8 7-4-2
+  it('026：撃退ライン1につき1金（xlsx の文言、2026-11-06）', () => {
+    // rules.md v0.8 7-4-2（ユーザー決定 2026-11-03：そのラウンドまでの累積値）
     const s = playCard(base(), '026', (p) => {
       p.militaryLevel = 1;
     });
     expect(s.repelLine).toBe(3);
-    expect(me(s).gold).toBe(100 - 10 + 2);
+    expect(me(s).gold).toBe(100 - 10 + 3);
+  });
+
+  it('019〜042：所持している文学・美術・音楽タグ1つにつき1点。プレイ中の自身を数える', () => {
+    // ユーザー決定 2026-11-06（「所持しているタグ」はプレイ済みの文明カードのタグ、自身を含む）
+    const s = playCard(base(), '019', (p) => {
+      p.played = ['020', '027'];
+    });
+    const owner = s.players.find((q) => q.played.includes('019'));
+    // 文学は 020 と 019 自身の2枚。027（美術）は数えない。
+    expect(scoreEvents(s, owner?.index ?? -1).at(-1)).toMatchObject({ points: 2, axis: 'other' });
   });
 
   it('010：軍事レベルを上げ、到達報酬を得る', () => {
@@ -240,7 +253,7 @@ describe('命令：placeTiles・build・playCard', () => {
     expect(top(s).t).toBe('build');
     s = applyMove(s, 'build:shop:E1');
     expect(me(s).buildings.E1).toBe('shop');
-    expect(me(s).gold).toBe(100 - 12);
+    expect(me(s).gold).toBe(100 - 11);
   });
 
   it('003：金を払わずに3軒まで建て、資材は払う。飯場と特別市民12の軽減は乗り、建築アクションの割引は乗らない', () => {
@@ -355,24 +368,17 @@ describe('常時効果（出来事への反応、16-1-4）', () => {
     expect(scoreEvents(s, me(s).index).at(-1)).toMatchObject({ points: 2, axis: 'welfare' });
   });
 
-  it('018：学術タグのカードをプレイする度に1枚引き、018 自身のプレイでは引かない', () => {
-    // ユーザー決定 2026-11-03
-    let s = playCard(base(), '018');
-    expect(me(s).hand).toHaveLength(0);
-    s = edit(s, (state, p) => {
-      p.hand = ['016'];
-      state.occupied = [];
-      p.regularPlaced = 0;
-    });
-    s = untilTurn(applyMove(s, 'end'));
-    s = edit(s, (state) => {
-      const owner = state.players.find((q) => q.played.includes('018'));
-      if (owner === undefined) return;
-      state.stack[state.stack.length - 1] = { t: 'turn', player: owner.index, acted: false, started: true };
-    });
-    s = play(s, 'act:spread:normal', 'card:016');
-    // 016 で2枚、018 で1枚。
-    expect(me(s).hand).toHaveLength(3);
+  it('018：音楽・文学・美術タグのいずれかを持つカードをプレイする度に1枚引き、学術だけのカードでは引かない', () => {
+    // 文明カード一覧（120枚）.xlsx の文言（ユーザー決定 2026-11-06）、rules.md v0.8 16-1-4
+    const after = (card: string): GameState =>
+      playCard(base(), card, (p) => {
+        p.played = ['018'];
+        p.militaryLevel = 0;
+      });
+    // 035（学術・音楽）：018 で1枚引く。035 自身の条件（軍事レベル3以上）は満たさない。
+    expect(after('035').players.find((q) => q.played.includes('035'))?.hand).toHaveLength(1);
+    // 016（学術だけ）：018 では引かず、016 自身の2枚だけを引く。
+    expect(after('016').players.find((q) => q.played.includes('016'))?.hand).toHaveLength(2);
   });
 
   it('指揮官：砦の建設時に軍事レベルが本来の上昇に加えて1上がり、砦の資材が1少なくなる', () => {

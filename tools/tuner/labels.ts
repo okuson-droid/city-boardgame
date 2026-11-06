@@ -43,6 +43,8 @@ const METRIC_NAMES: Table = {
   ...labelsOf(ICON_KEYS.metrics),
   buildingsOfType: '指定した建物の数',
   buildingsOnTerrain: '指定した地形に建てた建物',
+  tagsOf: '指定した分類のタグ（プレイ済みの文明カード）',
+  tags: '分類',
   totalBuildings: '建物の合計',
   civCardsPlayed: 'プレイ済みの文明カード',
 };
@@ -146,8 +148,9 @@ export const valueLabel = (value: string, key = ''): string => {
   if (direct !== undefined) return direct;
   const [metric, arg] = value.split(':');
   if (arg !== undefined && metric !== undefined) {
-    const argName = BUILDING_NAMES[arg] ?? TERRAIN_NAMES[arg] ?? arg;
+    const argName = BUILDING_NAMES[arg] ?? TERRAIN_NAMES[arg] ?? TAG_NAMES[arg] ?? arg;
     if (metric === 'buildingsOfType') return `${argName}の数`;
+    if (metric === 'tagsOf') return `${argName}タグ`;
     if (metric === 'buildingsOnTerrain') return `${argName}に建てた建物`;
   }
   return value;

@@ -308,7 +308,7 @@ export const STEPS: readonly Step[] = [
     title: 'プレイするカードを選ぶ',
     body: () => '光っている手札のカードを選ぶ。カードによっては、続けて置き場所などを選ぶ。',
     allow: ['*'],
-    highlight: ['card:*', 'temp:0'],
+    // 光らせる指定を置かず、選べるものすべてを光らせる。カードの効果の続き（建設・土地タイル・「プレイを終える」など）も光らせるためである。
     when: (s) => myTask(s) !== undefined && myTask(s)?.t !== 'turn' && myTask(s)?.t !== 'passTile' && s.phase === 'play',
     done: (s) => turnAfterAction(s) || backToTurn(s),
   },

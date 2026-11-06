@@ -15,7 +15,7 @@ export const ICON_SECTIONS = {
   buildings: BUILDINGS,
   terrains: [...TERRAINS, 'match', 'any'],
   tags: CIV_TAGS,
-  metrics: [...SIMPLE_METRICS, 'buildingsOfType', 'buildingsOnTerrain'],
+  metrics: [...SIMPLE_METRICS, 'buildingsOfType', 'buildingsOnTerrain', 'tagsOf'],
   events: EVENT_NAMES,
   modifiers: MODIFIER_KINDS,
   results: ['defenseFailed', 'defended', 'repelled'],

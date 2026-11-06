@@ -1,8 +1,8 @@
 // 効果スクリプトの型と型検査（docs/effect-commands.md、指示書 3-3）。
 // 効果は「能力（いつ発動するか）」と「命令（何をするか）」の2層で書く。
 
-import type { Action, Building, ScoreAxis, Terrain } from './types.ts';
-import { ACTIONS, BUILDINGS, SCORE_AXES, TERRAINS } from './types.ts';
+import type { Action, Building, CivTag, ScoreAxis, Terrain } from './types.ts';
+import { ACTIONS, BUILDINGS, CIV_TAGS, SCORE_AXES, TERRAINS } from './types.ts';
 
 // ---------------------------------------------------------------------------
 // 指標と条件
@@ -31,8 +31,11 @@ export const SIMPLE_METRICS = [
 ] as const;
 export type SimpleMetric = (typeof SIMPLE_METRICS)[number];
 
-/** 指標。建物の種類・地形を伴う指標は「名前:引数」で書く。 */
-export type Metric = SimpleMetric | `buildingsOfType:${Building}` | `buildingsOnTerrain:${Terrain}`;
+/**
+ * 指標。建物の種類・地形・分類を伴う指標は「名前:引数」で書く。
+ * tagsOf はプレイ済みの文明カードのうちその分類のタグを持つ枚数で、プレイ中の自身を含む（ユーザー決定 2026-11-06）。
+ */
+export type Metric = SimpleMetric | `buildingsOfType:${Building}` | `buildingsOnTerrain:${Terrain}` | `tagsOf:${CivTag}`;
 
 export type Amount = number | { readonly count: Metric; readonly per: number; readonly times: number };
 
@@ -115,6 +118,8 @@ export type EventName = (typeof EVENT_NAMES)[number];
 export type EventFilter = {
   readonly terrain?: Terrain;
   readonly tag?: string;
+  /** いずれかの分類を持つ文明カード（文明カード018「音楽・文学・美術タグのいずれかを持つ」）。 */
+  readonly tags?: readonly CivTag[];
   readonly excludeSelf?: boolean;
   readonly tier?: 'normal' | 'upper' | 'top';
   /** actionExecuted をアクションの種類で絞る（文明カード「研究アクション実行後」）。 */
@@ -232,6 +237,10 @@ export const readMetric = (v: unknown, path: string): Metric => {
     oneOf(TERRAINS, arg, path);
     return v as Metric;
   }
+  if (name === 'tagsOf') {
+    oneOf(CIV_TAGS, arg, path);
+    return v as Metric;
+  }
   return oneOf(SIMPLE_METRICS, v, path);
 };
 
@@ -325,6 +334,7 @@ const readFilter = (v: unknown, path: string): EventFilter => {
   return {
     ...optional(o, 'terrain', (x, q) => oneOf(TERRAINS, x, q), path),
     ...optional(o, 'tag', (x, q) => (typeof x === 'string' ? x : fail(q, '文字列でなければならない')), path),
+    ...optional(o, 'tags', (x, q) => arr(x, q).map((t, i) => oneOf(CIV_TAGS, t, `${q}[${i}]`)), path),
     ...optional(o, 'excludeSelf', bool, path),
     ...optional(o, 'tier', (x, q) => oneOf(['normal', 'upper', 'top'] as const, x, q), path),
     ...optional(o, 'action', (x, q) => oneOf(ACTIONS, x, q), path),

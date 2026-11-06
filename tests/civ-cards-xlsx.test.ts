@@ -142,3 +142,24 @@ describe('命令の拡張', () => {
     expect(imported.stack.some((t) => t.t === 'playCard')).toBe(false);
   });
 });
+
+describe('所持しているタグ（ユーザー決定 2026-11-06）', () => {
+  it('学資：プレイ済みの学術タグ1つにつき2金。プレイ中の自身を数える', () => {
+    // ユーザー決定 2026-11-06（プレイ済みの文明カードのタグ、自身を含む）、rules.md v0.8 9-2-4
+    const card = idOf('学資');
+    const s = playCard(base(), card, (p) => {
+      // 001（学術）と 004（経済）。学術は 001 と学資自身の2枚。
+      p.played = ['001', '004'];
+    });
+    expect(me(s).gold).toBe(100 - costOf(card) + 2 * 2);
+  });
+
+  it('環境保全金：環境タグが1つ以上で10金、3つ以上で更に10金', () => {
+    // ユーザー決定 2026-11-06、rules.md v0.8 9-2-7（各条件は個別に判定する）
+    const card = idOf('環境保全金');
+    const gold = (played: string[]): number => me(playCard(base(), card, (p) => (p.played = played))).gold;
+    expect(gold([])).toBe(100 - costOf(card));
+    expect(gold(['002'])).toBe(100 - costOf(card) + 10);
+    expect(gold(['002', '006', '007'])).toBe(100 - costOf(card) + 20);
+  });
+});

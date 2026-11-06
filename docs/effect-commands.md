@@ -59,14 +59,14 @@
 
 `cond` は `{ left: 指標, op: '>=' | '<', right: 数値または指標 }` とする。034・042 は右辺に撃退ライン・防衛ラインの指標を置く。
 
-指標の一覧：regularWorkers、tempWorkers、landTiles、freeLandTiles、buildings、buildingsOfType:建物、buildingsOnTerrain:地形、maxedBuildingTypes、houses、militaryLevel、infraLevel、militaryTokens、goldProduction、materialProduction、repelLine、defenseLine、repelShortfall（撃退ライン−軍事レベル、0未満は0）、playedCivCards、buildingTypes（建設済みの建物の種類の数）、freeLandTerrains（建物のない土地タイルの地形の種類の数）。後の2つは 2026-11-06 に追加した（docs/civ-cards-xlsx.md）。
+指標の一覧：regularWorkers、tempWorkers、landTiles、freeLandTiles、buildings、buildingsOfType:建物、buildingsOnTerrain:地形、maxedBuildingTypes、houses、militaryLevel、infraLevel、militaryTokens、goldProduction、materialProduction、repelLine、defenseLine、repelShortfall（撃退ライン−軍事レベル、0未満は0）、playedCivCards、buildingTypes（建設済みの建物の種類の数）、freeLandTerrains（建物のない土地タイルの地形の種類の数）、tagsOf:分類（プレイ済みの文明カードのうちその分類のタグを持つ枚数、プレイ中の自身を含む）。後の3つは 2026-11-06 に追加した（docs/civ-cards-xlsx.md）。
 
 `on` の出来事と絞り込み：
 
 | 出来事 | 絞り込み | 使う箇所 |
 |---|---|---|
 | `tilePlaced` | `terrain` | 特別市民01（森林）、資本家（山岳） |
-| `cardPlayed` | `tag?`、`excludeSelf?` | 018（学術、自身を除く）、特別市民03、芸術家、学者（`every: 3`） |
+| `cardPlayed` | `tag?`、`tags?`、`excludeSelf?` | 018（音楽・文学・美術のいずれか、`tags`、2026-11-06）、特別市民03、芸術家、学者（`every: 3`） |
 | `actionExecuted` | `tier`、`action` | 特別市民02（最上位、特別市民11の写しを含む）、開発サイクル（研究、2026-11-06 追加） |
 | `built` | `building` | 指揮官（砦）、官僚（役所） |
 | `workerGained` | `kind` | 聖女（通常、上限超過の破棄分は数えない 16-1-5） |

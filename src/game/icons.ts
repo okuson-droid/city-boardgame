@@ -35,7 +35,7 @@ const metricEntry = (keys: IconKeys, metric: Metric): IconEntry => {
   const [name = '', arg] = metric.split(':');
   const base = entry(keys, 'metrics', name);
   if (arg === undefined) return base;
-  const section: IconSection = name === 'buildingsOfType' ? 'buildings' : 'terrains';
+  const section: IconSection = name === 'buildingsOfType' ? 'buildings' : name === 'tagsOf' ? 'tags' : 'terrains';
   const target = entry(keys, section, arg);
   return { icon: `${base.icon}:${target.icon}`, label: `${target.label}${base.label}` };
 };
@@ -120,6 +120,7 @@ const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
 const filterTokens = (keys: IconKeys, filter: EventFilter): IconToken[] => [
   ...(filter.terrain !== undefined ? [token(keys, 'terrains', filter.terrain)] : []),
   ...(filter.tag !== undefined ? [token(keys, 'tags', filter.tag)] : []),
+  ...(filter.tags ?? []).flatMap((t, i) => [...(i > 0 ? [token(keys, 'symbols', 'or')] : []), token(keys, 'tags', t)]),
   ...(filter.building !== undefined ? [token(keys, 'buildings', filter.building)] : []),
   ...(filter.action !== undefined ? [token(keys, 'actions', filter.action)] : []),
   ...(filter.tier !== undefined ? [token(keys, 'tiers', filter.tier)] : []),

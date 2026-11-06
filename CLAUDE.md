@@ -19,7 +19,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 - 完了：オンライン化（段階5、`server/`・`src/online/`）。受け入れ検査（`npm run accept:online`）は合格。main に取り込み済み。
 - 完了：公開ページのチューナー（案A、ユーザー決定 2026-11-04、`docs/tuner-pages.md`）。main に取り込み済み。GitHub への保存は模擬の API で単体テストを行った。本物の GitHub への保存は未確認（ユーザーのトークン待ち）。
 - 完了：チュートリアル（ユーザー決定 2026-11-04、`src/tutorial/`・`src/ui/Tutorial.tsx`）。受け入れ検査（`npm run accept:tutorial`）は合格。main に取り込み済み。
-- 作業中：文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、`docs/civ-cards-xlsx.md`）。既存の42枚に当たらない78枚のうち53枚を 043〜095 として加えた。25枚は解釈の決定待ちで保留。
+- 作業中：文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、`docs/civ-cards-xlsx.md`）。既存の42枚は一覧に合わせて改め、既存に当たらない78枚のうち57枚を 043〜099 として加えた。21枚は解釈の決定待ちで保留。
 - 完了：オンライン版の Supabase 化と GitHub Pages への配置（ユーザー決定 2026-11-03、`docs/online-supabase.md`）。模擬に対する受け入れ検査（`npm run accept:supabase`）は合格。main に取り込み済み。本物の Supabase では、Edge Function とテーブルが動き部屋を作れることを確かめた（2026-11-04）。Project URL はパスを捨てて起点だけを使う（`projectOrigin`）。
 
 ## 構成
@@ -119,8 +119,8 @@ npm run accept:tutorial  # チュートリアルの受け入れ検査
 - 選択肢の識別子は `act:<action>:<tier>`・`pass`・`end`・`free:<id>[:<card>]`・`temp:<n>`・`count:<n>`・`tile:<cell>:<terrain>`・`build:<building>:<cell>`・`done`・`reward:<i>`・`convert:<0|1>`・`card:<id>`・`sc:<id>`・`order:<i>`・`bonus:<n>`・`raid:<none|defense|repel>`・`draft:<board|bonus|character>:<id>` である。
 - 資源を得るだけの効果は `processEffects` が尋ねずに処理し、選択を伴う効果（土地タイル・建設の権利・無料建設・特別な市民カード・捨て札）はタスクにする。2つ以上あれば `chooseOrder` で順番を尋ねる（decisions.md 3-4）。
 - 「〜した時」の効果（16-1-4）は、`emit` が記録する1単位ごとの出来事に反応させる（`effects.ts` の `react`）。
-- 文明カードの 043 以降は xlsx から加えたカードで、一覧の番号とは一致しない（対応は `docs/civ-cards-xlsx.md`）。`npm run import:design` は原本にないこれらのカードを消さずに残す。
-- 効果スクリプトの正は `src/data/` の JSON である（チューナーで編集し書き戻す）。`npm run import:design` は `design/` 由来の文言だけを更新し、効果スクリプトと文明カードの仮置きの項目（名称・条件・固有得点）は既存の値を保つ。`scripts/effect-scripts.ts` は値がないときの初期値としてだけ使う。
+- 文明カードの正は、文明カード一覧（120枚）.xlsx に合わせた `cards_civilization.json` である（ユーザー決定 2026-11-06）。識別子は一覧の番号と一致しない（対応は `docs/civ-cards-xlsx.md`）。`npm run import:design` は文明カードを取り込まない（`design/文明カード一覧_sample.md` は古い版のため）。
+- 効果スクリプトの正は `src/data/` の JSON である（チューナーで編集し書き戻す）。`npm run import:design` は `design/` 由来の文言だけを更新し、効果スクリプトは既存の値を保つ。`scripts/effect-scripts.ts` は値がないときの初期値としてだけ使う。
 - タスクをスタックから取り除くときは `removeTask(state, task)` を使う。処理中に常時効果が上にタスクを積むため、`pop()` では誤って別のタスクを取り除く。
 - 能力の識別子は「出どころ#添字」（例：`sc:09#0`、`char:merchant#1`）。選択肢は `ability:<識別子>`（フリーアクション）・`space:<識別子>`（専用スペース）・`plan:<id>`（計画都市の宣言）・`choose:<i>`・`copy:<action>:<tier>`・`spirit:<terrain>:<cell>`・`hero:<E1|F1>:<cell>`。
 - 骨格のテストは `withoutCharacters` でキャラクターを外して局面を作る。キャラクターの効果がテストに混ざらないようにするためである。
@@ -197,7 +197,8 @@ npm run accept:tutorial  # チュートリアルの受け入れ検査
 
 - ドラフトの候補は、3人・4人とも個人ボード5枚・キャラクター10人のすべて（`params.setupByPlayerCount.*.draft*Candidates`）。
 - 文明カード 017：遠征報酬の獲得で目標値の宣言と軍事力トークンの消費を行わない。選べるのは現在の軍事レベル以下の報酬に限る。同じ報酬は重ねて取れず、異なる報酬を4つ得る。指揮官は指揮官の追加報酬（19-2-6）も選べる。
-- 文明カード 018：自身をプレイしたときには引かない。
+- 文明カード 018：自身をプレイしたときには引かない（2026-11-06 に 018 の条件が音楽・文学・美術に変わり、該当しなくなった）。
+- 文明カードの「所持している〇〇タグ」「〇〇タグがある」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数で、プレイ中の自身を含む（ユーザー決定 2026-11-06、指標 `tagsOf:<分類>`）。
 - 文明カード 032・040：2段目は通常ワーカー8人以上だけで満たす。
 - 文明カード 034・042：撃退ライン・防衛ラインは 026 と同じく、そのラウンドまでの累積値。
 - 建築（5-6-1）：種類と場所をすべて選んだ時点でコスト（飯場の軽減を含む）を確定して払う。開拓も同じく、配置をすべて選んだ時点で資材を確定する。

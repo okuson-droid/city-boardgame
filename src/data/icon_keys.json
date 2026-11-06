@@ -318,6 +318,10 @@
     "freeLandTerrains": {
       "icon": "met.freeLandTerrains",
       "label": "建物のない土地タイルの種類"
+    },
+    "tagsOf": {
+      "icon": "met.tagsOf",
+      "label": "タグ"
     }
   },
   "events": {

@@ -815,11 +815,11 @@ describe('福祉・移住・研究・普及（6-3-7〜6-3-10）', () => {
     // rules.md v0.8 6-3-10-2、16-2-1
     let s = edit(base(), (_, p) => {
       p.hand = ['001'];
-      p.gold = 11;
+      p.gold = 10;
     });
     expect(ids(s)).not.toContain('act:spread:normal');
     s = edit(s, (_, p) => {
-      p.gold = 12;
+      p.gold = 11;
     });
     s = play(s, 'act:spread:normal');
     expect(ids(s)).toEqual(['card:001']);
@@ -981,6 +981,8 @@ describe('ゲーム終了と得点計算（第17章）', () => {
       p.buildings = {};
       p.regularWorkers = 5;
       p.land = { E1: 'forest', F1: 'forest' };
+      // 自然公園の得点が混ざらないようにする（配られるカードはシードと山札の枚数で変わる）。
+      p.natureParkCard = null;
     }
     expect(new Set(finalScores(s).map((f) => f.rank))).toEqual(new Set([1]));
     const p1 = playerOf(s, 1);

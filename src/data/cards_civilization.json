@@ -1,18 +1,17 @@
 {
-  "importedFrom": "design/文明カード一覧_sample.md",
+  "importedFrom": "文明カード一覧（120枚）.xlsx（2026-11-06）",
   "provisional": true,
   "notes": [
-    "001〜042 の42枚をデッキとする。総枚数は未決である（指示書 2-1）。",
-    "cost・tags・text は原本のまま。tags は原本のタグを識別子に置き換えたものである。",
-    "名称・プレイ条件・効果適用条件・固有得点は仮置きである（provisionalFields）。",
-    "効果の命令セット化は段階3（feat/effects）で行う。"
+    "001〜042 は design/文明カード一覧_sample.md から取り込み、2026-11-06 に 文明カード一覧（120枚）.xlsx に合わせて名称・コスト・タグ・文言を改めた（ユーザー決定 2026-11-06）。",
+    "043 以降は 文明カード一覧（120枚）.xlsx から加えたカードである。識別子と一覧の番号の対応は docs/civ-cards-xlsx.md にある。",
+    "tags は一覧のタグを識別子に置き換えたものである。プレイ条件・効果適用条件・固有得点は仮置きである（provisionalFields）。"
   ],
   "cards": [
     {
       "id": "001",
-      "name": "文明カード001",
+      "name": "建築学",
       "cost": {
-        "gold": 12
+        "gold": 11
       },
       "tags": [
         "academic"
@@ -40,7 +39,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -48,7 +46,7 @@
     },
     {
       "id": "002",
-      "name": "文明カード002",
+      "name": "小規模開拓",
       "cost": {
         "gold": 8
       },
@@ -80,7 +78,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -88,7 +85,7 @@
     },
     {
       "id": "003",
-      "name": "文明カード003",
+      "name": "公共事業",
       "cost": {
         "gold": 10
       },
@@ -124,7 +121,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -132,7 +128,7 @@
     },
     {
       "id": "004",
-      "name": "文明カード004",
+      "name": "発掘",
       "cost": {
         "gold": 10
       },
@@ -158,7 +154,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -166,9 +161,9 @@
     },
     {
       "id": "005",
-      "name": "文明カード005",
+      "name": "利回り",
       "cost": {
-        "gold": 10
+        "gold": 8
       },
       "tags": [
         "economy"
@@ -198,7 +193,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -206,7 +200,7 @@
     },
     {
       "id": "006",
-      "name": "文明カード006",
+      "name": "土塁",
       "cost": {
         "gold": 7
       },
@@ -238,7 +232,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -246,7 +239,7 @@
     },
     {
       "id": "007",
-      "name": "文明カード007",
+      "name": "用水路",
       "cost": {
         "gold": 7
       },
@@ -278,7 +271,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -286,7 +278,7 @@
     },
     {
       "id": "008",
-      "name": "文明カード008",
+      "name": "植林",
       "cost": {
         "gold": 6
       },
@@ -318,7 +310,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -326,7 +317,7 @@
     },
     {
       "id": "009",
-      "name": "文明カード009",
+      "name": "焼畑",
       "cost": {
         "gold": 6
       },
@@ -358,7 +349,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -366,7 +356,7 @@
     },
     {
       "id": "010",
-      "name": "文明カード010",
+      "name": "武装",
       "cost": {
         "gold": 5
       },
@@ -392,7 +382,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -400,7 +389,7 @@
     },
     {
       "id": "011",
-      "name": "文明カード011",
+      "name": "水洗トイレ",
       "cost": {
         "gold": 7
       },
@@ -410,14 +399,8 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "生活レベルを1上げる。",
-      "clarifications": [
-        {
-          "text": "「生活レベル」はインフラレベルである。",
-          "source": "decisions.md 1-1（ユーザー決定）",
-          "provisional": false
-        }
-      ],
+      "text": "インフラレベルを1上げる。",
+      "clarifications": [],
       "script": [
         {
           "ability": "onPlay",
@@ -432,7 +415,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -440,7 +422,7 @@
     },
     {
       "id": "012",
-      "name": "文明カード012",
+      "name": "招聘",
       "cost": {
         "gold": 20
       },
@@ -472,7 +454,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -480,7 +461,7 @@
     },
     {
       "id": "013",
-      "name": "文明カード013",
+      "name": "流れ者",
       "cost": {
         "gold": 11
       },
@@ -512,7 +493,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -520,7 +500,7 @@
     },
     {
       "id": "014",
-      "name": "文明カード014",
+      "name": "弾薬",
       "cost": {
         "gold": 9
       },
@@ -552,7 +532,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -560,9 +539,9 @@
     },
     {
       "id": "015",
-      "name": "文明カード015",
+      "name": "炭鉱",
       "cost": {
-        "gold": 13
+        "gold": 11
       },
       "tags": [
         "economy"
@@ -592,7 +571,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -600,7 +578,7 @@
     },
     {
       "id": "016",
-      "name": "文明カード016",
+      "name": "速読術",
       "cost": {
         "gold": 6
       },
@@ -626,7 +604,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -634,7 +611,7 @@
     },
     {
       "id": "017",
-      "name": "文明カード017",
+      "name": "臨時遠征",
       "cost": {
         "gold": 15
       },
@@ -675,7 +652,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -683,7 +659,7 @@
     },
     {
       "id": "018",
-      "name": "文明カード018",
+      "name": "知識の泉",
       "cost": {
         "gold": 10
       },
@@ -693,12 +669,12 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：学術タグを持つカードをプレイする度に文明カードを1枚引く。",
+      "text": "常時：音楽タグ、文学タグ、美術タグのいずれかを持つ文明カードをプレイする度に、文明カードを1枚引く。",
       "clarifications": [
         {
-          "text": "018 自身をプレイしたときには、この常時効果でカードを引かない。",
-          "source": "ユーザー決定（2026-11-03）",
-          "provisional": false
+          "text": "1枚が複数の分類を持つ場合も、音楽・文学・美術のいずれかを持てば1回だけ引く。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
         }
       ],
       "script": [
@@ -706,8 +682,11 @@
           "ability": "on",
           "event": "cardPlayed",
           "filter": {
-            "tag": "academic",
-            "excludeSelf": true
+            "tags": [
+              "music",
+              "literature",
+              "art"
+            ]
           },
           "do": [
             {
@@ -720,7 +699,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -728,28 +706,48 @@
     },
     {
       "id": "019",
-      "name": "文明カード019",
+      "name": "『極北の漁場』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "literature"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "通常ワーカー1つにつき1金を得る。",
+      "text": "所持している文学タグ1つにつき1点を得る。通常ワーカー1つにつき1金を得る。",
       "clarifications": [
         {
           "text": "ワーカーの「つ」は「人」と読み替える。",
           "source": "rules.md v0.8 19-6-4（表記の読み替え）",
           "provisional": false
+        },
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
         }
       ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:literature",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "gain",
               "res": "gold",
@@ -764,7 +762,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -772,22 +769,43 @@
     },
     {
       "id": "020",
-      "name": "文明カード020",
+      "name": "『長い、長い冬』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "literature"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "建物のない土地タイル1枚につき1金を得る。",
-      "clarifications": [],
+      "text": "所持している文学タグ1つにつき1点を得る。建物のない土地タイル1枚につき1金を得る。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:literature",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "gain",
               "res": "gold",
@@ -802,7 +820,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -810,22 +827,43 @@
     },
     {
       "id": "021",
-      "name": "文明カード021",
+      "name": "『燐光病棟』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "literature"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "インフラレベル1につき1金を得る。",
-      "clarifications": [],
+      "text": "所持している文学タグ1つにつき1点を得る。インフラレベル1につき1金を得る。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:literature",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "gain",
               "res": "gold",
@@ -840,7 +878,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -848,22 +885,43 @@
     },
     {
       "id": "022",
-      "name": "文明カード022",
+      "name": "『フラウス戦記』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "literature"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "軍事力トークン1つにつき1金を得る。",
-      "clarifications": [],
+      "text": "所持している文学タグ1つにつき1点を得る。軍事力トークン1つにつき1金を得る。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:literature",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "gain",
               "res": "gold",
@@ -878,7 +936,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -886,28 +943,48 @@
     },
     {
       "id": "023",
-      "name": "文明カード023",
+      "name": "『第二鉱山の灯』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "literature"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "資材の生産1につき1金を得る。",
+      "text": "所持している文学タグ1つにつき1点を得る。資材の生産1につき1金を得る。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
           "source": "rules.md v0.8 19-6-4（表記の読み替え）",
           "provisional": false
+        },
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
         }
       ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:literature",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "gain",
               "res": "gold",
@@ -922,7 +999,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -930,22 +1006,43 @@
     },
     {
       "id": "024",
-      "name": "文明カード024",
+      "name": "『ビルド・アンド・ビルド』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "literature"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "建物1軒につき1金を得る。",
-      "clarifications": [],
+      "text": "所持している文学タグ1つにつき1点を得る。建物1軒につき1金を得る。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:literature",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "gain",
               "res": "gold",
@@ -960,7 +1057,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -968,65 +1064,32 @@
     },
     {
       "id": "025",
-      "name": "文明カード025",
+      "name": "『未来商店』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "literature"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "金の生産4につき1金を得る。",
+      "text": "所持している文学タグ1つにつき1点を得る。金の生産3につき1金を得る。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
           "source": "rules.md v0.8 19-6-4（表記の読み替え）",
           "provisional": false
-        }
-      ],
-      "script": [
+        },
         {
-          "ability": "onPlay",
-          "do": [
-            {
-              "op": "gain",
-              "res": "gold",
-              "amount": {
-                "count": "goldProduction",
-                "per": 4,
-                "times": 1
-              }
-            }
-          ]
-        }
-      ],
-      "provisional": true,
-      "provisionalFields": [
-        "name",
-        "playCondition",
-        "effectCondition",
-        "points"
-      ]
-    },
-    {
-      "id": "026",
-      "name": "文明カード026",
-      "cost": {
-        "gold": 10
-      },
-      "tags": [
-        "literature"
-      ],
-      "playCondition": null,
-      "effectCondition": null,
-      "points": 1,
-      "text": "襲撃の撃退に必要な軍事力1につき1金を得る。",
-      "clarifications": [
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
         {
-          "text": "「襲撃の撃退に必要な軍事力」は、そのラウンドの撃退ライン − 軍事レベル（0未満は0）である。",
-          "source": "指示書_2026-11-03_初期実装.md 2-1（仮置き）",
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
           "provisional": true
         }
       ],
@@ -1036,9 +1099,81 @@
           "do": [
             {
               "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:literature",
+                "per": 1,
+                "times": 1
+              }
+            },
+            {
+              "op": "gain",
               "res": "gold",
               "amount": {
-                "count": "repelShortfall",
+                "count": "goldProduction",
+                "per": 3,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "026",
+      "name": "『瓦礫から生まれた子』",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "academic",
+        "literature"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "所持している文学タグ1つにつき1点を得る。襲撃の撃退ライン1につき1金を得る。",
+      "clarifications": [
+        {
+          "text": "撃退ラインは、そのラウンドまでに累積した値である（034・042 と同じ扱い）。",
+          "source": "ユーザー決定（2026-11-03）",
+          "provisional": false
+        },
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:literature",
+                "per": 1,
+                "times": 1
+              }
+            },
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "repelLine",
                 "per": 1,
                 "times": 1
               }
@@ -1048,7 +1183,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1056,22 +1190,43 @@
     },
     {
       "id": "027",
-      "name": "文明カード027",
+      "name": "『勝利の御旗』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "art"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "軍事レベルが3以上なら、3資材を得る。6以上なら、もう2資材を得る。",
-      "clarifications": [],
+      "text": "所持している美術タグ1つにつき1点を得る。軍事レベルが3以上なら、3資材を得る。6以上なら、もう2資材を得る。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:art",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1107,7 +1262,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1115,22 +1269,43 @@
     },
     {
       "id": "028",
-      "name": "文明カード028",
+      "name": "『昼下がりのシード街』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "art"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "インフラレベルが3以上なら、3資材を得る。6以上なら、もう2資材を得る。",
-      "clarifications": [],
+      "text": "所持している美術タグ1つにつき1点を得る。インフラレベルが3以上なら、3資材を得る。6以上なら、もう2資材を得る。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:art",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1166,7 +1341,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1174,28 +1348,48 @@
     },
     {
       "id": "029",
-      "name": "文明カード029",
+      "name": "『ヨーリーフ伯爵』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "art"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "金の生産が25以上なら、3資材を得る。30以上なら、もう2資材を得る。",
+      "text": "所持している美術タグ1つにつき1点を得る。金の生産が25以上なら、3資材を得る。30以上なら、もう2資材を得る。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
           "source": "rules.md v0.8 19-6-4（表記の読み替え）",
           "provisional": false
+        },
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
         }
       ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:art",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1231,7 +1425,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1239,22 +1432,43 @@
     },
     {
       "id": "030",
-      "name": "文明カード030",
+      "name": "『フラウス十六景』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "art"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "土地タイルが7枚以上なら、3資材を得る。14枚以上なら、もう2資材を得る。",
-      "clarifications": [],
+      "text": "所持している美術タグ1つにつき1点を得る。土地タイルが7枚以上なら、3資材を得る。14枚以上なら、もう2資材を得る。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:art",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1290,7 +1504,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1298,22 +1511,43 @@
     },
     {
       "id": "031",
-      "name": "文明カード031",
+      "name": "『聖堂の天井画』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "art"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "建物が5軒以上なら、3資材を得る。8軒以上なら、もう2資材を得る。",
-      "clarifications": [],
+      "text": "所持している美術タグ1つにつき1点を得る。建物が5軒以上なら、3資材を得る。8軒以上なら、もう2資材を得る。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:art",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1349,7 +1583,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1357,28 +1590,48 @@
     },
     {
       "id": "032",
-      "name": "文明カード032",
+      "name": "『ネルート家の晩餐』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "art"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "住宅が4軒以上なら、3資材を得る。通常ワーカーが8人以上なら、もう2資材を得る。",
+      "text": "所持している美術タグ1つにつき1点を得る。住宅が4軒以上なら、3資材を得る。通常ワーカーが8人以上なら、もう2資材を得る。",
       "clarifications": [
         {
           "text": "2段目は通常ワーカーが8人以上であれば満たし、1段目（住宅4軒以上）の成否を問わない。",
           "source": "ユーザー決定（2026-11-03）",
           "provisional": false
+        },
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
         }
       ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:art",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1414,7 +1667,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1422,28 +1674,48 @@
     },
     {
       "id": "033",
-      "name": "文明カード033",
+      "name": "『腕のない女神』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "art"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "資材の生産が5以上なら、3資材を得る。8以上なら、もう2資材を得る。",
+      "text": "所持している美術タグ1つにつき1点を得る。資材の生産が5以上なら、3資材を得る。8以上なら、もう2資材を得る。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
           "source": "rules.md v0.8 19-6-4（表記の読み替え）",
           "provisional": false
+        },
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
         }
       ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:art",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1479,7 +1751,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1487,17 +1758,18 @@
     },
     {
       "id": "034",
-      "name": "文明カード034",
+      "name": "『灰と故郷』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "art"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "軍事力が撃退ラインより低いなら、3資材を得る。防衛ラインより低いなら、もう2資材を得る。",
+      "text": "所持している美術タグ1つにつき1点を得る。軍事力が撃退ラインより低いなら、3資材を得る。防衛ラインより低いなら、もう2資材を得る。",
       "clarifications": [
         {
           "text": "「軍事力」は軍事レベルである。",
@@ -1508,12 +1780,31 @@
           "text": "撃退ライン・防衛ラインは、そのラウンドまでに累積した値である（026 と同じ扱い）。",
           "source": "ユーザー決定（2026-11-03）",
           "provisional": false
+        },
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
         }
       ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:art",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1549,7 +1840,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1557,22 +1847,43 @@
     },
     {
       "id": "035",
-      "name": "文明カード035",
+      "name": "『フラウスの英雄』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "music"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "軍事レベルが3以上なら、文明カードを1枚引く。6以上なら、もう1枚引く。",
-      "clarifications": [],
+      "text": "所持している音楽タグ1つにつき1点を得る。軍事レベルが3以上なら、文明カードを1枚引く。6以上なら、もう1枚引く。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:music",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1608,7 +1919,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1616,22 +1926,43 @@
     },
     {
       "id": "036",
-      "name": "文明カード036",
+      "name": "『フラウス体操第一』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "music"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "インフラレベルが3以上なら、文明カードを1枚引く。6以上なら、もう1枚引く。",
-      "clarifications": [],
+      "text": "所持している音楽タグ1つにつき1点を得る。インフラレベルが3以上なら、文明カードを1枚引く。6以上なら、もう1枚引く。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:music",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1667,7 +1998,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1675,28 +2005,48 @@
     },
     {
       "id": "037",
-      "name": "文明カード037",
+      "name": "『ゴールデン・ゴールド』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "music"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "金の生産が25以上なら、文明カードを1枚引く。30以上なら、もう1枚引く。",
+      "text": "所持している音楽タグ1つにつき1点を得る。金の生産が25以上なら、文明カードを1枚引く。30以上なら、もう1枚引く。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
           "source": "rules.md v0.8 19-6-4（表記の読み替え）",
           "provisional": false
+        },
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
         }
       ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:music",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1732,7 +2082,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1740,22 +2089,43 @@
     },
     {
       "id": "038",
-      "name": "文明カード038",
+      "name": "『大地の唄』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "music"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "土地タイルが7枚以上なら、文明カードを1枚引く。14枚以上なら、もう1枚引く。",
-      "clarifications": [],
+      "text": "所持している音楽タグ1つにつき1点を得る。土地タイルが7枚以上なら、文明カードを1枚引く。14枚以上なら、もう1枚引く。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:music",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1791,7 +2161,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1799,22 +2168,43 @@
     },
     {
       "id": "039",
-      "name": "文明カード039",
+      "name": "『三番街の女』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "music"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "建物が5軒以上なら、文明カードを1枚引く。8軒以上なら、もう1枚引く。",
-      "clarifications": [],
+      "text": "所持している音楽タグ1つにつき1点を得る。建物が5軒以上なら、文明カードを1枚引く。8軒以上なら、もう1枚引く。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:music",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1850,7 +2240,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1858,28 +2247,48 @@
     },
     {
       "id": "040",
-      "name": "文明カード040",
+      "name": "『スイート・マイ・ホーム』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "music"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "住宅が4軒以上なら、文明カードを1枚引く。通常ワーカーが8人以上なら、もう1枚引く。",
+      "text": "所持している音楽タグ1つにつき1点を得る。住宅が4軒以上なら、文明カードを1枚引く。通常ワーカーが8人以上なら、もう1枚引く。",
       "clarifications": [
         {
           "text": "2段目は通常ワーカーが8人以上であれば満たし、1段目（住宅4軒以上）の成否を問わない。",
           "source": "ユーザー決定（2026-11-03）",
           "provisional": false
+        },
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
         }
       ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:music",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1915,7 +2324,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1923,28 +2331,48 @@
     },
     {
       "id": "041",
-      "name": "文明カード041",
+      "name": "『炭鉱の雛』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "music"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "資材の生産が5以上なら、文明カードを1枚引く。8以上なら、もう1枚引く。",
+      "text": "所持している音楽タグ1つにつき1点を得る。資材の生産が5以上なら、文明カードを1枚引く。8以上なら、もう1枚引く。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
           "source": "rules.md v0.8 19-6-4（表記の読み替え）",
           "provisional": false
+        },
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
         }
       ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:music",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -1980,7 +2408,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -1988,17 +2415,18 @@
     },
     {
       "id": "042",
-      "name": "文明カード042",
+      "name": "『空に願いを』",
       "cost": {
         "gold": 10
       },
       "tags": [
+        "academic",
         "music"
       ],
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "軍事力が撃退ラインより低いなら、文明カードを1枚引く。防衛ラインより低いなら、もう1枚引く。",
+      "text": "所持している音楽タグ1つにつき1点を得る。軍事力が撃退ラインより低いなら、文明カードを1枚引く。防衛ラインより低いなら、もう1枚引く。",
       "clarifications": [
         {
           "text": "「軍事力」は軍事レベルである。",
@@ -2009,12 +2437,31 @@
           "text": "撃退ライン・防衛ラインは、そのラウンドまでに累積した値である（026 と同じ扱い）。",
           "source": "ユーザー決定（2026-11-03）",
           "provisional": false
+        },
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        },
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
         }
       ],
       "script": [
         {
           "ability": "onPlay",
           "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:music",
+                "per": 1,
+                "times": 1
+              }
+            },
             {
               "op": "if",
               "cond": {
@@ -2050,7 +2497,6 @@
       ],
       "provisional": true,
       "provisionalFields": [
-        "name",
         "playCondition",
         "effectCondition",
         "points"
@@ -4282,6 +4728,241 @@
               "op": "raise",
               "track": "infra",
               "amount": 1
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "096",
+      "name": "環境保全金",
+      "cost": {
+        "gold": 5
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "環境タグがあるなら10金を得る。環境タグが3つ以上あるなら、更に10金を得る。",
+      "clarifications": [
+        {
+          "text": "「〇〇タグがある」「〇〇タグが3つ以上ある」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数で数え、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "if",
+              "cond": {
+                "left": "tagsOf:environment",
+                "op": ">=",
+                "right": 1
+              },
+              "then": [
+                {
+                  "op": "gain",
+                  "res": "gold",
+                  "amount": 10
+                }
+              ]
+            },
+            {
+              "op": "if",
+              "cond": {
+                "left": "tagsOf:environment",
+                "op": ">=",
+                "right": 3
+              },
+              "then": [
+                {
+                  "op": "gain",
+                  "res": "gold",
+                  "amount": 10
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "097",
+      "name": "軍資金",
+      "cost": {
+        "gold": 5
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "軍事タグがあるなら10金を得る。軍事タグが3つ以上あるなら、更に10金を得る。",
+      "clarifications": [
+        {
+          "text": "「〇〇タグがある」「〇〇タグが3つ以上ある」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数で数え、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "if",
+              "cond": {
+                "left": "tagsOf:military",
+                "op": ">=",
+                "right": 1
+              },
+              "then": [
+                {
+                  "op": "gain",
+                  "res": "gold",
+                  "amount": 10
+                }
+              ]
+            },
+            {
+              "op": "if",
+              "cond": {
+                "left": "tagsOf:military",
+                "op": ">=",
+                "right": 3
+              },
+              "then": [
+                {
+                  "op": "gain",
+                  "res": "gold",
+                  "amount": 10
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "098",
+      "name": "学資",
+      "cost": {
+        "gold": 7
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "所持している学術タグ1つにつき2金を得る。",
+      "clarifications": [
+        {
+          "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "tagsOf:academic",
+                "per": 1,
+                "times": 2
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "099",
+      "name": "給付金",
+      "cost": {
+        "gold": 5
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "生活タグがあるなら10金を得る。生活タグが3つ以上あるなら、更に10金を得る。",
+      "clarifications": [
+        {
+          "text": "「〇〇タグがある」「〇〇タグが3つ以上ある」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数で数え、プレイ中のこのカード自身を含む。",
+          "source": "ユーザー決定（2026-11-06）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "if",
+              "cond": {
+                "left": "tagsOf:life",
+                "op": ">=",
+                "right": 1
+              },
+              "then": [
+                {
+                  "op": "gain",
+                  "res": "gold",
+                  "amount": 10
+                }
+              ]
+            },
+            {
+              "op": "if",
+              "cond": {
+                "left": "tagsOf:life",
+                "op": ">=",
+                "right": 3
+              },
+              "then": [
+                {
+                  "op": "gain",
+                  "res": "gold",
+                  "amount": 10
+                }
+              ]
             }
           ]
         }

@@ -29,6 +29,7 @@ const METRICS: readonly string[] = [
   ...SIMPLE_METRICS,
   ...BUILDINGS.map((b) => `buildingsOfType:${b}`),
   ...TERRAINS.map((t) => `buildingsOnTerrain:${t}`),
+  ...CIV_TAGS.map((t) => `tagsOf:${t}`),
 ];
 
 // ---------------------------------------------------------------------------
@@ -321,9 +322,10 @@ const CommandList = ({ value, onChange }: { value: J[]; onChange: (v: J[]) => vo
 // 能力
 // ---------------------------------------------------------------------------
 
-const FILTER_FIELDS: { key: string; options: readonly string[] | 'bool' | 'cond' }[] = [
+const FILTER_FIELDS: { key: string; options: readonly string[] | 'bool' | 'cond' | 'tags' }[] = [
   { key: 'terrain', options: TERRAINS },
   { key: 'tag', options: CIV_TAGS },
+  { key: 'tags', options: 'tags' },
   { key: 'excludeSelf', options: 'bool' },
   { key: 'tier', options: TIERS },
   { key: 'action', options: ACTIONS },
@@ -346,6 +348,25 @@ const FilterEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void 
             <input type="checkbox" checked={value[key] === true} onChange={(e) => set(key, e.target.checked)} />
           ) : options === 'cond' ? (
             <ConditionEditor value={value[key]} onChange={(c) => set(key, c)} nullable />
+          ) : options === 'tags' ? (
+            <span className="checks">
+              {CIV_TAGS.map((t) => {
+                const list = Array.isArray(value[key]) ? (value[key] as string[]) : [];
+                return (
+                  <label key={t}>
+                    <input
+                      type="checkbox"
+                      checked={list.includes(t)}
+                      onChange={(e) => {
+                        const next = e.target.checked ? [...list, t] : list.filter((x) => x !== t);
+                        set(key, next.length === 0 ? null : next);
+                      }}
+                    />
+                    {valueLabel(t, 'tag')}
+                  </label>
+                );
+              })}
+            </span>
           ) : (
             <Select value={value[key] as string | undefined} kind={key} options={options} empty="（指定なし）" onChange={(v) => set(key, v)} />
           )}

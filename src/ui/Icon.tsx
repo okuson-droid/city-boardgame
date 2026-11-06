@@ -80,6 +80,7 @@ const artOf = (icon: string): string | undefined => {
 const STANDALONE: Readonly<Record<string, string>> = {
   'met.buildingsOfType': '（建物）の数',
   'met.buildingsOnTerrain': '（地形）に建てた建物',
+  'met.tagsOf': '（分類）タグ',
   'evt.tilePlaced': '（地形）の土地タイルを置く度に',
   'evt.cardPlayed': '（タグ）の文明カードをプレイする度に',
   'evt.actionExecuted': '（種類）のアクションを実行する度に',
