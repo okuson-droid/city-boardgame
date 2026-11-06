@@ -2186,7 +2186,9 @@ h3 {
 }
 
 .pc-zoom {
-  width: min(560px, calc(100vw - 24px));
+  width: min(640px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  overflow: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -2241,4 +2243,55 @@ h3 {
 
 .pc-zoom p {
   margin: 0;
+}
+
+/* ヴァリアントの選択（ユーザー決定 2026-11-06） */
+.variant-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.draft-variant {
+  margin: 0;
+}
+
+/* 自然公園のカードの形を大きく、拡大表示（ユーザー決定 2026-11-06） */
+.card.np .np-sets {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card.np .shape {
+  width: 4.8em;
+  height: 3.8em;
+}
+
+.np-zoom-sets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.np-zoom-set {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.np-zoom-set .shape {
+  width: 100%;
+  height: min(26vh, 170px);
+}
+
+.np-zoom-set figcaption {
+  font-size: 0.9em;
+  text-align: center;
+}
+
+@media (max-width: 700px), (max-height: 500px) {
+  .np-zoom-set .shape {
+    height: min(30vh, 110px);
+  }
 }

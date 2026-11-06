@@ -8,6 +8,7 @@ import type { GameState } from '../game/types.ts';
 import {
   assertDataVersion,
   createRoom,
+  parseVariants,
   joinRoom,
   loadRoom,
   moveInRoom,
@@ -113,7 +114,7 @@ export type ServiceDeps = { readonly store: RoomStore; readonly notify: Notify; 
 
 /**
  * 操作を1つ処理する。誤りは RoomError（status 付き）で投げる。
- * - create {playerCount, name} → Credentials
+ * - create {playerCount, name, variants?} → Credentials（variants はヴァリアントルール、例 {snakeDraft: true}）
  * - join {code, name} → Credentials
  * - view {code, key} → RoomView
  * - move {code, key, move, logLength} → {ok}
@@ -125,7 +126,7 @@ export const handleAction = async (body: Readonly<Record<string, unknown>>, deps
   if (action === 'create') {
     const { key, keyHash } = await newKey();
     for (let attempt = 0; attempt < 10; attempt += 1) {
-      const room = createRoom(newCode(), Number(body['playerCount']), text(body['name']), keyHash, (deps.now ?? (() => new Date()))());
+      const room = createRoom(newCode(), Number(body['playerCount']), text(body['name']), keyHash, (deps.now ?? (() => new Date()))(), undefined, parseVariants(body['variants']));
       if (await store.insert({ record: room.record, state: null, version: 0 })) return { code: room.record.code, seat: 0, key } satisfies Credentials;
     }
     throw new RoomError(503, 'ルームコードを割り当てられなかった');

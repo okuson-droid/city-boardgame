@@ -148,9 +148,51 @@ const plannedBenefit = (card: PlannedCityCard): IconToken[] => [
 ];
 
 /**
- * 計画都市の拡大表示（ユーザー決定 2026-11-06：カードの形が小さくて見づらいため）。
+ * カードの拡大表示の枠（ユーザー決定 2026-11-06：計画都市・自然公園の形が小さくて見づらいため）。
  * カードは選べる所作（data-target）の中にあるため、画面の最上位に描き（createPortal）、クリックは外へ伝えない。
  */
+const ZoomOverlay = ({ title, provisional, onClose, children }: { title: string; provisional: boolean; onClose: () => void; children: ReactNode }) =>
+  createPortal(
+    <div
+      className="overlay pc-zoom-overlay"
+      data-ui="zoom-overlay"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
+    >
+      <div className="overlay-box pc-zoom" role="dialog" aria-label={`${title}の拡大`} onClick={(e) => e.stopPropagation()}>
+        <div className="pc-zoom-head">
+          <strong>{title}</strong>
+          {provisional ? <span className="provisional-badge">仮</span> : null}
+          <button type="button" className="btn small" data-ui="zoom-close" onClick={onClose}>
+            閉じる
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>,
+    document.body,
+  );
+
+/** カードの見出しの拡大ボタン。押してもカードを選ばない。 */
+const ZoomButton = ({ name, kind, onOpen }: { name: string; kind: 'pc' | 'np'; onOpen: () => void }) => (
+  <button
+    type="button"
+    className="pc-zoom-btn"
+    data-ui={`${kind}-zoom`}
+    aria-label={`${name}を拡大する`}
+    title="拡大する"
+    onClick={(e) => {
+      e.stopPropagation();
+      onOpen();
+    }}
+  >
+    ⤢
+  </button>
+);
+
+/** 計画都市の拡大の中身：形・達成の報酬・必要な土地と建物・回転と鏡像の扱い。 */
 const PlannedCityZoom = ({ card, onClose }: { card: PlannedCityCard; onClose: () => void }) => {
   const needs = new Map<string, number>();
   for (const s of card.slots) {
@@ -166,41 +208,24 @@ const PlannedCityZoom = ({ card, onClose }: { card: PlannedCityCard; onClose: ()
             : null;
     if (name !== null) needs.set(name, (needs.get(name) ?? 0) + 1);
   }
-  return createPortal(
-    <div
-      className="overlay pc-zoom-overlay"
-      data-ui="pc-zoom-overlay"
-      onClick={(e) => {
-        e.stopPropagation();
-        onClose();
-      }}
-    >
-      <div className="overlay-box pc-zoom" role="dialog" aria-label={`${card.name}の拡大`} onClick={(e) => e.stopPropagation()}>
-        <div className="pc-zoom-head">
-          <strong>{card.name}</strong>
-          {card.provisional ? <span className="provisional-badge">仮</span> : null}
-          <button type="button" className="btn small" data-ui="pc-zoom-close" onClick={onClose}>
-            閉じる
-          </button>
-        </div>
-        <div className="pc-zoom-shape">
-          <ShapeView cells={plannedCells(card)} />
-        </div>
-        <div className="pc-zoom-foot">
-          <span className="civ-section-label">達成</span>
-          <IconRow tokens={plannedBenefit(card)} />
-        </div>
-        <ul className="pc-zoom-needs">
-          {[...needs.entries()].map(([name, n]) => (
-            <li key={name}>
-              {name}×{n}
-            </li>
-          ))}
-        </ul>
-        <p className="muted small">個人ボードに、この形のとおりに建物を並べると達成を宣言できる。回転した配置はよく、裏返した（鏡像の）配置はよくない（rules.md 19-1-6）。</p>
+  return (
+    <ZoomOverlay title={card.name} provisional={card.provisional === true} onClose={onClose}>
+      <div className="pc-zoom-shape">
+        <ShapeView cells={plannedCells(card)} />
       </div>
-    </div>,
-    document.body,
+      <div className="pc-zoom-foot">
+        <span className="civ-section-label">達成</span>
+        <IconRow tokens={plannedBenefit(card)} />
+      </div>
+      <ul className="pc-zoom-needs">
+        {[...needs.entries()].map(([name, n]) => (
+          <li key={name}>
+            {name}×{n}
+          </li>
+        ))}
+      </ul>
+      <p className="muted small">個人ボードに、この形のとおりに建物を並べると達成を宣言できる。回転した配置はよく、裏返した（鏡像の）配置はよくない（rules.md 19-1-6）。</p>
+    </ZoomOverlay>
   );
 };
 
@@ -211,19 +236,7 @@ export const PlannedCityView = ({ card }: { card: PlannedCityCard }) => {
       <div className="card-head">
         <span className="card-name">{card.name}</span>
         {card.provisional ? <span className="provisional-badge">仮</span> : null}
-        <button
-          type="button"
-          className="pc-zoom-btn"
-          data-ui="pc-zoom"
-          aria-label={`${card.name}を拡大する`}
-          title="拡大する"
-          onClick={(e) => {
-            e.stopPropagation();
-            setZoom(true);
-          }}
-        >
-          ⤢
-        </button>
+        <ZoomButton name={card.name} kind="pc" onOpen={() => setZoom(true)} />
       </div>
       <div className="pc-shape">
         <ShapeView cells={plannedCells(card)} />
@@ -237,16 +250,52 @@ export const PlannedCityView = ({ card }: { card: PlannedCityCard }) => {
   );
 };
 
-export const NatureParkView = ({ card }: { card: NatureParkCard }) => (
-  <>
-    <div className="card-head">
-      <span className="card-name">{card.name}</span>
-      {card.provisional ? <span className="provisional-badge">仮</span> : null}
-    </div>
-    <div className="np-sets">
-      {card.sets.map((set, i) => (
-        <ShapeView key={i} cells={set.cells.map((c) => ({ q: c.q, r: c.r, terrain: c.terrain, text: '' }))} />
-      ))}
-    </div>
-  </>
-);
+/** 自然公園の土地の名前（1セット分、例：「森林2・平原1」）。 */
+const parkSetText = (cells: readonly { terrain: string }[]): string => {
+  const counts = new Map<string, number>();
+  for (const c of cells) counts.set(c.terrain, (counts.get(c.terrain) ?? 0) + 1);
+  return [...counts.entries()].map(([t, n]) => `${entry('terrains', t).label}${n}`).join('・');
+};
+
+/** 自然公園の拡大の中身：3セットの形・各セットの土地と得点・判定のきまり。 */
+const NatureParkZoom = ({ card, onClose }: { card: NatureParkCard; onClose: () => void }) => {
+  const points = GAME_DATA.params.scoring.natureParkPointsBySetSize;
+  return (
+    <ZoomOverlay title={card.name} provisional={card.provisional === true} onClose={onClose}>
+      <div className="np-zoom-sets">
+        {card.sets.map((set, i) => (
+          <figure key={i} className="np-zoom-set">
+            <div className="pc-zoom-shape">
+              <ShapeView cells={set.cells.map((c) => ({ q: c.q, r: c.r, terrain: c.terrain, text: '' }))} />
+            </div>
+            <figcaption>
+              セット{i + 1}：{parkSetText(set.cells)}（{set.cells.length}枚、{points[String(set.cells.length)] ?? 0}点）
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+      <p className="muted small">
+        ゲーム終了時に、建物の建っていない土地タイルで、この形と土地の種類のとおりに並んでいれば、そのセットの点を得る（rules.md 14-2、14-3）。回転した配置はよく、裏返した（鏡像の）配置はよくない（19-1-5）。同じ土地タイルを2つのセットに使うことはできない。
+      </p>
+    </ZoomOverlay>
+  );
+};
+
+export const NatureParkView = ({ card }: { card: NatureParkCard }) => {
+  const [zoom, setZoom] = useState(false);
+  return (
+    <>
+      <div className="card-head">
+        <span className="card-name">{card.name}</span>
+        {card.provisional ? <span className="provisional-badge">仮</span> : null}
+        <ZoomButton name={card.name} kind="np" onOpen={() => setZoom(true)} />
+      </div>
+      <div className="np-sets">
+        {card.sets.map((set, i) => (
+          <ShapeView key={i} cells={set.cells.map((c) => ({ q: c.q, r: c.r, terrain: c.terrain, text: '' }))} />
+        ))}
+      </div>
+      {zoom ? <NatureParkZoom card={card} onClose={() => setZoom(false)} /> : null}
+    </>
+  );
+};

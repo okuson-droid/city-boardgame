@@ -8,6 +8,7 @@
 
 import { useState } from 'react';
 import { GAME_DATA } from '../data/index.ts';
+import { draftPickOrder } from '../game/draft.ts';
 import { explain } from '../game/explain.ts';
 import type { GameState, PlayerState } from '../game/types.ts';
 import { HandArea } from './Areas.tsx';
@@ -34,11 +35,8 @@ const pickedOf = (p: PlayerState, kind: Kind): string | null => {
   return p.characterId === null ? null : characterName(p.characterId);
 };
 
-/** ドラフトの順番（rules.md 2-6-7：手番順の最後から逆順に選び、一巡したら再び最後から選ぶ）。 */
-const pickOrder = (state: GameState): number[] => {
-  const one = [...state.turnOrder].reverse();
-  return [...one, ...one, ...one];
-};
+/** ドラフトの順番（rules.md 2-6-7。ヴァリアントのスネークドラフトでは2巡目が逆向き）。 */
+const pickOrder = (state: GameState): number[] => draftPickOrder(state.turnOrder, state.config.variants);
 
 const picksDone = (state: GameState): number =>
   state.players.reduce((n, p) => n + KINDS.filter((k) => pickedOf(p, k) !== null).length, 0);
@@ -154,6 +152,7 @@ export const DraftScreen = ({
             閉じて盤面を見る
           </button>
         </div>
+        {state.config.variants?.snakeDraft === true ? <p className="muted small draft-variant">ヴァリアント：スネークドラフト（2巡目は逆の順番で選ぶ）</p> : null}
         <ol className="draft-order" aria-label="選ぶ順番">
           {order.map((seat, i) => (
             <li

@@ -8,7 +8,7 @@ import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { join, resolve } from 'node:path';
-import { createRoom, joinRoom, loadRoom, moveInRoom, RoomError, summaryOf, undoInRoom, viewFor, type Room, type RoomRecord } from '../src/online/rooms.ts';
+import { createRoom, joinRoom, parseVariants, loadRoom, moveInRoom, RoomError, summaryOf, undoInRoom, viewFor, type Room, type RoomRecord } from '../src/online/rooms.ts';
 
 const PORT = Number(process.env['PORT'] ?? 8787);
 const HOST = process.env['HOST'] ?? '0.0.0.0';
@@ -179,7 +179,7 @@ const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> 
   if (req.method === 'POST' && parts.length === 2 && parts[1] === 'rooms') {
     const body = await readJson(req);
     const { key, keyHash } = newKey();
-    const room = createRoom(newCode(), Number(body['playerCount']), text(body['name']), keyHash, new Date());
+    const room = createRoom(newCode(), Number(body['playerCount']), text(body['name']), keyHash, new Date(), undefined, parseVariants(body['variants']));
     rooms.set(room.record.code, room);
     saveRoom(room);
     sendJson(res, 200, { code: room.record.code, seat: 0, key });

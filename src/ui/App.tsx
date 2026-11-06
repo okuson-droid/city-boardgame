@@ -40,6 +40,7 @@ const Screen = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [tutorial, setTutorial] = useState(false);
   const [catalog, setCatalog] = useState<CatalogView | null>(null);
+  const [snakeDraft, setSnakeDraft] = useState(false);
   useEffect(() => {
     // 試遊（調整案のデータ）ではオンライン版を出さない。サーバーのデータと食い違うためである。
     if (!TUNER_PLAYTEST) void detectTransport().then(setTransport);
@@ -109,7 +110,14 @@ const Screen = () => {
           {settings.follow ? '入' : '切'}
         </button>
       </div>
-      <button type="button" className="btn primary" data-target="start" onClick={() => setGame(createGame({ playerCount: players }, seed))}>
+      <div className="start-row">
+        <span>ヴァリアント</span>
+        <label className="variant-toggle">
+          <input type="checkbox" data-ui="variant-snake" checked={snakeDraft} onChange={(e) => setSnakeDraft(e.target.checked)} />
+          スネークドラフト（準備のドラフトで、2巡目だけ選ぶ順番が逆になる。スイーツランドと同じ）
+        </label>
+      </div>
+      <button type="button" className="btn primary" data-target="start" onClick={() => setGame(createGame({ playerCount: players, ...(snakeDraft ? { variants: { snakeDraft: true } } : {}) }, seed))}>
         はじめる
       </button>
       <div className="start-row">

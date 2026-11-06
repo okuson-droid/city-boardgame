@@ -7,9 +7,16 @@ import type { RngState } from './rng.ts';
 import type { Action, Building, ScoreAxis, Terrain, Tier } from '../data/types.ts';
 import type { Command } from '../data/script.ts';
 
+/** ヴァリアントルール（ユーザー決定）。省略した項目は採用しない。古い記録との互換のため、項目はすべて省略可とする。 */
+export type GameVariants = {
+  /** 準備のドラフトをスネークドラフト（N…1、1…N、N…1）にする（ユーザー決定 2026-11-06）。 */
+  readonly snakeDraft?: boolean;
+};
+
 export type GameConfig = {
   readonly playerCount: number;
   readonly playerNames?: readonly string[];
+  readonly variants?: GameVariants;
 };
 
 export type PendingLoss = { readonly kind: 'gold' | 'materials'; readonly amount: number };

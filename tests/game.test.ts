@@ -54,6 +54,22 @@ describe('準備とドラフト（第2章）', () => {
     expect(deciders).toEqual([...expected, ...expected, ...expected]);
   });
 
+  it('ヴァリアントのスネークドラフトでは、2巡目だけ手番順のとおり（最初から）選ぶ', () => {
+    // rules.md v0.8 2-6-7 のヴァリアント（ユーザー決定 2026-11-06：スイーツランドの準備のドラフトに倣う。N…1、1…N、N…1）
+    for (const playerCount of [3, 4]) {
+      let s = createGame({ playerCount, variants: { snakeDraft: true } }, 11);
+      const backward = [...s.turnOrder].reverse();
+      const deciders: number[] = [];
+      while (top(s).t === 'draftPick') {
+        deciders.push(decider(s) ?? -1);
+        s = applyMove(s, ids(s)[0] ?? '');
+      }
+      expect(deciders).toEqual([...backward, ...s.turnOrder, ...backward]);
+      // 全員が3種類を1つずつ選び終えている（2-6-4-2）
+      for (const p of s.players) expect([p.boardId, p.bonusTile, p.characterId].every((v) => v !== null)).toBe(true);
+    }
+  });
+
   it('各プレイヤーはまだ獲得していない種類の要素からのみ選ぶ', () => {
     // rules.md v0.8 2-6-4-2、2-6-5
     let s = createGame({ playerCount: 3 }, 3);

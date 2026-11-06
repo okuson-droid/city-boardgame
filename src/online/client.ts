@@ -4,7 +4,7 @@
 // - 自前のサーバー（server/main.ts）：同じオリジンの /api が応答すれば使う。選択は POST、局面は SSE で受け取る。
 // 席の鍵はブラウザに保存し、同じ席に戻れるようにする（再接続、ユーザー決定 2026-11-03）。
 
-import type { GameState } from '../game/types.ts';
+import type { GameState, GameVariants } from '../game/types.ts';
 import type { RoomSummary } from './rooms.ts';
 import { openBroadcast } from './supabase-realtime.ts';
 
@@ -63,7 +63,7 @@ type Credentials = { code: string; seat: number; key: string };
 /** 通信先の違いを隠す窓口。subscribe の返り値は購読をやめる関数。 */
 export type Transport = {
   readonly kind: 'server' | 'supabase';
-  readonly create: (playerCount: number, name: string) => Promise<Credentials>;
+  readonly create: (playerCount: number, name: string, variants?: GameVariants) => Promise<Credentials>;
   readonly join: (code: string, name: string) => Promise<Credentials>;
   readonly move: (session: Session, move: string, logLength: number) => Promise<unknown>;
   readonly undo: (session: Session) => Promise<unknown>;
@@ -83,7 +83,7 @@ const normalizeCode = (code: string): string => code.trim().toUpperCase();
 /** 自前のサーバー（server/main.ts）。 */
 export const serverTransport: Transport = {
   kind: 'server',
-  create: (playerCount, name) => post('/api/rooms', { playerCount, name }),
+  create: (playerCount, name, variants) => post('/api/rooms', { playerCount, name, ...(variants !== undefined ? { variants } : {}) }),
   join: (code, name) => post(`/api/rooms/${encodeURIComponent(normalizeCode(code))}/join`, { name }),
   move: (session, move, logLength) => post(`/api/rooms/${session.code}/move`, { key: session.key, move, logLength }),
   undo: (session) => post(`/api/rooms/${session.code}/undo`, { key: session.key }),
@@ -136,7 +136,7 @@ export const supabaseTransport = (config: SupabaseClientConfig): Transport => {
   };
   return {
     kind: 'supabase',
-    create: (playerCount, name) => call({ action: 'create', playerCount, name }),
+    create: (playerCount, name, variants) => call({ action: 'create', playerCount, name, ...(variants !== undefined ? { variants } : {}) }),
     join: (code, name) => call({ action: 'join', code: normalizeCode(code), name }),
     move: (session, move, logLength) => andRefresh({ action: 'move', code: session.code, key: session.key, move, logLength }),
     undo: (session) => andRefresh({ action: 'undo', code: session.code, key: session.key }),
