@@ -179,7 +179,7 @@
   --act: #6a4f9a;
 }
 
-/* アクション名：色の付いた札 */
+/* アクションのアイコン：系統の色の札に白い丸のアイコンを載せる */
 :root .ab-action {
   align-self: stretch;
   display: flex;
@@ -188,9 +188,11 @@
   border-radius: 6px 2px 2px 6px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--act) 80%, #fff) 0%, var(--act) 100%);
   color: #fff;
-  font-size: 0.9em;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
   box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+}
+
+:root .ab-action-badge {
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--act) 60%, #000), inset 0 -1px 0 #e6dcc4, 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* スペース：系統の色の左縁と薄い地 */

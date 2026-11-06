@@ -5,7 +5,7 @@ import { ACTIONS, TIERS, type Action, type Tier } from '../data/types.ts';
 import { explain } from '../game/explain.ts';
 import { actionSpaceIcons, describeActionSpace, isSharedSpace, isTopUnlocked, spaceUsers, unlockIcons } from '../game/queries.ts';
 import type { GameState } from '../game/types.ts';
-import { IconRow } from './Icon.tsx';
+import { Icon, IconRow } from './Icon.tsx';
 import { ICON_ART } from './icon-art.ts';
 import { colorOf, WAITING_REASON, type UiModel } from './model.ts';
 import { Tip } from './Tip.tsx';
@@ -49,7 +49,12 @@ export const ActionBoard = ({
       </div>
       {ACTIONS.map((action) => (
         <div key={action} className="ab-row" data-action={action}>
-          <span className="ab-action">{ACTION_LABELS[action]}</span>
+          {/* アクションの名前はアイコンで示す（ユーザー決定 2026-11-06）。名前はカーソルを合わせると出し、読み上げにも渡す。 */}
+          <span className="ab-action" aria-label={ACTION_LABELS[action]}>
+            <span className="ab-action-badge">
+              <Icon token={{ icon: `act.${action}`, label: ACTION_LABELS[action] }} />
+            </span>
+          </span>
           {TIERS.map((tier) => {
             const option = model.find((t) => t.kind === 'actionSpace' && t.action === action && t.tier === tier);
             const locked = tier === 'top' && owner !== undefined && !isTopUnlocked(GAME_DATA, owner, action);

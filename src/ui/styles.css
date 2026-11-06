@@ -259,6 +259,27 @@ h3 {
 .ab-action {
   font-weight: 700;
   align-self: center;
+  display: flex;
+  justify-content: center;
+}
+
+/* アクションのアイコンを白い丸に入れる */
+.ab-action-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 50%;
+  background: #fffdf6;
+  /* 図案の線（currentColor）を、札の白い文字色ではなく墨色で描く */
+  color: #222;
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.ab-action-badge .icon-art {
+  width: 1.95em;
+  height: 1.95em;
 }
 
 .ab-space {

@@ -242,14 +242,20 @@ export const ACTION_ART: Readonly<Record<string, string>> = {
   pioneer: `<path d="M2 21.5h20" stroke="#6b4a2a" stroke-width="2" stroke-linecap="round"/><path d="M9 3h6M12 3v9" stroke="#222" stroke-width="2.2" stroke-linecap="round"/><path d="M8 12h8v3.5L12 20l-4-4.5z" fill="#a8743f" stroke="#222" stroke-width="1.6" stroke-linejoin="round"/>`,
   // 建築：横向きの金づちと積んだれんが
   build: `<rect x="2" y="17" width="9" height="4" fill="#c8634a" stroke="#222" stroke-width="1.3"/><rect x="6.5" y="13" width="9" height="4" fill="#d9785e" stroke="#222" stroke-width="1.3"/><path d="M13 9.5l8-6.5" stroke="#8a5a2b" stroke-width="2.6" stroke-linecap="round"/><path d="M9.2 4.6l4.2-2.2 3 5.6-4.2 2.2z" fill="#666" stroke="#222" stroke-width="1.3" stroke-linejoin="round"/>`,
-  import: `<path d="M3 15h18l-3 5H6zM12 3v9M8.5 8.5L12 12l3.5-3.5" ${S} stroke="#222"/>`,
-  export: `<path d="M3 15h18l-3 5H6zM12 12V3M8.5 6.5L12 3l3.5 3.5" ${S} stroke="#222"/>`,
+  // 輸入：木箱へ外から入る緑の矢（品物を受け取る）
+  import: `<rect x="3" y="12" width="13" height="9.5" rx="1" fill="#c8924f" stroke="#3a2614" stroke-width="1.3"/><path d="M3 15.2h13M3 18.4h13" stroke="#8a5a2b" stroke-width="1"/><path d="M4.2 12.6l11.6 8.3M15.8 12.6L4.2 20.9" stroke="#8a5a2b" stroke-width="1.1"/><path d="M21.5 2.5L13.5 10.5" stroke="#2f7d46" stroke-width="2.8" stroke-linecap="round"/><path d="M11 6.2v6.3h6.3z" fill="#2f7d46" stroke="#1d5530" stroke-width="1" stroke-linejoin="round"/>`,
+  // 輸出：木箱から外へ出る橙の矢（品物を送り出す）
+  export: `<rect x="3" y="12" width="13" height="9.5" rx="1" fill="#c8924f" stroke="#3a2614" stroke-width="1.3"/><path d="M3 15.2h13M3 18.4h13" stroke="#8a5a2b" stroke-width="1"/><path d="M4.2 12.6l11.6 8.3M15.8 12.6L4.2 20.9" stroke="#8a5a2b" stroke-width="1.1"/><path d="M11.5 11.5L19.5 3.5" stroke="#d0702a" stroke-width="2.8" stroke-linecap="round"/><path d="M22 7.8V1.5h-6.3z" fill="#d0702a" stroke="#8a4614" stroke-width="1" stroke-linejoin="round"/>`,
   // 教練：交差させた2本の剣（稽古で打ち合う）
   drill: `${swordAt(-42, 1.1, 0, 0)}${swordAt(42, 1.1, 0, 0)}`,
-  expedition: `<path d="M6 21V3M6 4h11l-3 4 3 4H6" ${S} stroke="#222"/>`,
-  welfare: `<path d="M12 20s-8-4.5-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.5-8 10-8 10z" ${S} stroke="#222"/>`,
-  migration: `<circle cx="8" cy="7" r="2.5" ${S} stroke="#222"/><path d="M4 20c0-4 2-7 4-7s4 3 4 7M14 12h7M18 9l3 3-3 3" ${S} stroke="#222"/>`,
-  research: `<path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1z M12 6v14" ${S} stroke="#222"/>`,
+  // 遠征：雪をかぶった山の頂に立てた赤い旗
+  expedition: `<path d="M1.5 21.5L9 9l3.5 5 2.5-3.5 7.5 11z" fill="#8c96a3" stroke="#333" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.6 13l2.4-4 2 2.9-1.2 1.2-1-1.1-1.1 1.4z" fill="#fff" stroke="#333" stroke-width=".8" stroke-linejoin="round"/><path d="M9 9V1.8" stroke="#5a3a1a" stroke-width="1.8" stroke-linecap="round"/><path d="M9.6 2.2h8.4l-2.4 2.6 2.4 2.6H9.6z" fill="#c8392e" stroke="#7a1f18" stroke-width="1.1" stroke-linejoin="round"/>`,
+  // 福祉：両手で包む赤い心（人をいたわる）
+  welfare: `<path d="M12 17.5s-6.8-3.9-6.8-8.6a3.8 3.8 0 0 1 6.8-2.4 3.8 3.8 0 0 1 6.8 2.4c0 4.7-6.8 8.6-6.8 8.6z" fill="#e0504a" stroke="#7a1f18" stroke-width="1.3" stroke-linejoin="round"/><path d="M12 8.6v4.6M9.7 10.9h4.6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><path d="M1.8 13.5l3.2 4.2c1.2 1.6 3 2.6 5 2.6H12M22.2 13.5L19 17.7c-1.2 1.6-3 2.6-5 2.6H12" fill="none" stroke="#a8743f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`,
+  // 移住：荷を背負った人と、行く先を示す緑の矢
+  migration: `<circle cx="8" cy="4.6" r="2.6" fill="#2a2a2a"/><path d="M4 21.5l1.2-7.2-1.4-1.8.9-4.3c.3-1.2 1.2-1.7 2.3-1.7h2c1.2 0 2 .6 2.3 1.7l1.2 5.3-1.6.4-1-3.4-.6 3.6 1.9 7.4h-2.4l-1.6-6-1 6z" fill="#2a2a2a"/><rect x="1.2" y="7.6" width="3.6" height="5.2" rx=".8" fill="#a8743f" stroke="#3a2614" stroke-width="1"/><path d="M13.5 15h6" stroke="#2f7d46" stroke-width="2.6" stroke-linecap="round"/><path d="M18.4 11.2l4.1 3.8-4.1 3.8z" fill="#2f7d46" stroke="#1d5530" stroke-width="1" stroke-linejoin="round"/>`,
+  // 研究：開いた本と、灯したランプの光
+  research: `<path d="M12 9.5c-2.6-1.6-6-1.8-9.5-.8v11.2c3.5-1 6.9-.8 9.5.8 2.6-1.6 6-1.8 9.5-.8V8.7c-3.5-1-6.9-.8-9.5.8z" fill="#fdf6e3" stroke="#333" stroke-width="1.3" stroke-linejoin="round"/><path d="M12 9.5v11.2" stroke="#333" stroke-width="1.2"/><path d="M4.5 12.2c1.8-.4 3.7-.3 5.5.4M4.5 15c1.8-.4 3.7-.3 5.5.4M14 12.6c1.8-.7 3.7-.8 5.5-.4M14 15.4c1.8-.7 3.7-.8 5.5-.4" stroke="#8a7f66" stroke-width=".9" stroke-linecap="round"/><path d="M2.5 20.2c3.5-1 6.9-.8 9.5.8 2.6-1.6 6-1.8 9.5-.8v1.3c-3.5-1-6.9-.8-9.5.8-2.6-1.6-6-1.8-9.5-.8z" fill="#2f4a7a" stroke="#1d2f50" stroke-width="1"/><circle cx="12" cy="4" r="2.3" fill="#f2c84b" stroke="#a37d12" stroke-width="1"/><path d="M12 .4v.8M8.4 4h.8M15.6 4h-.8M9.4 1.4l.6.6M14.6 1.4l-.6.6" stroke="#d4a62a" stroke-width="1.1" stroke-linecap="round"/>`,
   // 普及：文明カードを広める（カードから広がる波）
   spread: `<rect x="2.5" y="5" width="10" height="14" rx="1.5" fill="#2f4a7a" stroke="#1d2f50" stroke-width="1.3"/><path d="M5.5 9h4M5.5 12h4M5.5 15h2.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><path d="M15.5 9a4 4 0 0 1 0 6M18.3 6.3a7.6 7.6 0 0 1 0 11.4" ${S} stroke="#222"/>`,
 };
