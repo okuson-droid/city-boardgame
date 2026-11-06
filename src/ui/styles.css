@@ -2382,3 +2382,9 @@ h3 {
     height: min(30vh, 110px);
   }
 }
+
+/* 音を切っているときのボタン（ユーザー決定 2026-11-06） */
+.btn.muted-btn {
+  opacity: 0.7;
+  text-decoration: line-through;
+}

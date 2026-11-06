@@ -12,13 +12,15 @@ import { HoverTip } from './Tip.tsx';
 import { TutorialGame } from './Tutorial.tsx';
 import { Catalog, type CatalogView } from './Catalog.tsx';
 import { RulesButton } from './RulesDeck.tsx';
+import { playTurnChime, useSoundEnabled } from './sound.ts';
 
 const readSettings = (): Settings => {
   const params = new URLSearchParams(window.location.hash.slice(1));
   const speed = params.get('speed');
   return {
     speed: speed === 'none' || speed === 'fast' ? speed : 'standard',
-    follow: params.get('follow') !== 'off',
+    // 視点は勝手に変えない（ユーザー決定 2026-11-06）。オンライン版で他の人の手番を追うのは #follow=on か「追いかける」を入にしたときだけ。
+    follow: params.get('follow') === 'on',
   };
 };
 
@@ -41,6 +43,7 @@ const Screen = () => {
   const [tutorial, setTutorial] = useState(false);
   const [catalog, setCatalog] = useState<CatalogView | null>(null);
   const [snakeDraft, setSnakeDraft] = useState(false);
+  const [soundOn, setSoundOn] = useSoundEnabled();
   useEffect(() => {
     // 試遊（調整案のデータ）ではオンライン版を出さない。サーバーのデータと食い違うためである。
     if (!TUNER_PLAYTEST) void detectTransport().then(setTransport);
@@ -105,9 +108,21 @@ const Screen = () => {
             {speed === 'standard' ? '標準' : speed === 'fast' ? '速い' : 'なし'}
           </button>
         ))}
-        <span>追いかける</span>
+        <span title="オンライン版で、他の人の手番になったらその人のタブに切り替える">追いかける（オンライン）</span>
         <button type="button" className={`btn${settings.follow ? ' active' : ''}`} onClick={() => setSettings({ ...settings, follow: !settings.follow })}>
           {settings.follow ? '入' : '切'}
+        </button>
+        <span>手番の音</span>
+        <button
+          type="button"
+          className={`btn${soundOn ? ' active' : ''}`}
+          data-ui="start-sound"
+          onClick={() => {
+            setSoundOn(!soundOn);
+            if (!soundOn) playTurnChime();
+          }}
+        >
+          {soundOn ? '入' : '切'}
         </button>
       </div>
       <div className="start-row">

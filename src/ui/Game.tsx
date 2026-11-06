@@ -19,6 +19,7 @@ import { Board, type CellState } from './Board.tsx';
 import { buildModel, colorOf, waitingModel, WAITING_REASON, type Choice } from './model.ts';
 import { PromptBar } from './PromptBar.tsx';
 import { LegendButton } from './Legend.tsx';
+import { playTurnChime, useSoundEnabled } from './sound.ts';
 import { RulesButton } from './RulesDeck.tsx';
 import { Tip } from './Tip.tsx';
 
@@ -71,6 +72,7 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
   const [lastEvents, setLastEvents] = useState<GameEvent[]>([]);
   const [summary, setSummary] = useState<number | null>(null);
   const [focus, setFocus] = useState<CellId | null>(null);
+  const [soundOn, setSoundOn] = useSoundEnabled();
   /** ドラフトの専用画面を畳んで盤面を見ているか。選ぶ人が変わると開き直す。 */
   const [draftFolded, setDraftFolded] = useState(false);
   const drafting = state.stack[state.stack.length - 1]?.t === 'draftPick';
@@ -98,11 +100,29 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
-  // 表示するタブ（ui_design.md 2-1、2-2、6-2）。ローカル版は選択待ちのプレイヤー。
-  // オンライン版は自分の席。「追いかける」が入なら、他の席の手番の間はその席を見せる。
+  // 表示するタブ（ui_design.md 2-1、2-2、6-2）。視点は勝手に変えない（ユーザー決定 2026-11-06）。
+  // - ローカル版：手番の人が替わったときだけ、その人のタブにする（手札はそのタブでだけ見せるため）。
+  //   同じ人の手番の間は、ほかのタブを見ていても戻さない。
+  // - オンライン版：自分の席のまま動かさない。「追いかける」が入のときだけ、手番の人が替わるとその席を見せる。
   useEffect(() => {
-    const target = ctl.seat === null ? owner : settings.follow && owner !== null ? owner : ctl.seat;
-    if (target !== null) setView(target);
+    if (turnSeat === null) return;
+    if (ctl.seat === null || settings.follow) setView(turnSeat);
+    // 依存は手番の人の変化だけにする。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [turnSeat]);
+
+  // 手番が来たら音で知らせる（ユーザー決定 2026-11-06）。オンライン版は自分の席に手番が来たとき、
+  // ローカル版は手番の人が替わったとき。最初に画面を開いたときは鳴らさない。
+  const lastTurn = useRef(turnSeat);
+  useEffect(() => {
+    const before = lastTurn.current;
+    lastTurn.current = turnSeat;
+    if (turnSeat === null || turnSeat === before) return;
+    if (ctl.seat === null || turnSeat === ctl.seat) playTurnChime();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [turnSeat]);
+
+  useEffect(() => {
     // 縮退配置では、選択の対象がある側へ切り替える（1-4）。
     const sharedKinds = new Set(['actionSpace', 'bonusTile', 'specialCitizen', 'plannedCity']);
     const onShared = model.choices.some((c) => sharedKinds.has(c.target.kind));
@@ -215,6 +235,19 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
         ) : null}
         <RulesButton label="ルール" />
         <LegendButton />
+        <button
+          type="button"
+          className={`btn${soundOn ? '' : ' muted-btn'}`}
+          data-ui="sound"
+          aria-pressed={soundOn}
+          title="手番が来たときの音"
+          onClick={() => {
+            setSoundOn(!soundOn);
+            if (!soundOn) playTurnChime();
+          }}
+        >
+          {soundOn ? '音：入' : '音：切'}
+        </button>
         <Tip text={undoReason}>
           <button type="button" className="btn" data-ui="undo" aria-disabled={undoReason !== null} disabled={undoReason !== null} onClick={undo}>
             取り消し
