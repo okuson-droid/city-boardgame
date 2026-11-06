@@ -3,6 +3,7 @@
 
 import {
   ABILITY_NAMES,
+  ACTIONS,
   BUILDINGS,
   CIV_TAGS,
   COMMAND_OPS,
@@ -208,7 +209,7 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
             <Select value={String(value['track'])} kind="track" options={['military', 'infra']} onChange={(t) => set('track', t)} />
           </Field>
           <Field label="数">
-            <Int value={value['amount']} onChange={(n) => set('amount', n)} />
+            <AmountEditor value={value['amount']} onChange={(a) => set('amount', a)} />
           </Field>
         </>
       ) : null}
@@ -260,6 +261,7 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
           <Field label="枚数">
             <Int value={value['count']} onChange={(n) => set('count', n)} />
           </Field>
+          <Check label="まで" value={value['upTo']} onChange={(b) => (b ? set('upTo', true) : unset('upTo'))} />
           <Check label="無料" value={value['free']} onChange={(b) => set('free', b)} />
         </>
       ) : null}
@@ -324,6 +326,7 @@ const FILTER_FIELDS: { key: string; options: readonly string[] | 'bool' | 'cond'
   { key: 'tag', options: CIV_TAGS },
   { key: 'excludeSelf', options: 'bool' },
   { key: 'tier', options: TIERS },
+  { key: 'action', options: ACTIONS },
   { key: 'building', options: BUILDINGS },
   { key: 'kind', options: ['regular', 'temp'] },
   { key: 'result', options: ['defenseFailed', 'defended', 'repelled'] },

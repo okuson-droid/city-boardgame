@@ -310,6 +310,14 @@
     "buildingsOnTerrain": {
       "icon": "met.buildingsOnTerrain",
       "label": "に建てた建物"
+    },
+    "buildingTypes": {
+      "icon": "met.buildingTypes",
+      "label": "建設済みの建物の種類"
+    },
+    "freeLandTerrains": {
+      "icon": "met.freeLandTerrains",
+      "label": "建物のない土地タイルの種類"
     }
   },
   "events": {
@@ -394,6 +402,48 @@
     "top": {
       "icon": "tier.top",
       "label": "最上位"
+    }
+  },
+  "actions": {
+    "pioneer": {
+      "icon": "act.pioneer",
+      "label": "開拓"
+    },
+    "build": {
+      "icon": "act.build",
+      "label": "建築"
+    },
+    "import": {
+      "icon": "act.import",
+      "label": "輸入"
+    },
+    "export": {
+      "icon": "act.export",
+      "label": "輸出"
+    },
+    "drill": {
+      "icon": "act.drill",
+      "label": "教練"
+    },
+    "expedition": {
+      "icon": "act.expedition",
+      "label": "遠征"
+    },
+    "welfare": {
+      "icon": "act.welfare",
+      "label": "福祉"
+    },
+    "migration": {
+      "icon": "act.migration",
+      "label": "移住"
+    },
+    "research": {
+      "icon": "act.research",
+      "label": "研究"
+    },
+    "spread": {
+      "icon": "act.spread",
+      "label": "普及"
     }
   },
   "symbols": {

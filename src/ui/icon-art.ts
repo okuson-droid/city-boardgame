@@ -181,6 +181,9 @@ export const ICON_ART: Readonly<Record<string, string>> = {
   'met.repelLine': `${LINE_BEHIND}${SWORD}`,
   'met.repelShortfall': `${LINE_BEHIND}${SWORD}<path d="M19.5 9V3.5M17.5 5.5l2-2 2 2" ${S} stroke="#222" stroke-width="1.6"/>`,
   'met.spiritAdjacency': `${hexAt(8, 12, 6, '#4f9a4f')}${hexAt(17, 12, 6, '#4f9a4f')}<path d="M8 8.5l.9 2.6 2.6.9-2.6.9L8 15.5l-.9-2.6-2.6-.9 2.6-.9z" fill="#fff6c2" stroke="#8a7a20" stroke-width=".8"/>`,
+  // 種類の数：異なる建物・地形を並べ、数える印（#）を添える。
+  'met.buildingTypes': `${smallArt(BUILDING_ART.house, 0, 0, 0.5)}${smallArt(BUILDING_ART.shop, 12, 0, 0.5)}${smallArt(BUILDING_ART.fort, 0, 12, 0.5)}<path d="M16.5 13.5l-1 8M20 13.5l-1 8M14 16h7.5M13.5 19.5h7.5" ${S} stroke="#444" stroke-width="1.3"/>`,
+  'met.freeLandTerrains': `${hexAt(6.5, 7, 5, '#e9d66b')}${hexAt(16.5, 7, 5, '#4f9a4f')}${hexAt(6.5, 17, 5, '#7fc4e8')}<path d="M16.5 13.5l-1 8M20 13.5l-1 8M14 16h7.5M13.5 19.5h7.5" ${S} stroke="#444" stroke-width="1.3"/>`,
   'met.buildingsOfType': `<path d="M9 4L7 20M17 4l-2 16M4.5 9h16M3.5 15h16" ${S} stroke="#444"/>`,
   'met.buildingsOnTerrain': `${hex('#e9d66b')}${smallArt(BUILDING_ART.house, 5.5, 5, 0.55)}`,
   // 出来事（〜した時）

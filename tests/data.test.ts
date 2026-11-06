@@ -195,7 +195,8 @@ describe('個人ボード', () => {
 describe('文明カード', () => {
   it('001〜042 の42枚を収録し、各カードは1タグで固有得点は仮置きの1点である', () => {
     // 指示書 2-1、decisions.md 1-1（タグは配列）
-    const cards = GAME_DATA.civilizationCards;
+    // 043 以降は 文明カード一覧（120枚）.xlsx から加えたカードである（docs/civ-cards-xlsx.md）。
+    const cards = GAME_DATA.civilizationCards.slice(0, 42);
     expect(cards.map((c) => c.id)).toEqual(Array.from({ length: 42 }, (_, i) => String(i + 1).padStart(3, '0')));
     for (const card of cards) {
       expect(card.tags).toHaveLength(1);
@@ -244,6 +245,7 @@ describe('文明カード', () => {
   it('指示書 2-1 の仮置きの解釈を持つ', () => {
     // 指示書 2-1（003、006〜009、026、034・042。027 は原文が「軍事レベル」で解釈を要しない）
     const provisionalIds = GAME_DATA.civilizationCards
+      .slice(0, 42)
       .filter((c) => c.clarifications.some((x) => x.provisional))
       .map((c) => c.id);
     expect(provisionalIds).toEqual(['003', '006', '007', '008', '009', '026', '034', '042']);

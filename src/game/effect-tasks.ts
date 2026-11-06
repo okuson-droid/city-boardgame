@@ -163,13 +163,22 @@ export const applyPlan = (state: GameState, d: GameData, player: PlayerState, id
 
 export const playCardOptions = (d: GameData, state: GameState, task: TaskOf<'playCard'>): Option[] => {
   const player = playerOf(state, task.player);
-  return [...new Set(player.hand)]
+  const options = [...new Set(player.hand)]
     .filter((card) => task.free || civCardCost(d, player, card) <= player.gold)
     .map((card) => opt(task.player, `card:${card}`, `${card} をプレイする`));
+  // 「〜枚まで」「プレイしてもよい」は、プレイできるカードがあっても終えられる。
+  if (task.upTo === true && options.length > 0) {
+    options.push(opt(task.player, 'done', 'プレイを終える'));
+  }
+  return options;
 };
 
 export const applyPlayCard = (state: GameState, d: GameData, task: TaskOf<'playCard'>, id: string): void => {
   const player = playerOf(state, task.player);
+  if (id === 'done') {
+    removeTask(state, task);
+    return;
+  }
   task.remaining -= 1;
   if (task.remaining <= 0 || player.hand.length <= 1) removeTask(state, task);
   playCivCard(state, d, player, id.slice('card:'.length), task.free);

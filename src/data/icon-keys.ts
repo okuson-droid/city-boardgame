@@ -3,7 +3,7 @@
 
 import iconKeysJson from './icon_keys.json';
 import { ABILITY_NAMES, COMMAND_OPS, EVENT_NAMES, GAIN_RESOURCES, MODIFIER_KINDS, SIMPLE_METRICS } from './script.ts';
-import { BUILDINGS, CIV_TAGS, TERRAINS, TIERS } from './types.ts';
+import { ACTIONS, BUILDINGS, CIV_TAGS, TERRAINS, TIERS } from './types.ts';
 
 export type IconEntry = { readonly icon: string; readonly label: string };
 
@@ -20,6 +20,7 @@ export const ICON_SECTIONS = {
   modifiers: MODIFIER_KINDS,
   results: ['defenseFailed', 'defended', 'repelled'],
   tiers: TIERS,
+  actions: ACTIONS,
   symbols: ['per', 'ge', 'lt', 'free', 'noGold', 'upTo', 'oncePerRound', 'pay', 'workers', 'every', 'once', 'or', 'then', 'excludeSelf', 'axis', 'pass', 'colon', 'discard'],
 } as const;
 

@@ -43,10 +43,10 @@
 | 命令 | 引数 | 意味 |
 |---|---|---|
 | `gain` | `res`、`amount`、`axis?` | 資源・生産力・得点・カードを得る。`res` は gold・materials・militaryTokens・tempWorkers・regularWorkers・goldProduction・materialProduction・drawCivCards・specialCitizen・points |
-| `raise` | `track`（military・infra）、`amount` | トラックを上げる（到達報酬を含む） |
+| `raise` | `track`（military・infra）、`amount` | トラックを上げる（到達報酬を含む）。`amount` は数値か「指標 n につき m」（2026-11-06 追加） |
 | `placeTiles` | `count`、`tile`（`match`・`any`・地形名） | 土地タイルを置く。資材は払わない（19-1-1） |
 | `build` | `max`、`buildings?`、`terrain?`、`payGold`、`payMaterials` | 建物を建てる。001・09（無料1軒）、003（金なし3軒まで）、特別市民13（住宅2軒まで無料）、建設の権利、軍事レベル12 を表す |
-| `playCard` | `count`、`free` | 文明カードをプレイする（特別市民10、芸術家） |
+| `playCard` | `count`、`free`、`upTo?` | 文明カードをプレイする（特別市民10、芸術家）。`upTo` が真なら「プレイを終える」を選べる（2026-11-06 追加） |
 | `expeditionRewards` | `count`、`distinct`、`payTokens` | 遠征の報酬を得る（017） |
 | `chooseOne` | `options`（命令の列の列） | いずれか1つを選ぶ（学者） |
 | `if` | `cond`、`then` | 条件を満たせば実行する（027〜042）。各条件は個別に判定する（9-2-7） |
@@ -59,7 +59,7 @@
 
 `cond` は `{ left: 指標, op: '>=' | '<', right: 数値または指標 }` とする。034・042 は右辺に撃退ライン・防衛ラインの指標を置く。
 
-指標の一覧：regularWorkers、tempWorkers、landTiles、freeLandTiles、buildings、buildingsOfType:建物、buildingsOnTerrain:地形、maxedBuildingTypes、houses、militaryLevel、infraLevel、militaryTokens、goldProduction、materialProduction、repelLine、defenseLine、repelShortfall（撃退ライン−軍事レベル、0未満は0）、playedCivCards。
+指標の一覧：regularWorkers、tempWorkers、landTiles、freeLandTiles、buildings、buildingsOfType:建物、buildingsOnTerrain:地形、maxedBuildingTypes、houses、militaryLevel、infraLevel、militaryTokens、goldProduction、materialProduction、repelLine、defenseLine、repelShortfall（撃退ライン−軍事レベル、0未満は0）、playedCivCards、buildingTypes（建設済みの建物の種類の数）、freeLandTerrains（建物のない土地タイルの地形の種類の数）。後の2つは 2026-11-06 に追加した（docs/civ-cards-xlsx.md）。
 
 `on` の出来事と絞り込み：
 
@@ -67,7 +67,7 @@
 |---|---|---|
 | `tilePlaced` | `terrain` | 特別市民01（森林）、資本家（山岳） |
 | `cardPlayed` | `tag?`、`excludeSelf?` | 018（学術、自身を除く）、特別市民03、芸術家、学者（`every: 3`） |
-| `actionExecuted` | `tier` | 特別市民02（最上位、特別市民11の写しを含む） |
+| `actionExecuted` | `tier`、`action` | 特別市民02（最上位、特別市民11の写しを含む）、開発サイクル（研究、2026-11-06 追加） |
 | `built` | `building` | 指揮官（砦）、官僚（役所） |
 | `workerGained` | `kind` | 聖女（通常、上限超過の破棄分は数えない 16-1-5） |
 | `raid` | `result` | 英雄（撃退成功） |

@@ -78,6 +78,12 @@ export const metricValue = (state: GameState, d: GameData, player: PlayerState, 
       return player.played.length;
     case 'spiritAdjacency':
       return spiritAdjacency(player);
+    case 'buildingTypes':
+      // 建設済みの建物の種類の数（文明カード「建設済みの建物1種類につき」）。
+      return BUILDINGS.filter((b) => buildingCount(player, b) > 0).length;
+    case 'freeLandTerrains':
+      // 建物のない土地タイルの種類の数（文明カード「建物がない土地タイル1種類につき」）。
+      return new Set(freeLandCells(player).map((c) => player.land[c])).size;
     case 'buildingsOfType':
       return buildingCount(player, BUILDINGS.find((b) => b === arg));
     case 'buildingsOnTerrain':
@@ -147,10 +153,12 @@ const runCommand = (
       }
     }
     case 'raise': {
+      const n = amountValue(state, d, player, command.amount);
+      if (n <= 0) {
+        return;
+      }
       const effect: Effect =
-        command.track === 'military'
-          ? { k: 'military', n: command.amount, overflowPoints: false, source }
-          : { k: 'infra', n: command.amount };
+        command.track === 'military' ? { k: 'military', n, overflowPoints: false, source } : { k: 'infra', n };
       processEffects(state, d, player, [effect], choices);
       return;
     }
@@ -233,7 +241,7 @@ const eventMatches = (d: GameData, owned: OwnedAbility, filter: EventFilter, eve
       return card?.tags.some((t) => t === filter.tag) ?? false;
     }
     case 'action':
-      return filter.tier === undefined || filter.tier === event.tier;
+      return (filter.tier === undefined || filter.tier === event.tier) && (filter.action === undefined || filter.action === event.action);
     case 'built':
       return filter.building === undefined || filter.building === event.building;
     case 'workerGained':

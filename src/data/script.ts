@@ -1,8 +1,8 @@
 // 効果スクリプトの型と型検査（docs/effect-commands.md、指示書 3-3）。
 // 効果は「能力（いつ発動するか）」と「命令（何をするか）」の2層で書く。
 
-import type { Building, ScoreAxis, Terrain } from './types.ts';
-import { BUILDINGS, SCORE_AXES, TERRAINS } from './types.ts';
+import type { Action, Building, ScoreAxis, Terrain } from './types.ts';
+import { ACTIONS, BUILDINGS, SCORE_AXES, TERRAINS } from './types.ts';
 
 // ---------------------------------------------------------------------------
 // 指標と条件
@@ -26,6 +26,8 @@ export const SIMPLE_METRICS = [
   'repelShortfall',
   'playedCivCards',
   'spiritAdjacency',
+  'buildingTypes',
+  'freeLandTerrains',
 ] as const;
 export type SimpleMetric = (typeof SIMPLE_METRICS)[number];
 
@@ -60,7 +62,7 @@ export type GainResource = (typeof GAIN_RESOURCES)[number];
 
 export type Command =
   | { readonly op: 'gain'; readonly res: GainResource; readonly amount: Amount; readonly axis?: ScoreAxis }
-  | { readonly op: 'raise'; readonly track: 'military' | 'infra'; readonly amount: number }
+  | { readonly op: 'raise'; readonly track: 'military' | 'infra'; readonly amount: Amount }
   | { readonly op: 'placeTiles'; readonly count: number; readonly tile: 'match' | 'any' | Terrain }
   | {
       readonly op: 'build';
@@ -72,7 +74,13 @@ export type Command =
       readonly payGold: boolean;
       readonly payMaterials: boolean;
     }
-  | { readonly op: 'playCard'; readonly count: number; readonly free: boolean }
+  | {
+      readonly op: 'playCard';
+      readonly count: number;
+      readonly free: boolean;
+      /** true なら途中で（0枚でも）プレイを終えられる（「〜枚までプレイする」「プレイしてもよい」）。 */
+      readonly upTo?: boolean;
+    }
   | { readonly op: 'expeditionRewards'; readonly count: number }
   | { readonly op: 'chooseOne'; readonly options: readonly (readonly Command[])[] }
   | { readonly op: 'if'; readonly cond: Condition; readonly then: readonly Command[] }
@@ -109,6 +117,8 @@ export type EventFilter = {
   readonly tag?: string;
   readonly excludeSelf?: boolean;
   readonly tier?: 'normal' | 'upper' | 'top';
+  /** actionExecuted をアクションの種類で絞る（文明カード「研究アクション実行後」）。 */
+  readonly action?: Action;
   readonly building?: Building;
   readonly kind?: 'regular' | 'temp';
   readonly result?: 'defenseFailed' | 'defended' | 'repelled';
@@ -268,7 +278,7 @@ export const readCommand = (v: unknown, path: string): Command => {
       return {
         op,
         track: oneOf(['military', 'infra'] as const, o['track'], p('track')),
-        amount: int(o['amount'], p('amount')),
+        amount: readAmount(o['amount'], p('amount')),
       };
     case 'placeTiles': {
       const tile = o['tile'];
@@ -289,7 +299,12 @@ export const readCommand = (v: unknown, path: string): Command => {
         payMaterials: bool(o['payMaterials'], p('payMaterials')),
       };
     case 'playCard':
-      return { op, count: int(o['count'], p('count')), free: bool(o['free'], p('free')) };
+      return {
+        op,
+        count: int(o['count'], p('count')),
+        free: bool(o['free'], p('free')),
+        ...optional(o, 'upTo', bool, path),
+      };
     case 'expeditionRewards':
       return { op, count: int(o['count'], p('count')) };
     case 'chooseOne':
@@ -312,6 +327,7 @@ const readFilter = (v: unknown, path: string): EventFilter => {
     ...optional(o, 'tag', (x, q) => (typeof x === 'string' ? x : fail(q, '文字列でなければならない')), path),
     ...optional(o, 'excludeSelf', bool, path),
     ...optional(o, 'tier', (x, q) => oneOf(['normal', 'upper', 'top'] as const, x, q), path),
+    ...optional(o, 'action', (x, q) => oneOf(ACTIONS, x, q), path),
     ...optional(o, 'building', (x, q) => oneOf(BUILDINGS, x, q), path),
     ...optional(o, 'kind', (x, q) => oneOf(['regular', 'temp'] as const, x, q), path),
     ...optional(o, 'result', (x, q) => oneOf(['defenseFailed', 'defended', 'repelled'] as const, x, q), path),

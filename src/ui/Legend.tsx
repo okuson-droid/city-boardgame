@@ -22,6 +22,8 @@ const SECTION_TITLES: Readonly<Record<IconSection, string>> = {
   modifiers: '補正',
   results: '襲撃の結果',
   tiers: 'アクションの段階',
+  // アクションは一覧の先頭に ACTION_LABELS で別に出すため、SECTION_ORDER には入れない。
+  actions: 'アクション',
   symbols: '記号',
 };
 

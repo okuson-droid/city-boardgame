@@ -67,7 +67,9 @@ const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
     case 'gain':
       return amountTokens(keys, command.amount, token(keys, 'resources', command.res));
     case 'raise':
-      return [token(keys, 'tracks', command.track, `+${command.amount}`)];
+      return typeof command.amount === 'number'
+        ? [token(keys, 'tracks', command.track, `+${command.amount}`)]
+        : amountTokens(keys, command.amount, token(keys, 'tracks', command.track));
     case 'placeTiles':
       return [token(keys, 'commands', 'placeTiles', command.count), token(keys, 'terrains', command.tile)];
     case 'build':
@@ -85,7 +87,14 @@ const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
             : []),
       ];
     case 'playCard':
-      return [token(keys, 'commands', 'playCard', command.count), ...(command.free ? [token(keys, 'symbols', 'free')] : [])];
+      return command.upTo === true
+        ? [
+            token(keys, 'commands', 'playCard'),
+            token(keys, 'symbols', 'upTo'),
+            { icon: 'num', value: command.count, label: String(command.count) },
+            ...(command.free ? [token(keys, 'symbols', 'free')] : []),
+          ]
+        : [token(keys, 'commands', 'playCard', command.count), ...(command.free ? [token(keys, 'symbols', 'free')] : [])];
     case 'expeditionRewards':
       return [token(keys, 'commands', 'expeditionRewards', command.count)];
     case 'chooseOne':
@@ -112,6 +121,7 @@ const filterTokens = (keys: IconKeys, filter: EventFilter): IconToken[] => [
   ...(filter.terrain !== undefined ? [token(keys, 'terrains', filter.terrain)] : []),
   ...(filter.tag !== undefined ? [token(keys, 'tags', filter.tag)] : []),
   ...(filter.building !== undefined ? [token(keys, 'buildings', filter.building)] : []),
+  ...(filter.action !== undefined ? [token(keys, 'actions', filter.action)] : []),
   ...(filter.tier !== undefined ? [token(keys, 'tiers', filter.tier)] : []),
   ...(filter.kind !== undefined ? [token(keys, 'resources', filter.kind === 'regular' ? 'regularWorkers' : 'tempWorkers')] : []),
   ...(filter.result !== undefined ? [token(keys, 'results', filter.result)] : []),
@@ -196,7 +206,9 @@ const describeCommand = (keys: IconKeys, command: Command): string => {
     case 'gain':
       return `${describeAmount(keys, command.amount, label(keys, 'resources', command.res))}を${label(keys, 'commands', 'gain')}`;
     case 'raise':
-      return `${label(keys, 'tracks', command.track)}を${command.amount}${label(keys, 'commands', 'raise')}`;
+      return typeof command.amount === 'number'
+        ? `${label(keys, 'tracks', command.track)}を${command.amount}${label(keys, 'commands', 'raise')}`
+        : `${metricEntry(keys, command.amount.count).label}${command.amount.per}${label(keys, 'symbols', 'per')}${label(keys, 'tracks', command.track)}を${command.amount.times}${label(keys, 'commands', 'raise')}`;
     case 'placeTiles':
       return `${label(keys, 'commands', 'placeTiles')}（${command.count}枚、${label(keys, 'terrains', command.tile)}）`;
     case 'build': {
@@ -207,7 +219,7 @@ const describeCommand = (keys: IconKeys, command: Command): string => {
       return `${where}${what}${command.max}軒${command.upTo ? label(keys, 'symbols', 'upTo') : ''}${verb}${cost}`;
     }
     case 'playCard':
-      return `${label(keys, 'commands', 'playCard')}（${command.count}枚${command.free ? `、${label(keys, 'symbols', 'free')}` : ''}）`;
+      return `${label(keys, 'commands', 'playCard')}（${command.count}枚${command.upTo === true ? label(keys, 'symbols', 'upTo') : ''}${command.free ? `、${label(keys, 'symbols', 'free')}` : ''}）`;
     case 'expeditionRewards':
       return `${label(keys, 'commands', 'expeditionRewards')}（${command.count}つ）`;
     case 'chooseOne':

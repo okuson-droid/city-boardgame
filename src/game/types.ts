@@ -129,7 +129,14 @@ export type Task =
   | { readonly t: 'discard'; readonly player: number; remaining: number }
   | { readonly t: 'spreadPlay'; readonly player: number; readonly tier: Tier; played: number }
   | { readonly t: 'chooseSpecialCitizen'; readonly player: number }
-  | { readonly t: 'playCard'; readonly player: number; remaining: number; readonly free: boolean }
+  | {
+      readonly t: 'playCard';
+      readonly player: number;
+      remaining: number;
+      readonly free: boolean;
+      /** true なら「プレイを終える」（done）を選べる。古い記録の局面では欠ける。 */
+      readonly upTo?: boolean;
+    }
   | { readonly t: 'chooseOne'; readonly player: number; readonly options: readonly (readonly Command[])[]; readonly source: string }
   | { readonly t: 'copyAction'; readonly player: number }
   | { readonly t: 'spiritPlace'; readonly player: number }

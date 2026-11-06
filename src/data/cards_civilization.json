@@ -2055,6 +2055,2243 @@
         "effectCondition",
         "points"
       ]
+    },
+    {
+      "id": "043",
+      "name": "開発サイクル",
+      "cost": {
+        "gold": 13
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：研究アクション実行後、文明カード1枚をプレイできる。",
+      "clarifications": [
+        {
+          "text": "研究アクションの処理を終えた後に、手札から文明カード1枚をコストを支払ってプレイできる（プレイしなくてもよい）。特別市民11 で写した研究も数える（特別市民02 の扱いに倣う）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "on",
+          "event": "actionExecuted",
+          "filter": {
+            "action": "research"
+          },
+          "do": [
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": false,
+              "upTo": true
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "044",
+      "name": "工学",
+      "cost": {
+        "gold": 14
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの大学1軒につき、資材の生産力を1上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materialProduction",
+              "amount": {
+                "count": "buildingsOfType:university",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "045",
+      "name": "研究支援",
+      "cost": {
+        "gold": 14
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの大学1軒につき、3資材を得る。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": {
+                "count": "buildingsOfType:university",
+                "per": 1,
+                "times": 3
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "046",
+      "name": "研究への投資",
+      "cost": {
+        "gold": 13
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの大学1軒につき、8金を得る。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "buildingsOfType:university",
+                "per": 1,
+                "times": 8
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "047",
+      "name": "衛生学",
+      "cost": {
+        "gold": 15
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの大学1軒につき、インフラレベルを1上げる。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "raise",
+              "track": "infra",
+              "amount": {
+                "count": "buildingsOfType:university",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "048",
+      "name": "経済学",
+      "cost": {
+        "gold": 12
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの大学1軒につき、金の生産力を3上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": {
+                "count": "buildingsOfType:university",
+                "per": 1,
+                "times": 3
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "049",
+      "name": "戦術学",
+      "cost": {
+        "gold": 15
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの大学1軒につき、軍事レベルを1上げる。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": {
+                "count": "buildingsOfType:university",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "050",
+      "name": "研究成果",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの大学1軒につき、文明カードを2枚引く。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": {
+                "count": "buildingsOfType:university",
+                "per": 1,
+                "times": 2
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "051",
+      "name": "街並み",
+      "cost": {
+        "gold": 12
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの建物3軒につき1点を得る。",
+      "clarifications": [
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildings",
+                "per": 3,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "052",
+      "name": "近未来建築",
+      "cost": {
+        "gold": 15
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "資材を支払わずに建物を2軒まで建設する。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "build",
+              "max": 2,
+              "upTo": true,
+              "buildings": null,
+              "terrain": null,
+              "payGold": true,
+              "payMaterials": false
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "053",
+      "name": "専門施設",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "砦が2軒以上あるなら、軍事レベルを1上げる。役所が2軒以上あるなら、インフラレベルを1上げる。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "if",
+              "cond": {
+                "left": "buildingsOfType:fort",
+                "op": ">=",
+                "right": 2
+              },
+              "then": [
+                {
+                  "op": "raise",
+                  "track": "military",
+                  "amount": 1
+                }
+              ]
+            },
+            {
+              "op": "if",
+              "cond": {
+                "left": "buildingsOfType:office",
+                "op": ">=",
+                "right": 2
+              },
+              "then": [
+                {
+                  "op": "raise",
+                  "track": "infra",
+                  "amount": 1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "054",
+      "name": "先行研究",
+      "cost": {
+        "gold": 9
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "文明カード1枚を無料でプレイする。",
+      "clarifications": [
+        {
+          "text": "手札から1枚を選び、コストを支払わずにプレイする。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": true
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "055",
+      "name": "引継ぎ",
+      "cost": {
+        "gold": 4
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "文明カードを1枚引く。文明カード1枚をプレイできる。",
+      "clarifications": [
+        {
+          "text": "引いた後に、手札から文明カード1枚をコストを支払ってプレイできる（プレイしなくてもよい）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": 1
+            },
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": false,
+              "upTo": true
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "056",
+      "name": "印刷術",
+      "cost": {
+        "gold": 8
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "文明カードを3枚引く。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": 3
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "057",
+      "name": "学会",
+      "cost": {
+        "gold": 3
+      },
+      "tags": [
+        "academic"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "文明カードを3枚までプレイする。",
+      "clarifications": [
+        {
+          "text": "コストを支払ってプレイする。0〜3枚の間で終えられる。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "playCard",
+              "count": 3,
+              "free": false,
+              "upTo": true
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "058",
+      "name": "天然資源",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建物がない土地タイル1種類につき2資材を得る。",
+      "clarifications": [
+        {
+          "text": "「1種類につき」は、建物のない土地タイルの地形の種類の数（0〜4）で数える。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": {
+                "count": "freeLandTerrains",
+                "per": 1,
+                "times": 2
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "059",
+      "name": "土地転がし",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建物がない土地タイル1種類につき6金を得る。",
+      "clarifications": [
+        {
+          "text": "「1種類につき」は、建物のない土地タイルの地形の種類の数（0〜4）で数える。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "freeLandTerrains",
+                "per": 1,
+                "times": 6
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "060",
+      "name": "地代",
+      "cost": {
+        "gold": 13
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建物が無い土地タイル1種類につき金の生産を2上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        },
+        {
+          "text": "「1種類につき」は、建物のない土地タイルの地形の種類の数（0〜4）で数える。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": {
+                "count": "freeLandTerrains",
+                "per": 1,
+                "times": 2
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "061",
+      "name": "油田",
+      "cost": {
+        "gold": 18
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建物が無い土地タイル1種類につき資材の生産を1上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        },
+        {
+          "text": "「1種類につき」は、建物のない土地タイルの地形の種類の数（0〜4）で数える。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materialProduction",
+              "amount": {
+                "count": "freeLandTerrains",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "062",
+      "name": "丘陵",
+      "cost": {
+        "gold": 9
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "地形を無視して山岳タイルを2枚置く。",
+      "clarifications": [
+        {
+          "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 2,
+              "tile": "mountain"
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "063",
+      "name": "緑地化",
+      "cost": {
+        "gold": 9
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "地形を無視して森林タイルを2枚置く。",
+      "clarifications": [
+        {
+          "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 2,
+              "tile": "forest"
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "064",
+      "name": "地均し",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "地形を無視して平原タイルを2枚置く。",
+      "clarifications": [
+        {
+          "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 2,
+              "tile": "plains"
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "065",
+      "name": "治水工事",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "地形を無視して水場タイルを2枚置く。",
+      "clarifications": [
+        {
+          "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 2,
+              "tile": "water"
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "066",
+      "name": "中規模開拓",
+      "cost": {
+        "gold": 12
+      },
+      "tags": [
+        "environment"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "土地タイル3枚を置く。",
+      "clarifications": [
+        {
+          "text": "資材は支払わず、4-2 に従って配置する。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 3,
+              "tile": "match"
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "067",
+      "name": "臥薪嘗胆",
+      "cost": {
+        "gold": 8
+      },
+      "tags": [
+        "military"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：防衛失敗時、軍事レベルを2上げる。撃退成功時、2資材を得る。",
+      "clarifications": [
+        {
+          "text": "「防衛失敗」「撃退成功」は自分の襲撃の判定結果である（第7章）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "on",
+          "event": "raid",
+          "filter": {
+            "result": "defenseFailed"
+          },
+          "do": [
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "raid",
+          "filter": {
+            "result": "repelled"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 2
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "068",
+      "name": "式典の警護",
+      "cost": {
+        "gold": 8
+      },
+      "tags": [
+        "military"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "軍事レベルを1上げる。現在の軍事レベル1につき1点を得る。",
+      "clarifications": [
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": 1
+            },
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "militaryLevel",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "069",
+      "name": "勲章",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "military"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの砦1軒につき2点を得る。",
+      "clarifications": [
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingsOfType:fort",
+                "per": 1,
+                "times": 2
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "070",
+      "name": "人海戦術",
+      "cost": {
+        "gold": 12
+      },
+      "tags": [
+        "military"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "通常ワーカー1つにつき、軍事トークン1を得る。",
+      "clarifications": [
+        {
+          "text": "ワーカーの「つ」は「人」と読み替える。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        },
+        {
+          "text": "「軍事トークン」は軍事力トークンである。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "militaryTokens",
+              "amount": {
+                "count": "regularWorkers",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "071",
+      "name": "民兵",
+      "cost": {
+        "gold": 11
+      },
+      "tags": [
+        "military"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "通常ワーカー3つにつき、軍事レベルを1上げる。",
+      "clarifications": [
+        {
+          "text": "ワーカーの「つ」は「人」と読み替える。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": {
+                "count": "regularWorkers",
+                "per": 3,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "072",
+      "name": "一夜城",
+      "cost": {
+        "gold": 12
+      },
+      "tags": [
+        "military"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "砦1軒を無料で建設する。軍事レベルを1上げる。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "build",
+              "max": 1,
+              "upTo": false,
+              "buildings": [
+                "fort"
+              ],
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            },
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "073",
+      "name": "掘り出し物",
+      "cost": {
+        "gold": 8
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：山岳タイルを置く度に、1枚につき1資材を得る。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "on",
+          "event": "tilePlaced",
+          "filter": {
+            "terrain": "mountain"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "074",
+      "name": "小銭拾い",
+      "cost": {
+        "gold": 9
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：土地タイルを置く度に、1枚につき1金を得る。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "on",
+          "event": "tilePlaced",
+          "filter": {},
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "075",
+      "name": "海の幸",
+      "cost": {
+        "gold": 8
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：水場タイルを置く度に、1枚につき4金を得る。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "on",
+          "event": "tilePlaced",
+          "filter": {
+            "terrain": "water"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 4
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "076",
+      "name": "奨学金",
+      "cost": {
+        "gold": 7
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "15金を得る。文明カード1枚をプレイしてもよい。",
+      "clarifications": [
+        {
+          "text": "15金を得た後に、手札から文明カード1枚をコストを支払ってプレイできる（プレイしなくてもよい）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 15
+            },
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": false,
+              "upTo": true
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "077",
+      "name": "取引",
+      "cost": {
+        "gold": 7
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "1資材を得る。金の生産力を3上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 1
+            },
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 3
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "078",
+      "name": "種銭",
+      "cost": {
+        "gold": 7
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "2資材を得る。金の生産力を2上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 2
+            },
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 2
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "079",
+      "name": "大事業",
+      "cost": {
+        "gold": 15
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "2資材を得る。金の生産力を5上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 2
+            },
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 5
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "080",
+      "name": "鉱床",
+      "cost": {
+        "gold": 9
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "2資材を得る。資材の生産を1上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 2
+            },
+            {
+              "op": "gain",
+              "res": "materialProduction",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "081",
+      "name": "商売",
+      "cost": {
+        "gold": 11
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "3資材を得る。金の生産力を3上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 3
+            },
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 3
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "082",
+      "name": "金貸し",
+      "cost": {
+        "gold": 4
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "金の生産力を2上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 2
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "083",
+      "name": "事業",
+      "cost": {
+        "gold": 8
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "金の生産を2上げる。資材の生産を1上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 2
+            },
+            {
+              "op": "gain",
+              "res": "materialProduction",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "084",
+      "name": "納品",
+      "cost": {
+        "gold": 7
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの建物1種類につき1資材を得る。",
+      "clarifications": [
+        {
+          "text": "「1種類につき」は、建設済みの建物の種類の数（0〜7）で数える。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": {
+                "count": "buildingTypes",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "085",
+      "name": "テナント料",
+      "cost": {
+        "gold": 8
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの建物1種類につき4金を得る。",
+      "clarifications": [
+        {
+          "text": "「1種類につき」は、建設済みの建物の種類の数（0〜7）で数える。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "buildingTypes",
+                "per": 1,
+                "times": 4
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "086",
+      "name": "大鉱床",
+      "cost": {
+        "gold": 17
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "資材の生産力を3上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materialProduction",
+              "amount": 3
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "087",
+      "name": "アルバイト",
+      "cost": {
+        "gold": 7
+      },
+      "tags": [
+        "economy"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "臨時ワーカーを1つ得る。金の生産力を3上げる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        },
+        {
+          "text": "ワーカーの「つ」は「人」と読み替える。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
+            },
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 3
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "088",
+      "name": "住宅街",
+      "cost": {
+        "gold": 8
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：住宅を建設する度に1点を得る。",
+      "clarifications": [
+        {
+          "text": "得点の評価軸は「その他」とする（17-0-2）。",
+          "source": "文明カード一覧（120枚）.xlsx の取り込み（2026-11-06、仮置き）",
+          "provisional": true
+        }
+      ],
+      "script": [
+        {
+          "ability": "on",
+          "event": "built",
+          "filter": {
+            "building": "house"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "089",
+      "name": "入居支援金",
+      "cost": {
+        "gold": 12
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "常時：通常ワーカーを得る度に、1つにつき8金を得る。",
+      "clarifications": [
+        {
+          "text": "ワーカーの「つ」は「人」と読み替える。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "on",
+          "event": "workerGained",
+          "filter": {
+            "kind": "regular"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 8
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "090",
+      "name": "事務所",
+      "cost": {
+        "gold": 8
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "金の生産を2上げる。住宅1軒を無料で建設できる。",
+      "clarifications": [
+        {
+          "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 2
+            },
+            {
+              "op": "build",
+              "max": 1,
+              "upTo": true,
+              "buildings": [
+                "house"
+              ],
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "091",
+      "name": "役所仕事",
+      "cost": {
+        "gold": 10
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "建設済みの役所1軒につきインフラレベルを1上げる。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "raise",
+              "track": "infra",
+              "amount": {
+                "count": "buildingsOfType:office",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "092",
+      "name": "住民の声",
+      "cost": {
+        "gold": 14
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "住宅2軒につき、インフラレベルを1上げる。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "raise",
+              "track": "infra",
+              "amount": {
+                "count": "houses",
+                "per": 2,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "093",
+      "name": "公団住宅",
+      "cost": {
+        "gold": 18
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "住宅を4軒まで無料で建設する。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "build",
+              "max": 4,
+              "upTo": true,
+              "buildings": [
+                "house"
+              ],
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "094",
+      "name": "ボランティア",
+      "cost": {
+        "gold": 18
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "通常ワーカー1つにつき1資材を得る。",
+      "clarifications": [
+        {
+          "text": "ワーカーの「つ」は「人」と読み替える。",
+          "source": "rules.md v0.8 19-6-4（表記の読み替え）",
+          "provisional": false
+        }
+      ],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": {
+                "count": "regularWorkers",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
+    },
+    {
+      "id": "095",
+      "name": "生活組合",
+      "cost": {
+        "gold": 11
+      },
+      "tags": [
+        "life"
+      ],
+      "playCondition": null,
+      "effectCondition": null,
+      "points": 1,
+      "text": "役所1軒を無料で建設する。インフラレベルを1上げる。",
+      "clarifications": [],
+      "script": [
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "build",
+              "max": 1,
+              "upTo": false,
+              "buildings": [
+                "office"
+              ],
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            },
+            {
+              "op": "raise",
+              "track": "infra",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "provisional": true,
+      "provisionalFields": [
+        "playCondition",
+        "effectCondition",
+        "points"
+      ]
     }
   ]
 }
