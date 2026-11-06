@@ -521,15 +521,25 @@ describe('フリーアクションと専用スペース（9-3-3、6-2-4、6-2-5�
 });
 
 describe('キャラクターの準備・最初の手番・終了時（19-5）', () => {
-  it('英雄：E1・F1 のうち1枚の代わりに山岳マスへ山岳の土地タイルと砦を置き、軍事レベル1から始まる', () => {
-    // rules.md v0.8 19-5-1
+  it('英雄：初期配置のタイルを置かず、任意の山岳マスに山岳の土地タイルと砦を置き、軍事レベル1から始まる', () => {
+    // ユーザー決定 2026-11-06（rules.md v0.8 19-5-1 からの変更：E1・F1 はどちらも置かない）
     let s = draftWith(['hero']);
     while (top(s).t !== 'heroStart') s = applyMove(s, ids(s)[0] ?? '');
-    const option = ids(s)[0] ?? '';
-    const [, replaced, cell] = option.split(':') as [string, CellId, CellId];
+    const options = ids(s);
+    expect(options.length).toBeGreaterThan(0);
+    expect(options.every((id) => /^hero:[A-F]\d+$/.test(id))).toBe(true);
+    // 初期配置のタイル（E1・F1）は置かれていない。
+    const before = playerWith(s, 'hero');
+    for (const c of d.params.board.initialCells) expect(before.land[c]).toBeUndefined();
+    // 他のプレイヤーには初期配置のタイルがある。
+    for (const p of s.players.filter((q) => q.characterId !== 'hero')) {
+      for (const c of d.params.board.initialCells) expect(p.land[c]).toBeDefined();
+    }
+    const option = options[0] ?? '';
+    const cell = option.slice('hero:'.length) as CellId;
     s = untilTurn(applyMove(s, option));
     const hero = playerWith(s, 'hero');
-    expect(hero.land[replaced]).toBeUndefined();
+    expect(Object.keys(hero.land)).toEqual([cell]);
     expect(hero.land[cell]).toBe('mountain');
     expect(hero.buildings[cell]).toBe('fort');
     // 初期1、砦の建設で+1（ボーナスタイル9なら第1ラウンド開始時にさらに+1）。

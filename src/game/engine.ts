@@ -50,7 +50,7 @@ import {
   removeTask,
   tokenBudget,
 } from './core.ts';
-import { hasModifier } from './abilities.ts';
+import { abilitiesOf, hasModifier } from './abilities.ts';
 import { isCheckpoint } from './history.ts';
 import { recordDeltas, snapshot } from './deltas.ts';
 import { onSpecialCitizenAcquired, runAbilities, runCommands } from './effects.ts';
@@ -239,9 +239,15 @@ const applyDraft = (state: GameState, d: GameData, task: TaskOf<'draftPick'>, id
   emit(state, d, { type: 'draft', player: task.player, kind, id: value });
 };
 
+/** 準備の効果で初期配置のタイルを置き換えるか（英雄の heroStart）。 */
+const replacesInitialTiles = (d: GameData, player: PlayerState): boolean =>
+  abilitiesOf(d, player).some((owned) => owned.ability.ability === 'setup' && owned.ability.do.some((c) => c.op === 'heroStart'));
+
 const setupFinish = (state: GameState, d: GameData): void => {
   // 初期開拓済みマスに土地タイルを置く（2-1-4、2-7-1）。
+  // 英雄（準備で heroStart を持つキャラクター）は初期配置のタイルを置かず、代わりに山岳タイルを置く（ユーザー決定 2026-11-06、19-5-1 からの変更）。
   for (const player of state.players) {
+    if (replacesInitialTiles(d, player)) continue;
     const board = boardOf(d, player);
     for (const cell of d.params.board.initialCells) {
       putLandTile(state, d, player, cell, board.squares[cell]?.terrain ?? d.params.board.initialTerrain);

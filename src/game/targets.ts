@@ -19,7 +19,7 @@ export type Target =
   | {
       readonly kind: 'cell';
       readonly cell: CellId;
-      readonly variantKind: 'terrain' | 'building' | 'replace' | null;
+      readonly variantKind: 'terrain' | 'building' | null;
       readonly variant: string | null;
     }
   | { readonly kind: 'handCard'; readonly card: string }
@@ -61,7 +61,8 @@ export const targetOf = (option: Option): Target | null => {
     case 'spirit':
       return { kind: 'cell', cell: b as CellId, variantKind: 'terrain', variant: a as Terrain };
     case 'hero':
-      return { kind: 'cell', cell: b as CellId, variantKind: 'replace', variant: a };
+      // 英雄の初期配置：山岳マスに山岳タイルを置く（hero:<マス>）。
+      return { kind: 'cell', cell: a as CellId, variantKind: 'terrain', variant: 'mountain' };
     case 'card':
       return { kind: 'handCard', card: a };
     case 'bonus':
