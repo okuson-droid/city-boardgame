@@ -34,6 +34,8 @@ export type RoomSummary = {
   readonly names: readonly string[];
   readonly started: boolean;
   readonly variants: GameVariants;
+  /** 部屋のデータの版（DATA_VERSION）。画面の版と違えば、画面は読み込み直しを求める。古い記録には無い。 */
+  readonly dataVersion?: string;
 };
 
 export class RoomError extends Error {
@@ -52,6 +54,7 @@ export const summaryOf = (room: Room): RoomSummary => ({
   names: room.record.seats.map((s) => s.name),
   started: room.state !== null,
   variants: room.record.variants ?? {},
+  ...(room.record.dataVersion !== undefined ? { dataVersion: room.record.dataVersion } : {}),
 });
 
 /** 対局の設定（人数・名前・ヴァリアント）。始めるときと記録の再生で同じものを使う。 */

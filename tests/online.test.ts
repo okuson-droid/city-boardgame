@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DATA_VERSION } from '../src/data/index.ts';
 import { decider, getOptions, isGameOver } from '../src/game/engine.ts';
 import { assertDataVersion, createRoom, joinRoom, loadRoom, moveInRoom, parseVariants, RoomError, summaryOf, undoInRoom, viewFor, type Room } from '../src/online/rooms.ts';
 
@@ -46,6 +47,12 @@ describe('部屋（オンライン版）', () => {
     // 指定がない・知らない項目だけのときは記録に残さない（古い記録と同じ形）
     expect(parseVariants({ snakeDraft: 'yes' })).toBeUndefined();
     expect(createRoom('PLAIN1', 3, 'あ', 'k0', now).record.variants).toBeUndefined();
+  });
+
+  it('部屋の要約はデータの版を持つ（画面は自分の版と違えば読み込み直しを求める）', () => {
+    // ユーザー決定 2026-11-04（データの更新は進行中の対局に反映しない）、2026-11-06（画面と部屋の版の食い違いを画面で知らせる）
+    const room = createRoom('VER001', 3, 'あ', 'k0', now);
+    expect(summaryOf(room).dataVersion).toBe(DATA_VERSION);
   });
 
   it('対応していない人数・空の名前は拒む', () => {

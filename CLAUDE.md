@@ -196,7 +196,7 @@ npm run import:rules -- <フォルダー>  # ルール解説のスライドを�
 - 選択は局面の版（`log.length`）を添えて送り、サーバーは古い局面からの送信を拒む。取り消しは直前の選択をした席だけができる。
 - Supabase 版（ユーザー決定 2026-11-03）：ライブラリは使わない（`@supabase/supabase-js` を導入せず、fetch と WebSocket で話す）。対局の状態は Edge Function だけが持ち、テーブルは RLS でポリシーなし（画面の鍵からは読めない）。Broadcast には版の番号だけを載せ、局面は各席が鍵を添えて `view` で取りに行く。service role の鍵はリポジトリと画面に置かない。
 - 画面の通信先は `detectTransport` が決める。ビルド時に `VITE_SUPABASE_URL`・`VITE_SUPABASE_ANON_KEY` があれば Supabase、無ければ同じオリジンの `/api/health` が応答すれば自前のサーバー、どちらも無ければローカル版だけ。
-- 画面と Edge Function は同じエンジンで配置する（食い違うと画面の選択肢を関数が拒む）。`pages.yml` は設定があれば両方を配置する。
+- 画面と Edge Function は同じエンジンで配置する（食い違うと画面の選択肢を関数が拒む）。部屋の要約（`RoomSummary.dataVersion`）に部屋のデータの版を載せ、画面は自分の `DATA_VERSION` と違えば対局を描かずに読み込み直しを求める（2026-11-06。Edge Function の配置の後、公開ページの差し替えが遅れて新しいカードを古い画面が描けなかった）。`pages.yml` は設定があれば両方を配置する。
 
 ## データの約束事
 

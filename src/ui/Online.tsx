@@ -1,7 +1,7 @@
 // オンライン版の入口と対局画面（段階5）。ルームコードと名前で入り、席を固定して遊ぶ。
 
 import { useEffect, useState } from 'react';
-import { GAME_DATA } from '../data/index.ts';
+import { DATA_VERSION, GAME_DATA } from '../data/index.ts';
 import { decider } from '../game/engine.ts';
 import { explainUndo } from '../game/explain.ts';
 import { forgetSession, loadSessions, saveSession, type RoomMessage, type Session, type Transport } from '../online/client.ts';
@@ -124,6 +124,27 @@ export const OnlineGame = ({
       ),
     [transport, session],
   );
+
+  // 画面とサーバーでゲームのデータの版が違うと、配られたカードを画面が描けない（2026-11-06 に起きた）。
+  // 公開ページの差し替えが遅れた・古いページが残っているときは、読み込み直しを求める。
+  const roomVersion = message?.summary.dataVersion;
+  if (roomVersion !== undefined && roomVersion !== DATA_VERSION) {
+    return (
+      <div className="start" data-ui="version-mismatch">
+        <h1>部屋 {session.code}</h1>
+        <p className="error">この画面のゲームのデータが、部屋のデータと違う（ゲームが更新された）。ページを読み込み直すと続きから遊べる。</p>
+        <p className="muted small">読み込み直しても変わらないときは、公開ページの更新がまだ終わっていない。数分おいてから読み込み直すこと。</p>
+        <div className="start-row">
+          <button type="button" className="btn primary" data-ui="reload" onClick={() => window.location.reload()}>
+            読み込み直す
+          </button>
+          <button type="button" className="btn" onClick={onLeave}>
+            戻る
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const state = message?.state ?? null;
   if (message === null || state === null) {
