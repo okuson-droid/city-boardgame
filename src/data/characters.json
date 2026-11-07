@@ -35,6 +35,9 @@
         "2-23"
       ],
       "provisional": false,
+      "changes": [
+        "初期資源に軍事力トークン4つを加える（ユーザー決定 2026-11-07）。"
+      ],
       "script": [
         {
           "ability": "setup",
@@ -43,6 +46,11 @@
               "op": "raise",
               "track": "military",
               "amount": 1
+            },
+            {
+              "op": "gain",
+              "res": "militaryTokens",
+              "amount": 4
             },
             {
               "op": "heroStart"
@@ -93,6 +101,9 @@
         "2-35"
       ],
       "provisional": false,
+      "changes": [
+        "「砦の建設時に軍事レベルが1上昇する」をなくす（ユーザー決定 2026-11-07）。"
+      ],
       "script": [
         {
           "ability": "modifier",
@@ -101,20 +112,6 @@
             "building": "fort",
             "materials": -1
           }
-        },
-        {
-          "ability": "on",
-          "event": "built",
-          "filter": {
-            "building": "fort"
-          },
-          "do": [
-            {
-              "op": "raise",
-              "track": "military",
-              "amount": 1
-            }
-          ]
         },
         {
           "ability": "modifier",
@@ -493,6 +490,9 @@
         "3-11"
       ],
       "provisional": false,
+      "changes": [
+        "「役所の建設時にインフラレベルが1上昇する」をなくす（ユーザー決定 2026-11-07）。"
+      ],
       "script": [
         {
           "ability": "setup",
@@ -511,20 +511,6 @@
             "building": "office",
             "materials": -1
           }
-        },
-        {
-          "ability": "on",
-          "event": "built",
-          "filter": {
-            "building": "office"
-          },
-          "do": [
-            {
-              "op": "raise",
-              "track": "infra",
-              "amount": 1
-            }
-          ]
         },
         {
           "ability": "freeAction",

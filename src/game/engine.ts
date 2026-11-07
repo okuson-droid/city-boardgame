@@ -21,6 +21,8 @@ import {
   canExecute,
   discardOptions,
   drillRaiseOptions,
+  actionChoiceOptions,
+  applyActionChoice,
   expeditionOptions,
   exportCountOptions,
   finishPlaceTiles,
@@ -727,10 +729,15 @@ const applyRaid = (state: GameState, d: GameData, task: TaskOf<'raidDeclare'>, i
     if (keepPoints && points < 0) return;
     addScore(state, d, player, points, 'military', source);
   };
-  if (!card.replacesBasePoints) {
+  // 襲撃カードの効果は、結果ごとに定めた種類だけを適用する（ユーザー決定 2026-11-07：防衛失敗はカードの効果を無視し、
+  // 撃退成功は資源の効果だけを得る）。カードの「点」を適用しない結果では、カード5も基本得点で数える。
+  const allowed = d.params.raid.cardEffectKinds[result];
+  if (!card.replacesBasePoints || !allowed.includes('points')) {
     raidScore(d.params.raid.basePointsPerRound[result] * round);
   }
-  const cardEffects = result === 'defenseFailed' ? card.defenseFailEffects : result === 'repelled' ? card.repelEffects : [];
+  const cardEffects = (result === 'defenseFailed' ? card.defenseFailEffects : result === 'repelled' ? card.repelEffects : []).filter((e) =>
+    allowed.includes(e.kind),
+  );
   const effects: Effect[] = [];
   for (const e of cardEffects) {
     const amount = e.perRound ? e.amount * round : e.amount;
@@ -853,6 +860,8 @@ const optionsFor = (state: GameState, d: GameData, task: Task): Option[] => {
       return exportCountOptions(d, state, task);
     case 'drillRaise':
       return drillRaiseOptions(d, state, task);
+    case 'actionChoice':
+      return actionChoiceOptions(d, state, task);
     case 'expeditionPick':
       return expeditionOptions(d, state, task);
     case 'welfareConvert':
@@ -909,6 +918,8 @@ const applyTask = (state: GameState, d: GameData, task: Task, id: string): void 
       return applyExportCount(state, d, task, id);
     case 'drillRaise':
       return applyDrillRaise(state, d, task, id);
+    case 'actionChoice':
+      return applyActionChoice(state, d, task, id);
     case 'expeditionPick':
       return applyExpedition(state, d, task, id);
     case 'welfareConvert':

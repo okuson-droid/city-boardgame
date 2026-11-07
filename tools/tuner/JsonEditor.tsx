@@ -78,6 +78,7 @@ const listEnumFor = (key: string): readonly string[] | null => {
   if (key === 'tags') return CIV_TAGS;
   if (key === 'buildings') return BUILDINGS;
   if (key === 'initialCells') return null;
+  if (key === 'defenseFailed' || key === 'defended' || key === 'repelled') return RAID_EFFECT_KINDS;
   return null;
 };
 

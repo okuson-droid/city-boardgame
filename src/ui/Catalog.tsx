@@ -8,6 +8,7 @@ import { GAME_DATA } from '../data/index.ts';
 import { BoardMap } from './Board.tsx';
 import { BonusTileView, CivCardView, NatureParkView, PlannedCityView, ScriptView } from './Cards.tsx';
 import { bonusTotals } from './DraftScreen.tsx';
+import { describeRaidOutcomes } from '../game/queries.ts';
 import { IconRow } from './Icon.tsx';
 
 export type CatalogView = 'cards' | 'characters' | 'boards';
@@ -182,6 +183,19 @@ const CardList = ({ kind, q }: { kind: CardKind; q: string }) => {
             <p>
               <b>撃退成功</b>：{r.on_repel}
             </p>
+            {/* 結果ごとに適用する効果を変えた（ユーザー決定 2026-11-07）。原本の文言に添えて、実際に起きることを示す。 */}
+            <p className="muted small">実際の処理（調整後）</p>
+            <ul className="char-changes">
+              <li>
+                <b>防衛失敗</b>：{describeRaidOutcomes(r).defenseFailed}
+              </li>
+              <li>
+                <b>防衛成功</b>：{describeRaidOutcomes(r).defended}
+              </li>
+              <li>
+                <b>撃退成功</b>：{describeRaidOutcomes(r).repelled}
+              </li>
+            </ul>
           </Item>
         ))}
     </>

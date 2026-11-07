@@ -118,7 +118,10 @@ describe('queries（画面のための派生値）', () => {
     // rules.md v0.8 6-3（各アクションの段階ごとの効果）
     for (const action of ACTIONS) for (const tier of TIERS) expect(describeActionSpace(action, tier).length).toBeGreaterThan(5);
     expect(describeActionSpace('import', 'normal')).toBe('金3を払って資材1を得る交換を、最大3回行う。');
-    expect(describeActionSpace('research', 'top')).toBe('文明カードを5枚引き、手札から2枚捨てる。');
+    expect(describeActionSpace('research', 'top')).toBe('文明カードを3枚引く。その後、文明カードを1枚まで通常のコストでプレイしてよい。');
+    expect(describeActionSpace('drill', 'top')).toBe(
+      '次のいずれか1つを行う：金3を払って軍事力トークン3を得る／金6を払って軍事力トークン5を得る／金9を払って軍事力トークン8を得る。続けて軍事力トークンを払い、軍事レベルを最大3上げる。',
+    );
   });
 
   it('建設の選択中はコストの見込み（割引・軽減を含む）を返す', () => {
@@ -136,7 +139,7 @@ describe('queries（画面のための派生値）', () => {
 
 describe('増減の出来事（ui_design.md 0-2、4-1）', () => {
   it('選択1つの処理の増減を、プレイヤーごとに1つの出来事として記録する', () => {
-    // ui_design.md 4-1（同じ資源ごとに合算して1回だけ見せる）、rules.md v0.8 6-3-3-2
+    // ui_design.md 4-1（同じ資源ごとに合算して1回だけ見せる）、rules.md v0.8 6-3-3-2（数値はユーザー決定 2026-11-07）
     let s = edit(withoutCharacters(firstTurn()), (state, p) => {
       for (const q of state.players) q.tempWorkers = 0;
       p.gold = 7;
@@ -145,7 +148,7 @@ describe('増減の出来事（ui_design.md 0-2、4-1）', () => {
     const index = me(s).index;
     s = play(s, 'act:import:upper', 'count:1');
     const deltas = s.events.filter((e) => e.type === 'delta' && e.player === index && e.cause === 'move');
-    expect(deltas.at(-1)).toMatchObject({ changes: { gold: -7, materials: 4 } });
+    expect(deltas.at(-1)).toMatchObject({ changes: { gold: -3, materials: 2 } });
   });
 
   it('ラウンド開始時の収入は、自動の処理（income）の出来事として記録する', () => {

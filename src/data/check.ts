@@ -131,7 +131,7 @@ const checkParams = (data: GameData, report: Report): void => {
   checkByCountTable(params.scoring.goldPerPointByShops, limits.shop, 'params.scoring.goldPerPointByShops', report);
   checkByCountTable(params.scoring.materialsPerPointByWorkshops, limits.workshop, 'params.scoring.materialsPerPointByWorkshops', report);
   checkByCountTable(params.scoring.civCardsPerPointByUniversities, limits.university, 'params.scoring.civCardsPerPointByUniversities', report);
-  checkByCountTable(params.scoring.regularWorkersDivisorByOffices, limits.office, 'params.scoring.regularWorkersDivisorByOffices', report);
+  checkByCountTable(params.scoring.regularWorkerPointsByOffices, limits.office, 'params.scoring.regularWorkerPointsByOffices', report);
   e.fort.drillTokenCostByCount.forEach((cost, i) => {
     if (cost <= 0) {
       report(`params.buildings.effects.fort.drillTokenCostByCount[${i}]`, '1以上でなければならない');

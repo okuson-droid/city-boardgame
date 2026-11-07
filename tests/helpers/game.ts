@@ -1,5 +1,7 @@
 // 単体テスト用の補助。ゲームを作り、ドラフトとラウンド開始時の選択を済ませた状態を作る。
 
+import { GAME_DATA } from '../../src/data/index.ts';
+import { RAID_EFFECT_KINDS, type GameData } from '../../src/data/types.ts';
 import { applyMove, createGame, decider, getOptions } from '../../src/game/engine.ts';
 import { playerOf } from '../../src/game/core.ts';
 import type { GameState, Option, PlayerState, Task } from '../../src/game/types.ts';
@@ -63,3 +65,19 @@ export const edit = (state: GameState, mutate: (s: GameState, p: PlayerState) =>
   mutate(copy, me(copy));
   return copy;
 };
+
+/**
+ * 襲撃カードの効果をすべて適用し、撃退成功の基本得点をラウンド数×2点とするデータ（rules.md v0.8 7-5-1、7-6 のまま）。
+ * 2026-11-07 のユーザー決定でゲームでは使わなくなった処理（次の収入後の損失、カード5の合算）を検査するために使う。
+ */
+export const withAllRaidEffects = (d: GameData = GAME_DATA): GameData => ({
+  ...d,
+  params: {
+    ...d.params,
+    raid: {
+      ...d.params.raid,
+      basePointsPerRound: { defenseFailed: -1, defended: 0, repelled: 2 },
+      cardEffectKinds: { defenseFailed: RAID_EFFECT_KINDS, defended: [], repelled: RAID_EFFECT_KINDS },
+    },
+  },
+});

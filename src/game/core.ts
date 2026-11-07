@@ -382,9 +382,13 @@ export const processEffects = (
       }
       case 'infra': {
         const before = player.infraLevel;
-        // 上限を超える上昇は破棄する（19-2-9）。
+        // 上限を超える上昇は破棄し（19-2-9）、超えた上昇1回ごとに得点を得る。出どころを問わない（ユーザー決定 2026-11-07）。
         const after = Math.min(d.params.infra.max, before + effect.n);
+        const overflow = before + effect.n - after;
         player.infraLevel = after;
+        if (overflow > 0 && d.params.infra.overflowPointsPerRaise > 0) {
+          addScore(state, d, player, overflow * d.params.infra.overflowPointsPerRaise, 'welfare', 'infraOverflow');
+        }
         trackRewards(state, d, player, 'infra', before, after, queue);
         emitTrackRaised(state, d, player, 'infra', before, after);
         break;
@@ -455,6 +459,12 @@ const applyGrant = (
       for (let i = 0; i < grant.amount; i += 1) {
         choices.push({ k: 'specialCitizen' });
       }
+      return;
+    case 'goldProduction':
+      player.goldProduction += grant.amount;
+      return;
+    case 'materialProduction':
+      player.materialProduction += grant.amount;
       return;
   }
 };

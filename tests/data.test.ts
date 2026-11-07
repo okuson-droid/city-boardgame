@@ -426,12 +426,41 @@ describe('params.json の値', () => {
   });
 
   it('得点計算の換算表', () => {
-    // rules.md v0.8 17-2-2、17-2-3、17-3-1、17-4-1、13-3-4、14-2-1
-    expect(p.scoring.goldPerPointByShops).toEqual([20, 10, 5, 3]);
-    expect(p.scoring.materialsPerPointByWorkshops).toEqual([10, 5, 3, 2]);
+    // rules.md v0.8 17-3-1、13-3-4。17-2-2、17-2-3、17-4-1、14-2-1 の値はユーザー決定 2026-11-07 で変えた。
+    expect(p.scoring.goldPerPointByShops).toEqual([20, 5, 4, 3]);
+    expect(p.scoring.materialsPerPointByWorkshops).toEqual([10, 3, 2, 1]);
     expect(p.scoring.civCardsPerPointByUniversities).toEqual([5, 4, 3, 2]);
-    expect(p.scoring.regularWorkersDivisorByOffices).toEqual([null, 3, 2, 1]);
+    expect(p.scoring.regularWorkerPointsByOffices).toEqual([0, 0.5, 1, 2]);
     expect(p.scoring.plannedCityPointsByRank).toEqual([7, 5, 3]);
-    expect(p.scoring.natureParkPointsBySetSize).toEqual({ '2': 5, '3': 10, '4': 15 });
+    expect(p.scoring.natureParkPointsBySetSize).toEqual({ '2': 3, '3': 5, '4': 7 });
+  });
+
+  it('アクション・インフラ・襲撃・基礎得点の調整値（ユーザー決定 2026-11-07）', () => {
+    // rules.md v0.8 6-1-2、6-3、8-1、7-5-1、17-1 からの変更
+    expect(p.actions.workerCost).toEqual({ normal: 1, upper: 2, top: 2 });
+    expect(p.actions.pioneer.top.maxTiles).toBe(4);
+    expect(p.actions.import.upper).toEqual({ payGold: 3, gainMaterials: 1, maxTimes: 5, bonusMaterials: 1 });
+    expect(p.actions.import.top).toEqual({ payGold: 3, gainMaterials: 1, maxTimes: 7, bonusMaterials: 2 });
+    expect(p.actions.export.upper).toEqual({ payMaterials: 1, gainGold: 5, maxTimes: 5, bonusGold: 3 });
+    expect(p.actions.export.top).toEqual({ payMaterials: 1, gainGold: 5, maxTimes: 7, bonusGold: 6 });
+    expect(p.actions.drill.top.choices).toEqual([
+      { payGold: 3, gainTokens: 3 },
+      { payGold: 6, gainTokens: 5 },
+      { payGold: 9, gainTokens: 8 },
+    ]);
+    expect(p.actions.expedition.selection.top).toEqual({ mode: 'total', total: 4, maxSame: 2 });
+    expect(p.actions.welfare.normal).toEqual({ choices: [{ payMaterials: 1, infra: 1 }], tempWorkers: 0 });
+    expect(p.actions.welfare.upper).toEqual({ choices: [{ payMaterials: 3, infra: 2 }], tempWorkers: 1 });
+    expect(p.actions.welfare.top.choices.map((c) => c.payMaterials)).toEqual([1, 3, 6]);
+    expect(p.actions.migration.top).toEqual({ tempWorkers: 1, regularWorkers: 3, regularWorkersIsMax: true, materials: 2 });
+    expect(p.actions.research.top).toEqual({ draw: 3, playCards: 1 });
+    expect(p.actions.spread.top).toEqual({ maxCards: 4, cardsIsMax: true, goldDiscount: 2 });
+    expect(p.infra.rewards.map((r) => r.level)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    expect(p.infra.rewards[0]?.grants).toEqual([{ kind: 'goldProduction', amount: 2 }]);
+    expect(p.infra.rewards[4]?.grants).toEqual([{ kind: 'materialProduction', amount: 1 }]);
+    expect(p.infra.overflowPointsPerRaise).toBe(2);
+    expect(p.raid.basePointsPerRound).toEqual({ defenseFailed: -1, defended: 0, repelled: 0 });
+    expect(p.raid.cardEffectKinds).toEqual({ defenseFailed: [], defended: [], repelled: ['gold', 'materials', 'landTiles'] });
+    expect(p.scoring.base).toEqual({ landTilesPerPoint: 2, buildingsPerPoint: 1, regularWorkersPerPoint: 1 });
   });
 });

@@ -134,6 +134,8 @@ export type Task =
   | { readonly t: 'importCount'; readonly player: number; readonly tier: Tier }
   | { readonly t: 'exportCount'; readonly player: number; readonly tier: Tier }
   | { readonly t: 'drillRaise'; readonly player: number; readonly tier: Tier }
+  /** 教練・福祉の組（払う量と得る量）の選択（count:<添字>、ユーザー決定 2026-11-07）。 */
+  | { readonly t: 'actionChoice'; readonly player: number; readonly action: 'drill' | 'welfare'; readonly tier: Tier }
   | {
       readonly t: 'expeditionPick';
       readonly player: number;

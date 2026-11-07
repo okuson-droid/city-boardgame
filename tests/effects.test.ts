@@ -348,7 +348,8 @@ describe('命令：expeditionRewards（017）・chooseOne・copyAction', () => {
     expect(ids(s)).toContain('copy:import:top');
     const score = me(s).score;
     s = play(s, 'copy:import:top', 'count:1');
-    expect(me(s).materials).toBe(6);
+    // 最上位の輸入：3金→1資材を1回と、追加の2資材（ユーザー決定 2026-11-07）。
+    expect(me(s).materials).toBe(3);
     expect(s.occupied.filter((k) => k === 'import.top')).toHaveLength(1);
     // 最上位アクションの効果を使った場合は特別市民02に数える。
     expect(me(s).score).toBe(score + 2);
@@ -381,8 +382,8 @@ describe('常時効果（出来事への反応、16-1-4）', () => {
     expect(after('016').players.find((q) => q.played.includes('016'))?.hand).toHaveLength(2);
   });
 
-  it('指揮官：砦の建設時に軍事レベルが本来の上昇に加えて1上がり、砦の資材が1少なくなる', () => {
-    // rules.md v0.8 19-5-4
+  it('指揮官：砦の資材が1少なくなる。砦の建設時の追加の上昇はない', () => {
+    // rules.md v0.8 19-5-4（追加の上昇の削除：ユーザー決定 2026-11-07）
     let s = edit(base(), (_, p) => {
       p.characterId = 'commander';
       p.gold = 5;
@@ -391,7 +392,7 @@ describe('常時効果（出来事への反応、16-1-4）', () => {
     });
     // 資材2では2軒目を選べないため、1軒で自動的に確定する。
     s = play(s, 'act:build:normal', 'build:fort:E1');
-    expect(me(s).militaryLevel).toBe(2);
+    expect(me(s).militaryLevel).toBe(1);
     expect(me(s).materials).toBe(0);
   });
 
@@ -407,7 +408,8 @@ describe('常時効果（出来事への反応、16-1-4）', () => {
     });
     s = play(s, 'act:migration:top', 'count:1');
     expect(me(s).regularWorkers).toBe(6);
-    expect(me(s).materials).toBe(1);
+    // 聖女の1資材と、最上位の移住の2資材（ユーザー決定 2026-11-07）。
+    expect(me(s).materials).toBe(1 + 2);
   });
 
   it('聖女：通常ワーカーが10人になった時、特別な市民カードを1枚獲得する（1回だけ）', () => {
@@ -426,7 +428,7 @@ describe('常時効果（出来事への反応、16-1-4）', () => {
   });
 
   it('英雄：撃退成功時に2点（軍事・防衛）', () => {
-    // rules.md v0.8 17-6-2-2
+    // rules.md v0.8 17-6-2-2（撃退成功の基本得点はない：ユーザー決定 2026-11-07）
     let s = edit(base(), (_, p) => {
       p.characterId = 'hero';
       p.militaryLevel = 12;
@@ -439,7 +441,7 @@ describe('常時効果（出来事への反応、16-1-4）', () => {
     const hero = me(s).index;
     s = applyMove(s, 'raid:none');
     const military = scoreEvents(s, hero).filter((e) => e.type === 'score' && e.axis === 'military');
-    expect(military.map((e) => (e.type === 'score' ? e.points : 0))).toEqual([2, 2]);
+    expect(military.map((e) => (e.type === 'score' ? e.points : 0))).toEqual([2]);
   });
 });
 
@@ -490,9 +492,10 @@ describe('フリーアクションと専用スペース（9-3-3、6-2-4、6-2-5�
       p.characterId = 'bureaucrat';
       p.infraLevel = 6;
     });
+    // 役所の建設時の上昇を削除したため、フリーアクションは添字2〜4である（ユーザー決定 2026-11-07）。
+    expect(ids(s)).toContain('ability:char:bureaucrat#2');
     expect(ids(s)).toContain('ability:char:bureaucrat#3');
-    expect(ids(s)).toContain('ability:char:bureaucrat#4');
-    expect(ids(s)).not.toContain('ability:char:bureaucrat#5');
+    expect(ids(s)).not.toContain('ability:char:bureaucrat#4');
   });
 
   it('特別市民13：獲得時に住宅2軒まで無料、以後は通常ワーカーを獲得したラウンドから使える', () => {
@@ -544,6 +547,21 @@ describe('キャラクターの準備・最初の手番・終了時（19-5）', 
     expect(hero.buildings[cell]).toBe('fort');
     // 初期1、砦の建設で+1（ボーナスタイル9なら第1ラウンド開始時にさらに+1）。
     expect(hero.militaryLevel).toBe(2 + (hero.bonusTile === 9 ? 1 : 0));
+    // 初期資源に軍事力トークン4つ（ユーザー決定 2026-11-07）。レベル3に届けば到達報酬の2つも加わる。
+    expect(hero.militaryTokens).toBe(4 + (hero.militaryLevel >= 3 ? 2 : 0));
+  });
+
+  it('官僚：役所を建ててもインフラレベルは役所の効果の分だけ上がる', () => {
+    // data_characters.json bureaucrat（役所の建設時の上昇の削除：ユーザー決定 2026-11-07）、rules.md v0.8 5-5-4-1
+    let s = edit(base(), (_, p) => {
+      p.characterId = 'bureaucrat';
+      p.gold = 5;
+      p.materials = 2;
+      p.infraLevel = 1;
+      p.infraRewardsClaimed = [1];
+    });
+    s = play(s, 'act:build:normal', 'build:office:E1');
+    expect(me(s).infraLevel).toBe(2);
   });
 
   it('豪商：準備で増えた金の生産力は第1ラウンドの収入から反映する', () => {
@@ -715,13 +733,13 @@ describe('計画都市（第13章、19-1-6、19-4-7）', () => {
 
 describe('自然公園（第14章、19-1-5、19-4-8）', () => {
   it('建物のない土地で、得点が最大になる割り当てを数え、同じ土地を複数セットで共有しない', () => {
-    // rules.md v0.8 14-2-1、14-3-1、14-3-4、19-4-8
+    // rules.md v0.8 14-2-1、14-3-1、14-3-4、19-4-8（2枚の組は3点：ユーザー決定 2026-11-07）
     const p = structuredClone(me(base()));
     p.natureParkCard = 'NP01';
     // NP01：森林2枚／森林・平原・平原の直線／森林・森林・水場・水場の菱形。
     p.land = { E1: 'forest', F1: 'forest' };
     p.buildings = {};
-    expect(natureParkScore(d, p)).toBe(5);
+    expect(natureParkScore(d, p)).toBe(3);
     p.buildings = { E1: 'house' };
     expect(natureParkScore(d, p)).toBe(0);
   });
@@ -744,7 +762,7 @@ describe('自然公園（第14章、19-1-5、19-4-8）', () => {
       p.land = { E1: 'forest', F1: 'forest' };
       p.buildings = {};
     }
-    expect(finalScores(s).every((f) => f.axes.nature >= 5)).toBe(true);
+    expect(finalScores(s).every((f) => f.axes.nature >= 3)).toBe(true);
   });
 });
 

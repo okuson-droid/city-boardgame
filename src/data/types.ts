@@ -65,6 +65,8 @@ export const GRANT_KINDS = [
   'points',
   'buildRight',
   'freeBuildOnTerrain',
+  'goldProduction',
+  'materialProduction',
 ] as const;
 export type GrantKind = (typeof GRANT_KINDS)[number];
 
@@ -213,18 +215,18 @@ export type Params = ProvisionalMark & {
       readonly maxTimes: number;
       readonly bonusGold: number;
     }>;
+    /** choices が2つ以上なら、払う金と得るトークンの組を選ぶ（ユーザー決定 2026-11-07）。 */
     readonly drill: TierTable<{
-      readonly payGold: number;
-      readonly gainTokens: number;
+      readonly choices: readonly { readonly payGold: number; readonly gainTokens: number }[];
       readonly maxRaises: number;
     }>;
     readonly expedition: {
       readonly rewards: readonly LevelReward[];
       readonly selection: TierTable<ExpeditionSelection>;
     };
+    /** choices が2つ以上なら、払う資材と上げるインフラの組を選ぶ（ユーザー決定 2026-11-07）。 */
     readonly welfare: TierTable<{
-      readonly payMaterials: number;
-      readonly infra: number;
+      readonly choices: readonly { readonly payMaterials: number; readonly infra: number }[];
       readonly tempWorkers: number;
     }>;
     readonly migration: TierTable<{
@@ -232,12 +234,16 @@ export type Params = ProvisionalMark & {
       readonly regularWorkers: number;
       /** true なら「最大N人」で0〜Nを選べる（rules.md 6-1-6）。 */
       readonly regularWorkersIsMax: boolean;
+      /** 得る資材（ユーザー決定 2026-11-07）。 */
+      readonly materials: number;
     }>;
-    readonly research: TierTable<{ readonly draw: number; readonly discard: number }>;
+    /** playCards は引いた後に通常のコストでプレイしてよい枚数（ユーザー決定 2026-11-07）。 */
+    readonly research: TierTable<{ readonly draw: number; readonly playCards: number }>;
     readonly spread: TierTable<{
       readonly maxCards: number;
       readonly cardsIsMax: boolean;
-      readonly goldPerCard: number;
+      /** 1枚ごとの金の割引（下限0、ユーザー決定 2026-11-07）。 */
+      readonly goldDiscount: number;
     }>;
   };
   readonly military: {
@@ -248,6 +254,8 @@ export type Params = ProvisionalMark & {
   readonly infra: {
     readonly max: number;
     readonly rewards: readonly LevelReward[];
+    /** 上限を超えた上昇1回ごとの得点。上昇の出どころを問わない（ユーザー決定 2026-11-07）。 */
+    readonly overflowPointsPerRaise: number;
   };
   readonly raid: {
     readonly firstRoundCard: number;
@@ -256,6 +264,12 @@ export type Params = ProvisionalMark & {
       readonly defenseFailed: number;
       readonly defended: number;
       readonly repelled: number;
+    };
+    /** 襲撃カードの効果のうち、結果ごとに適用する種類（ユーザー決定 2026-11-07）。ないものは無視する。 */
+    readonly cardEffectKinds: {
+      readonly defenseFailed: readonly RaidEffectKind[];
+      readonly defended: readonly RaidEffectKind[];
+      readonly repelled: readonly RaidEffectKind[];
     };
   };
   readonly freeActions: {
@@ -283,8 +297,8 @@ export type Params = ProvisionalMark & {
     readonly materialsPerPointByWorkshops: readonly number[];
     /** 添字は大学数（rules.md 17-3-1）。 */
     readonly civCardsPerPointByUniversities: readonly number[];
-    /** 添字は役所数（rules.md 17-4-1）。null は追加得点なし。 */
-    readonly regularWorkersDivisorByOffices: readonly (number | null)[];
+    /** 添字は役所数。通常ワーカー1人あたりの点（端数は切り捨て。rules.md 17-4-1 からの変更、ユーザー決定 2026-11-07）。 */
+    readonly regularWorkerPointsByOffices: readonly number[];
     /** 先着順位ごとの得点（rules.md 13-3-4）。 */
     readonly plannedCityPointsByRank: readonly number[];
     /** セットの枚数ごとの得点（rules.md 14-2-1）。 */
@@ -368,8 +382,6 @@ export type NatureParkCard = ProvisionalMark & {
 /** ボーナスタイルのラウンド開始時効果の単位（rules.md 11-2-1）。 */
 export const TILE_EFFECT_KINDS = [
   ...GRANT_KINDS.filter((k) => k !== 'freeBuildOnTerrain'),
-  'goldProduction',
-  'materialProduction',
   'militaryLevel',
   'infraLevel',
   'discardCivCards',
@@ -429,8 +441,9 @@ export type SpecialCitizen = ProvisionalMark & {
 
 /** 襲撃カードの固有効果の単位（rules.md 7-6-1）。 */
 export const RAID_EFFECT_KINDS = ['loseGold', 'loseMaterials', 'loseGoldProduction', 'landTiles', 'materials', 'gold', 'points'] as const;
+export type RaidEffectKind = (typeof RAID_EFFECT_KINDS)[number];
 export type RaidEffect = {
-  readonly kind: (typeof RAID_EFFECT_KINDS)[number];
+  readonly kind: RaidEffectKind;
   readonly amount: number;
   /** true なら amount に襲撃ラウンド数を掛ける。 */
   readonly perRound: boolean;

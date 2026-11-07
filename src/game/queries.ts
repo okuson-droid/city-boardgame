@@ -2,7 +2,7 @@
 
 import { GAME_DATA } from '../data/index.ts';
 import { ICON_KEYS } from '../data/icon-keys.ts';
-import type { Action, Building, GameData, Tier, UnlockCondition } from '../data/types.ts';
+import type { Action, Building, GameData, RaidCard, RaidEffect, Tier, UnlockCondition } from '../data/types.ts';
 import { buildTotalCost, civCardCost, expeditionTable } from './actions.ts';
 import { buildingCount, cardHouseCount, landCount, playerOf, regularWorkerCap, usableRegular, usableTemp } from './core.ts';
 import { decider, isTopUnlocked } from './engine.ts';
@@ -11,6 +11,45 @@ import type { GameState, PlayerState, Task } from './types.ts';
 
 export { civCardCost, expeditionTable, isTopUnlocked };
 
+const RAID_EFFECT_TEXT: Record<RaidEffect['kind'], (n: string) => string> = {
+  loseGold: (n) => `金${n}を失う`,
+  loseMaterials: (n) => `資材${n}を失う`,
+  loseGoldProduction: (n) => `金の生産力を${n}失う`,
+  landTiles: (n) => `土地タイル${n}枚を置く`,
+  materials: (n) => `資材${n}を得る`,
+  gold: (n) => `金${n}を得る`,
+  points: (n) => `${n}点を得る`,
+};
+
+/**
+ * 襲撃の結果ごとに実際に起きること（params.raid から組み立てる）。2026-11-07 のユーザー決定により、
+ * 襲撃カードの効果は結果ごとに定めた種類だけを適用するため、原本の文言ではなくこちらを画面に出す。
+ */
+export const describeRaidOutcomes = (card: RaidCard, d: GameData = GAME_DATA): { defenseFailed: string; defended: string; repelled: string } => {
+  const raid = d.params.raid;
+  const line = (result: 'defenseFailed' | 'defended' | 'repelled', effects: readonly RaidEffect[]): string => {
+    const allowed = raid.cardEffectKinds[result];
+    const usesCardPoints = card.replacesBasePoints && allowed.includes('points');
+    const per = raid.basePointsPerRound[result];
+    const base = usesCardPoints || per === 0 ? [] : [per < 0 ? `ラウンド数×${-per}点を失う` : `ラウンド数×${per}点を得る`];
+    const fromCard = effects
+      .filter((e) => allowed.includes(e.kind))
+      .map((e) => {
+        const text = RAID_EFFECT_TEXT[e.kind](e.perRound ? `${e.amount}×ラウンド数` : String(e.amount));
+        return e.afterNextIncome ? `次の収入の後に${text}` : text;
+      });
+    const all = [...base, ...fromCard];
+    return all.length === 0 ? 'なし' : all.join('・');
+  };
+  return { defenseFailed: line('defenseFailed', card.defenseFailEffects), defended: line('defended', []), repelled: line('repelled', card.repelEffects) };
+};
+
+/** いまの選択で文明カードにかかる追加の割引（普及の最上位の1枚ごとの割引、ユーザー決定 2026-11-07）。 */
+export const playDiscount = (state: GameState, player: number, d: GameData = GAME_DATA): number => {
+  const task = state.stack[state.stack.length - 1];
+  return task?.t === 'spreadPlay' && task.player === player ? d.params.actions.spread[task.tier].goldDiscount : 0;
+};
+
 const tok = (section: keyof typeof ICON_KEYS, key: string, value?: number | string): IconToken => {
   const table = ICON_KEYS[section] as Readonly<Record<string, { icon: string; label: string }>>;
   const entry = table[key] ?? { icon: `${section}.${key}`, label: key };
@@ -18,6 +57,19 @@ const tok = (section: keyof typeof ICON_KEYS, key: string, value?: number | stri
 };
 
 const THEN: IconToken = { icon: 'sym.then', label: '→' };
+
+/**
+ * 払う量と得る量の組（教練・福祉、ユーザー決定 2026-11-07）。組が2つ以上なら、アクションボードの枠に収まるよう
+ * 値を「/」でつないだ1つの並び（例：金3/6/9 → トークン3/5/8）にする。どれか1組を選ぶことは効果文で補う。
+ */
+const choiceTokens = (alternatives: readonly (readonly IconToken[])[]): IconToken[] => {
+  const [first] = alternatives;
+  if (first === undefined) return [];
+  if (alternatives.length === 1) return [...first];
+  return first.map((t, i) =>
+    t.value === undefined ? t : { ...t, value: alternatives.map((alt) => alt[i]?.value ?? '').join('/') },
+  );
+};
 
 const topTask = (state: GameState): Task | undefined => state.stack[state.stack.length - 1];
 
@@ -35,6 +87,7 @@ const SCENES: Partial<Record<Task['t'], { icon: string; heading: string }>> = {
   importCount: { icon: 'scene.count', heading: '交換回数を選ぶ' },
   exportCount: { icon: 'scene.count', heading: '交換回数を選ぶ' },
   drillRaise: { icon: 'scene.count', heading: '上昇回数を選ぶ' },
+  actionChoice: { icon: 'scene.choose', heading: '払う量を選ぶ' },
   expeditionPick: { icon: 'scene.reward', heading: '報酬を選ぶ' },
   welfareConvert: { icon: 'scene.convert', heading: '変換を選ぶ' },
   migrationCount: { icon: 'scene.count', heading: '獲得人数を選ぶ' },
@@ -81,19 +134,29 @@ export const actionSpaceIcons = (action: Action, tier: Tier, d: GameData = GAME_
     case 'export':
       return [tok('resources', 'materials', a.export[tier].payMaterials), THEN, tok('resources', 'gold', a.export[tier].gainGold), tok('symbols', 'upTo', `×${a.export[tier].maxTimes}`)];
     case 'drill':
-      return [tok('resources', 'gold', a.drill[tier].payGold), THEN, tok('resources', 'militaryTokens', a.drill[tier].gainTokens), tok('tracks', 'military', `≤${a.drill[tier].maxRaises}`)];
+      return [
+        ...choiceTokens(a.drill[tier].choices.map((c) => [tok('resources', 'gold', c.payGold), THEN, tok('resources', 'militaryTokens', c.gainTokens)])),
+        tok('tracks', 'military', `≤${a.drill[tier].maxRaises}`),
+      ];
     case 'expedition': {
       const selection = a.expedition.selection[tier];
       return [tok('commands', 'expeditionRewards', selection.mode === 'distinct' ? selection.max : selection.total)];
     }
     case 'welfare':
-      return [tok('resources', 'materials', a.welfare[tier].payMaterials), THEN, tok('tracks', 'infra', `+${a.welfare[tier].infra}`), ...(a.welfare[tier].tempWorkers > 0 ? [tok('resources', 'tempWorkers', a.welfare[tier].tempWorkers)] : [])];
+      return [
+        ...choiceTokens(a.welfare[tier].choices.map((c) => [tok('resources', 'materials', c.payMaterials), THEN, tok('tracks', 'infra', `+${c.infra}`)])),
+        ...(a.welfare[tier].tempWorkers > 0 ? [tok('resources', 'tempWorkers', a.welfare[tier].tempWorkers)] : []),
+      ];
     case 'migration':
-      return [...(a.migration[tier].tempWorkers > 0 ? [tok('resources', 'tempWorkers', a.migration[tier].tempWorkers)] : []), tok('resources', 'regularWorkers', a.migration[tier].regularWorkers)];
+      return [
+        ...(a.migration[tier].tempWorkers > 0 ? [tok('resources', 'tempWorkers', a.migration[tier].tempWorkers)] : []),
+        tok('resources', 'regularWorkers', a.migration[tier].regularWorkers),
+        ...(a.migration[tier].materials > 0 ? [tok('resources', 'materials', a.migration[tier].materials)] : []),
+      ];
     case 'research':
-      return [tok('resources', 'drawCivCards', a.research[tier].draw), tok('symbols', 'discard', a.research[tier].discard)];
+      return [tok('resources', 'drawCivCards', a.research[tier].draw), ...(a.research[tier].playCards > 0 ? [tok('commands', 'playCard', a.research[tier].playCards)] : [])];
     case 'spread':
-      return [tok('commands', 'playCard', a.spread[tier].maxCards), ...(a.spread[tier].goldPerCard > 0 ? [tok('resources', 'gold', a.spread[tier].goldPerCard)] : [])];
+      return [tok('commands', 'playCard', a.spread[tier].maxCards), ...(a.spread[tier].goldDiscount > 0 ? [tok('resources', 'gold', -a.spread[tier].goldDiscount)] : [])];
   }
 };
 
@@ -121,7 +184,8 @@ export const describeActionSpace = (action: Action, tier: Tier, d: GameData = GA
     }
     case 'drill': {
       const s = a.drill[tier];
-      return `金${s.payGold}を払って軍事力トークン${s.gainTokens}を得る。続けて軍事力トークンを払い、軍事レベルを最大${s.maxRaises}上げる。`;
+      const pay = s.choices.map((c) => `金${c.payGold}を払って軍事力トークン${c.gainTokens}を得る`);
+      return `${pay.length > 1 ? `次のいずれか1つを行う：${pay.join('／')}。` : `${pay[0] ?? ''}。`}続けて軍事力トークンを払い、軍事レベルを最大${s.maxRaises}上げる。`;
     }
     case 'expedition': {
       const s = a.expedition.selection[tier];
@@ -131,19 +195,20 @@ export const describeActionSpace = (action: Action, tier: Tier, d: GameData = GA
     }
     case 'welfare': {
       const s = a.welfare[tier];
-      return `資材${s.payMaterials}を払ってインフラレベルを${s.infra}上げる。${s.tempWorkers > 0 ? `臨時ワーカー${s.tempWorkers}人を得る。` : ''}`;
+      const pay = s.choices.map((c) => `資材${c.payMaterials}を払ってインフラレベルを${c.infra}上げる`);
+      return `${pay.length > 1 ? `次のいずれか1つを行う：${pay.join('／')}。` : `${pay[0] ?? ''}。`}${s.tempWorkers > 0 ? `臨時ワーカー${s.tempWorkers}人を得る。` : ''}`;
     }
     case 'migration': {
       const s = a.migration[tier];
-      return `${s.tempWorkers > 0 ? `臨時ワーカー${s.tempWorkers}人と、` : ''}通常ワーカーを${upTo(s.regularWorkersIsMax)}${s.regularWorkers}人得る。`;
+      return `${s.tempWorkers > 0 ? `臨時ワーカー${s.tempWorkers}人と、` : ''}通常ワーカーを${upTo(s.regularWorkersIsMax)}${s.regularWorkers}人得る。${s.materials > 0 ? `資材${s.materials}を得る。` : ''}`;
     }
     case 'research': {
       const s = a.research[tier];
-      return `文明カードを${s.draw}枚引き、手札から${s.discard}枚捨てる。`;
+      return `文明カードを${s.draw}枚引く。${s.playCards > 0 ? `その後、文明カードを${s.playCards}枚まで通常のコストでプレイしてよい。` : ''}`;
     }
     case 'spread': {
       const s = a.spread[tier];
-      return `文明カードを${upTo(s.cardsIsMax)}${s.maxCards}枚プレイする。${s.goldPerCard > 0 ? `1枚プレイするごとに金${s.goldPerCard}を得る。` : ''}`;
+      return `文明カードを${upTo(s.cardsIsMax)}${s.maxCards}枚プレイする。${s.goldDiscount > 0 ? `1枚ごとにコストを金${s.goldDiscount}軽減する（0未満にはならない）。` : ''}`;
     }
   }
 };

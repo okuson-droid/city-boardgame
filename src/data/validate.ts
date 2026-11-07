@@ -92,6 +92,10 @@ export const readInt = (value: unknown, path: string, allowNegative = false): nu
   return value;
 };
 
+/** 0以上の有限の数（小数を許す）。 */
+const readNonNegativeNumber = (value: unknown, path: string): number =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : fail(path, `0以上の数でなければならない（実際は ${String(value)}）`);
+
 const readPositiveInt = (value: unknown, path: string): number => {
   const n = readInt(value, path);
   return n > 0 ? n : fail(path, `1以上でなければならない（実際は ${n}）`);
@@ -107,6 +111,12 @@ export const readArray = <T>(value: unknown, path: string, item: (v: unknown, p:
 export const readOneOf = <T extends string>(values: readonly T[], value: unknown, path: string): T => {
   const found = values.find((v) => v === value);
   return found ?? fail(path, `${values.join('・')} のいずれかでなければならない（実際は ${String(value)}）`);
+};
+
+/** 1要素以上の配列。 */
+const readNonEmpty = <T>(value: unknown, path: string, item: (v: unknown, p: string) => T): T[] => {
+  const list = readArray(value, path, item);
+  return list.length > 0 ? list : fail(path, '1要素以上でなければならない');
 };
 
 const readNullable = <T>(value: unknown, path: string, item: (v: unknown, p: string) => T): T | null =>
@@ -427,9 +437,13 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
       export: readTierTable(action('export'), ap('export'), (v, q) =>
         readIntFields(['payMaterials', 'gainGold', 'maxTimes', 'bonusGold'] as const, v, q),
       ),
-      drill: readTierTable(action('drill'), ap('drill'), (v, q) =>
-        readIntFields(['payGold', 'gainTokens', 'maxRaises'] as const, v, q),
-      ),
+      drill: readTierTable(action('drill'), ap('drill'), (v, q) => {
+        const o = readObject(v, q);
+        return {
+          choices: readNonEmpty(field(o, 'choices', q), `${q}.choices`, (c, cq) => readIntFields(['payGold', 'gainTokens'] as const, c, cq)),
+          maxRaises: readInt(field(o, 'maxRaises', q), `${q}.maxRaises`),
+        };
+      }),
       expedition: {
         rewards: readArray(field(expeditionObj, 'rewards', ap('expedition')), `${ap('expedition')}.rewards`, readLevelReward),
         selection: readTierTable(
@@ -438,23 +452,27 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
           readExpeditionSelection,
         ),
       },
-      welfare: readTierTable(action('welfare'), ap('welfare'), (v, q) =>
-        readIntFields(['payMaterials', 'infra', 'tempWorkers'] as const, v, q),
-      ),
+      welfare: readTierTable(action('welfare'), ap('welfare'), (v, q) => {
+        const o = readObject(v, q);
+        return {
+          choices: readNonEmpty(field(o, 'choices', q), `${q}.choices`, (c, cq) => readIntFields(['payMaterials', 'infra'] as const, c, cq)),
+          tempWorkers: readInt(field(o, 'tempWorkers', q), `${q}.tempWorkers`),
+        };
+      }),
       migration: readTierTable(action('migration'), ap('migration'), (v, q) => {
         const o = readObject(v, q);
         return {
-          ...readIntFields(['tempWorkers', 'regularWorkers'] as const, o, q),
+          ...readIntFields(['tempWorkers', 'regularWorkers', 'materials'] as const, o, q),
           regularWorkersIsMax: readBoolean(field(o, 'regularWorkersIsMax', q), `${q}.regularWorkersIsMax`),
         };
       }),
       research: readTierTable(action('research'), ap('research'), (v, q) =>
-        readIntFields(['draw', 'discard'] as const, v, q),
+        readIntFields(['draw', 'playCards'] as const, v, q),
       ),
       spread: readTierTable(action('spread'), ap('spread'), (v, q) => {
         const o = readObject(v, q);
         return {
-          ...readIntFields(['maxCards', 'goldPerCard'] as const, o, q),
+          ...readIntFields(['maxCards', 'goldDiscount'] as const, o, q),
           cardsIsMax: readBoolean(field(o, 'cardsIsMax', q), `${q}.cardsIsMax`),
         };
       }),
@@ -470,6 +488,7 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
     infra: {
       max: readPositiveInt(field(infraObj, 'max', p('infra')), `${p('infra')}.max`),
       rewards: readArray(field(infraObj, 'rewards', p('infra')), `${p('infra')}.rewards`, readLevelReward),
+      overflowPointsPerRaise: readInt(field(infraObj, 'overflowPointsPerRaise', p('infra')), `${p('infra')}.overflowPointsPerRaise`),
     },
     raid: {
       firstRoundCard: readPositiveInt(field(raidObj, 'firstRoundCard', p('raid')), `${p('raid')}.firstRoundCard`),
@@ -479,6 +498,13 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
         `${p('raid')}.basePointsPerRound`,
         true,
       ),
+      cardEffectKinds: (() => {
+        const q = `${p('raid')}.cardEffectKinds`;
+        const o = readObject(field(raidObj, 'cardEffectKinds', p('raid')), q);
+        const kinds = (key: string) =>
+          readArray(field(o, key, q), `${q}.${key}`, (v, kq) => readOneOf(RAID_EFFECT_KINDS, v, kq));
+        return { defenseFailed: kinds('defenseFailed'), defended: kinds('defended'), repelled: kinds('repelled') };
+      })(),
     },
     freeActions: {
       conversions: readArray(field(freeObj, 'conversions', p('freeActions')), `${p('freeActions')}.conversions`, (v, q) => {
@@ -522,10 +548,10 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
         sp('civCardsPerPointByUniversities'),
         readPositiveInt,
       ),
-      regularWorkersDivisorByOffices: readArray(
-        scoring('regularWorkersDivisorByOffices'),
-        sp('regularWorkersDivisorByOffices'),
-        (v, q) => readNullable(v, q, readPositiveInt),
+      regularWorkerPointsByOffices: readArray(
+        scoring('regularWorkerPointsByOffices'),
+        sp('regularWorkerPointsByOffices'),
+        readNonNegativeNumber,
       ),
       plannedCityPointsByRank: readIntArray(scoring('plannedCityPointsByRank'), sp('plannedCityPointsByRank')),
       natureParkPointsBySetSize: Object.fromEntries(

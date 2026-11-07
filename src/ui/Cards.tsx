@@ -66,10 +66,10 @@ export const CardFrame = ({ optionId, onChoose, reason = null, className = '', c
  * 文明カード（ユーザー決定 2026-11-05：コスト・分類・効果の区切りをはっきりさせ、カードらしく飾る）。
  * 上から、分類の色の帯（左に金貨のコスト、右に名前）、分類のアイコンの段、枠で囲んだ効果、固有の得点の順に並べる。
  */
-export const CivCardView = ({ card, player }: { card: string; player: PlayerState | null }) => {
+export const CivCardView = ({ card, player, discount = 0 }: { card: string; player: PlayerState | null; discount?: number }) => {
   const data = GAME_DATA.civilizationCards.find((c) => c.id === card);
   if (data === undefined) return <span>{card}</span>;
-  const cost = player === null ? data.cost.gold : civCardCost(GAME_DATA, player, card);
+  const cost = player === null ? data.cost.gold : civCardCost(GAME_DATA, player, card, discount);
   const reduced = cost < data.cost.gold;
   const color = tagColor(data.tags[0] ?? '') ?? '#8a7a5a';
   return (

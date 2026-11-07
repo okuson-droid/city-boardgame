@@ -81,6 +81,8 @@ const grantText = (g: Grant): string => {
   if (g.kind === 'buildRight') return `建物${g.amount}軒を建てる`;
   if (g.kind === 'freeBuildOnTerrain') return `${keyEntry('terrains', g.terrain).label}に建物${g.amount}軒を無料で建てる`;
   if (g.kind === 'specialCitizen') return `特別な市民カード${g.amount}枚を獲得する`;
+  if (g.kind === 'goldProduction' || g.kind === 'materialProduction') return `${keyEntry('resources', g.kind).label}を${g.amount}上げる`;
+  if (g.kind === 'drawCivCards') return `文明カードを${g.amount}枚引く`;
   return `${keyEntry('resources', g.kind).label}${g.amount}を得る`;
 };
 
@@ -106,7 +108,7 @@ export const TrackBar = ({
   const name = track === 'military' ? '軍事レベル' : 'インフラレベル';
   const from = level - rose;
   const next = table.rewards.find((r) => r.level > level && !claimed.includes(r.level));
-  const overflow = track === 'military' ? GAME_DATA.params.military.overflowPointsPerRaise : 0;
+  const overflow = table.overflowPointsPerRaise;
   const levels = Array.from({ length: table.max }, (_, i) => i + 1);
   return (
     <div className={`track track-${track}`} data-track={track}>
@@ -118,7 +120,7 @@ export const TrackBar = ({
           {next !== undefined
             ? `次の報酬：${next.level}で${next.grants.map(grantText).join('・')}（あと${next.level - level}）`
             : overflow > 0 && level >= table.max
-              ? `報酬はすべて獲得。教練で${table.max}を超えて上げると1段につき${overflow}点`
+              ? `報酬はすべて獲得。${track === 'military' ? '教練で' : ''}${table.max}を超えて上げると1段につき${overflow}点`
               : '報酬はすべて獲得'}
         </span>
       </div>

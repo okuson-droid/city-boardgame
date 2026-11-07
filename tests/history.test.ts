@@ -49,7 +49,7 @@ describe('巻き戻し（第15章、19-6-3）', () => {
     // rules.md v0.8 15-1-2（山札から新たなカードが公開された）
     let s = base();
     s = applyMove(s, 'act:research:normal');
-    expect(top(s).t).toBe('discard');
+    expect(top(s).t).toBe('turn');
     expect(undoLast(s)).toBeNull();
   });
 

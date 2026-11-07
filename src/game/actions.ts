@@ -349,6 +349,22 @@ const drillTokenCost = (d: GameData, player: PlayerState): number => {
   return table[buildingCount(player, 'fort')] ?? table[table.length - 1] ?? 1;
 };
 
+/** 払える組（添字）。払う量の少ない順に並べてある前提はとらない。 */
+const affordableChoices = <T>(choices: readonly T[], ok: (c: T) => boolean): number[] =>
+  choices.flatMap((c, i) => (ok(c) ? [i] : []));
+
+const drillAffordable = (d: GameData, player: PlayerState, tier: Tier): number[] =>
+  affordableChoices(d.params.actions.drill[tier].choices, (c) => c.payGold <= player.gold);
+
+/** 教練の組（金を払い軍事力トークンを得る）を実行し、上昇処理の選択を積む（ユーザー決定 2026-11-07）。 */
+const applyDrillChoice = (state: GameState, d: GameData, player: PlayerState, tier: Tier, index: number): void => {
+  const choice = d.params.actions.drill[tier].choices[index];
+  if (choice === undefined) throw new Error(`存在しない教練の組である：${index}`);
+  player.gold -= choice.payGold;
+  player.militaryTokens += choice.gainTokens;
+  state.stack.push({ t: 'drillRaise', player: player.index, tier });
+};
+
 export const drillRaiseOptions = (d: GameData, state: GameState, task: TaskOf<'drillRaise'>): Option[] => {
   const player = playerOf(state, task.player);
   const cost = drillTokenCost(d, player);
@@ -501,10 +517,69 @@ const welfareConvertible = (d: GameData, player: PlayerState): boolean =>
 const welfareDoesSomething = (d: GameData, player: PlayerState, tier: Tier): boolean => {
   const spec = d.params.actions.welfare[tier];
   return (
-    (spec.infra > 0 && player.infraLevel < d.params.infra.max) ||
+    // 上限を超えたインフラの上昇は得点になる（ユーザー決定 2026-11-07）。超過の得点がなければ上限で何もしない。
+    (spec.choices.some((c) => c.infra > 0) && (player.infraLevel < d.params.infra.max || d.params.infra.overflowPointsPerRaise > 0)) ||
     (spec.tempWorkers > 0 && player.tempWorkers < d.params.workers.tempMax) ||
     welfareConvertible(d, player)
   );
+};
+
+const welfareAffordable = (d: GameData, player: PlayerState, tier: Tier): number[] =>
+  affordableChoices(d.params.actions.welfare[tier].choices, (c) => c.payMaterials <= player.materials);
+
+/** 福祉の組（資材を払いインフラを上げる）を実行する（ユーザー決定 2026-11-07）。 */
+const applyWelfareChoice = (state: GameState, d: GameData, player: PlayerState, tier: Tier, index: number): void => {
+  const spec = d.params.actions.welfare[tier];
+  const choice = spec.choices[index];
+  if (choice === undefined) throw new Error(`存在しない福祉の組である：${index}`);
+  player.materials -= choice.payMaterials;
+  // 変換は福祉アクションの後に行う（5-5-4-2）。変換の可否はこの時点の臨時ワーカーで決まる。
+  if (welfareConvertible(d, player)) {
+    state.stack.push({ t: 'welfareConvert', player: player.index });
+  }
+  const effects: Effect[] = [{ k: 'infra', n: choice.infra }];
+  if (spec.tempWorkers > 0) {
+    effects.push({ k: 'grant', grant: { kind: 'tempWorkers', amount: spec.tempWorkers }, source: 'welfare' });
+  }
+  processEffects(state, d, player, effects);
+};
+
+// ---------------------------------------------------------------------------
+// 教練・福祉の組の選択（ユーザー決定 2026-11-07）
+// ---------------------------------------------------------------------------
+
+export const actionChoiceOptions = (d: GameData, state: GameState, task: TaskOf<'actionChoice'>): Option[] => {
+  const player = playerOf(state, task.player);
+  if (task.action === 'drill') {
+    const choices = d.params.actions.drill[task.tier].choices;
+    return drillAffordable(d, player, task.tier).map((i) =>
+      opt(task.player, `count:${i}`, `金${choices[i]?.payGold}を払い軍事力トークン${choices[i]?.gainTokens}を得る`),
+    );
+  }
+  const choices = d.params.actions.welfare[task.tier].choices;
+  return welfareAffordable(d, player, task.tier).map((i) =>
+    opt(task.player, `count:${i}`, `資材${choices[i]?.payMaterials}を払いインフラを${choices[i]?.infra}上げる`),
+  );
+};
+
+export const applyActionChoice = (state: GameState, d: GameData, task: TaskOf<'actionChoice'>, id: string): void => {
+  removeTask(state, task);
+  const player = playerOf(state, task.player);
+  const index = parseCount(id);
+  if (task.action === 'drill') applyDrillChoice(state, d, player, task.tier, index);
+  else applyWelfareChoice(state, d, player, task.tier, index);
+};
+
+/** 払える組が1つならそのまま実行し、2つ以上なら尋ねる。 */
+const startChoiceAction = (state: GameState, d: GameData, player: PlayerState, action: 'drill' | 'welfare', tier: Tier): void => {
+  const affordable = action === 'drill' ? drillAffordable(d, player, tier) : welfareAffordable(d, player, tier);
+  const [only] = affordable;
+  if (affordable.length === 1 && only !== undefined) {
+    if (action === 'drill') applyDrillChoice(state, d, player, tier, only);
+    else applyWelfareChoice(state, d, player, tier, only);
+    return;
+  }
+  state.stack.push({ t: 'actionChoice', player: player.index, action, tier });
 };
 
 export const welfareConvertOptions = (d: GameData, state: GameState, task: TaskOf<'welfareConvert'>): Option[] => {
@@ -538,23 +613,25 @@ const tempRoom = (d: GameData, player: PlayerState): number => Math.max(0, d.par
 
 const migrationDoesSomething = (d: GameData, player: PlayerState, tier: Tier): boolean => {
   const spec = d.params.actions.migration[tier];
-  // 通常ワーカーが上限のときの通常の移住は、ワーカーを置くだけになるため選べない（ユーザー決定 2026-11-03、6-1-6）。
-  return (spec.regularWorkers > 0 && regularRoom(d, player) > 0) || (spec.tempWorkers > 0 && tempRoom(d, player) > 0);
+  // 何も得られない移住は選べない（6-1-6）。資材を得る移住（ユーザー決定 2026-11-07）は通常ワーカーが上限でも選べる。
+  return spec.materials > 0 || (spec.regularWorkers > 0 && regularRoom(d, player) > 0) || (spec.tempWorkers > 0 && tempRoom(d, player) > 0);
 };
 
 export const migrationCountOptions = (d: GameData, state: GameState, task: TaskOf<'migrationCount'>): Option[] => {
   const player = playerOf(state, task.player);
   const spec = d.params.actions.migration[task.tier];
-  const tempEffective = spec.tempWorkers > 0 && tempRoom(d, player) > 0;
+  const otherEffective = spec.materials > 0 || (spec.tempWorkers > 0 && tempRoom(d, player) > 0);
   const max = Math.min(spec.regularWorkers, regularRoom(d, player));
-  return range(tempEffective ? 0 : 1, max).map((k) => opt(task.player, `count:${k}`, `通常ワーカーを${k}人獲得する`));
+  return range(otherEffective ? 0 : 1, max).map((k) => opt(task.player, `count:${k}`, `通常ワーカーを${k}人獲得する`));
 };
 
 export const applyMigrationCount = (state: GameState, d: GameData, task: TaskOf<'migrationCount'>, id: string): void => {
   removeTask(state, task);
   const player = playerOf(state, task.player);
-  gainTempWorkers(state, d, player, d.params.actions.migration[task.tier].tempWorkers);
+  const spec = d.params.actions.migration[task.tier];
+  gainTempWorkers(state, d, player, spec.tempWorkers);
   gainRegularWorkers(state, d, player, parseCount(id));
+  player.materials += spec.materials;
 };
 
 // ---------------------------------------------------------------------------
@@ -604,34 +681,36 @@ export const applyDiscard = (state: GameState, d: GameData, task: TaskOf<'discar
 // 普及（6-3-10、9-2）
 // ---------------------------------------------------------------------------
 
-export const civCardCost = (d: GameData, player: PlayerState, cardId: string): number => {
+/** extraDiscount は普及の最上位などの1枚ごとの割引である（下限0、ユーザー決定 2026-11-07）。 */
+export const civCardCost = (d: GameData, player: PlayerState, cardId: string, extraDiscount = 0): number => {
   const card = d.civilizationCards.find((c) => c.id === cardId);
   if (card === undefined) {
     throw new Error(`存在しない文明カードである：${cardId}`);
   }
   const discount = buildingCount(player, 'university') * d.params.buildings.effects.university.civCardGoldDiscountPerUniversity;
-  return Math.max(0, card.cost.gold - discount);
+  return Math.max(0, card.cost.gold - discount - extraDiscount);
 };
 
-const playableCards = (d: GameData, player: PlayerState): string[] =>
-  [...new Set(player.hand)].filter((card) => civCardCost(d, player, card) <= player.gold);
+const playableCards = (d: GameData, player: PlayerState, extraDiscount = 0): string[] =>
+  [...new Set(player.hand)].filter((card) => civCardCost(d, player, card, extraDiscount) <= player.gold);
 
 export const spreadOptions = (d: GameData, state: GameState, task: TaskOf<'spreadPlay'>): Option[] => {
   const player = playerOf(state, task.player);
   const spec = d.params.actions.spread[task.tier];
-  const options = playableCards(d, player).map((card) =>
-    opt(task.player, `card:${card}`, `${card} をプレイする（${civCardCost(d, player, card)}金）`),
+  const options = playableCards(d, player, spec.goldDiscount).map((card) =>
+    opt(task.player, `card:${card}`, `${card} をプレイする（${civCardCost(d, player, card, spec.goldDiscount)}金）`),
   );
-  if (task.played > 0 && spec.cardsIsMax) {
+  // 払えるカードがなければ選択肢はなく、タスクは不発として終わる（16-2-5）。
+  if (task.played > 0 && spec.cardsIsMax && options.length > 0) {
     options.push(opt(task.player, 'done', 'プレイを終える'));
   }
   return options;
 };
 
 /** 文明カードを1枚プレイする（9-2-4）。 */
-export const playCivCard = (state: GameState, d: GameData, player: PlayerState, cardId: string, free: boolean): void => {
+export const playCivCard = (state: GameState, d: GameData, player: PlayerState, cardId: string, free: boolean, extraDiscount = 0): void => {
   if (!free) {
-    player.gold -= civCardCost(d, player, cardId);
+    player.gold -= civCardCost(d, player, cardId, extraDiscount);
   }
   player.hand.splice(player.hand.indexOf(cardId), 1);
   player.played.push(cardId);
@@ -654,9 +733,7 @@ export const applySpread = (state: GameState, d: GameData, task: TaskOf<'spreadP
   if (task.played >= spec.maxCards) {
     removeTask(state, task);
   }
-  playCivCard(state, d, player, parseParts(id, 'card')[0] ?? '', false);
-  // 1枚ごとに即時に得る（ユーザー決定 2026-11-03）。
-  player.gold += spec.goldPerCard;
+  playCivCard(state, d, player, parseParts(id, 'card')[0] ?? '', false, spec.goldDiscount);
 };
 
 // ---------------------------------------------------------------------------
@@ -676,17 +753,17 @@ export const canExecute = (d: GameData, player: PlayerState, action: Action, tie
     case 'export':
       return player.materials >= a.export[tier].payMaterials;
     case 'drill':
-      return player.gold >= a.drill[tier].payGold;
+      return drillAffordable(d, player, tier).length > 0;
     case 'expedition':
       return expeditionCandidates(d, player, { ...expeditionProbe(tier), player: player.index }).length > 0;
     case 'welfare':
-      return player.materials >= a.welfare[tier].payMaterials && welfareDoesSomething(d, player, tier);
+      return welfareAffordable(d, player, tier).length > 0 && welfareDoesSomething(d, player, tier);
     case 'migration':
       return migrationDoesSomething(d, player, tier);
     case 'research':
       return true;
     case 'spread':
-      return playableCards(d, player).length > 0;
+      return playableCards(d, player, a.spread[tier].goldDiscount).length > 0;
   }
 };
 
@@ -718,27 +795,14 @@ export const startAction = (
       state.stack.push({ t: 'exportCount', player: p, tier });
       return;
     case 'drill':
-      player.gold -= a.drill[tier].payGold;
-      player.militaryTokens += a.drill[tier].gainTokens;
-      state.stack.push({ t: 'drillRaise', player: p, tier });
+      startChoiceAction(state, d, player, 'drill', tier);
       return;
     case 'expedition':
       state.stack.push({ t: 'expeditionPick', player: p, tier, picks: [], mode: 'action', count: 0 });
       return;
-    case 'welfare': {
-      const spec = a.welfare[tier];
-      player.materials -= spec.payMaterials;
-      // 変換は福祉アクションの後に行う（5-5-4-2）。変換の可否はこの時点の臨時ワーカーで決まる。
-      if (welfareConvertible(d, player)) {
-        state.stack.push({ t: 'welfareConvert', player: p });
-      }
-      const effects: Effect[] = [{ k: 'infra', n: spec.infra }];
-      if (spec.tempWorkers > 0) {
-        effects.push({ k: 'grant', grant: { kind: 'tempWorkers', amount: spec.tempWorkers }, source: 'welfare' });
-      }
-      processEffects(state, d, player, effects);
+    case 'welfare':
+      startChoiceAction(state, d, player, 'welfare', tier);
       return;
-    }
     case 'migration': {
       const spec = a.migration[tier];
       if (spec.regularWorkersIsMax && regularRoom(d, player) > 0) {
@@ -747,13 +811,15 @@ export const startAction = (
       }
       gainTempWorkers(state, d, player, spec.tempWorkers);
       gainRegularWorkers(state, d, player, spec.regularWorkers);
+      player.materials += spec.materials;
       return;
     }
     case 'research': {
       const spec = a.research[tier];
       drawCivCards(state, d, player, spec.draw);
-      if (spec.discard > 0 && player.hand.length > 0) {
-        state.stack.push({ t: 'discard', player: p, remaining: spec.discard });
+      // 研究では捨てない。最上位は引いた後に通常のコストで文明カードをプレイしてよい（ユーザー決定 2026-11-07）。
+      if (spec.playCards > 0 && playableCards(d, player).length > 0) {
+        state.stack.push({ t: 'playCard', player: p, remaining: spec.playCards, free: false, upTo: true });
       }
       return;
     }

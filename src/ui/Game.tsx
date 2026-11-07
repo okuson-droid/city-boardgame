@@ -328,6 +328,7 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
         onBuildType={setBuildType}
         freeOpen={freeOpen}
         onToggleFree={() => setFreeOpen(!freeOpen)}
+        showHand={handOwner !== null && view === handOwner}
       />
 
       {summary !== null && !isGameOver(state) ? <RoundSummary state={state} round={summary} onClose={() => setSummary(null)} /> : null}

@@ -84,7 +84,7 @@ const explainHandCard = (state: GameState, d: GameData, card: string): string =>
   const player = playerOf(state, p);
   const task = state.stack[state.stack.length - 1];
   if (task?.t === 'spreadPlay' || (task?.t === 'playCard' && !task.free)) {
-    const cost = civCardCost(d, player, card);
+    const cost = civCardCost(d, player, card, task.t === 'spreadPlay' ? d.params.actions.spread[task.tier].goldDiscount : 0);
     if (cost > player.gold) return `金が足りない（必要${cost}金、所持${player.gold}金）`;
   }
   return '今はこのカードを選ぶ場面ではない';

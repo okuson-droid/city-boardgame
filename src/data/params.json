@@ -197,7 +197,7 @@
     "workerCost": {
       "normal": 1,
       "upper": 2,
-      "top": 3
+      "top": 2
     },
     "shared": [
       {
@@ -275,7 +275,7 @@
         "materialDiscount": 1
       },
       "top": {
-        "maxTiles": 5,
+        "maxTiles": 4,
         "materialDiscount": 2
       }
     },
@@ -304,16 +304,16 @@
         "bonusMaterials": 0
       },
       "upper": {
-        "payGold": 7,
-        "gainMaterials": 2,
-        "maxTimes": 3,
-        "bonusMaterials": 2
+        "payGold": 3,
+        "gainMaterials": 1,
+        "maxTimes": 5,
+        "bonusMaterials": 1
       },
       "top": {
-        "payGold": 8,
-        "gainMaterials": 3,
-        "maxTimes": 3,
-        "bonusMaterials": 3
+        "payGold": 3,
+        "gainMaterials": 1,
+        "maxTimes": 7,
+        "bonusMaterials": 2
       }
     },
     "export": {
@@ -324,32 +324,52 @@
         "bonusGold": 0
       },
       "upper": {
-        "payMaterials": 2,
-        "gainGold": 9,
-        "maxTimes": 3,
-        "bonusGold": 4
+        "payMaterials": 1,
+        "gainGold": 5,
+        "maxTimes": 5,
+        "bonusGold": 3
       },
       "top": {
-        "payMaterials": 3,
-        "gainGold": 14,
-        "maxTimes": 3,
-        "bonusGold": 8
+        "payMaterials": 1,
+        "gainGold": 5,
+        "maxTimes": 7,
+        "bonusGold": 6
       }
     },
     "drill": {
       "normal": {
-        "payGold": 3,
-        "gainTokens": 3,
+        "choices": [
+          {
+            "payGold": 3,
+            "gainTokens": 3
+          }
+        ],
         "maxRaises": 1
       },
       "upper": {
-        "payGold": 6,
-        "gainTokens": 5,
+        "choices": [
+          {
+            "payGold": 6,
+            "gainTokens": 5
+          }
+        ],
         "maxRaises": 2
       },
       "top": {
-        "payGold": 9,
-        "gainTokens": 8,
+        "choices": [
+          {
+            "payGold": 3,
+            "gainTokens": 3
+          },
+          {
+            "payGold": 6,
+            "gainTokens": 5
+          },
+          {
+            "payGold": 9,
+            "gainTokens": 8
+          }
+        ],
         "maxRaises": 3
       }
     },
@@ -412,74 +432,97 @@
         },
         "top": {
           "mode": "total",
-          "total": 5,
+          "total": 4,
           "maxSame": 2
         }
       }
     },
     "welfare": {
       "normal": {
-        "payMaterials": 2,
-        "infra": 1,
+        "choices": [
+          {
+            "payMaterials": 1,
+            "infra": 1
+          }
+        ],
         "tempWorkers": 0
       },
       "upper": {
-        "payMaterials": 5,
-        "infra": 2,
+        "choices": [
+          {
+            "payMaterials": 3,
+            "infra": 2
+          }
+        ],
         "tempWorkers": 1
       },
       "top": {
-        "payMaterials": 8,
-        "infra": 3,
-        "tempWorkers": 2
+        "choices": [
+          {
+            "payMaterials": 1,
+            "infra": 1
+          },
+          {
+            "payMaterials": 3,
+            "infra": 2
+          },
+          {
+            "payMaterials": 6,
+            "infra": 3
+          }
+        ],
+        "tempWorkers": 1
       }
     },
     "migration": {
       "normal": {
         "tempWorkers": 0,
         "regularWorkers": 1,
-        "regularWorkersIsMax": false
+        "regularWorkersIsMax": false,
+        "materials": 1
       },
       "upper": {
         "tempWorkers": 1,
         "regularWorkers": 2,
-        "regularWorkersIsMax": true
+        "regularWorkersIsMax": true,
+        "materials": 1
       },
       "top": {
-        "tempWorkers": 2,
+        "tempWorkers": 1,
         "regularWorkers": 3,
-        "regularWorkersIsMax": true
+        "regularWorkersIsMax": true,
+        "materials": 2
       }
     },
     "research": {
       "normal": {
         "draw": 2,
-        "discard": 1
+        "playCards": 0
       },
       "upper": {
         "draw": 3,
-        "discard": 1
+        "playCards": 0
       },
       "top": {
-        "draw": 5,
-        "discard": 2
+        "draw": 3,
+        "playCards": 1
       }
     },
     "spread": {
       "normal": {
         "maxCards": 1,
         "cardsIsMax": false,
-        "goldPerCard": 0
+        "goldDiscount": 0
       },
       "upper": {
-        "maxCards": 2,
-        "cardsIsMax": true,
-        "goldPerCard": 1
-      },
-      "top": {
         "maxCards": 3,
         "cardsIsMax": true,
-        "goldPerCard": 1
+        "goldDiscount": 0
+      },
+      "top": {
+        "maxCards": 4,
+        "cardsIsMax": true,
+        "goldDiscount": 2
       }
     }
   },
@@ -530,10 +573,28 @@
     "max": 12,
     "rewards": [
       {
+        "level": 1,
+        "grants": [
+          {
+            "kind": "goldProduction",
+            "amount": 2
+          }
+        ]
+      },
+      {
         "level": 2,
         "grants": [
           {
             "kind": "tempWorkers",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 3,
+        "grants": [
+          {
+            "kind": "drawCivCards",
             "amount": 1
           }
         ]
@@ -548,10 +609,28 @@
         ]
       },
       {
+        "level": 5,
+        "grants": [
+          {
+            "kind": "materialProduction",
+            "amount": 1
+          }
+        ]
+      },
+      {
         "level": 6,
         "grants": [
           {
             "kind": "tempWorkers",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 7,
+        "grants": [
+          {
+            "kind": "drawCivCards",
             "amount": 1
           }
         ]
@@ -566,10 +645,28 @@
         ]
       },
       {
+        "level": 9,
+        "grants": [
+          {
+            "kind": "landTiles",
+            "amount": 2
+          }
+        ]
+      },
+      {
         "level": 10,
         "grants": [
           {
             "kind": "tempWorkers",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 11,
+        "grants": [
+          {
+            "kind": "drawCivCards",
             "amount": 1
           }
         ]
@@ -583,14 +680,24 @@
           }
         ]
       }
-    ]
+    ],
+    "overflowPointsPerRaise": 2
   },
   "raid": {
     "firstRoundCard": 1,
     "basePointsPerRound": {
       "defenseFailed": -1,
       "defended": 0,
-      "repelled": 2
+      "repelled": 0
+    },
+    "cardEffectKinds": {
+      "defenseFailed": [],
+      "defended": [],
+      "repelled": [
+        "gold",
+        "materials",
+        "landTiles"
+      ]
     }
   },
   "freeActions": {
@@ -660,6 +767,17 @@
           "kind": "materials",
           "amount": 1
         }
+      },
+      {
+        "id": "materials_to_tempworker",
+        "pay": {
+          "kind": "materials",
+          "amount": 4
+        },
+        "gain": {
+          "kind": "tempWorkers",
+          "amount": 1
+        }
       }
     ]
   },
@@ -672,20 +790,20 @@
   "scoring": {
     "base": {
       "landTilesPerPoint": 2,
-      "buildingsPerPoint": 2,
-      "regularWorkersPerPoint": 2
+      "buildingsPerPoint": 1,
+      "regularWorkersPerPoint": 1
     },
     "goldPerPointByShops": [
       20,
-      10,
       5,
+      4,
       3
     ],
     "materialsPerPointByWorkshops": [
       10,
-      5,
       3,
-      2
+      2,
+      1
     ],
     "civCardsPerPointByUniversities": [
       5,
@@ -693,11 +811,11 @@
       3,
       2
     ],
-    "regularWorkersDivisorByOffices": [
-      null,
-      3,
-      2,
-      1
+    "regularWorkerPointsByOffices": [
+      0,
+      0.5,
+      1,
+      2
     ],
     "plannedCityPointsByRank": [
       7,
@@ -705,9 +823,9 @@
       3
     ],
     "natureParkPointsBySetSize": {
-      "2": 5,
-      "3": 10,
-      "4": 15
+      "2": 3,
+      "3": 5,
+      "4": 7
     }
   },
   "characters": {

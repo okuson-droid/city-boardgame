@@ -5,7 +5,7 @@ import { buildingCount, landCount, placeableCells, playerOf, terrainOf, usableRe
 import { applyMove, createGame, decider, getOptions, isGameOver } from '../src/game/engine.ts';
 import { finalScores } from '../src/game/scoring.ts';
 import type { GameState, PlayerState } from '../src/game/types.ts';
-import { edit, firstTurn, withoutCharacters, ids, me, play, top, untilTurn } from './helpers/game.ts';
+import { edit, firstTurn, withAllRaidEffects, withoutCharacters, ids, me, play, top, untilTurn } from './helpers/game.ts';
 
 const d = GAME_DATA;
 
@@ -122,7 +122,8 @@ describe('準備とドラフト（第2章）', () => {
       expect(landCount(p)).toBe(2);
       expect(p.hand.length).toBeGreaterThanOrEqual(3);
       const tileGold = p.bonusTile === 2 ? 8 : p.bonusTile === 6 ? 3 : 0;
-      const tileProduction = p.bonusTile === 8 ? 2 : 0;
+      // ボーナスタイル10と官僚はインフラレベル1に上げ、到達報酬の金の生産力2をその収入から反映する（ユーザー決定 2026-11-07）。
+      const tileProduction = (p.bonusTile === 8 ? 2 : 0) + (p.bonusTile === 10 || p.characterId === 'bureaucrat' ? 2 : 0);
       expect(p.gold).toBe(20 + tileGold + tileProduction);
     }
   });
@@ -237,6 +238,7 @@ describe('手番とパス（第11章・第12章）', () => {
       for (const q of state.players) q.bonusTile = q.index === p.index ? 2 : q.index === (p.index + 1) % 3 ? 3 : 5;
       p.gold = 10;
       p.militaryLevel = 0;
+      p.goldProduction = 20;
     });
     const index = me(s).index;
     s = play(s, 'pass', 'bonus:8');
@@ -246,8 +248,8 @@ describe('手番とパス（第11章・第12章）', () => {
     s = untilTurn(s);
     const p = playerOf(s, index);
     expect(p.goldProduction).toBe(22);
-    // 第2ラウンドの収入（22金）の後、第1ラウンドの防衛失敗（カード1）で3金を失う。
-    expect(p.gold).toBe(10 + 22 - 3);
+    // 第2ラウンドの収入（22金）。防衛失敗の襲撃カードの効果は無視する（ユーザー決定 2026-11-07）。
+    expect(p.gold).toBe(10 + 22);
   });
 });
 
@@ -389,6 +391,18 @@ describe('フリーアクション（第10章）', () => {
     expect(ids(s)).not.toContain('free:gold_to_materials');
     s = play(s, 'free:materials_to_gold');
     expect(me(s).gold).toBe(1);
+  });
+
+  it('資材4個を臨時ワーカー1人に変換できる', () => {
+    // rules.md v0.8 10-1（変換の追加：ユーザー決定 2026-11-07）
+    let s = edit(base(), (_, p) => {
+      p.materials = 4;
+      p.tempWorkers = 0;
+    });
+    s = applyMove(s, 'free:materials_to_tempworker');
+    expect(me(s).materials).toBe(0);
+    expect(me(s).tempWorkers).toBe(1);
+    expect(ids(s)).not.toContain('free:materials_to_tempworker');
   });
 
   it('文明カード1枚を資材1個に変換するときは、捨てるカードを選ぶ', () => {
@@ -574,17 +588,31 @@ describe('建設（第5章・6-3-2）', () => {
 });
 
 describe('輸入・輸出・教練（6-3-3〜6-3-5）', () => {
-  it('輸入の上位は7金→2資材で、1回以上交換すると2資材を追加で得る。0回は選べない', () => {
-    // rules.md v0.8 6-3-3-2、6-1-6-2、19-2-1
+  it('輸入の上位は3金→1資材を5回まで行い、1回以上交換すると1資材を追加で得る。0回は選べない', () => {
+    // rules.md v0.8 6-3-3-2、6-1-6-2、19-2-1（数値はユーザー決定 2026-11-07）
     let s = edit(base(), (_, p) => {
-      p.gold = 14;
+      p.gold = 6;
       p.materials = 0;
     });
     s = applyMove(s, 'act:import:upper');
     expect(ids(s)).toEqual(['count:1', 'count:2']);
     s = applyMove(s, 'count:2');
     expect(me(s).gold).toBe(0);
-    expect(me(s).materials).toBe(6);
+    expect(me(s).materials).toBe(3);
+  });
+
+  it('輸出の最上位は1資材→5金を7回まで行い、1回以上交換すると6金を追加で得る', () => {
+    // rules.md v0.8 6-3-4-2（数値はユーザー決定 2026-11-07）
+    let s = edit(base(), (_, p) => {
+      p.gold = 0;
+      p.materials = 9;
+      p.unlockedTop = ['export'];
+    });
+    s = applyMove(s, 'act:export:top');
+    expect(ids(s)).toEqual(['count:1', 'count:2', 'count:3', 'count:4', 'count:5', 'count:6', 'count:7']);
+    s = applyMove(s, 'count:7');
+    expect(me(s).materials).toBe(2);
+    expect(me(s).gold).toBe(35 + 6);
   });
 
   it('輸入の後、商店の数に応じて金の生産力が増える', () => {
@@ -639,6 +667,44 @@ describe('輸入・輸出・教練（6-3-3〜6-3-5）', () => {
     expect(me(s).score).toBe(score + 2);
     expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ axis: 'military' });
   });
+
+  it('教練の最上位は払う金と得るトークンの組（3→3・6→5・9→8）を選び、上昇処理を3回まで行う', () => {
+    // rules.md v0.8 6-3-5（最上位の組の選択：ユーザー決定 2026-11-07）
+    let s = edit(base(), (_, p) => {
+      p.gold = 7;
+      p.militaryTokens = 0;
+      p.militaryLevel = 0;
+      p.unlockedTop = ['drill'];
+      p.buildings.E1 = 'fort';
+      p.buildings.F1 = 'fort';
+    });
+    const level = me(s).militaryLevel;
+    s = applyMove(s, 'act:drill:top');
+    expect(top(s).t).toBe('actionChoice');
+    // 9金の組は払えない。
+    expect(ids(s)).toEqual(['count:0', 'count:1']);
+    s = applyMove(s, 'count:1');
+    expect(me(s).gold).toBe(1);
+    expect(me(s).militaryTokens).toBe(5);
+    // 砦2軒なら1回2個。5個で2回まで。
+    expect(ids(s)).toEqual(['count:0', 'count:1', 'count:2']);
+    s = applyMove(s, 'count:2');
+    expect(me(s).militaryLevel).toBe(level + 2);
+  });
+
+  it('払える組が1つだけなら、教練の最上位は組を尋ねない', () => {
+    // rules.md v0.8 6-1-6（ユーザー決定 2026-11-07）
+    let s = edit(base(), (_, p) => {
+      p.gold = 3;
+      p.militaryTokens = 0;
+      p.unlockedTop = ['drill'];
+      p.buildings.E1 = 'fort';
+      p.buildings.F1 = 'fort';
+    });
+    s = applyMove(s, 'act:drill:top');
+    expect(top(s).t).toBe('drillRaise');
+    expect(me(s).militaryTokens).toBe(3);
+  });
 });
 
 describe('遠征（6-3-6）', () => {
@@ -658,8 +724,8 @@ describe('遠征（6-3-6）', () => {
     expect(top(s).t).toBe('placeTiles');
   });
 
-  it('通常は異なる報酬を2種類まで、最上位は合計5個まで・同じ報酬は2回まで', () => {
-    // rules.md v0.8 6-3-6-6（最上位は5個まで：ユーザー決定 2026-11-03）
+  it('通常は異なる報酬を2種類まで、最上位は合計4個まで・同じ報酬は2回まで', () => {
+    // rules.md v0.8 6-3-6-6（最上位は4個まで：ユーザー決定 2026-11-07）
     let s = edit(base(), (_, p) => {
       p.militaryLevel = 5;
       p.militaryTokens = 0;
@@ -718,18 +784,47 @@ describe('福祉・移住・研究・普及（6-3-7〜6-3-10）', () => {
     expect(s.scRevealed).toContain(deckTop);
   });
 
-  it('インフラレベル12を超える上昇は破棄する', () => {
-    // rules.md v0.8 8-1-1、19-2-9
+  it('インフラレベル12を超える上昇は破棄し、超えた上昇1回ごとに2点を得る', () => {
+    // rules.md v0.8 8-1-1、19-2-9（超過の得点：ユーザー決定 2026-11-07）
     let s = edit(base(), (_, p) => {
-      p.materials = 8;
+      p.materials = 6;
       p.infraLevel = 11;
-      p.infraRewardsClaimed = [2, 4, 6, 8, 10];
+      p.infraRewardsClaimed = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
       p.tempWorkers = 0;
       p.unlockedTop = ['welfare'];
     });
+    const score = me(s).score;
     s = applyMove(s, 'act:welfare:top');
+    expect(top(s).t).toBe('actionChoice');
+    expect(ids(s)).toEqual(['count:0', 'count:1', 'count:2']);
+    s = applyMove(s, 'count:2');
     while (top(s).t !== 'turn') s = applyMove(s, ids(s)[0] ?? '');
     expect(me(s).infraLevel).toBe(12);
+    expect(me(s).materials).toBe(0);
+    expect(me(s).score).toBe(score + 2 * 2);
+    expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ axis: 'welfare', points: 4 });
+  });
+
+  it('インフラの到達報酬：レベル1で金の生産力2、レベル5で資材の生産力1を得る', () => {
+    // rules.md v0.8 8-1-2（到達報酬の変更：ユーザー決定 2026-11-07）
+    let s = edit(base(), (_, p) => {
+      p.materials = 3;
+      p.infraLevel = 0;
+      p.infraRewardsClaimed = [];
+      p.tempWorkers = 0;
+    });
+    const gold = me(s).goldProduction;
+    s = applyMove(s, 'act:welfare:normal');
+    expect(me(s).infraLevel).toBe(1);
+    expect(me(s).goldProduction).toBe(gold + 2);
+    let t = edit(base(), (_, p) => {
+      p.materials = 3;
+      p.infraLevel = 4;
+      p.infraRewardsClaimed = [1, 2, 3, 4];
+    });
+    const material = me(t).materialProduction;
+    t = applyMove(t, 'act:welfare:normal');
+    expect(me(t).materialProduction).toBe(material + 1);
   });
 
   it('福祉の後、役所があれば臨時ワーカー1人を資材に変換できる。同じ福祉で得た臨時ワーカーは使えない', () => {
@@ -737,7 +832,7 @@ describe('福祉・移住・研究・普及（6-3-7〜6-3-10）', () => {
     let s = edit(base(), (_, p) => {
       p.materials = 5;
       p.tempWorkers = 0;
-      p.infraRewardsClaimed = [2];
+      p.infraRewardsClaimed = [1, 2];
       p.buildings.E1 = 'office';
     });
     s = applyMove(s, 'act:welfare:upper');
@@ -746,27 +841,33 @@ describe('福祉・移住・研究・普及（6-3-7〜6-3-10）', () => {
       p.materials = 5;
       p.tempWorkers = 1;
       p.regularPlaced = 0;
-      p.infraRewardsClaimed = [2];
+      p.infraRewardsClaimed = [1, 2];
       p.buildings.E1 = 'office';
     });
     t = play(t, 'act:welfare:upper', 'temp:0');
     expect(ids(t)).toEqual(['convert:0', 'convert:1']);
     t = applyMove(t, 'convert:1');
     expect(me(t).tempWorkers).toBe(1);
-    expect(me(t).materials).toBe(2);
+    // 上位の福祉は資材3を払う（ユーザー決定 2026-11-07）。役所1軒の変換で資材2を得る。
+    expect(me(t).materials).toBe(5 - 3 + 2);
   });
 
-  it('通常ワーカーの上限は5＋住宅数÷2で、上限のときの通常の移住は選べない', () => {
-    // rules.md v0.8 3-3-1-2、3-3-4、6-1-6（ユーザー決定 2026-11-03）
+  it('通常ワーカーの上限は5＋住宅数÷2で、上限のときの通常の移住は資材だけを得る', () => {
+    // rules.md v0.8 3-3-1-2、3-3-4、6-1-6（移住で資材を得る：ユーザー決定 2026-11-07）
     let s = edit(base(), (_, p) => {
       p.regularWorkers = 5;
     });
-    expect(ids(s)).not.toContain('act:migration:normal');
-    s = edit(s, (_, p) => {
+    const materials = me(s).materials;
+    s = applyMove(s, 'act:migration:normal');
+    expect(me(s).regularWorkers).toBe(5);
+    expect(me(s).materials).toBe(materials + 1);
+    let t = edit(base(), (_, p) => {
+      p.regularWorkers = 5;
       p.buildings.E1 = 'house';
       p.buildings.F1 = 'house';
     });
-    expect(ids(s)).toContain('act:migration:normal');
+    t = applyMove(t, 'act:migration:normal');
+    expect(me(t).regularWorkers).toBe(6);
   });
 
   it('上位の移住は臨時ワーカー1人と、通常ワーカーを上限までの範囲で最大2人', () => {
@@ -777,23 +878,41 @@ describe('福祉・移住・研究・普及（6-3-7〜6-3-10）', () => {
       p.buildings.E1 = 'house';
       p.buildings.F1 = 'house';
     });
+    const materials = me(s).materials;
     s = applyMove(s, 'act:migration:upper');
     expect(ids(s)).toEqual(['count:0', 'count:1']);
     s = applyMove(s, 'count:1');
     expect(me(s).regularWorkers).toBe(6);
     expect(me(s).tempWorkers).toBe(1);
+    expect(me(s).materials).toBe(materials + 1);
   });
 
-  it('研究は引いたカードを含む手札全体から捨てる', () => {
-    // rules.md v0.8 6-3-9-2、19-2-8
+  it('研究は引くだけで捨てない', () => {
+    // rules.md v0.8 6-3-9-2 からの変更（ユーザー決定 2026-11-07）
     let s = firstTurn();
     const hand = me(s).hand.length;
     s = applyMove(s, 'act:research:upper');
     if (top(s).t === 'payWorkers') s = applyMove(s, 'temp:0');
-    expect(top(s).t).toBe('discard');
-    expect(ids(s)).toHaveLength(new Set(me(s).hand).size);
-    s = applyMove(s, ids(s)[0] ?? '');
-    expect(me(s).hand.length).toBe(hand + 3 - 1);
+    expect(top(s).t).toBe('turn');
+    expect(me(s).hand.length).toBe(hand + 3);
+  });
+
+  it('研究の最上位は3枚引いた後、通常のコストで1枚プレイしてよい', () => {
+    // rules.md v0.8 6-3-9 からの変更（ユーザー決定 2026-11-07）、9-2-4
+    let s = edit(base(), (state, p) => {
+      p.hand = ['016'];
+      p.gold = 6;
+      p.unlockedTop = ['research'];
+      state.civDeck = ['001', '002', '003', ...state.civDeck.filter((c) => !['001', '002', '003'].includes(c))];
+    });
+    s = applyMove(s, 'act:research:top');
+    expect(me(s).hand).toEqual(['016', '001', '002', '003']);
+    expect(top(s).t).toBe('playCard');
+    expect(ids(s)).toEqual(['card:016', 'done']);
+    s = applyMove(s, 'card:016');
+    expect(me(s).gold).toBe(0);
+    expect(me(s).played).toEqual(['016']);
+    expect(top(s).t).toBe('turn');
   });
 
   it('山札と捨て札が尽きたら、引けなかった1枚につき資材1個を得る', () => {
@@ -808,8 +927,8 @@ describe('福祉・移住・研究・普及（6-3-7〜6-3-10）', () => {
     expect(me(s).materials).toBe(materials + 1);
   });
 
-  it('普及は大学1軒につき1金軽減してプレイし、上位は1枚ごとに1金を即時に得る', () => {
-    // rules.md v0.8 9-2-4、5-5-5-2、6-3-10-2（1枚ごとに即時：ユーザー決定 2026-11-03）
+  it('普及は大学1軒につき1金軽減してプレイし、上位は3枚まで（金は得ない）', () => {
+    // rules.md v0.8 9-2-4、5-5-5-2、6-3-10-2（上位の1金の廃止：ユーザー決定 2026-11-07）
     let s = edit(base(), (_, p) => {
       p.hand = ['016', '010'];
       p.gold = 9;
@@ -819,12 +938,28 @@ describe('福祉・移住・研究・普及（6-3-7〜6-3-10）', () => {
     s = applyMove(s, 'act:spread:upper');
     // 016 は6金→5金、010 は5金→4金。
     s = applyMove(s, 'card:016');
-    expect(me(s).gold).toBe(9 - 5 + 1);
+    expect(me(s).gold).toBe(9 - 5);
     expect(ids(s)).toEqual(['card:010', 'done']);
     s = applyMove(s, 'card:010');
-    expect(me(s).gold).toBe(5 - 4 + 1);
+    expect(me(s).gold).toBe(0);
     expect(me(s).played).toEqual(['016', '010']);
     expect(top(s).t).toBe('turn');
+  });
+
+  it('普及の最上位は4枚まで、1枚ごとに2金安くプレイする（0未満にならない）', () => {
+    // rules.md v0.8 6-3-10-2 からの変更（ユーザー決定 2026-11-07）
+    let s = edit(base(), (_, p) => {
+      p.hand = ['016', '010'];
+      p.gold = 7;
+      p.tempWorkers = 0;
+      p.unlockedTop = ['spread'];
+    });
+    s = applyMove(s, 'act:spread:top');
+    // 016 は6金→4金、010 は5金→3金。
+    s = applyMove(s, 'card:016');
+    expect(me(s).gold).toBe(3);
+    s = applyMove(s, 'card:010');
+    expect(me(s).gold).toBe(0);
   });
 
   it('通常の普及はちょうど1枚をプレイし、払えるカードがなければ選べない', () => {
@@ -864,8 +999,8 @@ describe('襲撃（7-3〜7-6、19-3）', () => {
     expect(ids(s)).toEqual(['raid:none', 'raid:defense']);
   });
 
-  it('防衛失敗はラウンド数×−1点、撃退成功はラウンド数×2点にカードの固有効果を加える', () => {
-    // rules.md v0.8 7-4-5、7-5-1、7-6-1、19-3-1、19-3-3
+  it('防衛失敗はラウンド数×−1点だけ、撃退成功はカードの資源の効果だけを得る', () => {
+    // rules.md v0.8 7-4-5、7-5-1、7-6-1、19-3-1 からの変更（ユーザー決定 2026-11-07）
     let s = toRaid(firstTurn());
     s = edit(s, (_, p) => {
       p.militaryLevel = 0;
@@ -876,7 +1011,7 @@ describe('襲撃（7-3〜7-6、19-3）', () => {
     s = applyMove(s, 'raid:repel');
     const p = playerOf(s, index);
     expect(p.militaryTokens).toBe(0);
-    expect(p.score).toBe(score + 2);
+    expect(p.score).toBe(score);
     // カード1の撃退成功：土地タイル1枚を即時配置する。
     expect(top(s)).toMatchObject({ t: 'placeTiles', player: index, mode: 'effect' });
 
@@ -890,8 +1025,8 @@ describe('襲撃（7-3〜7-6、19-3）', () => {
     const loserScore = me(t).score;
     t = applyMove(t, 'raid:none');
     expect(playerOf(t, loser).score).toBe(loserScore - 1);
-    // カード1の防衛失敗：次の収入後に3金を失う。
-    expect(playerOf(t, loser).pendingLosses).toEqual([{ kind: 'gold', amount: 3 }]);
+    // カード1の防衛失敗の効果（次の収入後に3金を失う）は無視する。
+    expect(playerOf(t, loser).pendingLosses).toEqual([]);
   });
 
   it('防衛ライン以上・撃退ライン未満は防衛成功で、得点の変化はない', () => {
@@ -909,7 +1044,7 @@ describe('襲撃（7-3〜7-6、19-3）', () => {
   });
 
   it('次の収入後の損失は、次のラウンドの収入の後に適用し、足りなければ0にする', () => {
-    // rules.md v0.8 7-6-1、19-3-4
+    // rules.md v0.8 7-6-1、19-3-4（防衛失敗の効果を適用するデータで検査する）
     let s = toRaid(firstTurn());
     const loser = me(s).index;
     s = edit(s, (state) => {
@@ -920,7 +1055,7 @@ describe('襲撃（7-3〜7-6、19-3）', () => {
         p.gold = 0;
       }
     });
-    s = applyMove(s, 'raid:none');
+    s = applyMove(s, 'raid:none', withAllRaidEffects());
     while (s.round === 1) s = applyMove(s, ids(s)[0] ?? '');
     s = untilTurn(s);
     const p = playerOf(s, loser);
@@ -930,8 +1065,22 @@ describe('襲撃（7-3〜7-6、19-3）', () => {
     expect(p.gold).toBe(Math.max(0, tileGold + 1 - 3));
   });
 
-  it('カード5の得点は合算後の数値であり、基本得点を加えない', () => {
-    // rules.md v0.8 7-5-2、19-3-3
+  it('カード5の得点は合算後の数値であり、カードの点を適用するときは基本得点を加えない', () => {
+    // rules.md v0.8 7-5-2、19-3-3（防衛失敗の効果を適用するデータで検査する）
+    let s = toRaid(firstTurn());
+    s = edit(s, (state, p) => {
+      state.raidOrder = [5, 1, 2, 3, 4];
+      p.militaryLevel = 0;
+      p.militaryTokens = 0;
+    });
+    const score = me(s).score;
+    const index = me(s).index;
+    s = applyMove(s, 'raid:none', withAllRaidEffects());
+    expect(playerOf(s, index).score).toBe(score - 3);
+  });
+
+  it('防衛失敗はカード5でもラウンド数×−1点だけを失う', () => {
+    // rules.md v0.8 7-5-2 からの変更（ユーザー決定 2026-11-07：防衛失敗の襲撃カードの効果は無視する）
     let s = toRaid(firstTurn());
     s = edit(s, (state, p) => {
       state.raidOrder = [5, 1, 2, 3, 4];
@@ -941,7 +1090,7 @@ describe('襲撃（7-3〜7-6、19-3）', () => {
     const score = me(s).score;
     const index = me(s).index;
     s = applyMove(s, 'raid:none');
-    expect(playerOf(s, index).score).toBe(score - 3);
+    expect(playerOf(s, index).score).toBe(score - 1);
   });
 });
 
@@ -967,6 +1116,7 @@ describe('ゲーム終了と得点計算（第17章）', () => {
   it('基礎得点・経済・文化・生活の計算と内訳の合計', () => {
     // rules.md v0.8 17-1-3、17-2-2、17-2-3、17-3-1、17-4-1、17-0-3
     // 経済・産業は収入（生産力）で数える（17-2 からの変更、ユーザー決定 2026-11-06）。残った金・資材は得点にしない。
+    // 建物・通常ワーカーは1つにつき1点、換算率と役所の点はユーザー決定 2026-11-07 の値。
     const s = structuredClone(passToEnd(firstTurn()));
     const p = playerOf(s, 0);
     p.gold = 23;
@@ -977,14 +1127,16 @@ describe('ゲーム終了と得点計算（第17章）', () => {
     p.played = ['001', '002', '003', '004', '005'];
     p.buildings = { E1: 'shop', F1: 'office' };
     const score = finalScores(s).find((f) => f.player === 0);
-    expect(score?.base).toBe(Math.floor(landCount(p) / 2) + 1 + 3);
+    expect(score?.base).toBe(Math.floor(landCount(p) / 2) + 2 + 7);
     const inGame = s.events.filter((e) => e.type === 'score' && e.player === 0);
     const sumOf = (axis: string) => inGame.filter((e) => e.type === 'score' && e.axis === axis).reduce((a, e) => a + (e.type === 'score' ? e.points : 0), 0);
-    expect(score?.axes.economy).toBe(2 + 1 + sumOf('economy'));
+    // 商店1軒は金の収入5につき1点、工房0軒は資材の収入10につき1点。
+    expect(score?.axes.economy).toBe(4 + 1 + sumOf('economy'));
     // 同点判定の1段目は残った金（すべて換算されずに残る）。
     expect(score?.leftoverGold).toBe(23);
     expect(score?.axes.culture).toBe(5 + 1 + sumOf('culture'));
-    expect(score?.axes.welfare).toBe(2 + sumOf('welfare'));
+    // 役所1軒は通常ワーカー1人につき0.5点（端数は切り捨て）。
+    expect(score?.axes.welfare).toBe(3 + sumOf('welfare'));
     const axesSum = Object.values(score?.axes ?? {}).reduce((a, b) => a + b, 0);
     expect(score?.total).toBe((score?.base ?? 0) + axesSum);
     expect(buildingCount(p)).toBe(2);

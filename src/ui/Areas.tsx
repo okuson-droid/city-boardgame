@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
-import { BUILDINGS, SCORE_AXES, type ScoreAxis } from '../data/types.ts';
+import { BUILDINGS, SCORE_AXES, type RaidCard, type ScoreAxis } from '../data/types.ts';
 import { explain } from '../game/explain.ts';
 import type { IconToken } from '../game/icons.ts';
 import { abilitiesOf } from '../game/abilities.ts';
-import { buildingBreakdown, buildingCount, housesOnCard, isTopUnlocked, workerSummary } from '../game/queries.ts';
+import { buildingBreakdown, buildingCount, describeRaidOutcomes, housesOnCard, isTopUnlocked, playDiscount, workerSummary } from '../game/queries.ts';
 import { finalScores } from '../game/scoring.ts';
 import type { GameEvent, GameState, PlayerState } from '../game/types.ts';
 import { ACTIONS } from '../data/types.ts';
@@ -20,6 +20,12 @@ import type { CellId } from '../game/board.ts';
 
 const entry = (section: keyof typeof ICON_KEYS, key: string): { icon: string; label: string } =>
   (ICON_KEYS[section] as Readonly<Record<string, { icon: string; label: string }>>)[key] ?? { icon: `${section}.${key}`, label: key };
+
+/** 襲撃カードの補足：結果ごとに実際に起きること（ユーザー決定 2026-11-07）。 */
+const raidTip = (card: RaidCard): string => {
+  const o = describeRaidOutcomes(card);
+  return `防衛失敗：${o.defenseFailed}／防衛成功：${o.defended}／撃退成功：${o.repelled}`;
+};
 
 const tok = (section: keyof typeof ICON_KEYS, key: string, value?: number | string): IconToken => {
   const e = entry(section, key);
@@ -85,7 +91,7 @@ export const SharedArea = ({
       <section className="panel-box">
         <h3>襲撃</h3>
         {shown && raidCard ? (
-          <Tip text={`防衛失敗：${raidCard.on_defense_fail}／撃退成功：${raidCard.on_repel}`}>
+          <Tip text={raidTip(raidCard)}>
             <div className="raid-card">
               <span>カード{raidCard.id}</span>
               <IconRow tokens={[tok('metrics', 'defenseLine', state.defenseLine), tok('metrics', 'repelLine', state.repelLine)]} size="sm" />
@@ -426,7 +432,7 @@ export const HandArea = ({
                     reason={model.waiting ? WAITING_REASON : explain(state, { kind: 'handCard', card })}
                     extra={{ 'data-hand-card': card, 'data-owner': String(player.index) }}
                   >
-                    <CivCardView card={card} player={player} />
+                    <CivCardView card={card} player={player} discount={playDiscount(state, player.index)} />
                   </CardFrame>
                 );
               })

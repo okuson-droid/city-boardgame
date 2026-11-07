@@ -3,7 +3,7 @@ import { GAME_DATA } from '../src/data/index.ts';
 import { placeableCells, playerOf, terrainOf } from '../src/game/core.ts';
 import { applyMove, isGameOver } from '../src/game/engine.ts';
 import type { GameState } from '../src/game/types.ts';
-import { edit, firstTurn, withoutCharacters, ids, me, play, top } from './helpers/game.ts';
+import { edit, firstTurn, withAllRaidEffects, withoutCharacters, ids, me, play, top } from './helpers/game.ts';
 
 const d = GAME_DATA;
 
@@ -31,8 +31,8 @@ describe('到達報酬と同時発生効果', () => {
       p.buildings.E1 = 'fort';
       p.buildings.F1 = 'fort';
     });
-    // 最上位の教練：トークン8個を得て、砦2軒なら1回2個で3回上昇する。
-    s = play(s, 'act:drill:top', 'count:3');
+    // 最上位の教練：9金の組でトークン8個を得て、砦2軒なら1回2個で3回上昇する。
+    s = play(s, 'act:drill:top', 'count:2', 'count:3');
     expect(me(s).militaryLevel).toBe(5);
     expect(me(s).militaryRewardsClaimed).toEqual([3]);
     // 4個＋8個−上昇3回分6個＋レベル3の報酬2個。
@@ -165,8 +165,8 @@ describe('襲撃カードの固有効果（7-6、19-3）', () => {
     expect(playerOf(s, index).goldProduction).toBe(0);
   });
 
-  it('カード4の撃退成功は、基本得点に加えてラウンド数×1金と同数の点を得る', () => {
-    // rules.md v0.8 7-6-1、19-3-3
+  it('カード4の撃退成功は、ラウンド数×1金だけを得る（基本得点とカードの点はない）', () => {
+    // rules.md v0.8 7-6-1、19-3-3 からの変更（ユーザー決定 2026-11-07：撃退成功は資源の効果だけ）
     let s = toRaid(base());
     s = edit(s, (state, p) => {
       state.raidOrder = [4, 1, 2, 3, 5];
@@ -175,12 +175,12 @@ describe('襲撃カードの固有効果（7-6、19-3）', () => {
     const index = me(s).index;
     const { score, gold } = me(s);
     s = applyMove(s, 'raid:none');
-    expect(playerOf(s, index).score).toBe(score + 2 + 1);
+    expect(playerOf(s, index).score).toBe(score);
     expect(playerOf(s, index).gold).toBe(gold + 1);
   });
 
   it('最終ラウンドの防衛失敗による損失は、最終収入の後に適用する', () => {
-    // rules.md v0.8 7-6-3、17-0-1
+    // rules.md v0.8 7-6-3、17-0-1（防衛失敗の効果を適用するデータで検査する）
     let s = toRaid(base());
     s = edit(s, (state) => {
       state.round = 5;
@@ -192,7 +192,8 @@ describe('襲撃カードの固有効果（7-6、19-3）', () => {
         p.materialProduction = 7;
       }
     });
-    while (!isGameOver(s)) s = applyMove(s, ids(s)[0] ?? '');
+    const legacy = withAllRaidEffects();
+    while (!isGameOver(s)) s = applyMove(s, ids(s)[0] ?? '', legacy);
     // 最終収入で資材7個を得た後、カード2の防衛失敗で 5×1＝5資材を失う。
     for (const p of s.players) expect(p.materials).toBe(2);
   });

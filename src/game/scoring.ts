@@ -71,11 +71,8 @@ const scorePlayer = (state: GameState, d: GameData, player: PlayerState): Omit<F
   const cardRate = tableAt(s.civCardsPerPointByUniversities, buildingCount(player, 'university'));
   axes.culture += cardPoints + Math.floor(player.played.length / cardRate);
 
-  // 生活・福祉（17-4）。
-  const divisor = tableAt(s.regularWorkersDivisorByOffices, buildingCount(player, 'office'));
-  if (divisor !== null) {
-    axes.welfare += Math.floor(player.regularWorkers / divisor);
-  }
+  // 生活・福祉（17-4-1 からの変更、ユーザー決定 2026-11-07）：通常ワーカー1人あたり、役所の数による点を得る。端数は切り捨てる。
+  axes.welfare += Math.floor(player.regularWorkers * tableAt(s.regularWorkerPointsByOffices, buildingCount(player, 'office')));
 
   // 自然・環境（17-5）：自然公園カード（計画都市の得点はゲーム中の得点として記録済み）。
   axes.nature += natureParkScore(d, player);

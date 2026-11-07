@@ -37,6 +37,16 @@ const panelTokens = (state: GameState, choice: Choice): IconToken[] => {
         const k = Number(t.value);
         return k === 0 ? [{ icon: 'sym.none', label: '替えない' }] : [tok('resources', 'gold', k * task.rate), tok('symbols', 'then'), tok('resources', 'militaryTokens', k)];
       }
+      // 教練・福祉の組（ユーザー決定 2026-11-07）：払うものを矢の左、得るものを右に置く。
+      if (task?.t === 'actionChoice') {
+        const i = Number(t.value);
+        if (task.action === 'drill') {
+          const c = GAME_DATA.params.actions.drill[task.tier].choices[i];
+          return c === undefined ? [] : [tok('resources', 'gold', c.payGold), tok('symbols', 'then'), tok('resources', 'militaryTokens', c.gainTokens)];
+        }
+        const c = GAME_DATA.params.actions.welfare[task.tier].choices[i];
+        return c === undefined ? [] : [tok('resources', 'materials', c.payMaterials), tok('symbols', 'then'), tok('tracks', 'infra', `+${c.infra}`)];
+      }
       return [{ icon: 'num', value: Number(t.value), label: t.value }];
     case 'convert':
       return t.value === '1' ? [tok('resources', 'tempWorkers', 1), tok('symbols', 'then'), tok('resources', 'materials')] : [{ icon: 'sym.none', label: 'しない' }];
@@ -83,6 +93,7 @@ export const PromptBar = ({
   freeOpen,
   onToggleFree,
   turn,
+  showHand,
 }: {
   state: GameState;
   model: UiModel;
@@ -95,6 +106,8 @@ export const PromptBar = ({
   onToggleFree: () => void;
   /** いま選ぶ人（手番）。mine はこの画面の持ち主が選ぶか（ローカル版は常に真）。 */
   turn: { name: string; color: string; mine: boolean; online: boolean } | null;
+  /** 表示中のタブが手札の持ち主か。偽なら手札の内容（文明カードを捨てる変換のカード名）を出さない。 */
+  showHand: boolean;
 }) => {
   const scene = sceneOf(state);
   const panelChoices = model.choices.filter((c) => c.target.kind === 'panel');
@@ -197,18 +210,20 @@ export const PromptBar = ({
           </button>
         ) : null}
       </div>
-      {freeOpen && model.conversions.length > 0 ? <ConversionPanel model={model} onChoose={onChoose} /> : null}
+      {freeOpen && model.conversions.length > 0 ? <ConversionPanel model={model} onChoose={onChoose} showHand={showHand} /> : null}
     </div>
   );
 };
 
 /** フリーアクションの資源変換（10-1-3）。1行が1回の変換。 */
-const ConversionPanel = ({ model, onChoose }: { model: UiModel; onChoose: Choose }) => {
+const ConversionPanel = ({ model, onChoose, showHand }: { model: UiModel; onChoose: Choose; showHand: boolean }) => {
   return (
     <div className="free-panel">
       {model.conversions.map((c) => {
         const t = c.target;
         if (t.kind !== 'conversion') return null;
+        // 捨てるカードを選ぶ変換は手札の内容を見せるため、持ち主のタブを表示しているときだけ出す。
+        if (t.card !== null && !showHand) return null;
         const conv = GAME_DATA.params.freeActions.conversions.find((x) => x.id === t.id);
         if (conv === undefined) return null;
         const payKey = conv.pay.kind === 'civCards' ? 'drawCivCards' : conv.pay.kind;
