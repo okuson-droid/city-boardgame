@@ -3,7 +3,7 @@
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
 import { ACTIONS, TIERS, type Action, type Tier } from '../data/types.ts';
 import { explain } from '../game/explain.ts';
-import { actionSpaceIcons, describeActionSpace, isSharedSpace, isTopUnlocked, spaceUsers, unlockIcons } from '../game/queries.ts';
+import { actionSpaceIcons, describeActionSpace, describeExpeditionRewards, isSharedSpace, isTopUnlocked, spaceUsers, unlockIcons } from '../game/queries.ts';
 import type { GameState } from '../game/types.ts';
 import { Icon, IconRow } from './Icon.tsx';
 import { ICON_ART } from './icon-art.ts';
@@ -62,7 +62,13 @@ export const ActionBoard = ({
             const shared = isSharedSpace(action, tier);
             const reason = option !== undefined ? null : model.waiting ? WAITING_REASON : explain(state, { kind: 'actionSpace', action, tier });
             return (
-              <Tip key={tier} text={`${ACTION_LABELS[action]}（${tierLabel(tier)}）：${describeActionSpace(action, tier)}${reason !== null ? `\n${reason}` : ''}`}>
+              <Tip
+                key={tier}
+                text={`${ACTION_LABELS[action]}（${tierLabel(tier)}）：${describeActionSpace(action, tier)}${
+                  // 遠征は報酬表も添える（ユーザー決定 2026-11-07）。指揮官の追加報酬も含める。
+                  action === 'expedition' ? `\n${describeExpeditionRewards(owner ?? null)}` : ''
+                }${reason !== null ? `\n${reason}` : ''}`}
+              >
                 <button
                   type="button"
                   className={`ab-space${shared ? ' ab-shared' : ''}${option ? ' selectable' : ' disabled'}`}

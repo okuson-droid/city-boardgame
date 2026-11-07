@@ -315,3 +315,19 @@ export const raidNeed = (state: GameState, player: PlayerState): { defense: numb
   defense: Math.max(0, state.defenseLine - player.militaryLevel),
   repel: Math.max(0, state.repelLine - player.militaryLevel),
 });
+
+// 早見表と吹き出しの説明（reference.ts）。画面は queries.ts だけから派生値を得るため、ここから再輸出する。
+export {
+  ALL_BUILDINGS,
+  actionLabel,
+  buildingInfo,
+  buildingLabel,
+  describeBuilding,
+  describeExpeditionRewards,
+  expeditionRows,
+  grantText,
+  ownedCount,
+  unlockText,
+  type BuildingInfo,
+  type ExpeditionRow,
+} from './reference.ts';

@@ -19,6 +19,7 @@ import { Board, type CellState } from './Board.tsx';
 import { buildModel, colorOf, waitingModel, WAITING_REASON, type Choice } from './model.ts';
 import { PromptBar } from './PromptBar.tsx';
 import { LegendButton } from './Legend.tsx';
+import { QuickRefButton } from './QuickRef.tsx';
 import { playTurnChime, useSoundEnabled } from './sound.ts';
 import { RulesButton } from './RulesDeck.tsx';
 import { Tip } from './Tip.tsx';
@@ -234,6 +235,7 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
           </button>
         ) : null}
         <RulesButton label="ルール" />
+        <QuickRefButton state={state} viewer={view} />
         <LegendButton />
         <button
           type="button"

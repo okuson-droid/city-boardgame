@@ -4,6 +4,7 @@ import { CELLS, type CellId } from '../game/board.ts';
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
 import type { Terrain } from '../data/types.ts';
 import type { PlayerState } from '../game/types.ts';
+import { describeBuilding, grantText } from '../game/queries.ts';
 import { ICON_ART } from './icon-art.ts';
 
 const R = 26;
@@ -76,19 +77,24 @@ export const Board = ({
           const building = player.buildings[cell.id];
           const state = cellState(cell.id);
           const order = pickOrder(cell.id);
-          const tip =
-            state === 'selectable'
-              ? `${cell.id}（${labelOf('terrains', terrain)}）`
-              : (explainCell(cell.id) ?? `${cell.id}（${labelOf('terrains', terrain)}）`);
+          // マスの吹き出し（ユーザー決定 2026-11-07）：地形・置いた土地タイル・未開拓ならマスボーナス・建物の効果のまとめ。
+          const reason = state === 'selectable' ? null : explainCell(cell.id);
+          const tip = [
+            `${cell.id}（${labelOf('terrains', terrain)}）${tile !== undefined && tile !== terrain ? `・${labelOf('terrains', tile)}の土地タイル` : ''}${
+              square?.bonus && tile === undefined ? `・マスボーナス：${grantText(square.bonus)}` : ''
+            }`,
+            ...(building !== undefined ? [describeBuilding(building)] : []),
+            ...(reason !== null ? [reason] : []),
+          ].join('\n');
           return (
             <g
                 key={cell.id}
               className={`cell cell-${state}${highlight === cell.id ? ' cell-highlight' : ''}${fresh.has(cell.id) ? ' cell-fresh' : ''}`}
                 data-cell={cell.id}
                 {...(state === 'selectable' ? { 'data-target': `cell:${cell.id}` } : {})}
+                data-tip={tip}
                 onClick={() => onCell(cell.id)}
               >
-                <title>{tip}</title>
                 <polygon
                   points={hexPoints(cx, cy, R - 1)}
                   fill={TERRAIN_COLORS[tile ?? terrain]}
@@ -173,10 +179,11 @@ export const BoardMap = ({ boardId }: { boardId: string }) => {
         const start = initial.has(cell.id);
         const bonus = square?.bonus ?? null;
         return (
-          <g key={cell.id} data-cell={cell.id}>
-            <title>
-              {`${cell.id}（${labelOf('terrains', terrain)}）${start ? '・最初に土地タイルを置くマス' : ''}${bonus ? `・マスボーナス：${labelOf('resources', bonus.kind)}${bonus.amount}` : ''}`}
-            </title>
+          <g
+            key={cell.id}
+            data-cell={cell.id}
+            data-tip={`${cell.id}（${labelOf('terrains', terrain)}）${start ? '・最初に土地タイルを置くマス' : ''}${bonus ? `・マスボーナス：${grantText(bonus)}` : ''}`}
+          >
             <polygon
               points={hexPoints(cx, cy, R - 1)}
               fill={TERRAIN_COLORS[terrain]}

@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 import type { GroupKind, IconToken } from '../game/icons.ts';
 import { ACTION_ART, compositeArt, ICON_ART } from './icon-art.ts';
 import { iconTipText, Tip, useTipContext } from './Tip.tsx';
+import { BUILDINGS } from '../data/types.ts';
+import { describeBuilding } from '../game/queries.ts';
 
 const COLORS: Record<string, string> = {
   res: '#c9a227',
@@ -106,7 +108,12 @@ export const Icon = ({ token, size = 'md' }: { token: IconToken; size?: 'sm' | '
   const art = artOf(token.icon);
   const hasValue = token.value !== undefined && token.icon !== 'num';
   // カーソルを合わせると、アイコンの語に続けて、囲む効果の文章を出す。
-  const tip = iconTipText(`${standaloneLabel(token.icon, token.label)}${hasValue ? ` ${String(token.value)}` : ''}`, useTipContext());
+  const context = useTipContext();
+  const label = `${standaloneLabel(token.icon, token.label)}${hasValue ? ` ${String(token.value)}` : ''}`;
+  // 建物のアイコンは、囲む効果文がなければ建物の効果のまとめを出す（ユーザー決定 2026-11-07）。
+  const building = BUILDINGS.find((b) => token.icon === `bld.${b}`);
+  // 先頭の建物名は、アイコンの語（軒数を含む）に置き換える。
+  const tip = context === null && building !== undefined ? describeBuilding(building).replace(/^[^（]*/, label) : iconTipText(label, context);
   // 得点は数字を輪の中に入れる（4-2）。
   const inside = token.icon === 'res.points' && hasValue;
   return (

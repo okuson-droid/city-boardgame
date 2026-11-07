@@ -2397,3 +2397,154 @@ h3 {
   background: #fff4e6;
   font-size: 0.92em;
 }
+
+/* 早見表（ユーザー決定 2026-11-07）。数値は params.json から組み立て、表示中のプレイヤーに効く値を強調する。 */
+.quickref {
+  width: min(1180px, calc(100% - 24px));
+  max-height: calc(100vh - 32px);
+  font-size: 14px;
+}
+
+.quickref-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  position: sticky;
+  top: -16px;
+  margin: -16px -16px 10px;
+  padding: 10px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  z-index: 1;
+}
+
+.quickref-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.quickref-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-right: auto;
+}
+
+.qr-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.qr-table th,
+.qr-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.qr-table thead th {
+  background: #f3efe6;
+  font-size: 13px;
+}
+
+.qr-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.qr-actions td {
+  min-width: 9em;
+}
+
+.qr-now,
+.qr-table tr.qr-now td {
+  background: #fff3c4;
+}
+
+.qr-unlock {
+  margin-top: 2px;
+  color: #6a5a2a;
+}
+
+.qr-done td {
+  color: #888;
+}
+
+.qr-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qr-two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.qr-two h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.qr-notes {
+  margin: 0;
+  padding-left: 1.3em;
+  line-height: 1.6;
+}
+
+.qr-free {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 6px 16px;
+}
+
+.qr-free li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qr-count {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.qr-count th:first-child {
+  width: 16em;
+}
+
+.qr-count th,
+.qr-count td {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.qr-count th:first-child,
+.qr-count td:first-child {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.qr-estimate {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #eef4ea;
+}
+
+/* 狭い画面では、表を横に流して読む。 */
+@media (max-width: 760px) {
+  .quickref-body {
+    overflow-x: auto;
+  }
+}

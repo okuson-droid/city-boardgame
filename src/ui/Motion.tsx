@@ -8,6 +8,7 @@ import type { IconToken } from '../game/icons.ts';
 import type { GameEvent, GameState } from '../game/types.ts';
 import type { Grant } from '../data/types.ts';
 import { IconRow } from './Icon.tsx';
+import { grantText } from '../game/queries.ts';
 import { colorOf } from './model.ts';
 import { Tip } from './Tip.tsx';
 
@@ -73,17 +74,6 @@ const grantTokens = (g: Grant): IconToken[] => {
   if (g.kind === 'buildRight') return [{ ...keyEntry('commands', 'build'), value: g.amount }];
   if (g.kind === 'freeBuildOnTerrain') return [keyEntry('terrains', g.terrain), { ...keyEntry('commands', 'build'), value: g.amount }];
   return [{ ...keyEntry('resources', g.kind), value: g.amount }];
-};
-
-/** 到達報酬1つの文章。 */
-const grantText = (g: Grant): string => {
-  if (g.kind === 'landTiles') return `土地タイル${g.amount}枚を置く`;
-  if (g.kind === 'buildRight') return `建物${g.amount}軒を建てる`;
-  if (g.kind === 'freeBuildOnTerrain') return `${keyEntry('terrains', g.terrain).label}に建物${g.amount}軒を無料で建てる`;
-  if (g.kind === 'specialCitizen') return `特別な市民カード${g.amount}枚を獲得する`;
-  if (g.kind === 'goldProduction' || g.kind === 'materialProduction') return `${keyEntry('resources', g.kind).label}を${g.amount}上げる`;
-  if (g.kind === 'drawCivCards') return `文明カードを${g.amount}枚引く`;
-  return `${keyEntry('resources', g.kind).label}${g.amount}を得る`;
 };
 
 export const TrackBar = ({
