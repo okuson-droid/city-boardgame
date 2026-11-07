@@ -229,6 +229,9 @@
         "2-37"
       ],
       "provisional": false,
+      "changes": [
+        "ゲーム終了時に得るのは資材ではなく資材の生産力（建物1軒につき1）とする（ユーザー決定 2026-11-06。経済・産業を収入で数えるため）。"
+      ],
       "script": [
         {
           "ability": "setup",
@@ -259,7 +262,7 @@
           "do": [
             {
               "op": "gain",
-              "res": "materials",
+              "res": "materialProduction",
               "amount": {
                 "count": "buildings",
                 "per": 1,

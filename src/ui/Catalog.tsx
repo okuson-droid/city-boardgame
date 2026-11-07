@@ -224,6 +224,15 @@ const CharacterList = ({ q }: { q: string }) => (
               </li>
             ))}
           </ul>
+          {c.changes && c.changes.length > 0 ? (
+            <ul className="char-changes">
+              {c.changes.map((text, i) => (
+                <li key={i}>
+                  <b>変更</b>：{text}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </Item>
       ))}
   </>

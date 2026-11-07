@@ -165,6 +165,7 @@ const KEY_LABELS: Table = {
   notes: '注記',
   source: '出どころ',
   clarifications: '文言の解釈',
+  changes: '原本からの変更',
   open_issues: '未決の事項',
   importedFrom: '取り込み元',
   schema: 'スキーマ',

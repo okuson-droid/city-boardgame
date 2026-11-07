@@ -333,7 +333,8 @@ describe('計画都市カード・自然公園カード', () => {
 
 describe('設計文書からの取り込み', () => {
   const stripAdded = (item: unknown): unknown => {
-    const { provisional: _p, script: _s, ...rest } = item as Record<string, unknown>;
+    // changes はユーザー決定で原本から変えた点の説明（2026-11-06）。原本にはないため除いて照らす。
+    const { provisional: _p, script: _s, changes: _c, ...rest } = item as Record<string, unknown>;
     return rest;
   };
 

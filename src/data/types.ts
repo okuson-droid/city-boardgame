@@ -408,6 +408,8 @@ export type Character = ProvisionalMark & {
   readonly effects: readonly CharacterEffect[];
   readonly open_issues: readonly string[];
   readonly clarifications?: readonly string[];
+  /** ユーザー決定で原本の効果から変えた点（原本の文言は effects のまま残し、画面ではこれを添える）。 */
+  readonly changes?: readonly string[];
   readonly script: Script;
 };
 

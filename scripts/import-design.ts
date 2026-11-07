@@ -64,11 +64,16 @@ const scriptOf = (scripts: Record<string, unknown[]>, existing: Map<string, Reco
 const importPlain = (source: string, target: string, listKey: string, scripts: Record<string, unknown[]>): void => {
   const original = readJson(source);
   const existing = existingItems(target, listKey);
-  const items = asRecords(original[listKey]).map((item) => ({
-    ...item,
-    provisional: false,
-    script: scriptOf(scripts, existing, String(item['id'])),
-  }));
+  const items = asRecords(original[listKey]).map((item) => {
+    // 原本から変えた効果の説明（changes、ユーザー決定）は src/data/ にあれば保つ。
+    const changes = existing.get(String(item['id']))?.['changes'];
+    return {
+      ...item,
+      provisional: false,
+      ...(Array.isArray(changes) ? { changes } : {}),
+      script: scriptOf(scripts, existing, String(item['id'])),
+    };
+  });
   writeJson(target, {
     importedFrom: `design/${source}`,
     provisional: false,

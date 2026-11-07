@@ -761,8 +761,8 @@ describe('終了時の得点の補正', () => {
     expect(after - before).toBe(2);
   });
 
-  it('特別市民05〜07 と資本家は 17-0-1 手順4 で処理する（資本家は終了時に資材を得る）', () => {
-    // 経済・産業を収入で数えるようにしたため（ユーザー決定 2026-11-06）、資本家の終了時の資材は得点にならない。
+  it('特別市民05〜07 と資本家は 17-0-1 手順4 で処理し、資本家は終了時に資材の生産力を得る', () => {
+    // 資本家の終了時の効果は資材ではなく資材の生産力（建物1軒につき1）とする（ユーザー決定 2026-11-06。経済・産業を収入で数えるため）。
     // rules.md v0.8 17-0-1、19-5-5
     let s = edit(base(), (state) => {
       state.round = 5;
@@ -779,7 +779,9 @@ describe('終了時の得点の補正', () => {
       s = applyMove(s, top(s).t === 'turn' ? 'pass' : (ids(s)[0] ?? ''));
     }
     for (const p of s.players) {
-      expect(p.materials).toBeGreaterThanOrEqual(2);
+      // 建物2軒（商店・役所）で資材の生産力が2上がり、経済・産業の換算に入る。
+      expect(p.materialProduction).toBe(2);
+      expect(p.materials).toBe(0);
       const sc06 = scoreEvents(s, p.index).filter((e) => e.type === 'score' && e.source === 'sc:06');
       expect(sc06.map((e) => (e.type === 'score' ? e.points : 0))).toEqual([4]);
     }

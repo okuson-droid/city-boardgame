@@ -681,6 +681,7 @@ export const parseCharacters = (value: unknown, path = 'characters'): Character[
       }),
       open_issues: readStringArray(field(o, 'open_issues', q), `${q}.open_issues`),
       ...readOptionalStringArray(o, 'clarifications', q),
+      ...readOptionalStringArray(o, 'changes', q),
       script: readScriptField(o, q),
     };
   });
