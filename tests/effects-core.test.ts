@@ -165,8 +165,8 @@ describe('襲撃カードの固有効果（7-6、19-3）', () => {
     expect(playerOf(s, index).goldProduction).toBe(0);
   });
 
-  it('カード4の撃退成功は、ラウンド数×1金だけを得る（基本得点とカードの点はない）', () => {
-    // rules.md v0.8 7-6-1、19-3-3 からの変更（ユーザー決定 2026-11-07：撃退成功は資源の効果だけ）
+  it('カード4の撃退成功は、ラウンド数×3金だけを得る（基本得点とカードの点はない）', () => {
+    // rules.md v0.8 7-6-1、19-3-3 からの変更（ユーザー決定 2026-11-07：撃退成功は資源の効果だけ。カード4の金は 2026-11-08 の調整案で3）
     let s = toRaid(base());
     s = edit(s, (state, p) => {
       state.raidOrder = [4, 1, 2, 3, 5];
@@ -176,7 +176,7 @@ describe('襲撃カードの固有効果（7-6、19-3）', () => {
     const { score, gold } = me(s);
     s = applyMove(s, 'raid:none');
     expect(playerOf(s, index).score).toBe(score);
-    expect(playerOf(s, index).gold).toBe(gold + 1);
+    expect(playerOf(s, index).gold).toBe(gold + 3);
   });
 
   it('最終ラウンドの防衛失敗による損失は、最終収入の後に適用する', () => {

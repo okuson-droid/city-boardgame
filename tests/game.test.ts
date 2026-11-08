@@ -1065,8 +1065,9 @@ describe('襲撃（7-3〜7-6、19-3）', () => {
     expect(p.gold).toBe(Math.max(0, tileGold + 1 - 3));
   });
 
-  it('カード5の得点は合算後の数値であり、カードの点を適用するときは基本得点を加えない', () => {
-    // rules.md v0.8 7-5-2、19-3-3（防衛失敗の効果を適用するデータで検査する）
+  it('合算後の点を持つカード（replacesBasePoints）は、カードの点を適用するときは基本得点を加えない', () => {
+    // rules.md v0.8 7-5-2、19-3-3（防衛失敗の効果を適用するデータで検査する。2026-11-08 の調整案でカード5の点はなくなったため、
+    // カード5に合算後の点 R×−3 を持たせたデータで処理を確かめる）
     let s = toRaid(firstTurn());
     s = edit(s, (state, p) => {
       state.raidOrder = [5, 1, 2, 3, 4];
@@ -1075,7 +1076,14 @@ describe('襲撃（7-3〜7-6、19-3）', () => {
     });
     const score = me(s).score;
     const index = me(s).index;
-    s = applyMove(s, 'raid:none', withAllRaidEffects());
+    const legacy = withAllRaidEffects();
+    const d5 = {
+      ...legacy,
+      raidCards: legacy.raidCards.map((c) =>
+        c.id === 5 ? { ...c, replacesBasePoints: true, defenseFailEffects: [{ kind: 'points' as const, amount: -3, perRound: true, afterNextIncome: false }] } : c,
+      ),
+    };
+    s = applyMove(s, 'raid:none', d5);
     expect(playerOf(s, index).score).toBe(score - 3);
   });
 
