@@ -146,13 +146,7 @@
       "repelEffects": [
         {
           "kind": "gold",
-          "amount": 1,
-          "perRound": true,
-          "afterNextIncome": false
-        },
-        {
-          "kind": "points",
-          "amount": 1,
+          "amount": 3,
           "perRound": true,
           "afterNextIncome": false
         }
@@ -175,16 +169,16 @@
       "replacesBasePoints": true,
       "defenseFailEffects": [
         {
-          "kind": "points",
-          "amount": -3,
+          "kind": "loseGold",
+          "amount": 2,
           "perRound": true,
-          "afterNextIncome": false
+          "afterNextIncome": true
         }
       ],
       "repelEffects": [
         {
-          "kind": "points",
-          "amount": 4,
+          "kind": "gold",
+          "amount": 3,
           "perRound": true,
           "afterNextIncome": false
         }
