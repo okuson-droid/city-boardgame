@@ -24,6 +24,30 @@ export const isCheckpoint = (prev: GameState, move: string, next: GameState): bo
 export const replay = (config: GameConfig, seed: number, moves: readonly string[], d: GameData = GAME_DATA): GameState =>
   moves.reduce((state, move) => applyMove(state, move, d), createGame(config, seed, d));
 
+/**
+ * 手番の最初（直前のチェックポイントの直後）まで戻した状態を返す（ユーザー決定 2026-11-08）。
+ * カードを引いた・特別な市民カードを獲得した選択はチェックポイントのため、その直後までしか戻らない。
+ * 戻せる選択がなければ null を返す。
+ */
+export const undoToTurnStart = (state: GameState, d: GameData = GAME_DATA): GameState | null => {
+  const keep = turnStartLength(state);
+  if (keep === state.log.length) return null;
+  return replay(
+    state.config,
+    state.seed,
+    state.log.slice(0, keep).map((entry) => entry.move),
+    d,
+  );
+};
+
+/** 手番の最初まで戻したときに残る選択の数（直前のチェックポイントまで）。 */
+export const turnStartLength = (state: GameState): number => {
+  for (let i = state.log.length - 1; i >= 0; i -= 1) {
+    if (state.log[i]?.checkpoint) return i + 1;
+  }
+  return 0;
+};
+
 /** 直前の選択を取り消した状態を返す。直前の選択がチェックポイントなら取り消せず null を返す。 */
 export const undoLast = (state: GameState, d: GameData = GAME_DATA): GameState | null => {
   const last = state.log[state.log.length - 1];

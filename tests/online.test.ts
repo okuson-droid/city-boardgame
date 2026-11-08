@@ -105,6 +105,23 @@ describe('部屋（オンライン版）', () => {
     expect(() => undoInRoom(room, (drafter + 1) % 3)).toThrow('席ではない');
   });
 
+  it('手番の最初まで戻すのは、戻す選択をすべてした席だけができる', () => {
+    // rules.md v0.8 15-1-1（手番の最初まで戻す：ユーザー決定 2026-11-08）
+    const room = fullRoom();
+    for (let i = 0; i < 200 && room.state !== null && !(room.state.phase === 'play' && room.state.stack.at(-1)?.t === 'turn'); i += 1) step(room);
+    const state = room.state;
+    if (state === null) throw new Error('始まっていない');
+    const seat = decider(state) ?? 0;
+    const length = state.log.length;
+    const recorded = room.record.moves.length;
+    moveInRoom(room, seat, 'free:materials_to_gold', length);
+    moveInRoom(room, seat, 'free:materials_to_gold', length + 1);
+    expect(() => undoInRoom(room, (seat + 1) % 3, undefined, true)).toThrow('席ではない');
+    undoInRoom(room, seat, undefined, true);
+    expect(room.state?.log.length).toBe(length);
+    expect(room.record.moves).toHaveLength(recorded);
+  });
+
   it('対局を最後まで進められる', () => {
     // rules.md v0.8 1-0-6
     const room = fullRoom();

@@ -289,3 +289,159 @@ body,
 .badge.new {
   background: #2f7d4f;
 }
+
+/* カードのプレビュー（ユーザー決定 2026-11-08）。ゲーム画面と同じ部品で描き、面の上の値を押して直す。 */
+.card-preview {
+  margin-bottom: 12px;
+}
+
+.card-preview .preview-card {
+  font-size: 16px;
+}
+
+.preview-stack {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.preview-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inline-target {
+  border: 1px dashed transparent;
+  border-radius: 4px;
+  background: none;
+  padding: 0 2px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.inline-target:hover,
+.inline-target:focus-visible {
+  border-color: #e08a1e;
+  background: rgba(224, 138, 30, 0.12);
+}
+
+.inline-edit {
+  width: 4em;
+  font: inherit;
+}
+
+.inline-edit.card-name {
+  width: 8em;
+}
+
+.preview-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 4px 6px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.preview-tags label {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.preview-error {
+  color: #b5423b;
+}
+
+.preview-raid {
+  width: var(--card-w);
+}
+
+/* 形の編集（計画都市・自然公園） */
+.shape-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.shape-edit-svg {
+  max-width: 100%;
+  height: auto;
+  background: #faf7f0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.shape-edit-svg g {
+  cursor: pointer;
+}
+
+.shape-empty:hover polygon {
+  fill: #fff3c4;
+  fill-opacity: 1;
+}
+
+.shape-plus {
+  text-anchor: middle;
+  font-size: 14px;
+  fill: #b8ae9a;
+  pointer-events: none;
+}
+
+.shape-origin {
+  text-anchor: middle;
+  font-size: 9px;
+  fill: #333;
+  pointer-events: none;
+}
+
+.shape-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.shape-warn {
+  color: #b5423b;
+  font-size: 12px;
+}
+
+.shape-panel {
+  flex: 1;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shape-choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.shape-choices .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.shape-set {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #ddd;
+}
+
+.shape-set-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}

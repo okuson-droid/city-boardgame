@@ -190,6 +190,7 @@ export const OnlineGame = ({
     seat: session.seat,
     choose: (id) => run(() => transport.move(session, id, state.log.length)),
     undo: () => run(() => transport.undo(session)),
+    undoTurn: () => run(() => transport.undo(session, true)),
     // チェックポイントの後でなければ、直前の選択をしたのは選択待ちの席である（手番の交代はチェックポイント）。
     undoReason: explainUndo(state) ?? (mine ? null : '直前の選択をした席だけが取り消せる'),
     busy,

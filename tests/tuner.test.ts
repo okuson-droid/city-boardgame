@@ -22,6 +22,7 @@ import {
   validateFiles,
 } from '../tools/tuner/proposal.ts';
 import { playout, yieldToRunner } from './helpers/playout.ts';
+import { anchorCells, isConnected, rotateCells } from '../tools/tuner/ShapeEditor.tsx';
 
 const base = DATA_FILES;
 
@@ -224,5 +225,33 @@ describe('新しいカード（ユーザー決定 2026-11-04）', () => {
       expect(result.stuck).toBe(false);
       expect(isGameOver(result.state)).toBe(true);
     }
+  });
+});
+
+describe('形の編集（ユーザー決定 2026-11-08）', () => {
+  it('60度回して最初のマスを原点にそろえても、マスのつながりは保たれる', () => {
+    // CLAUDE.md「データの約束事」（アキシャル座標と6方向の隣接）、rules.md v0.8 13-2・14-2
+    const line = [
+      { q: 0, r: 0, terrain: null },
+      { q: 1, r: 0, terrain: null },
+      { q: 2, r: 0, terrain: null },
+    ];
+    const turned = anchorCells(rotateCells(line));
+    expect(turned.map((c) => [c.q, c.r])).toEqual([
+      [0, 0],
+      [0, 1],
+      [0, 2],
+    ]);
+    expect(isConnected(turned)).toBe(true);
+    // 6回まわすと元に戻る。
+    let shape = line;
+    for (let i = 0; i < 6; i += 1) shape = anchorCells(rotateCells(shape));
+    expect(shape.map((c) => [c.q, c.r])).toEqual(line.map((c) => [c.q, c.r]));
+  });
+
+  it('辺でつながっていないマスがあれば知らせる', () => {
+    // rules.md v0.8 13-2（計画都市の形はつながった建物の並び）
+    expect(isConnected([{ q: 0, r: 0 }, { q: 1, r: -1 }])).toBe(true);
+    expect(isConnected([{ q: 0, r: 0 }, { q: 2, r: 0 }])).toBe(false);
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyMove } from '../src/game/engine.ts';
-import { replay, undoLast } from '../src/game/history.ts';
+import { replay, undoLast, undoToTurnStart } from '../src/game/history.ts';
 import { edit, firstTurn, ids, me, play, top } from './helpers/game.ts';
 
 const base = () =>
@@ -31,6 +31,31 @@ describe('巻き戻し（第15章、19-6-3）', () => {
     expect(back).not.toBeNull();
     expect(back?.stack).toEqual(start.stack);
     expect(back?.players).toEqual(start.players);
+  });
+
+  it('手番の最初まで、まとめて戻せる', () => {
+    // rules.md v0.8 15-1-1、15-1-3（手番の最初まで戻す：ユーザー決定 2026-11-08）
+    const start = firstTurn();
+    let s = applyMove(start, 'free:materials_to_gold');
+    s = applyMove(s, 'free:materials_to_gold');
+    s = applyMove(s, 'act:import:normal');
+    if (top(s).t === 'payWorkers') s = applyMove(s, 'temp:0');
+    const back = undoToTurnStart(s);
+    expect(back?.log).toEqual(start.log);
+    expect(back?.players).toEqual(start.players);
+    expect(back?.stack).toEqual(start.stack);
+    // 手番の最初では、それ以上は戻せない。
+    expect(back !== null && undoToTurnStart(back)).toBeNull();
+  });
+
+  it('カードを引いた選択の直後より前には、手番の最初へも戻れない', () => {
+    // rules.md v0.8 15-1-2（山札から新たなカードが公開された）
+    let s = applyMove(firstTurn(), 'act:research:normal');
+    if (top(s).t === 'payWorkers') s = applyMove(s, 'temp:0');
+    expect(undoToTurnStart(s)).toBeNull();
+    const afterDraw = s.log.length;
+    s = applyMove(s, 'free:materials_to_gold');
+    expect(undoToTurnStart(s)?.log.length).toBe(afterDraw);
   });
 
   it('手番の終了・パスの後は取り消せない', () => {

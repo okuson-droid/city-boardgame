@@ -6,6 +6,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { DATA_FILES, isBoardFileName, type DataFiles } from '../../src/data/index.ts';
 import { BoardEditor } from './BoardEditor.tsx';
+import { CardPreview } from './CardPreview.tsx';
+import { ShapeEditor, type ShapeCellValue } from './ShapeEditor.tsx';
 import { GitHubSaveError, parseRepo, saveToGitHub } from './github.ts';
 import { keyLabel } from './labels.ts';
 import { JsonEditor, type OnSet } from './JsonEditor.tsx';
@@ -434,7 +436,63 @@ export const TunerApp = () => {
             />
           ) : (
             <>
-              <JsonEditor value={item} base={baseItem} path={[]} onSet={onSetIn(file, prefix)} skip={['script']} unlocked={itemIsNew} />
+              <CardPreview kind={kind.id} item={item} onSet={onSetIn(file, prefix)} />
+              {kind.id === 'planned' && isObject(item) && Array.isArray(item['slots']) ? (
+                <section>
+                  <h3>形（マス目を押して編集）</h3>
+                  <ShapeEditor
+                    cells={item['slots'] as ShapeCellValue[]}
+                    base={isObject(baseItem) ? (baseItem['slots'] as ShapeCellValue[]) : undefined}
+                    mode="planned"
+                    onChange={(cells) => onSetIn(file, prefix)(['slots'], cells)}
+                  />
+                </section>
+              ) : null}
+              {kind.id === 'nature' && isObject(item) && Array.isArray(item['sets']) ? (
+                <section>
+                  <h3>組の形（マス目を押して編集）</h3>
+                  {(item['sets'] as { cells: ShapeCellValue[] }[]).map((set, i) => (
+                    <div key={i} className="shape-set">
+                      <div className="shape-set-head">
+                        <b>
+                          組{i + 1}（{set.cells.length}枚）
+                        </b>
+                        <button
+                          type="button"
+                          className="btn small"
+                          data-ui="set-remove"
+                          disabled={(item['sets'] as unknown[]).length <= 1}
+                          onClick={() => onSetIn(file, prefix)(['sets'], (item['sets'] as unknown[]).filter((_, j) => j !== i))}
+                        >
+                          この組を消す
+                        </button>
+                      </div>
+                      <ShapeEditor
+                        cells={set.cells}
+                        base={isObject(baseItem) ? (baseItem['sets'] as { cells: ShapeCellValue[] }[] | undefined)?.[i]?.cells : undefined}
+                        mode="nature"
+                        onChange={(cells) => onSetIn(file, prefix)(['sets', i, 'cells'], cells)}
+                      />
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className="btn small"
+                    data-ui="set-add"
+                    onClick={() => onSetIn(file, prefix)(['sets'], [...(item['sets'] as unknown[]), { cells: [{ q: 0, r: 0, terrain: 'forest' }, { q: 1, r: 0, terrain: 'forest' }] }])}
+                  >
+                    組を足す
+                  </button>
+                </section>
+              ) : null}
+              <JsonEditor
+                value={item}
+                base={baseItem}
+                path={[]}
+                onSet={onSetIn(file, prefix)}
+                skip={['script', ...(kind.id === 'planned' ? ['slots'] : []), ...(kind.id === 'nature' ? ['sets'] : [])]}
+                unlocked={itemIsNew}
+              />
               {isObject(item) && 'script' in item ? (
                 <section>
                   <h3>効果（命令と引数）</h3>

@@ -66,7 +66,8 @@ export type Transport = {
   readonly create: (playerCount: number, name: string, variants?: GameVariants) => Promise<Credentials>;
   readonly join: (code: string, name: string) => Promise<Credentials>;
   readonly move: (session: Session, move: string, logLength: number) => Promise<unknown>;
-  readonly undo: (session: Session) => Promise<unknown>;
+  /** toTurnStart が真なら手番の最初まで戻す。 */
+  readonly undo: (session: Session, toTurnStart?: boolean) => Promise<unknown>;
   /**
    * 局面の知らせを受け取る。onStatus の fatal は、繋ぎ直しても回復しない誤り（部屋が無い、データの版が変わった）の文章で、
    * このとき購読は止まる。
@@ -86,7 +87,7 @@ export const serverTransport: Transport = {
   create: (playerCount, name, variants) => post('/api/rooms', { playerCount, name, ...(variants !== undefined ? { variants } : {}) }),
   join: (code, name) => post(`/api/rooms/${encodeURIComponent(normalizeCode(code))}/join`, { name }),
   move: (session, move, logLength) => post(`/api/rooms/${session.code}/move`, { key: session.key, move, logLength }),
-  undo: (session) => post(`/api/rooms/${session.code}/undo`, { key: session.key }),
+  undo: (session, toTurnStart) => post(`/api/rooms/${session.code}/undo`, { key: session.key, ...(toTurnStart === true ? { toTurnStart: true } : {}) }),
   // EventSource は切れても自動で繋ぎ直す。
   subscribe: (session, onMessage, onStatus) => {
     const source = new EventSource(`/api/rooms/${session.code}/stream?key=${encodeURIComponent(session.key)}`);
@@ -139,7 +140,7 @@ export const supabaseTransport = (config: SupabaseClientConfig): Transport => {
     create: (playerCount, name, variants) => call({ action: 'create', playerCount, name, ...(variants !== undefined ? { variants } : {}) }),
     join: (code, name) => call({ action: 'join', code: normalizeCode(code), name }),
     move: (session, move, logLength) => andRefresh({ action: 'move', code: session.code, key: session.key, move, logLength }),
-    undo: (session) => andRefresh({ action: 'undo', code: session.code, key: session.key }),
+    undo: (session, toTurnStart) => andRefresh({ action: 'undo', code: session.code, key: session.key, ...(toTurnStart === true ? { toTurnStart: true } : {}) }),
     subscribe: (session, onMessage, onStatus) => {
       let stopped = false;
       let version = -1;

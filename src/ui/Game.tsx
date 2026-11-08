@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CellId } from '../game/board.ts';
 import { applyMove, decider, isGameOver } from '../game/engine.ts';
 import { explain, explainUndo } from '../game/explain.ts';
-import { undoLast } from '../game/history.ts';
+import { undoLast, undoToTurnStart } from '../game/history.ts';
 import { pendingPicks } from '../game/queries.ts';
 import type { GameEvent, GameState } from '../game/types.ts';
 import { DeltaChips, RoundSummary, sumDeltas } from './Motion.tsx';
@@ -32,6 +32,8 @@ export type GameController = {
   readonly seat: number | null;
   readonly choose: (optionId: string) => void;
   readonly undo: () => void;
+  /** 手番の最初まで戻す（ユーザー決定 2026-11-08）。無ければボタンを出さない（チュートリアル）。 */
+  readonly undoTurn?: () => void;
   readonly undoReason: string | null;
   /** 選択を送っている途中か（オンライン版）。 */
   readonly busy?: boolean;
@@ -47,6 +49,10 @@ export const LocalGame = ({ initial, settings, onRestart }: { initial: GameState
     choose: (id) => setState((s) => applyMove(s, id)),
     undo: () => {
       const back = undoLast(state);
+      if (back !== null) setState(back);
+    },
+    undoTurn: () => {
+      const back = undoToTurnStart(state);
       if (back !== null) setState(back);
     },
     undoReason: explainUndo(state),
@@ -255,6 +261,23 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
             取り消し
           </button>
         </Tip>
+        {ctl.undoTurn !== undefined ? (
+          <Tip text={undoReason ?? '手番の最初まで戻す（カードを引いた・特別な市民カードを獲得した選択の直後まで）'}>
+            <button
+              type="button"
+              className="btn"
+              data-ui="undo-turn"
+              aria-disabled={undoReason !== null}
+              disabled={undoReason !== null}
+              onClick={() => {
+                setChooser(null);
+                ctl.undoTurn?.();
+              }}
+            >
+              手番の最初へ
+            </button>
+          </Tip>
+        ) : null}
       </header>
 
       {draftOpen && picker !== undefined ? (

@@ -220,7 +220,7 @@ const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> 
       return;
     }
     case 'undo': {
-      undoInRoom(room, seatOf(room, body['key']));
+      undoInRoom(room, seatOf(room, body['key']), undefined, body['toTurnStart'] === true);
       saveRoom(room);
       broadcast(room);
       sendJson(res, 200, { ok: true });

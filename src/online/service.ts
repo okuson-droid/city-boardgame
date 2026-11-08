@@ -118,7 +118,7 @@ export type ServiceDeps = { readonly store: RoomStore; readonly notify: Notify; 
  * - join {code, name} → Credentials
  * - view {code, key} → RoomView
  * - move {code, key, move, logLength} → {ok}
- * - undo {code, key} → {ok}
+ * - undo {code, key, toTurnStart?} → {ok}（toTurnStart が真なら手番の最初まで戻す）
  */
 export const handleAction = async (body: Readonly<Record<string, unknown>>, deps: ServiceDeps): Promise<unknown> => {
   const { store, notify } = deps;
@@ -149,7 +149,7 @@ export const handleAction = async (body: Readonly<Record<string, unknown>>, deps
       await save(store, notify, room, version);
       return { ok: true };
     case 'undo':
-      undoInRoom(room, await seatOf(room, body['key']));
+      undoInRoom(room, await seatOf(room, body['key']), undefined, body['toTurnStart'] === true);
       await save(store, notify, room, version);
       return { ok: true };
     default:

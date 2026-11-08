@@ -5,7 +5,7 @@
 import { DATA_VERSION, GAME_DATA } from '../data/index.ts';
 import type { GameData } from '../data/types.ts';
 import { applyMove, createGame, decider, getOptions } from '../game/engine.ts';
-import { undoLast } from '../game/history.ts';
+import { turnStartLength, undoLast, undoToTurnStart } from '../game/history.ts';
 import type { GameConfig, GameState, GameVariants } from '../game/types.ts';
 
 export type SeatRecord = { readonly name: string; readonly keyHash: string };
@@ -147,16 +147,20 @@ export const moveInRoom = (room: Room, seat: number, move: string, logLength: nu
   room.record.moves.push({ seat, move });
 };
 
-/** 直前の選択を取り消す。取り消せるのは、その選択をした席だけで、チェックポイントの後は取り消せない（15-1-2、19-6-3）。 */
-export const undoInRoom = (room: Room, seat: number, d: GameData = GAME_DATA): void => {
+/**
+ * 直前の選択を取り消す。取り消せるのは、その選択をした席だけで、チェックポイントの後は取り消せない（15-1-2、19-6-3）。
+ * toTurnStart なら、手番の最初（直前のチェックポイントの直後）まで戻す（ユーザー決定 2026-11-08）。戻す選択はすべてその席のものに限る。
+ */
+export const undoInRoom = (room: Room, seat: number, d: GameData = GAME_DATA, toTurnStart = false): void => {
   const state = room.state;
   const last = room.record.moves[room.record.moves.length - 1];
   if (state === null || last === undefined) throw new RoomError(409, '取り消す選択がない');
-  if (last.seat !== seat) throw new RoomError(403, '直前の選択をした席ではない');
-  const back = undoLast(state, d);
+  const count = toTurnStart ? state.log.length - turnStartLength(state) : 1;
+  if (room.record.moves.slice(-Math.max(1, count)).some((m) => m.seat !== seat)) throw new RoomError(403, '直前の選択をした席ではない');
+  const back = toTurnStart ? undoToTurnStart(state, d) : undoLast(state, d);
   if (back === null) throw new RoomError(409, '直前の処理より前には戻れない');
   room.state = back;
-  room.record.moves.pop();
+  room.record.moves.splice(room.record.moves.length - count, count);
 };
 
 /**
