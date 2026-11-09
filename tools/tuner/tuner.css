@@ -445,3 +445,196 @@ body,
   gap: 8px;
   margin-bottom: 4px;
 }
+
+/* スマホでは一覧の選択欄と「変更点へ」の印を出す（下の @media）。広い画面では隠す。 */
+.items-select,
+.jump-side {
+  display: none;
+}
+
+/*
+ * スマホの配置（ユーザー決定 2026-11-09）。4列をやめて上から順に並べ、ページ全体を縦に流す。
+ * 種類は横に流すタブ、カードは選択欄、編集欄は全幅、変更点と検査はその下に置く。
+ */
+@media (max-width: 760px) {
+  /* ページ全体を縦に流す（中の枠だけが流れると、スマホではつかみにくい）。 */
+  html,
+  body,
+  #root {
+    overflow: visible;
+    height: auto;
+  }
+
+  .tuner {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .tuner-top {
+    gap: 6px;
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+
+  .tuner-top > label:not(.btn) {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1 1 100%;
+  }
+
+  .tuner-top > label:not(.btn) input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tuner-top .btn {
+    padding: 3px 8px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  /* 未実装の検証は、スマホでは場所を取らないよう隠す。 */
+  .tuner-top .btn:disabled[title] {
+    display: none;
+  }
+
+  .jump-side {
+    display: inline-block;
+  }
+
+  .tuner-github {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tuner-github input {
+    width: 100%;
+  }
+
+  .tuner-body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tuner-kinds,
+  .tuner-items,
+  .tuner-editor,
+  .tuner-side {
+    overflow: visible;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .tuner-kinds {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--panel);
+  }
+
+  .kind {
+    width: auto;
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .tuner-items .item {
+    display: none;
+  }
+
+  .tuner-items:empty {
+    display: none;
+  }
+
+  .items-select {
+    display: block;
+    width: 100%;
+    margin-top: 4px;
+    font-size: 15px;
+    padding: 6px;
+  }
+
+  .item-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* 汎用フォーム：項目名を値の上に置き、入力欄は幅に収める。 */
+  .obj-row {
+    flex-direction: column;
+    gap: 0;
+    padding: 2px 0;
+  }
+
+  .obj-key {
+    min-width: 0;
+    font-size: 12px;
+  }
+
+  .tuner-editor input,
+  .tuner-editor select,
+  .tuner-editor textarea {
+    max-width: 100%;
+  }
+
+  .tuner-editor .list-item {
+    flex-wrap: wrap;
+  }
+
+  .checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 8px;
+  }
+
+  /* 形の編集・個人ボードの図は幅に合わせて縮める。 */
+  .shape-edit-svg,
+  .board-edit-svg {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  .shape-editor {
+    flex-direction: column;
+  }
+
+  .shape-editor-main {
+    width: 100%;
+  }
+
+  .shape-panel {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .card-preview .preview-card {
+    font-size: 14px;
+  }
+
+  /* 効果の編集：削除のボタンは中身の下に回し、縦に潰れないようにする。入れ子の字下げも浅くする。 */
+  .ability-row,
+  .command-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ability-row > .btn,
+  .command-row > .btn {
+    align-self: flex-end;
+    white-space: nowrap;
+  }
+
+  .ability,
+  .choice {
+    min-width: 0;
+  }
+
+  .nested {
+    margin-left: 8px;
+  }
+}

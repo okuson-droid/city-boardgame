@@ -330,6 +330,10 @@ export const TunerApp = () => {
         <button type="button" className="btn" onClick={reset}>
           元に戻す
         </button>
+        {/* スマホでは変更点と検査の欄が編集欄の下に回るため、そこへ飛ぶ印を出す。 */}
+        <a className="btn small jump-side" href="#tuner-side" data-ui="jump-side">
+          変更点 {changes.length}件・検査へ
+        </a>
       </header>
 
       {githubOpen ? (
@@ -396,6 +400,14 @@ export const TunerApp = () => {
 
         {kind.id === 'boards' ? (
           <nav className="tuner-items">
+            {/* スマホでは一覧の代わりに選択欄を出す（ユーザー決定 2026-11-09）。 */}
+            <select className="items-select" data-ui="items-select" value={boardFile} onChange={(e) => setBoardFile(e.target.value)} aria-label="個人ボード">
+              {boardFiles.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
             {boardFiles.map((name) => (
               <button key={name} type="button" className={`item${name === boardFile ? ' active' : ''}`} onClick={() => setBoardFile(name)}>
                 {name}
@@ -414,6 +426,14 @@ export const TunerApp = () => {
                 </button>
               ) : null}
             </div>
+            <select className="items-select" data-ui="items-select" value={itemIndex} onChange={(e) => setItemIndex(Number(e.target.value))} aria-label={kind.label}>
+              {list.map((it, i) => (
+                <option key={i} value={i}>
+                  {itemLabel(it, i)}
+                  {isNewItem(baseList, it) ? '（新）' : ''}
+                </option>
+              ))}
+            </select>
             {list.map((it, i) => (
               <button key={i} type="button" className={`item${i === itemIndex ? ' active' : ''}`} onClick={() => setItemIndex(i)}>
                 {itemLabel(it, i)}
@@ -503,7 +523,7 @@ export const TunerApp = () => {
           )}
         </main>
 
-        <aside className="tuner-side">
+        <aside className="tuner-side" id="tuner-side">
           <section>
             <h3>変更点 {changes.length}件</h3>
             <ol className="changes">
