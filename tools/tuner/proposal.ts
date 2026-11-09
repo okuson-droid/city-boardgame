@@ -140,6 +140,47 @@ export const applyChanges = (base: DataFiles, changes: readonly Change[]): { fil
   return { files, conflicts };
 };
 
+/**
+ * ブラウザに保つ作業中の写し（2026-11-09 から）。データ一式ではなく、作ったときの元データの版と変更点の列で持つ。
+ * データ一式で持つと、写しを保存した後に元データが更新されたとき、更新前の値が「変更点」に見えて
+ * 元データの更新を打ち消してしまう（最上位のワーカー数が 2 から 3 に戻った、2026-11-09）。
+ */
+export type StoredWork = {
+  readonly format: 'tuner-work';
+  readonly version: 2;
+  /** 写しを作ったときの元データの版（DATA_VERSION）。 */
+  readonly baseVersion: string;
+  readonly changes: readonly Change[];
+};
+
+export const storeWork = (base: DataFiles, work: DataFiles, baseVersion: string): StoredWork => ({
+  format: 'tuner-work',
+  version: 2,
+  baseVersion,
+  changes: diffFiles(base, work),
+});
+
+const isStoredWork = (value: unknown): value is StoredWork =>
+  typeof value === 'object' && value !== null && (value as { format?: unknown }).format === 'tuner-work' && Array.isArray((value as { changes?: unknown }).changes);
+
+/**
+ * 保った写しを、いまの元データに当て直す。
+ * - 変更点の列で持つ写し：変更点を当て直す。元データが更新され元の値が食い違う変更点は当てずに conflicts に返す。
+ * - 以前のデータ一式の写し（legacy）：どの値が利用者の変更か分からないため当てず、元データから始める。
+ */
+export const restoreWork = (
+  base: DataFiles,
+  baseVersion: string,
+  stored: unknown,
+): { files: DataFiles; conflicts: Change[]; rebased: boolean; legacy: DataFiles | null } => {
+  if (stored === null || stored === undefined) return { files: base, conflicts: [], rebased: false, legacy: null };
+  if (isStoredWork(stored)) {
+    const { files, conflicts } = applyChanges(base, stored.changes);
+    return { files, conflicts, rebased: stored.baseVersion !== baseVersion, legacy: null };
+  }
+  return { files: base, conflicts: [], rebased: false, legacy: typeof stored === 'object' ? (stored as DataFiles) : null };
+};
+
 /** 変更点を1つ取り消す（元の値に戻す）。 */
 export const revertChange = (work: DataFiles, change: Change): DataFiles => setInFiles(work, change.file, change.path, change.before);
 

@@ -1,7 +1,7 @@
 // ローカル版の入口。人数とシードを選んでゲームを始める。
 
 import { useEffect, useState } from 'react';
-import { GAME_DATA, TUNER_PLAYTEST } from '../data/index.ts';
+import { DATA_VERSION, GAME_DATA, TUNER_PLAYTEST } from '../data/index.ts';
 import { createGame } from '../game/engine.ts';
 import type { GameState } from '../game/types.ts';
 import { LocalGame, type Settings } from './Game.tsx';
@@ -144,6 +144,10 @@ const Screen = () => {
         ) : null}
       </div>
       {transport !== null ? <OnlineEntry transport={transport} onEnter={setSession} /> : null}
+      {/* 画面の版（2026-11-09）：古い画面のまま開いていないかを見分ける（ブラウザに古い版が残ると、更新前の値で遊んでしまう）。 */}
+      <p className="muted small build-id" data-ui="build-id">
+        版 {String(import.meta.env['VITE_BUILD_ID'] ?? 'local').slice(0, 7)}・データ {DATA_VERSION.slice(0, 6)}
+      </p>
     </div>
   );
 };

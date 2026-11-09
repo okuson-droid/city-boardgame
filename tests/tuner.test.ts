@@ -14,9 +14,11 @@ import {
   parseProposal,
   ProposalError,
   proposalFromWork,
+  restoreWork,
   revertChange,
   serializeProposal,
   setInFiles,
+  storeWork,
   summarizeChange,
   toMarkdown,
   validateFiles,
@@ -253,5 +255,33 @@ describe('形の編集（ユーザー決定 2026-11-08）', () => {
     // rules.md v0.8 13-2（計画都市の形はつながった建物の並び）
     expect(isConnected([{ q: 0, r: 0 }, { q: 1, r: -1 }])).toBe(true);
     expect(isConnected([{ q: 0, r: 0 }, { q: 2, r: 0 }])).toBe(false);
+  });
+});
+
+describe('作業中の写しの保ち方（2026-11-09）', () => {
+  it('元データが更新されても、写しを開き直したときに更新前の値へ戻さない', () => {
+    // 2026-11-09 の不具合：データ一式で保った写しを、元データの更新後に開くと最上位のワーカー数が 2 から 3 に戻った。
+    // rules.md v0.8 6-1（ワーカー数は 2026-11-07 のユーザー決定で最上位2人）
+    type Params = { rounds: number; actions: { workerCost: { top: number } } };
+    const oldBase = structuredClone(DATA_FILES);
+    (oldBase['params.json'] as Params).actions.workerCost.top = 3;
+    // 古い元データの上で、ラウンド数だけを変えた写し。
+    const oldWork = structuredClone(oldBase);
+    (oldWork['params.json'] as Params).rounds = 6;
+    const stored = storeWork(oldBase, oldWork, 'old');
+    const restored = restoreWork(DATA_FILES, 'new', JSON.parse(JSON.stringify(stored)));
+    const params = restored.files['params.json'] as Params;
+    expect(params.actions.workerCost.top).toBe((DATA_FILES['params.json'] as Params).actions.workerCost.top);
+    expect(params.rounds).toBe(6);
+    expect(restored.rebased).toBe(true);
+    expect(restored.conflicts).toEqual([]);
+  });
+
+  it('以前の形式（データ一式）の写しは自動では当てない', () => {
+    // 以前の形式からは、どの値が利用者の変更か分からない。
+    const legacy = structuredClone(DATA_FILES);
+    const restored = restoreWork(DATA_FILES, 'v', legacy);
+    expect(restored.files).toBe(DATA_FILES);
+    expect(restored.legacy).not.toBeNull();
   });
 });

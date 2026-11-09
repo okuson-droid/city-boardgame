@@ -4,7 +4,7 @@
 // 公開ページ（GitHub Pages の tuner/）では、開発サーバーへの書き出しの代わりに GitHub への保存（github.ts）を使う。
 
 import { useEffect, useMemo, useState } from 'react';
-import { DATA_FILES, isBoardFileName, type DataFiles } from '../../src/data/index.ts';
+import { DATA_FILES, DATA_VERSION, isBoardFileName, type DataFiles } from '../../src/data/index.ts';
 import { BoardEditor } from './BoardEditor.tsx';
 import { CardPreview } from './CardPreview.tsx';
 import { ShapeEditor, type ShapeCellValue } from './ShapeEditor.tsx';
@@ -24,6 +24,8 @@ import {
   parseProposal,
   ProposalError,
   proposalFromWork,
+  restoreWork,
+  storeWork,
   revertChange,
   serializeProposal,
   setInFiles,
@@ -49,6 +51,10 @@ const KINDS: readonly Kind[] = [
 ];
 
 const STORE_WORK = 'tuner:work';
+/** 以前の形式（データ一式）の写しを退避しておく場所。自動では当てない。 */
+const STORE_LEGACY = 'tuner:work-legacy';
+/** ビルドの識別（公開ページでは commit の先頭7文字）。画面が古い版のままか見分けるために出す。 */
+const BUILD_ID = String(import.meta.env['VITE_BUILD_ID'] ?? 'local').slice(0, 7);
 const STORE_META = 'tuner:meta';
 const STORE_PLAYTEST = 'tuner:playtest-files';
 const STORE_GITHUB = 'tuner:github';
@@ -89,22 +95,28 @@ const itemLabel = (item: unknown, i: number): string => {
 
 export const TunerApp = () => {
   const base = DATA_FILES;
-  const [work, setWork] = useState<DataFiles>(() => {
-    // 保存した写しが元データと食い違う（元データが書き換わった）場合は、変更点を適用し直す。
-    const stored = load<DataFiles | null>(STORE_WORK, null);
-    if (stored === null) return base;
+  // 保った写しは「元データの版と変更点の列」で持ち、開くたびにいまの元データへ当て直す（2026-11-09）。
+  const [restored] = useState(() => {
     try {
-      return applyChanges(base, diffFiles(base, stored)).files;
+      return restoreWork(base, DATA_VERSION, load<unknown>(STORE_WORK, null));
     } catch {
-      return base;
+      return { files: base, conflicts: [], rebased: false, legacy: null };
     }
   });
+  const [work, setWork] = useState<DataFiles>(restored.files);
+  const [legacy, setLegacy] = useState<DataFiles | null>(() => restored.legacy ?? load<DataFiles | null>(STORE_LEGACY, null));
   const [meta, setMeta] = useState(() => load(STORE_META, { name: '新しい調整案', createdAt: formatDate(new Date()) }));
   const [kind, setKind] = useState<Kind>(KINDS[0] ?? { id: 'params', label: '', file: 'params.json', listKey: null });
   const [itemIndex, setItemIndex] = useState(0);
   const [boardFile, setBoardFile] = useState('board_1.json');
   const [issues, setIssues] = useState<{ path: string; message: string }[] | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(() =>
+    restored.legacy !== null
+      ? '以前の形式の作業中の写しが見つかった。元データが更新された後の写しは、更新前の値が変更点に混ざって元データの更新を打ち消すため、自動では読み込まず元データから始めた。'
+      : restored.conflicts.length > 0
+        ? `元データが更新されたため、元の値が食い違う変更点 ${restored.conflicts.length}件は当て直さなかった：${restored.conflicts.map((c) => `${c.file} ${formatPath(base, c)}`).join('、')}`
+        : null,
+  );
   const [markdown, setMarkdown] = useState<string | null>(null);
   const [github, setGithub] = useState<GitHubSettings>(() => {
     const stored = load<Partial<GitHubSettings>>(STORE_GITHUB, {});
@@ -114,7 +126,16 @@ export const TunerApp = () => {
   const [saving, setSaving] = useState(false);
   const [savedUrl, setSavedUrl] = useState<string | null>(null);
 
-  useEffect(() => save(STORE_WORK, work), [work]);
+  useEffect(() => save(STORE_WORK, storeWork(base, work, DATA_VERSION)), [base, work]);
+  useEffect(() => {
+    if (legacy === null) {
+      try {
+        localStorage.removeItem(STORE_LEGACY);
+      } catch {
+        // 消せなくても続けられる。
+      }
+    } else save(STORE_LEGACY, legacy);
+  }, [legacy]);
   useEffect(() => save(STORE_META, meta), [meta]);
   useEffect(() => save(STORE_GITHUB, github), [github]);
 
@@ -300,6 +321,9 @@ export const TunerApp = () => {
           <input value={meta.name} onChange={(e) => setMeta({ ...meta, name: e.target.value })} />
         </label>
         <span className="muted">作成日 {meta.createdAt}</span>
+        <span className="muted small" title="画面の版（commit）と元データの版。古い画面のままなら再読み込みする" data-ui="build-id">
+          版 {BUILD_ID}・データ {DATA_VERSION.slice(0, 6)}
+        </span>
         <button type="button" className="btn" onClick={() => check()}>
           検査
         </button>
@@ -369,6 +393,34 @@ export const TunerApp = () => {
       {message ? (
         <div className="tuner-message">
           {message}
+          {legacy !== null ? (
+            <>
+              {' '}
+              <button
+                type="button"
+                className="btn small"
+                data-ui="legacy-load"
+                onClick={() => {
+                  setWork(applyChanges(base, diffFiles(base, legacy)).files);
+                  setLegacy(null);
+                  setMessage('以前の写しを読み込んだ。元データの更新前の値も変更点に出ているため、心当たりのない変更点は「取り消す」で戻すこと。');
+                }}
+              >
+                以前の写しを読み込む（更新前の値も変更点に出る）
+              </button>{' '}
+              <button
+                type="button"
+                className="btn small"
+                data-ui="legacy-discard"
+                onClick={() => {
+                  setLegacy(null);
+                  setMessage(null);
+                }}
+              >
+                以前の写しを捨てる
+              </button>
+            </>
+          ) : null}
           {savedUrl !== null ? (
             <>
               {' '}

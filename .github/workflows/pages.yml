@@ -37,10 +37,12 @@ jobs:
           VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
           VITE_TUNER_URL: tuner/
+          VITE_BUILD_ID: ${{ github.sha }}
       - name: チューナーをビルドする（dist/tuner/）
         run: npm run build:tuner
         env:
           VITE_GITHUB_REPO: ${{ github.repository }}
+          VITE_BUILD_ID: ${{ github.sha }}
       - name: Edge Function の配置の設定を確かめる
         id: supabase
         env:
