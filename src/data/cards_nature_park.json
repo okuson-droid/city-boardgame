@@ -20,7 +20,7 @@
             {
               "q": 1,
               "r": 0,
-              "terrain": "forest"
+              "terrain": "water"
             }
           ]
         },
@@ -34,36 +34,36 @@
             {
               "q": 1,
               "r": 0,
-              "terrain": "plains"
-            },
-            {
-              "q": 2,
-              "r": 0,
-              "terrain": "plains"
-            }
-          ]
-        },
-        {
-          "cells": [
-            {
-              "q": 0,
-              "r": 0,
-              "terrain": "forest"
-            },
-            {
-              "q": 1,
-              "r": 0,
-              "terrain": "forest"
+              "terrain": "mountain"
             },
             {
               "q": 0,
               "r": 1,
+              "terrain": "forest"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
               "terrain": "water"
             },
             {
               "q": 1,
+              "r": 0,
+              "terrain": "plains"
+            },
+            {
+              "q": 0,
+              "r": 1,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
               "r": -1,
-              "terrain": "water"
+              "terrain": "forest"
             }
           ]
         }
@@ -82,23 +82,23 @@
               "terrain": "forest"
             },
             {
+              "q": 1,
+              "r": 0,
+              "terrain": "mountain"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
               "q": 0,
-              "r": 1,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
               "terrain": "water"
-            }
-          ]
-        },
-        {
-          "cells": [
-            {
-              "q": 0,
-              "r": 0,
-              "terrain": "forest"
-            },
-            {
-              "q": 1,
-              "r": 0,
-              "terrain": "forest"
             },
             {
               "q": 0,
@@ -112,21 +112,21 @@
             {
               "q": 0,
               "r": 0,
-              "terrain": "forest"
+              "terrain": "mountain"
             },
             {
               "q": 1,
               "r": 0,
-              "terrain": "mountain"
+              "terrain": "plains"
             },
             {
-              "q": 2,
-              "r": 0,
-              "terrain": "mountain"
+              "q": 1,
+              "r": -1,
+              "terrain": "forest"
             },
             {
-              "q": 3,
-              "r": 0,
+              "q": 0,
+              "r": 1,
               "terrain": "forest"
             }
           ]
@@ -148,7 +148,7 @@
             {
               "q": 1,
               "r": 0,
-              "terrain": "plains"
+              "terrain": "water"
             }
           ]
         },
@@ -181,16 +181,16 @@
             {
               "q": 1,
               "r": 0,
-              "terrain": "forest"
+              "terrain": "plains"
             },
             {
-              "q": 0,
-              "r": 1,
-              "terrain": "forest"
+              "q": 2,
+              "r": 0,
+              "terrain": "water"
             },
             {
-              "q": 1,
-              "r": -1,
+              "q": 3,
+              "r": 0,
               "terrain": "forest"
             }
           ]
@@ -210,8 +210,8 @@
               "terrain": "forest"
             },
             {
-              "q": 0,
-              "r": 1,
+              "q": 1,
+              "r": 0,
               "terrain": "mountain"
             }
           ]
@@ -229,8 +229,8 @@
               "terrain": "water"
             },
             {
-              "q": 2,
-              "r": 0,
+              "q": 1,
+              "r": 1,
               "terrain": "forest"
             }
           ]
@@ -250,11 +250,11 @@
             {
               "q": 2,
               "r": 0,
-              "terrain": "plains"
+              "terrain": "mountain"
             },
             {
-              "q": 2,
-              "r": 1,
+              "q": 3,
+              "r": 0,
               "terrain": "forest"
             }
           ]
@@ -274,9 +274,9 @@
               "terrain": "forest"
             },
             {
-              "q": 0,
-              "r": 1,
-              "terrain": "forest"
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
             }
           ]
         },
@@ -290,12 +290,12 @@
             {
               "q": 1,
               "r": 0,
-              "terrain": "forest"
+              "terrain": "mountain"
             },
             {
-              "q": 0,
-              "r": 1,
-              "terrain": "plains"
+              "q": 2,
+              "r": 0,
+              "terrain": "forest"
             }
           ]
         },
@@ -317,9 +317,9 @@
               "terrain": "plains"
             },
             {
-              "q": 1,
+              "q": 2,
               "r": 1,
-              "terrain": "mountain"
+              "terrain": "forest"
             }
           ]
         }
@@ -340,25 +340,6 @@
             {
               "q": 1,
               "r": 0,
-              "terrain": "water"
-            }
-          ]
-        },
-        {
-          "cells": [
-            {
-              "q": 0,
-              "r": 0,
-              "terrain": "forest"
-            },
-            {
-              "q": 1,
-              "r": 0,
-              "terrain": "forest"
-            },
-            {
-              "q": 1,
-              "r": 1,
               "terrain": "mountain"
             }
           ]
@@ -373,17 +354,36 @@
             {
               "q": 1,
               "r": 0,
-              "terrain": "plains"
+              "terrain": "water"
             },
             {
               "q": 2,
               "r": 0,
               "terrain": "forest"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
             },
             {
-              "q": 3,
+              "q": 1,
+              "r": 0,
+              "terrain": "mountain"
+            },
+            {
+              "q": 2,
               "r": 0,
               "terrain": "plains"
+            },
+            {
+              "q": 2,
+              "r": 1,
+              "terrain": "forest"
             }
           ]
         }
@@ -402,52 +402,52 @@
               "terrain": "forest"
             },
             {
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
               "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 1,
+              "terrain": "mountain"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
+            },
+            {
+              "q": 2,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
               "r": 1,
               "terrain": "plains"
-            }
-          ]
-        },
-        {
-          "cells": [
-            {
-              "q": 0,
-              "r": 0,
-              "terrain": "forest"
-            },
-            {
-              "q": 1,
-              "r": 0,
-              "terrain": "water"
-            },
-            {
-              "q": 0,
-              "r": 1,
-              "terrain": "water"
-            }
-          ]
-        },
-        {
-          "cells": [
-            {
-              "q": 0,
-              "r": 0,
-              "terrain": "forest"
-            },
-            {
-              "q": 1,
-              "r": 0,
-              "terrain": "forest"
-            },
-            {
-              "q": 0,
-              "r": 1,
-              "terrain": "mountain"
-            },
-            {
-              "q": 1,
-              "r": -1,
-              "terrain": "mountain"
             }
           ]
         }
@@ -482,12 +482,12 @@
             {
               "q": 1,
               "r": 0,
-              "terrain": "plains"
+              "terrain": "forest"
             },
             {
-              "q": 2,
-              "r": 0,
-              "terrain": "forest"
+              "q": 1,
+              "r": 1,
+              "terrain": "water"
             }
           ]
         },
@@ -501,17 +501,17 @@
             {
               "q": 1,
               "r": 0,
-              "terrain": "forest"
+              "terrain": "mountain"
             },
             {
               "q": 2,
               "r": 0,
-              "terrain": "water"
+              "terrain": "forest"
             },
             {
               "q": 1,
               "r": 1,
-              "terrain": "forest"
+              "terrain": "plains"
             }
           ]
         }

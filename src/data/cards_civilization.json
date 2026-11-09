@@ -3298,7 +3298,7 @@
       "id": "062",
       "name": "丘陵",
       "cost": {
-        "gold": 9
+        "gold": 10
       },
       "tags": [
         "environment"
@@ -3337,7 +3337,7 @@
       "id": "063",
       "name": "緑地化",
       "cost": {
-        "gold": 9
+        "gold": 10
       },
       "tags": [
         "environment"
@@ -3376,7 +3376,7 @@
       "id": "064",
       "name": "地均し",
       "cost": {
-        "gold": 10
+        "gold": 11
       },
       "tags": [
         "environment"
@@ -3415,7 +3415,7 @@
       "id": "065",
       "name": "治水工事",
       "cost": {
-        "gold": 10
+        "gold": 11
       },
       "tags": [
         "environment"
@@ -3454,7 +3454,7 @@
       "id": "066",
       "name": "中規模開拓",
       "cost": {
-        "gold": 12
+        "gold": 14
       },
       "tags": [
         "environment"
@@ -3732,7 +3732,7 @@
       "id": "072",
       "name": "一夜城",
       "cost": {
-        "gold": 12
+        "gold": 14
       },
       "tags": [
         "military"
@@ -3776,7 +3776,7 @@
       "id": "073",
       "name": "掘り出し物",
       "cost": {
-        "gold": 8
+        "gold": 11
       },
       "tags": [
         "economy"
@@ -4656,7 +4656,7 @@
       "id": "094",
       "name": "ボランティア",
       "cost": {
-        "gold": 18
+        "gold": 16
       },
       "tags": [
         "life"
@@ -4699,7 +4699,7 @@
       "id": "095",
       "name": "生活組合",
       "cost": {
-        "gold": 11
+        "gold": 14
       },
       "tags": [
         "life"
@@ -5105,7 +5105,7 @@
       "id": "103",
       "name": "雲隠れ",
       "cost": {
-        "gold": 15
+        "gold": 9
       },
       "tags": [
         "military"
@@ -5190,7 +5190,7 @@
       "id": "105",
       "name": "発明王",
       "cost": {
-        "gold": 9
+        "gold": 12
       },
       "tags": [
         "academic"
@@ -5347,10 +5347,18 @@
       ],
       "script": [
         {
-          "ability": "modifier",
-          "modifier": {
-            "kind": "noRaidPointLoss"
-          }
+          "ability": "on",
+          "event": "raid",
+          "filter": {
+            "result": "defended"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 1
+            }
+          ]
         }
       ],
       "provisional": true,
@@ -5386,7 +5394,7 @@
           "do": [
             {
               "op": "discardRaise",
-              "max": 2,
+              "max": 3,
               "track": "military"
             }
           ]
@@ -5475,6 +5483,20 @@
               "op": "gain",
               "res": "gold",
               "amount": 2
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "built",
+          "filter": {
+            "building": "house"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 1
             }
           ]
         }

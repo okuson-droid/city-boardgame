@@ -9,10 +9,7 @@
   "squares": {
     "A1": {
       "terrain": "forest",
-      "bonus": {
-        "kind": "drawCivCards",
-        "amount": 1
-      }
+      "bonus": null
     },
     "A2": {
       "terrain": "plains",
@@ -23,15 +20,15 @@
       "bonus": null
     },
     "A4": {
-      "terrain": "plains",
-      "bonus": {
-        "kind": "gold",
-        "amount": 2
-      }
+      "terrain": "forest",
+      "bonus": null
     },
     "A5": {
       "terrain": "mountain",
-      "bonus": null
+      "bonus": {
+        "kind": "gold",
+        "amount": 3
+      }
     },
     "A6": {
       "terrain": "forest",
@@ -42,8 +39,11 @@
       "bonus": null
     },
     "A8": {
-      "terrain": "water",
-      "bonus": null
+      "terrain": "plains",
+      "bonus": {
+        "kind": "specialCitizen",
+        "amount": 1
+      }
     },
     "B1": {
       "terrain": "water",
@@ -51,25 +51,25 @@
     },
     "B2": {
       "terrain": "plains",
-      "bonus": null
-    },
-    "B3": {
-      "terrain": "plains",
       "bonus": {
-        "kind": "drawCivCards",
+        "kind": "materials",
         "amount": 1
       }
     },
-    "B4": {
+    "B3": {
       "terrain": "forest",
       "bonus": null
     },
+    "B4": {
+      "terrain": "mountain",
+      "bonus": null
+    },
     "B5": {
-      "terrain": "water",
+      "terrain": "forest",
       "bonus": null
     },
     "B6": {
-      "terrain": "water",
+      "terrain": "forest",
       "bonus": null
     },
     "B7": {
@@ -78,27 +78,33 @@
     },
     "C1": {
       "terrain": "plains",
-      "bonus": null
+      "bonus": {
+        "kind": "gold",
+        "amount": 3
+      }
     },
     "C2": {
-      "terrain": "plains",
+      "terrain": "water",
       "bonus": null
     },
     "C3": {
-      "terrain": "mountain",
-      "bonus": null
-    },
-    "C4": {
       "terrain": "plains",
       "bonus": null
     },
+    "C4": {
+      "terrain": "mountain",
+      "bonus": null
+    },
     "C5": {
-      "terrain": "forest",
+      "terrain": "mountain",
       "bonus": null
     },
     "C6": {
-      "terrain": "water",
-      "bonus": null
+      "terrain": "forest",
+      "bonus": {
+        "kind": "materials",
+        "amount": 2
+      }
     },
     "C7": {
       "terrain": "forest",
@@ -109,31 +115,34 @@
       "bonus": null
     },
     "D1": {
-      "terrain": "forest",
+      "terrain": "water",
       "bonus": null
     },
     "D2": {
-      "terrain": "mountain",
+      "terrain": "plains",
       "bonus": null
     },
     "D3": {
       "terrain": "mountain",
-      "bonus": null
+      "bonus": {
+        "kind": "drawCivCards",
+        "amount": 1
+      }
     },
     "D4": {
       "terrain": "plains",
       "bonus": null
     },
     "D5": {
-      "terrain": "mountain",
+      "terrain": "water",
       "bonus": null
     },
     "D6": {
-      "terrain": "forest",
+      "terrain": "water",
       "bonus": null
     },
     "D7": {
-      "terrain": "plains",
+      "terrain": "forest",
       "bonus": null
     },
     "E1": {
@@ -141,7 +150,7 @@
       "bonus": null
     },
     "E2": {
-      "terrain": "plains",
+      "terrain": "mountain",
       "bonus": null
     },
     "E3": {
@@ -153,52 +162,52 @@
       "bonus": null
     },
     "E5": {
-      "terrain": "forest",
-      "bonus": {
-        "kind": "materials",
-        "amount": 1
-      }
+      "terrain": "plains",
+      "bonus": null
     },
     "E6": {
-      "terrain": "mountain",
+      "terrain": "water",
       "bonus": null
     },
     "E7": {
-      "terrain": "water",
-      "bonus": {
-        "kind": "gold",
-        "amount": 2
-      }
+      "terrain": "plains",
+      "bonus": null
     },
     "E8": {
-      "terrain": "forest",
-      "bonus": null
+      "terrain": "plains",
+      "bonus": {
+        "kind": "drawCivCards",
+        "amount": 1
+      }
     },
     "F1": {
       "terrain": "forest",
       "bonus": null
     },
     "F2": {
-      "terrain": "forest",
-      "bonus": {
-        "kind": "militaryTokens",
-        "amount": 1
-      }
-    },
-    "F3": {
       "terrain": "plains",
       "bonus": null
     },
+    "F3": {
+      "terrain": "forest",
+      "bonus": {
+        "kind": "militaryTokens",
+        "amount": 2
+      }
+    },
     "F4": {
-      "terrain": "plains",
+      "terrain": "forest",
       "bonus": null
     },
     "F5": {
       "terrain": "plains",
-      "bonus": null
+      "bonus": {
+        "kind": "gold",
+        "amount": 3
+      }
     },
     "F6": {
-      "terrain": "forest",
+      "terrain": "plains",
       "bonus": null
     },
     "F7": {

@@ -94,8 +94,22 @@
             {
               "op": "gain",
               "res": "points",
-              "amount": 1,
+              "amount": 2,
               "axis": "welfare"
+            }
+          ]
+        },
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "playedCivCards",
+                "per": 1,
+                "times": 1
+              }
             }
           ]
         }
@@ -113,11 +127,31 @@
       "provisional": false,
       "script": [
         {
-          "ability": "modifier",
-          "modifier": {
-            "kind": "goldPointsMultiplier",
-            "value": 2
-          }
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "chooseOne",
+              "options": [
+                [
+                  {
+                    "op": "raise",
+                    "track": "military",
+                    "amount": 1
+                  }
+                ],
+                [
+                  {
+                    "op": "raise",
+                    "track": "infra",
+                    "amount": 1
+                  }
+                ]
+              ]
+            }
+          ]
         }
       ]
     },
@@ -221,15 +255,27 @@
       "provisional": false,
       "script": [
         {
-          "ability": "modifier",
-          "modifier": {
-            "kind": "natureParkPoints",
-            "table": {
-              "2": 10,
-              "3": 15,
-              "4": 20
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "drawPlannedCity",
+              "count": 1
             }
-          }
+          ]
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingTypes",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
         }
       ]
     },
@@ -290,6 +336,12 @@
               "op": "playCard",
               "count": 1,
               "free": true
+            },
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": false,
+              "upTo": true
             }
           ]
         }
@@ -315,7 +367,7 @@
       "script": [
         {
           "ability": "actionSpace",
-          "workers": 3,
+          "workers": 2,
           "do": [
             {
               "op": "copyAction"
@@ -342,6 +394,20 @@
             "building": "house",
             "materials": -1
           }
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingsOfType:house",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
         }
       ]
     },
@@ -411,7 +477,7 @@
           "do": [
             {
               "op": "placeTiles",
-              "count": 2,
+              "count": 3,
               "tile": "any"
             }
           ]
@@ -422,8 +488,8 @@
           "do": [
             {
               "op": "placeTiles",
-              "count": 1,
-              "tile": "any"
+              "count": 2,
+              "tile": "match"
             }
           ]
         }
@@ -479,6 +545,15 @@
                 "count": "regularWorkers",
                 "per": 1,
                 "times": 1
+              }
+            },
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "tempWorkers",
+                "per": 1,
+                "times": 2
               }
             }
           ]
@@ -588,12 +663,12 @@
             {
               "op": "gain",
               "res": "goldProduction",
-              "amount": 4
+              "amount": 6
             },
             {
               "op": "gain",
               "res": "materialProduction",
-              "amount": 2
+              "amount": 3
             }
           ]
         }
