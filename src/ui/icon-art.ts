@@ -236,6 +236,7 @@ export const ICON_ART: Readonly<Record<string, string>> = {
   'sym.colon': `<circle cx="12" cy="7.5" r="2.2" fill="#444"/><circle cx="12" cy="16.5" r="2.2" fill="#444"/>`,
   'sym.oncePerRound': `<circle cx="12" cy="12" r="9" ${S} stroke="#444"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#444">1R</text>`,
   'sym.once': `<circle cx="12" cy="12" r="9" fill="#444"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">1</text>`,
+  'sym.noMaterials': `<rect x="4" y="13" width="16" height="5" rx="1" fill="#9a6b3e" stroke="#5a3b1e" stroke-width="1.2"/><rect x="6" y="7" width="12" height="5" rx="1" fill="#b3824f" stroke="#5a3b1e" stroke-width="1.2"/><path d="M5 19L19 5" stroke="#b5423b" stroke-width="2.5" stroke-linecap="round"/>`,
   'sym.free': `<circle cx="12" cy="12" r="8" fill="${AXIS_COLORS.economy}" stroke="#7a5f10" stroke-width="1.5"/><path d="M5 19L19 5" stroke="#b5423b" stroke-width="2.5" stroke-linecap="round"/>`,
   'sym.noGold': `<circle cx="12" cy="12" r="8" fill="${AXIS_COLORS.economy}" stroke="#7a5f10" stroke-width="1.5"/><path d="M5 19L19 5" stroke="#b5423b" stroke-width="2.5" stroke-linecap="round"/>`,
   // 支払う：硬貨を差し出す（手から出ていく矢）

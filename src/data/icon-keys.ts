@@ -21,7 +21,7 @@ export const ICON_SECTIONS = {
   results: ['defenseFailed', 'defended', 'repelled'],
   tiers: TIERS,
   actions: ACTIONS,
-  symbols: ['per', 'ge', 'lt', 'free', 'noGold', 'upTo', 'oncePerRound', 'pay', 'workers', 'every', 'once', 'or', 'then', 'excludeSelf', 'axis', 'pass', 'colon', 'discard', 'distinct', 'except', 'anyPlayer'],
+  symbols: ['per', 'ge', 'lt', 'free', 'noGold', 'noMaterials', 'upTo', 'oncePerRound', 'pay', 'workers', 'every', 'once', 'or', 'then', 'excludeSelf', 'axis', 'pass', 'colon', 'discard', 'distinct', 'except', 'anyPlayer'],
 } as const;
 
 export type IconSection = keyof typeof ICON_SECTIONS;

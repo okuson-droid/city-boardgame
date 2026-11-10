@@ -90,7 +90,9 @@ const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
           ? [token(keys, 'symbols', 'free')]
           : !command.payGold
             ? [token(keys, 'symbols', 'noGold')]
-            : []),
+            : !command.payMaterials
+              ? [token(keys, 'symbols', 'noMaterials')]
+              : []),
       ];
     case 'later':
       // 処理の順番だけを表す命令のため、中身の命令だけを並べる。
@@ -125,6 +127,8 @@ const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
         token(keys, 'symbols', 'colon'),
         ...command.then.flatMap((c) => commandTokens(keys, c)),
       ];
+    case 'drawPlannedCity':
+      return [token(keys, 'commands', 'drawPlannedCity', command.count)];
     default:
       return [token(keys, 'commands', command.op)];
   }
@@ -249,7 +253,7 @@ const describeCommand = (keys: IconKeys, command: Command): string => {
     case 'build': {
       const what = command.buildings === null ? '' : `${command.buildings.map((b) => label(keys, 'buildings', b)).join('・')}を`;
       const where = command.terrain === null ? '' : `${label(keys, 'terrains', command.terrain)}に`;
-      const cost = !command.payGold && !command.payMaterials ? `（${label(keys, 'symbols', 'free')}）` : !command.payGold ? `（${label(keys, 'symbols', 'noGold')}）` : '';
+      const cost = !command.payGold && !command.payMaterials ? `（${label(keys, 'symbols', 'free')}）` : !command.payGold ? `（${label(keys, 'symbols', 'noGold')}）` : !command.payMaterials ? `（${label(keys, 'symbols', 'noMaterials')}）` : '';
       const verb = command.buildings === null ? label(keys, 'commands', 'build') : '建てる';
       return `${where}${what}${command.max}軒${command.upTo ? label(keys, 'symbols', 'upTo') : ''}${verb}${cost}`;
     }
@@ -265,6 +269,8 @@ const describeCommand = (keys: IconKeys, command: Command): string => {
       return `${label(keys, 'commands', 'expeditionRewards')}（${command.count}つ）`;
     case 'chooseOne':
       return `${command.options.map((o) => o.map((c) => describeCommand(keys, c)).join('、')).join(`／`)}の${label(keys, 'commands', 'chooseOne')}`;
+    case 'drawPlannedCity':
+      return `${label(keys, 'commands', 'drawPlannedCity')}（${command.count}枚）`;
     case 'if':
       return `${describeCondition(keys, command.cond)}${label(keys, 'symbols', 'then')}、${command.then.map((c) => describeCommand(keys, c)).join('、')}`;
     default:
@@ -339,3 +345,6 @@ const describeAbility = (keys: IconKeys, ability: Ability): string => {
 /** 効果スクリプトから補足表示の文章を組み立てる。能力ごとに1文。 */
 export const describeScript = (script: Script, keys: IconKeys = ICON_KEYS): string[] =>
   script.map((ability) => describeAbility(keys, ability));
+
+/** 命令の列の文章（選択肢のラベル用。能力の見出しを付けない）。 */
+export const describeCommands = (commands: readonly Command[], keys: IconKeys = ICON_KEYS): string => describeDo(keys, commands);

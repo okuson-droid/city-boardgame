@@ -4,7 +4,8 @@
 
 import { DATA_VERSION, GAME_DATA } from '../data/index.ts';
 import type { GameData } from '../data/types.ts';
-import { applyMove, createGame, decider, getOptions } from '../game/engine.ts';
+import { applyMove, createGame, decider, getOptions, isGameOver } from '../game/engine.ts';
+import { replayRecordOf, type ReplayRecord } from '../game/replay.ts';
 import { turnStartLength, undoLast, undoToTurnStart } from '../game/history.ts';
 import type { GameConfig, GameState, GameVariants } from '../game/types.ts';
 
@@ -161,6 +162,16 @@ export const undoInRoom = (room: Room, seat: number, d: GameData = GAME_DATA, to
   if (back === null) throw new RoomError(409, '直前の処理より前には戻れない');
   room.state = back;
   room.record.moves.splice(room.record.moves.length - count, count);
+};
+
+/**
+ * 対局の記録（リプレイ）。シードを含み山札と全員の手札を再現できるため、終局後にだけ渡す（19-6-1、ユーザー決定 2026-11-10）。
+ * 席の誰でも受け取れる。データの版は部屋を作ったときの版にする。
+ */
+export const replayOfRoom = (room: Room): ReplayRecord => {
+  const state = room.state;
+  if (state === null || !isGameOver(state)) throw new RoomError(409, '記録は終局してから保存できる');
+  return replayRecordOf(state, room.record.dataVersion ?? DATA_VERSION);
 };
 
 /**

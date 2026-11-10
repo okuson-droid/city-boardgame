@@ -3,41 +3,14 @@
 // 画面は queries.ts の再輸出を通して使う。
 
 import { GAME_DATA } from '../data/index.ts';
-import { ICON_KEYS } from '../data/icon-keys.ts';
-import { ACTIONS, BUILDINGS, type Action, type Building, type GameData, type Grant, type UnlockCondition } from '../data/types.ts';
+import { actionLabel, buildingLabel, grantText, labelIn } from './labels.ts';
+import { ACTIONS, BUILDINGS, type Building, type GameData, type UnlockCondition } from '../data/types.ts';
 import type { Command } from '../data/script.ts';
 import { expeditionTable } from './actions.ts';
 import { buildingCount } from './core.ts';
 import type { PlayerState } from './types.ts';
 
-const labelIn = (section: keyof typeof ICON_KEYS, key: string): string =>
-  (ICON_KEYS[section] as Readonly<Record<string, { label: string }>>)[key]?.label ?? key;
-
-export const buildingLabel = (b: Building): string => labelIn('buildings', b);
-export const actionLabel = (a: Action): string => labelIn('actions', a);
-
-/** 得るもの1つの文（到達報酬・遠征の報酬・マスボーナス・地形ボーナス）。 */
-export const grantText = (g: Grant): string => {
-  switch (g.kind) {
-    case 'landTiles':
-      return `土地タイル${g.amount}枚を置く`;
-    case 'buildRight':
-      return `建物${g.amount}軒を建てる（建設の権利）`;
-    case 'freeBuildOnTerrain':
-      return `${labelIn('terrains', g.terrain)}に建物${g.amount}軒を無料で建てる`;
-    case 'specialCitizen':
-      return `特別な市民カード${g.amount}枚を獲得する`;
-    case 'drawCivCards':
-      return `文明カードを${g.amount}枚引く`;
-    case 'points':
-      return `${g.amount}点を得る`;
-    case 'goldProduction':
-    case 'materialProduction':
-      return `${labelIn('resources', g.kind)}を${g.amount}上げる`;
-    default:
-      return `${labelIn('resources', g.kind)}${g.amount}を得る`;
-  }
-};
+export { actionLabel, buildingLabel, grantText } from './labels.ts';
 
 /** 命令1つの短い文（遠征の追加報酬など、資源を得るだけの命令を想定する）。 */
 const commandText = (c: Command): string => {

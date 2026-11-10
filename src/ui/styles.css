@@ -2548,3 +2548,37 @@ h3 {
     overflow-x: auto;
   }
 }
+
+/* 記録の再生の操作帯（ユーザー決定 2026-11-10）。ゲーム画面の格子の外に重ね、終了時の得点の窓より手前に出す。 */
+.replay-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  z-index: 95;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100vw - 16px);
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink, #222);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 25%);
+  font-size: 13px;
+}
+.replay-bar input[type='range'] {
+  width: min(240px, 40vw);
+}
+.replay-pos {
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.replay-warn {
+  flex-basis: 100%;
+  color: #b5423b;
+}

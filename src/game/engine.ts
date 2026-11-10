@@ -56,6 +56,7 @@ import {
 import { abilitiesOf, hasModifier } from './abilities.ts';
 import { isCheckpoint } from './history.ts';
 import { recordDeltas, snapshot } from './deltas.ts';
+import { actionSpaceLabel, bonusTileText, boardName, characterName, commandsLabel, conversionLabel, sourceName, specialCitizenText, terrainLabel } from './labels.ts';
 import { onSpecialCitizenAcquired, runAbilities, runCommands } from './effects.ts';
 import {
   abilityFreeOptions,
@@ -206,18 +207,18 @@ export const createGame = (config: GameConfig, seed: number, d: GameData = GAME_
   return state;
 };
 
-const draftOptions = (state: GameState, task: TaskOf<'draftPick'>): Option[] => {
+const draftOptions = (state: GameState, d: GameData, task: TaskOf<'draftPick'>): Option[] => {
   const player = playerOf(state, task.player);
   const options: Option[] = [];
   // まだ獲得していない種類の要素からのみ選べる（2-6-4-2）。
   if (player.boardId === null) {
-    options.push(...state.draftPool.boards.map((id) => opt(task.player, `draft:board:${id}`, `個人ボード ${id}`)));
+    options.push(...state.draftPool.boards.map((id) => opt(task.player, `draft:board:${id}`, `個人ボード：${boardName(d, id)}`)));
   }
   if (player.bonusTile === null) {
-    options.push(...state.draftPool.bonusTiles.map((id) => opt(task.player, `draft:bonus:${id}`, `ボーナスタイル ${id}`)));
+    options.push(...state.draftPool.bonusTiles.map((id) => opt(task.player, `draft:bonus:${id}`, `ボーナスタイル${id}：${bonusTileText(d, id)}`)));
   }
   if (player.characterId === null) {
-    options.push(...state.draftPool.characters.map((id) => opt(task.player, `draft:character:${id}`, `キャラクター ${id}`)));
+    options.push(...state.draftPool.characters.map((id) => opt(task.player, `draft:character:${id}`, `キャラクター：${characterName(d, id)}`)));
   }
   return options;
 };
@@ -471,7 +472,7 @@ export const canChooseSpace = (state: GameState, d: GameData, player: PlayerStat
 const freeActionOptions = (state: GameState, d: GameData, player: PlayerState): Option[] => {
   const options: Option[] = [];
   for (const conv of d.params.freeActions.conversions) {
-    const label = `フリーアクション ${conv.id}`;
+    const label = conversionLabel(conv);
     switch (conv.pay.kind) {
       case 'gold':
         if (player.gold >= conv.pay.amount) options.push(opt(player.index, `free:${conv.id}`, label));
@@ -489,7 +490,7 @@ const freeActionOptions = (state: GameState, d: GameData, player: PlayerState): 
         // 捨てるカードを選ぶ。1枚ずつの変換として扱う。
         if (conv.pay.amount === 1) {
           for (const card of new Set(player.hand)) {
-            options.push(opt(player.index, `free:${conv.id}:${card}`, `${label}（${card}）`));
+            options.push(opt(player.index, `free:${conv.id}:${card}`, conversionLabel(conv, card, d)));
           }
         }
         break;
@@ -505,7 +506,7 @@ const turnOptions = (state: GameState, d: GameData, task: TaskOf<'turn'>): Optio
     for (const action of ACTIONS) {
       for (const tier of TIERS) {
         if (canChooseSpace(state, d, player, action, tier)) {
-          options.push(opt(task.player, `act:${action}:${tier}`, `${action}（${tier}）`));
+          options.push(opt(task.player, `act:${action}:${tier}`, actionSpaceLabel(d, action, tier)));
         }
       }
     }
@@ -653,12 +654,12 @@ const pass = (state: GameState, d: GameData, player: PlayerState): void => {
   }
 };
 
-const passTileOptions = (state: GameState, task: TaskOf<'passTile'>): Option[] => {
+const passTileOptions = (state: GameState, d: GameData, task: TaskOf<'passTile'>): Option[] => {
   const held = new Set(state.players.map((p) => p.bonusTile));
   // 返却したタイルと、他プレイヤーが占有しているタイルは選べない（11-3-2）。
   return state.bonusTilesOnBoard
     .filter((id) => id !== task.returned && !held.has(id))
-    .map((id) => opt(task.player, `bonus:${id}`, `ボーナスタイル ${id}`));
+    .map((id) => opt(task.player, `bonus:${id}`, `ボーナスタイル${id}：${bonusTileText(d, id)}`));
 };
 
 // ---------------------------------------------------------------------------
@@ -672,10 +673,10 @@ const raidOptions = (state: GameState, d: GameData, task: TaskOf<'raidDeclare'>)
   // 宣言できるのは不足分のトークンを払える目標に限る。宣言しないことも選べる（19-3-2）。
   const options = [opt(task.player, 'raid:none', '宣言しない')];
   if (raidNeed(player, state.defenseLine) <= tokenBudget(d, player)) {
-    options.push(opt(task.player, 'raid:defense', `防衛ライン ${state.defenseLine} を宣言する`));
+    options.push(opt(task.player, 'raid:defense', `防衛ライン ${state.defenseLine} を宣言する（軍事力トークン${raidNeed(player, state.defenseLine)}個を払う）`));
   }
   if (raidNeed(player, state.repelLine) <= tokenBudget(d, player)) {
-    options.push(opt(task.player, 'raid:repel', `撃退ライン ${state.repelLine} を宣言する`));
+    options.push(opt(task.player, 'raid:repel', `撃退ライン ${state.repelLine} を宣言する（軍事力トークン${raidNeed(player, state.repelLine)}個を払う）`));
   }
   // 雲隠れ：自分の襲撃の処理（宣言・判定・得点・カードの効果・判定結果への反応）をすべて行わない（ユーザー決定 2026-11-06）。
   if (hasModifier(d, player, 'skipRaid')) {
@@ -773,8 +774,8 @@ const applyRaid = (state: GameState, d: GameData, task: TaskOf<'raidDeclare'>, i
 // 特別な市民カードと処理順
 // ---------------------------------------------------------------------------
 
-const specialCitizenOptions = (state: GameState, task: TaskOf<'chooseSpecialCitizen'>): Option[] =>
-  state.scRevealed.map((id) => opt(task.player, `sc:${id}`, `特別な市民カード ${id}`));
+const specialCitizenOptions = (state: GameState, d: GameData, task: TaskOf<'chooseSpecialCitizen'>): Option[] =>
+  state.scRevealed.map((id) => opt(task.player, `sc:${id}`, `特別な市民カード ${id}：${specialCitizenText(d, id)}`));
 
 const applySpecialCitizen = (state: GameState, d: GameData, task: TaskOf<'chooseSpecialCitizen'>, id: string): void => {
   state.stack.pop();
@@ -792,16 +793,16 @@ const applySpecialCitizen = (state: GameState, d: GameData, task: TaskOf<'choose
   onSpecialCitizenAcquired(state, d, player, card);
 };
 
-const choiceLabel = (effect: ChoiceEffect): string => {
+const choiceLabel = (d: GameData, effect: ChoiceEffect): string => {
   switch (effect.k) {
     case 'command':
-      return `${effect.source} の ${effect.command.op}`;
+      return `${sourceName(d, effect.source)}：${commandsLabel([effect.command])}`;
     case 'landTiles':
       return `土地タイル${effect.n}枚を置く`;
     case 'buildRight':
       return '建設の権利を使う';
     case 'freeBuild':
-      return '無料で建設する';
+      return effect.terrain === null ? '無料で建設する' : `${terrainLabel(effect.terrain)}に無料で建設する`;
     case 'specialCitizen':
       return '特別な市民カードを獲得する';
     case 'discard':
@@ -831,12 +832,12 @@ const topOf = (state: GameState): Task | undefined => state.stack[state.stack.le
 const optionsFor = (state: GameState, d: GameData, task: Task): Option[] => {
   switch (task.t) {
     case 'draftPick':
-      return draftOptions(state, task);
+      return draftOptions(state, d, task);
     case 'turn':
       return turnOptions(state, d, task);
     case 'payWorkers':
       return payWorkersRange(playerOf(state, task.player), task.cost).map((k) =>
-        opt(task.player, `temp:${k}`, `臨時ワーカーを${k}人使う`),
+        opt(task.player, `temp:${k}`, `通常ワーカー${task.cost - k}人・臨時ワーカー${k}人を使う`),
       );
     case 'pioneerCount':
       return pioneerCountOptions(d, state, task);
@@ -869,15 +870,15 @@ const optionsFor = (state: GameState, d: GameData, task: Task): Option[] => {
     case 'migrationCount':
       return migrationCountOptions(d, state, task);
     case 'discard':
-      return discardOptions(state, task);
+      return discardOptions(d, state, task);
     case 'spreadPlay':
       return spreadOptions(d, state, task);
     case 'chooseSpecialCitizen':
-      return specialCitizenOptions(state, task);
+      return specialCitizenOptions(state, d, task);
     case 'chooseOrder':
-      return task.items.map((item, i) => opt(task.player, `order:${i}`, choiceLabel(item)));
+      return task.items.map((item, i) => opt(task.player, `order:${i}`, `先に処理する：${choiceLabel(d, item)}`));
     case 'passTile':
-      return passTileOptions(state, task);
+      return passTileOptions(state, d, task);
     case 'raidDeclare':
       return raidOptions(state, d, task);
     case 'tokenSwap':
