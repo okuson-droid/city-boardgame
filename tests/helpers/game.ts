@@ -2,7 +2,6 @@
 
 import { GAME_DATA } from '../../src/data/index.ts';
 import { RAID_EFFECT_KINDS, type GameData } from '../../src/data/types.ts';
-import type { Script } from '../../src/data/script.ts';
 import { applyMove, createGame, decider, getOptions } from '../../src/game/engine.ts';
 import { playerOf } from '../../src/game/core.ts';
 import type { GameState, Option, PlayerState, Task } from '../../src/game/types.ts';
@@ -82,26 +81,3 @@ export const withAllRaidEffects = (d: GameData = GAME_DATA): GameData => ({
     },
   },
 });
-
-/**
- * 文明カード・特別な市民カードの効果スクリプトを差し替えたデータ。
- * データのどのカードも使わなくなった効果（補正など）を、エンジンの機能として検査し続けるために使う。
- */
-export const withScripts = (
-  scripts: { readonly civ?: Readonly<Record<string, Script>>; readonly sc?: Readonly<Record<string, Script>> },
-  d: GameData = GAME_DATA,
-): GameData => {
-  const replace = <T extends { readonly id: string; readonly script: Script }>(
-    cards: readonly T[],
-    table: Readonly<Record<string, Script>> | undefined,
-  ): T[] =>
-    cards.map((c) => {
-      const script = table?.[c.id];
-      return script === undefined ? c : { ...c, script };
-    });
-  return {
-    ...d,
-    civilizationCards: replace(d.civilizationCards, scripts.civ),
-    specialCitizens: replace(d.specialCitizens, scripts.sc),
-  };
-};

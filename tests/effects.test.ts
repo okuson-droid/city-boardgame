@@ -8,7 +8,7 @@ import { natureParkScore, plannedCityMatches } from '../src/game/planned.ts';
 import { spiritAdjacency } from '../src/game/effects.ts';
 import { finalScores } from '../src/game/scoring.ts';
 import type { GameState, PlayerState } from '../src/game/types.ts';
-import { edit, firstTurn, ids, me, play, top, untilTurn, withScripts, withoutCharacters } from './helpers/game.ts';
+import { edit, firstTurn, ids, me, play, top, untilTurn, withoutCharacters } from './helpers/game.ts';
 
 const d = GAME_DATA;
 
@@ -271,43 +271,22 @@ describe('命令：placeTiles・build・playCard', () => {
     expect(me(s).gold).toBe(100 - 10);
   });
 
-  it('特別市民10の専用スペースで文明カードを1枚無料でプレイし、もう1枚まで通常のコストでプレイできる', () => {
-    // rules.md v0.8 6-2-4、6-2-5、decisions.md 3-4（選択を伴う効果が2つあれば順番を尋ねる）
-    // 2枚目（通常のコスト）は調整案（2026-11-08、commit 14876e6）で加えた。
+  it('特別市民10の専用スペースで文明カードを無料でプレイする', () => {
+    // rules.md v0.8 6-2-4、6-2-5
     let s = edit(base(), (_, p) => {
       p.specialCitizens = ['10'];
-      p.hand = ['005', '006'];
+      p.hand = ['005'];
       p.gold = 0;
     });
     const key = 'space:sc:10#0';
     expect(ids(s)).toContain(key);
-    s = play(s, key, 'order:0', 'card:005');
+    s = play(s, key, 'card:005');
     expect(me(s).played).toEqual(['005']);
     expect(me(s).goldProduction).toBeGreaterThanOrEqual(25);
-    // 金が0では2枚目を払えず、選択肢のないタスクは不発として取り除かれる（16-2-5）。
-    expect(top(s).t).toBe('turn');
-    expect(me(s).hand).toEqual(['006']);
     s = applyMove(s, 'end');
     s = untilTurn(s);
     // 占有型で1ラウンドに1回（他のプレイヤーには出ない）。
     expect(ids(s)).not.toContain(key);
-  });
-});
-
-describe('特別市民10：2枚目は通常のコスト', () => {
-  it('無料の1枚の後、通常のコストで2枚目をプレイできる', () => {
-    // rules.md v0.8 6-2-4、6-2-5、調整案（2026-11-08、commit 14876e6）
-    const cost = d.civilizationCards.find((c) => c.id === '006')?.cost.gold ?? 0;
-    let s = edit(base(), (_, p) => {
-      p.specialCitizens = ['10'];
-      p.hand = ['005', '006'];
-      p.gold = 30;
-    });
-    s = play(s, 'space:sc:10#0', 'order:0', 'card:005');
-    expect(ids(s)).toEqual(['card:006', 'done']);
-    s = applyMove(s, 'card:006');
-    expect(me(s).played).toEqual(['005', '006']);
-    expect(me(s).gold).toBe(30 - cost);
   });
 });
 
@@ -355,22 +334,6 @@ describe('命令：expeditionRewards（017）・chooseOne・copyAction', () => {
     expect(ids(s)).toEqual(['choose:0', 'choose:1', 'choose:2']);
     s = applyMove(s, 'choose:0');
     expect(me(s).infraLevel).toBe(1);
-  });
-
-  it('特別市民04：ラウンドに1回、フリーアクションで軍事レベルかインフラレベルを1上げる', () => {
-    // 調整案（2026-11-08、commit 14876e6）、rules.md v0.8 9-3-3、16-1-4
-    let s = edit(base(), (_, p) => {
-      p.specialCitizens = ['04'];
-      p.militaryLevel = 0;
-      p.infraLevel = 0;
-    });
-    const key = 'ability:sc:04#0';
-    s = applyMove(s, key);
-    expect(ids(s)).toEqual(['choose:0', 'choose:1']);
-    s = applyMove(s, 'choose:0');
-    expect(me(s).militaryLevel).toBe(1);
-    expect(me(s).infraLevel).toBe(0);
-    expect(ids(s)).not.toContain(key);
   });
 
   it('特別市民11：占有されたスペースや未解放の最上位の効果も使え、そのスペースを占有しない', () => {
@@ -781,17 +744,15 @@ describe('自然公園（第14章、19-1-5、19-4-8）', () => {
     expect(natureParkScore(d, p)).toBe(0);
   });
 
-  it('補正 natureParkPoints：自然公園の得点を10・15・20点に置き換える（データで与えて検査する）', () => {
-    // data_special_citizens.json 08（元の効果）、rules.md v0.8 17-5-2
-    // 特別市民08 は調整案（2026-11-08）で別の効果に変わり、この補正を使うカードはなくなった。
-    const data = withScripts({ sc: { '08': [{ ability: 'modifier', modifier: { kind: 'natureParkPoints', table: { '2': 10, '3': 15, '4': 20 } } }] } });
+  it('特別市民08 は自然公園の得点を10・15・20点に置き換える', () => {
+    // data_special_citizens.json 08、rules.md v0.8 17-5-2
     const p = structuredClone(me(base()));
     p.natureParkCard = 'NP01';
     p.land = { E1: 'forest', F1: 'water' };
     p.buildings = {};
-    expect(natureParkScore(data, p)).toBe(3);
+    expect(natureParkScore(d, p)).toBe(3);
     p.specialCitizens = ['08'];
-    expect(natureParkScore(data, p)).toBe(10);
+    expect(natureParkScore(d, p)).toBe(10);
   });
 
   it('自然公園の得点は終了時の自然・環境に入る', () => {
@@ -807,37 +768,16 @@ describe('自然公園（第14章、19-1-5、19-4-8）', () => {
 });
 
 describe('終了時の得点の補正', () => {
-  it('補正 goldPointsMultiplier：金から得る点数が2倍（データで与えて検査する）', () => {
-    // data_special_citizens.json 04（元の効果）。金の点は収入（金の生産力）から数える（ユーザー決定 2026-11-06）。
-    // 特別市民04 は調整案（2026-11-08）でフリーアクションに変わり、この補正を使うカードはなくなった。rules.md v0.8 17-2-2
-    const data = withScripts({ sc: { '04': [{ ability: 'modifier', modifier: { kind: 'goldPointsMultiplier', value: 2 } }] } });
+  it('特別市民04：金から得る点数が2倍', () => {
+    // data_special_citizens.json 04。金の点は収入（金の生産力）から数える（ユーザー決定 2026-11-06）。rules.md v0.8 17-2-2
     const s = structuredClone(base());
     const p = playerOf(s, 0);
     p.goldProduction = 40;
     p.buildings = {};
-    const before = finalScores(s, data).find((f) => f.player === 0)?.axes.economy ?? 0;
+    const before = finalScores(s).find((f) => f.player === 0)?.axes.economy ?? 0;
     p.specialCitizens = ['04'];
-    const after = finalScores(s, data).find((f) => f.player === 0)?.axes.economy ?? 0;
+    const after = finalScores(s).find((f) => f.player === 0)?.axes.economy ?? 0;
     expect(after - before).toBe(2);
-  });
-
-  it('特別市民08：終了時、建物の種類の数だけ点数を得る', () => {
-    // 調整案（2026-11-08、commit 14876e6）、rules.md v0.8 17-0-1
-    let s = edit(base(), (state) => {
-      state.round = 5;
-      for (const p of state.players) {
-        p.specialCitizens = ['08'];
-        p.land = { E1: 'water', F1: 'water', E2: 'plains' };
-        p.buildings = { E1: 'shop', F1: 'office', E2: 'shop' };
-      }
-    });
-    while (decider(s) !== null && getOptions(s).length > 0) {
-      s = applyMove(s, top(s).t === 'turn' ? 'pass' : (ids(s)[0] ?? ''));
-    }
-    for (const p of s.players) {
-      const sc08 = scoreEvents(s, p.index).filter((e) => e.type === 'score' && e.source === 'sc:08');
-      expect(sc08.map((e) => (e.type === 'score' ? e.points : 0))).toEqual([2]);
-    }
   });
 
   it('特別市民05〜07 と資本家は 17-0-1 手順4 で処理し、資本家は終了時に資材の生産力を得る', () => {

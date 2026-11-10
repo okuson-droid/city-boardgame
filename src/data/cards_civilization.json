@@ -5347,18 +5347,10 @@
       ],
       "script": [
         {
-          "ability": "on",
-          "event": "raid",
-          "filter": {
-            "result": "defended"
-          },
-          "do": [
-            {
-              "op": "gain",
-              "res": "points",
-              "amount": 1
-            }
-          ]
+          "ability": "modifier",
+          "modifier": {
+            "kind": "noRaidPointLoss"
+          }
         }
       ],
       "provisional": true,
@@ -5394,7 +5386,7 @@
           "do": [
             {
               "op": "discardRaise",
-              "max": 3,
+              "max": 2,
               "track": "military"
             }
           ]
@@ -5483,20 +5475,6 @@
               "op": "gain",
               "res": "gold",
               "amount": 2
-            }
-          ]
-        },
-        {
-          "ability": "on",
-          "event": "built",
-          "filter": {
-            "building": "house"
-          },
-          "do": [
-            {
-              "op": "gain",
-              "res": "gold",
-              "amount": 1
             }
           ]
         }

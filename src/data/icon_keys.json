@@ -511,6 +511,10 @@
       "icon": "sym.noGold",
       "label": "金を払わない"
     },
+    "noMaterials": {
+      "icon": "sym.noMaterials",
+      "label": "資材を払わない"
+    },
     "upTo": {
       "icon": "sym.upTo",
       "label": "まで"
