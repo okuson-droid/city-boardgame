@@ -4,7 +4,8 @@
 import { describe, expect, it } from 'vitest';
 import { DATA_VERSION } from '../src/data/index.ts';
 import { decider, getOptions, isGameOver } from '../src/game/engine.ts';
-import { parseReplay, REPLAY_FORMAT, replayDataChanged, ReplayError, replayPrefix, replayRecordOf, replayTo } from '../src/game/replay.ts';
+import { parseReplay, REPLAY_FORMAT, replayDataChanged, ReplayError, replayPrefix, replayRecordOf, replayTo, replayTurns } from '../src/game/replay.ts';
+import { eventText } from '../src/game/narrate.ts';
 import type { GameState } from '../src/game/types.ts';
 import { createRoom, joinRoom, moveInRoom, RoomError, replayOfRoom, type Room } from '../src/online/rooms.ts';
 import { handleAction, memoryStore, type Credentials, type ServiceDeps } from '../src/online/service.ts';
@@ -47,6 +48,39 @@ describe('記録の形と再生', () => {
     expect(cut.playable).toBe(10);
     expect(cut.steps).toHaveLength(10);
     expect(cut.error).toMatch(/11手目/);
+  });
+
+  it('各手にその選択で起きた出来事とラウンドを持たせ、同じプレイヤーが続けて選んだ手を1つの手番にまとめる', () => {
+    // rules.md v0.8 12-0（手番）。手番のまとまりは記録の再生画面の表示のためのもので、ルールの手番とは一致しないことがある。
+    const { state } = playout(3, 504, 150);
+    const { steps } = replayPrefix(replayRecordOf(state));
+    // 出来事は再生で増えた分と一致する（各手の出来事を並べると、最後の局面の出来事の後半になる）。
+    const all = steps.flatMap((s) => s.events);
+    expect(all).toEqual(state.events.slice(state.events.length - all.length));
+    expect(steps.some((s) => s.events.some((e) => e.type === 'tilePlaced'))).toBe(true);
+    expect(steps.every((s) => s.round >= 0 && s.round <= 5)).toBe(true);
+    const turns = replayTurns(steps);
+    // 手番は隙間なく並び、同じ手番の中の手はすべて同じプレイヤーが選んでいる。隣り合う手番は別のプレイヤーである。
+    expect(turns[0]?.from).toBe(1);
+    expect(turns[turns.length - 1]?.to).toBe(steps.length);
+    turns.forEach((t, i) => {
+      expect(steps.slice(t.from - 1, t.to).every((s) => s.player === t.player)).toBe(true);
+      const next = turns[i + 1];
+      if (next !== undefined) {
+        expect(next.from).toBe(t.to + 1);
+        expect(next.player).not.toBe(t.player);
+      }
+    });
+  });
+
+  it('出来事の文はプレイヤーの呼び方を差し替えられ、内部の識別子を出さない', () => {
+    // 19-6-1（他の席が引いたカードの内容は出来事に含まれない）
+    const { state } = playout(3, 505, 200);
+    const name = (p: number): string => state.players[p]?.name ?? '';
+    const texts = state.events.map((e) => eventText(state, e, undefined, name)).filter((t): t is string => t !== null);
+    expect(texts.length).toBeGreaterThan(50);
+    expect(texts.some((t) => t.startsWith(name(0)))).toBe(true);
+    expect(texts.filter((t) => /[a-z]+_[a-z]+|\b(char|civ|sc):/.test(t))).toEqual([]);
   });
 
   it('形の違う記録は読み込まない', () => {

@@ -5,7 +5,7 @@
 
 import { DATA_VERSION, GAME_DATA, type GameData } from '../data/index.ts';
 import { applyMove, createGame, getOptions } from './engine.ts';
-import type { GameConfig, GameState } from './types.ts';
+import type { GameConfig, GameEvent, GameState } from './types.ts';
 
 export const REPLAY_FORMAT = 'city-boardgame-play/1';
 
@@ -55,8 +55,32 @@ export const parseReplay = (value: unknown): ReplayRecord => {
 /** 記録のデータの版が、いまのデータと食い違うか。 */
 export const replayDataChanged = (record: ReplayRecord, dataVersion: string = DATA_VERSION): boolean => record.dataVersion !== dataVersion;
 
-/** 記録の1手分：選んだプレイヤーと、その時点の選択肢のラベル。 */
-export type ReplayStep = { readonly index: number; readonly player: number; readonly move: string; readonly label: string };
+/** 記録の1手分：選んだプレイヤー、その時点の選択肢のラベル、その選択で起きた出来事（自動で進んだ処理を含む）、選んだときのラウンド。 */
+export type ReplayStep = {
+  readonly index: number;
+  readonly player: number;
+  readonly move: string;
+  readonly label: string;
+  readonly round: number;
+  readonly events: readonly GameEvent[];
+};
+
+/** 手番のまとまり：同じプレイヤーが続けて選んだ手（from〜to、1始まりの手数）。 */
+export type ReplayTurn = { readonly player: number; readonly round: number; readonly from: number; readonly to: number };
+
+/** 続けて同じプレイヤーが選んだ手を1つの手番にまとめる（ドラフトの1枚・襲撃の宣言も1つの手番になる）。 */
+export const replayTurns = (steps: readonly ReplayStep[]): ReplayTurn[] => {
+  const turns: ReplayTurn[] = [];
+  for (const step of steps) {
+    const last = turns[turns.length - 1];
+    if (last !== undefined && last.player === step.player && last.to === step.index - 1) {
+      turns[turns.length - 1] = { ...last, to: step.index };
+    } else {
+      turns.push({ player: step.player, round: step.round, from: step.index, to: step.index });
+    }
+  }
+  return turns;
+};
 
 /**
  * 記録の頭から再生できるところまで再生する。データが変わって途中の選択肢が選べなくなっていたら、そこで止めて理由を返す。
@@ -73,12 +97,14 @@ export const replayPrefix = (
     if (option === undefined) {
       return { steps, playable: i, error: `${i + 1}手目（${move}）は選べない。データが変わったため、ここから先は再生できない` };
     }
-    steps.push({ index: i + 1, player: option.player, move, label: option.label });
+    let next: GameState;
     try {
-      state = applyMove(state, move, d);
+      next = applyMove(state, move, d);
     } catch (e) {
-      return { steps: steps.slice(0, -1), playable: i, error: `${i + 1}手目（${move}）を適用できない：${e instanceof Error ? e.message : String(e)}` };
+      return { steps, playable: i, error: `${i + 1}手目（${move}）を適用できない：${e instanceof Error ? e.message : String(e)}` };
     }
+    steps.push({ index: i + 1, player: option.player, move, label: option.label, round: state.round, events: next.events.slice(state.events.length) });
+    state = next;
   }
   return { steps, playable: record.moves.length, error: null };
 };
