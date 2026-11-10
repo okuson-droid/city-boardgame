@@ -18,6 +18,20 @@ import {
   writeRecord,
   type PlayRecord,
 } from './record.ts';
+import {
+  createOnline,
+  credentialsPath,
+  DEFAULT_ONLINE_URL,
+  eventsSince,
+  joinOnline,
+  moveOnline,
+  myTurn,
+  readCredentials,
+  viewRoom,
+  writeCredentials,
+  type OnlineCredentials,
+  type OnlineView,
+} from './online.ts';
 import { renderLog, renderScore, renderShow, renderSteps, scoreModel, showModel, type ShowOptions, type Viewer } from './render.ts';
 
 const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結する。局面は記録ファイルに保存する）
@@ -40,6 +54,17 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
   score [--json]           終局していれば最終得点の内訳、していなければ得点トラックの現在値を出す。
   --help                   この説明を出す。
 
+オンライン版の部屋で打つ（人がブラウザのオンライン版で遊ぶ部屋に、席として入る。局面は窓口が伏せた写しだけを使う）:
+  online join --code <ルームコード> --name <名前> [--url <Supabase の Project URL>]
+      部屋に入り、席の資格情報を .play/online/<コード>-<席>.json に保存する（--creds で場所を替える）。
+  online create --players <3|4> --name <名前> [--snake] [--url ...]   部屋を作り、ルームコードと資格情報を出す。
+  online show --creds <パス> [--board] [--brief] [--json]             自分の席の視点の局面を出す。
+  online wait --creds <パス> [--timeout <秒>] [--board] [--brief]
+      自分の番が来るまで待ち（既定300秒）、前回の出力の後に起きたことと局面を出す。対局の開始前は全員の入室を待つ。
+  online move <選択肢> [<選択肢> ...] --creds <パス> [--brief]
+      選択肢 ID か、いまの選択肢の番号を順に送る。1手ずつ送るため、途中で失敗するとそれより前の手は送られたままになる。
+  窓口の既定は ${DEFAULT_ONLINE_URL}（環境変数 PLAY_ONLINE_URL でも替えられる）。
+
 例:
   npm run -s play -- new --players 3 --seed 1
   npm run -s play -- move 3
@@ -50,7 +75,7 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
 
 type Args = { readonly positional: string[]; readonly flags: Map<string, string | true> };
 
-const VALUE_FLAGS = new Set(['file', 'players', 'seed', 'names', 'as', 'player', 'from', 'seat', 'timeout']);
+const VALUE_FLAGS = new Set(['file', 'players', 'seed', 'names', 'as', 'player', 'from', 'seat', 'timeout', 'code', 'name', 'url', 'creds']);
 
 const parseArgs = (argv: readonly string[]): Args => {
   const positional: string[] = [];
@@ -147,10 +172,95 @@ const turnReport = (record: PlayRecord, seat: number, args: Args): string => {
   return `${head}${show(record, { ...args, flags: new Map([...args.flags, ['as', String(seat)]]) })}`;
 };
 
-const run = (argv: readonly string[]): string => {
+/** 自分の席の視点の局面（オンライン版）。 */
+const onlineShow = (view: OnlineView, args: Args): string => {
+  const state = view.state;
+  if (state === null) {
+    return `対局の開始を待っている（入室 ${view.summary.names.length}／${view.summary.playerCount}人：${view.summary.names.join('・')}）。ルームコード ${view.summary.code}`;
+  }
+  if (isGameOver(state)) return `ゲーム終了\n\n${renderScore(state)}`;
+  const opts: ShowOptions = {
+    as: view.seat,
+    ...(args.flags.has('board') ? { board: true } : {}),
+    ...(args.flags.has('brief') ? { brief: true } : {}),
+  };
+  return args.flags.has('json') ? JSON.stringify(showModel(state, opts), null, 2) : renderShow(state, opts);
+};
+
+/** 前回の出力の後に起きたことと局面を出し、見た出来事の数を資格情報に残す。 */
+const onlineReport = (path: string, creds: OnlineCredentials, view: OnlineView, args: Args, head = ''): string => {
+  const state = view.state;
+  const since = state === null ? '' : eventsSince(state, Math.min(creds.seenEvents, state.events.length));
+  if (state !== null) writeCredentials(path, { ...creds, seenEvents: state.events.length });
+  return `${head}${since === '' ? '' : `== 前回の出力の後に起きたこと\n${since}\n\n`}${onlineShow(view, args)}`;
+};
+
+const sleepAsync = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+const online = async (args: Args, rest: readonly string[]): Promise<string> => {
+  const [sub, ...specs] = rest;
+  const url = (str(args, 'url') ?? process.env['PLAY_ONLINE_URL'] ?? DEFAULT_ONLINE_URL).replace(/\/+$/, '');
+  const credsPath = (): string => {
+    const path = str(args, 'creds');
+    if (path === undefined) throw new PlayError('--creds で資格情報のファイルを指定すること');
+    return path;
+  };
+  const saveNew = async (creds: OnlineCredentials): Promise<string> => {
+    const path = str(args, 'creds') ?? credentialsPath(creds.code, creds.seat);
+    writeCredentials(path, creds);
+    const view = await viewRoom(creds);
+    return `ルームコード ${creds.code}、席 P${creds.seat}。資格情報：${path}（以後 --creds ${path} を付ける）\n\n${onlineShow(view, args)}`;
+  };
+  switch (sub) {
+    case 'join': {
+      const code = str(args, 'code');
+      const name = str(args, 'name');
+      if (code === undefined || name === undefined) throw new PlayError('--code と --name を指定すること');
+      return saveNew(await joinOnline(url, code, name));
+    }
+    case 'create': {
+      const players = int(args, 'players');
+      const name = str(args, 'name');
+      if (players !== 3 && players !== 4) throw new PlayError('--players は 3 か 4 で指定すること');
+      if (name === undefined) throw new PlayError('--name を指定すること');
+      return saveNew(await createOnline(url, players, name, args.flags.has('snake')));
+    }
+    case 'show': {
+      const creds = readCredentials(credsPath());
+      return onlineShow(await viewRoom(creds), args);
+    }
+    case 'wait': {
+      const path = credsPath();
+      const creds = readCredentials(path);
+      const limit = Date.now() + (int(args, 'timeout') ?? 300) * 1000;
+      for (;;) {
+        const view = await viewRoom(creds);
+        const state = view.state;
+        if (state !== null && (isGameOver(state) || myTurn(state, creds.seat))) return onlineReport(path, creds, view, args);
+        if (Date.now() >= limit) {
+          return state === null
+            ? `まだ始まっていない（入室 ${view.summary.names.length}／${view.summary.playerCount}人）。もう一度 wait を呼ぶこと`
+            : `まだ P${creds.seat} の番ではない（選択待ち P${decider(state) ?? '-'}）。もう一度 wait を呼ぶこと`;
+        }
+        await sleepAsync(3000);
+      }
+    }
+    case 'move': {
+      const path = credsPath();
+      const creds = readCredentials(path);
+      const { sent, view } = await moveOnline(creds, specs);
+      return onlineReport(path, creds, view, args, `送った選択：${sent.join(' ')}\n\n`);
+    }
+    default:
+      throw new PlayError(`知らない online のコマンドである：${sub ?? '（なし）'}（join・create・show・wait・move）`);
+  }
+};
+
+const run = (argv: readonly string[]): string | Promise<string> => {
   const args = parseArgs(argv);
   const [command, ...rest] = args.positional;
   if (command === undefined || args.flags.has('help') || command === 'help') return HELP;
+  if (command === 'online') return online(args, rest);
   const path = str(args, 'file') ?? DEFAULT_RECORD_PATH;
   switch (command) {
     case 'new': {
@@ -233,13 +343,19 @@ const run = (argv: readonly string[]): string => {
   }
 };
 
-try {
-  process.stdout.write(`${run(process.argv.slice(2))}\n`);
-} catch (e) {
+const fail = (e: unknown): void => {
   const message = e instanceof Error ? e.message : String(e);
   const line = message.split('\n')[0] ?? message;
   process.stderr.write(`${line}\n`);
   // 標準出力だけを読む呼び出し方（パイプで絞るなど）でも失敗が分かるよう、標準出力にも出す。
   process.stdout.write(`失敗：${line}\n`);
   process.exitCode = 1;
+};
+
+try {
+  void Promise.resolve(run(process.argv.slice(2))).then((out) => {
+    process.stdout.write(`${out}\n`);
+  }, fail);
+} catch (e) {
+  fail(e);
 }
