@@ -149,7 +149,7 @@ export type ShowModel = {
   readonly shared: {
     readonly bonusTiles: readonly { readonly id: number; readonly text: string; readonly holder: string | null }[];
     readonly specialCitizens: readonly { readonly id: string; readonly text: string }[];
-    readonly plannedCities: readonly { readonly id: string; readonly name: string; readonly condition: string; readonly benefit: string; readonly claims: readonly string[] }[];
+    readonly plannedCities: readonly { readonly id: string; readonly owner: number | null; readonly name: string; readonly condition: string; readonly benefit: string; readonly claims: readonly string[] }[];
     readonly civDeck: number;
     readonly civDiscard: number;
   };
@@ -336,6 +336,8 @@ export const showModel = (state: GameState, opts: ShowOptions = {}, d: GameData 
       specialCitizens: state.scRevealed.map((id) => ({ id, text: queries.specialCitizenText(d, id) })),
       plannedCities: [...state.plannedCityRevealed, ...state.players.flatMap((p) => p.privatePlannedCities)].map((id) => ({
         id,
+        // デザイナーの専用カードは持ち主だけが宣言できる（19-5-3）。公開カードと見分けられるよう持ち主を添える。
+        owner: state.players.find((p) => p.privatePlannedCities.includes(id))?.index ?? null,
         name: queries.plannedCityName(d, id),
         ...planCondition(d, id),
         claims: queries.plannedCityClaimers(state, id).map((i, rank) => `${rank + 1}位 P${i}`),
@@ -531,7 +533,7 @@ export const renderModel = (m: ShowModel): string[] => {
   lines.push(...sh.bonusTiles.map((b) => `ボーナスタイル${b.id}${b.holder === null ? '' : `（${b.holder}）`}: ${b.text}`));
   lines.push(...sh.specialCitizens.map((s) => `特別な市民カード ${s.id}: ${s.text}`));
   lines.push(
-    ...sh.plannedCities.map((c) => `${c.name}（${c.id}）: ${c.condition}／恩恵 ${c.benefit}${c.claims.length > 0 ? `／達成 ${c.claims.join('・')}` : ''}`),
+    ...sh.plannedCities.map((c) => `${c.name}（${c.id}${c.owner === null ? '' : `、P${c.owner} の専用`}）: ${c.condition}／恩恵 ${c.benefit}${c.claims.length > 0 ? `／達成 ${c.claims.join('・')}` : ''}`),
   );
   lines.push(`文明カード: 山札${sh.civDeck}枚・捨て札${sh.civDiscard}枚`);
   lines.push(`== 自分 P${m.self.index}（${m.self.name}）`, ...playerLines(m.self, false));
