@@ -2557,10 +2557,9 @@ h3 {
   transform: translateX(-50%);
   z-index: 95;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  max-width: calc(100vw - 16px);
+  flex-direction: column;
+  gap: 4px;
+  width: min(1100px, calc(100vw - 16px));
   padding: 6px 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -2569,16 +2568,61 @@ h3 {
   box-shadow: 0 2px 10px rgb(0 0 0 / 25%);
   font-size: 13px;
 }
-.replay-bar input[type='range'] {
-  width: min(240px, 40vw);
+.replay-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
-.replay-pos {
-  max-width: 420px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.replay-controls input[type='range'] {
+  width: min(200px, 30vw);
+}
+.replay-fixed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.replay-turn {
+  max-height: 28vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  padding-top: 4px;
+}
+.replay-turn p {
+  margin: 0 0 2px;
+}
+.replay-turn-head {
+  font-weight: bold;
+}
+.replay-steps {
+  margin: 0;
+  padding-left: 3.2em;
+}
+.replay-step {
+  margin: 1px 0;
+}
+.replay-step .link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.replay-step.current .link {
+  font-weight: bold;
+  text-decoration: underline;
+}
+.replay-step.future {
+  opacity: 0.45;
+}
+.replay-step-detail {
+  display: block;
+  color: #555;
+  font-size: 12px;
 }
 .replay-warn {
-  flex-basis: 100%;
+  margin: 0;
   color: #b5423b;
 }

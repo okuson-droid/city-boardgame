@@ -17,4 +17,7 @@ export {
   replayTo,
   type ReplayRecord,
   type ReplayStep,
+  type ReplayTurn,
+  replayTurns,
 } from './replay.ts';
+export { eventText } from './narrate.ts';

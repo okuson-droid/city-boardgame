@@ -94,6 +94,10 @@ export const Game = ({
   const [view, setView] = useState<number>(ctl.seat ?? owner ?? decider(state) ?? 0);
   /** 手札を見せてよい席。ローカル版は選択待ちのプレイヤー、オンライン版は自分の席、記録の再生は表示中のタブ。 */
   const handOwner = ctl.revealAll === true ? view : (ctl.seat ?? owner);
+  // 席が替わったら（記録の再生でプレイヤーを固定し直したとき）、その席のタブにする。オンライン版の席は替わらない。
+  useEffect(() => {
+    if (ctl.seat !== null) setView(ctl.seat);
+  }, [ctl.seat]);
   const [chooser, setChooser] = useState<Choice[] | null>(null);
   const [buildType, setBuildType] = useState<Building | null>(null);
   const [freeOpen, setFreeOpen] = useState(false);
