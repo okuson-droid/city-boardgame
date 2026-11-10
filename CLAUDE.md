@@ -4,7 +4,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 
 ## 現在の段階
 
-- 指示書：`design/指示書_2026-11-03_初期実装.md`
+- 指示書：`design/指示書_2026-11-03_初期実装.md`、`design/指示書_2026-11-10_対話プレイ.md`
 - 完了：3-1 データ層（`src/data/`、`src/game/board.ts`）。main に取り込み済み。
 - 完了：3-2 ゲームロジックの骨格（`src/game/`）。main に取り込み済み。
 - 完了：3-3 効果（命令セットは `docs/effect-commands.md`）。main に取り込み済み。
@@ -26,6 +26,8 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 - 完了：早見表と効果の吹き出し（ユーザー決定 2026-11-07）。main に取り込み済み。
 - 完了：手番の最初へ戻るボタン・チューナーの形の編集とカードのプレビュー（ユーザー決定 2026-11-08）。main に取り込み済み。
 - 完了：オンライン版の Supabase 化と GitHub Pages への配置（ユーザー決定 2026-11-03、`docs/online-supabase.md`）。模擬に対する受け入れ検査（`npm run accept:supabase`）は合格。main に取り込み済み。本物の Supabase では、Edge Function とテーブルが動き部屋を作れることを確かめた（2026-11-04）。Project URL はパスを捨てて起点だけを使う（`projectOrigin`）。
+
+- 完了：対話プレイ用のコマンド（`tools/play/`、`npm run play`、指示書 2026-11-10）。選択肢のラベルを名前と内容が分かる文に改めた（`src/game/labels.ts`）。調整案（2026-11-08）のデータに合わせて単体テストを改めた。
 
 ## 構成
 
@@ -83,6 +85,8 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `src/ui/DraftScreen.tsx` | ドラフトの専用画面（選ぶ順番の帯・選んだもののまとめ・種類ごとのタブ・個人ボードの地図 `BoardMap`・キャラクターの文言） |
 | `src/ui/Online.tsx` | オンライン版の入口（部屋を作る・入る・続きから）と対局画面 |
 | `server/main.ts` | オンライン版のサーバー（node:http だけ、SSE＋HTTP）。`server/vite.config.ts` で `dist-server/main.js` にまとめる |
+| `tools/play/` | 対話プレイ用のコマンド。`record.ts`（記録の再生・選択の適用・取り消し、ファイルの読み書き）、`render.ts`（局面・選択肢・出来事・得点の文字化と `--json` の模型）、`cli.ts`（引数と入出力だけ）、`vite.config.ts`（`dist-play/cli.js` へのビルド） |
+| `src/game/labels.ts` | 選択肢のラベルと文字表示のための名前・説明（内部の識別子を出さない。効果文は効果スクリプトから組み立てる） |
 | `tools/tuner/labels.ts` | チューナーの画面に出す項目名・選択肢の日本語 |
 | `tools/tuner/github.ts` | 公開ページのチューナーの GitHub への保存（Git Data API で1つの commit、保存先の最新に変更点を適用し直す） |
 | `tools/tuner/vite.pages.config.ts` | 公開ページ用のチューナーのビルド（`dist/tuner/index.html`・`play.html`） |
@@ -111,6 +115,8 @@ npm run supabase:build   # Edge Function の中身を supabase/functions/rooms/b
 npm run supabase:deploy  # 上のビルドのあと Edge Function を配置する（-- --project-ref <ref> を付ける）
 npm run accept:supabase  # Supabase の模擬に対するオンライン版の受け入れ検査
 npm run accept:tutorial  # チュートリアルの受け入れ検査
+npm run play:build    # 対話プレイ用のコマンドを dist-play/cli.js にビルドする
+npm run -s play -- <コマンド>  # 対話プレイ（new・show・move・undo・log・score、--help で一覧）。ビルドはしない
 npm run import:rules -- <フォルダー>  # ルール解説のスライドを取り込み直す（project/deck.json・project/slides/・blobs/ を置いたフォルダー）
 ```
 
@@ -183,6 +189,17 @@ npm run import:rules -- <フォルダー>  # ルール解説のスライドを�
 - 説明の数値は `GAME_DATA` から読む（チューナーで値を変えても説明が食い違わない）。台本を変えたら `tests/tutorial.test.ts`（全キャラクターで最後まで通るか）と `npm run accept:tutorial` を通す。
 - 台本にない選択や、光らせる指定のない手順では、選べる選択肢を光らせる。マスに対応する選択肢は `cell:<マス>` も光らせる（`patternsOf`）。
 - 画面は `GameController.seat` を席0に固定し、取り消しは使わない。光らせる所作は CSS（`data-target` の属性セレクタ）で強調し、それ以外の所作は薄くする。案内の札は、横長の画面では右の個人の情報の列の上（`coach-left` の手順も同じ位置）、縮退配置では右上に置く。個人ボードのマス（SVG の g）には枠線を付けず、六角形の縁取りで光らせる。
+
+## 対話プレイ用のコマンドの約束事（指示書 2026-11-10）
+
+- 1回の呼び出しで完結し、入力待ちを作らない。ルールを再実装せず、合法手は `getOptions`、進行は `applyMove`、得点は `finalScores`、派生値は `queries` だけから得る。足りない派生値は queries.ts に足す。
+- 記録は JSON 1つ（既定 `.play/game.json`、`--file` で指定）で、`{ format, config, seed, moves, dataVersion }` を持つ。局面は常に `replay` 相当の再生で作り、GameState は保存しない。`dataVersion` は `DATA_VERSION` で、食い違えば警告し、再生に失敗したら「データが変わったため再生できない」で止める。
+- `move` は選択肢 ID か直前の `show` の番号（1始まり、`getOptions` の順）を順に適用し、1つでも選べなければ記録を一切変えない。
+- `undo` は分析用で、記録の末尾を取り除くだけである。ルール上の巻き戻し（第15章、チェックポイント）とは異なり、どこまでも戻せる。
+- 非公開情報（19-6-1）：視点（`--as`、省略時は選択待ちのプレイヤー）以外の手札の内容と、山札の順序は出さない。選択肢は手札の内容を含むため、選択待ちのプレイヤーの視点でだけ出す。`--as all` はすべての手札を出すが山札の順序は出さない。`--json` も同じ規則で、GameState をそのまま出さない。プレイ済みのカードと捨て札（の番号）は公開である（オンライン版の `viewFor` と同じ）。
+- 選択肢のラベル（`Option.label`）は、ラベルだけで何を選ぶ手か分かる文にする（払うもの・得るもの、アクション名・段階・ワーカー数、カードやマスの名前と内容）。内部の識別子を含めない（tests/play-cli.test.ts が乱択プレイアウトで確かめる）。識別子と並び順は変えない。
+- `show` の既定の出力は個人ボードを除いて150行以内を目安とする（tests/play-cli.test.ts が確かめる）。
+- 配布用ビルドとオンラインのビルドには含めない。
 
 ## チューナーの約束事
 

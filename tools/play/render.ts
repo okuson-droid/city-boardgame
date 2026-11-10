@@ -260,6 +260,13 @@ const playerView = (state: GameState, d: GameData, viewer: Viewer, index: number
   };
 };
 
+/** スペースを使ったプレイヤーを、使った順に「P0」「P1×2」の形にまとめる（共有スペースは何度も使われるため）。 */
+const countUsers = (users: readonly number[]): string[] => {
+  const counts = new Map<number, number>();
+  for (const u of users) counts.set(u, (counts.get(u) ?? 0) + 1);
+  return [...counts].map(([u, n]) => (n === 1 ? `P${u}` : `P${u}×${n}`));
+};
+
 /** 選択肢が対象にしているマス（targetOf）。 */
 const targetCells = (options: readonly Option[]): Set<CellId> => {
   const cells = new Set<CellId>();
@@ -310,7 +317,7 @@ export const showModel = (state: GameState, opts: ShowOptions = {}, d: GameData 
         workers: d.params.actions.workerCost[tier],
         shared: queries.isSharedSpace(action, tier, d),
         text: queries.describeActionSpace(action, tier, d),
-        users: queries.spaceUsers(state, action, tier).map((i) => `P${i}`),
+        users: countUsers(queries.spaceUsers(state, action, tier)),
         unlocked: tier === 'top' ? queries.isTopUnlocked(d, selfPlayer, action) : null,
         unlock: tier === 'top' ? queries.unlockText(d.params.actions.unlockTop[action]) : null,
       })),
