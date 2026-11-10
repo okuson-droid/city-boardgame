@@ -718,20 +718,22 @@ export const parseSpecialCitizens = (value: unknown, path = 'special_citizens'):
     return {
       ...readProvisional(o, q),
       id: readString(field(o, 'id', q), `${q}.id`),
-      effects: readArray(field(o, 'effects', q), `${q}.effects`, (e, ep): SpecialCitizenEffect => {
-        const eo = readObject(e, ep);
-        return {
-          timing: readString(field(eo, 'timing', ep), `${ep}.timing`),
-          text: readString(field(eo, 'text', ep), `${ep}.text`),
-          ...('worker_cost' in eo ? { worker_cost: readPositiveInt(eo['worker_cost'], `${ep}.worker_cost`) } : {}),
-        };
-      }),
+      effects: readArray(field(o, 'effects', q), `${q}.effects`, readSpecialCitizenEffect),
+      ...('revisedEffects' in o ? { revisedEffects: readArray(o['revisedEffects'], `${q}.revisedEffects`, readSpecialCitizenEffect) } : {}),
       open_issues: readStringArray(field(o, 'open_issues', q), `${q}.open_issues`),
       ...readOptionalStringArray(o, 'clarifications', q),
-      ...readOptionalStringArray(o, 'changes', q),
       script: readScriptField(o, q),
     };
   });
+
+function readSpecialCitizenEffect(e: unknown, ep: string): SpecialCitizenEffect {
+  const eo = readObject(e, ep);
+  return {
+    timing: readString(field(eo, 'timing', ep), `${ep}.timing`),
+    text: readString(field(eo, 'text', ep), `${ep}.text`),
+    ...('worker_cost' in eo ? { worker_cost: readPositiveInt(eo['worker_cost'], `${ep}.worker_cost`) } : {}),
+  };
+}
 
 export const parseRaidCards = (value: unknown, path = 'raid_cards'): RaidCard[] =>
   readList(value, path, 'cards', (v, q) => {

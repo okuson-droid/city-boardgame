@@ -10,7 +10,7 @@ import { applyMove } from '../src/game/engine.ts';
 import { describeScript, iconSequence } from '../src/game/icons.ts';
 import { buildingBreakdown, housesOnCard } from '../src/game/queries.ts';
 import type { GameState, PlayerState } from '../src/game/types.ts';
-import { edit, firstTurn, ids, me, play, withScripts, withoutCharacters } from './helpers/game.ts';
+import { edit, firstTurn, ids, me, play, withoutCharacters } from './helpers/game.ts';
 
 const d = GAME_DATA;
 
@@ -316,23 +316,16 @@ describe('推しの解釈で加えた16枚（ユーザー決定 2026-11-06）', 
     expect(me(s).gold).toBe(100 - costOf(card) + 2 * 3);
   });
 
-  /** 全員のプレイ済みのカードと軍事レベルを決めて襲撃の宣言まで進め、手番のプレイヤーが宣言せずに受けた結果を返す。 */
-  const afterRaid = (
-    played: string[],
-    data = d,
-    level: (state: GameState) => number = () => 0,
-  ): { before: number; after: number; result: string } => {
+  /** 襲撃の判定の前後の得点。level は全員の軍事レベル、data は判定に使うデータ。 */
+  const raidScores = (played: string[], level: number, data: typeof d = d): { before: number; after: number; result: string } => {
     let s = edit(base(), (state) => {
       for (const p of state.players) {
         p.played = played;
-        p.militaryLevel = 0;
+        p.militaryLevel = level;
         p.militaryTokens = 0;
       }
     });
-    while (s.stack.at(-1)?.t !== 'raidDeclare') s = applyMove(s, s.stack.at(-1)?.t === 'turn' ? 'pass' : (ids(s)[0] ?? ''), data);
-    s = edit(s, (state, p) => {
-      p.militaryLevel = level(state);
-    });
+    while (s.stack.at(-1)?.t !== 'raidDeclare') s = applyMove(s, s.stack.at(-1)?.t === 'turn' ? 'pass' : (ids(s)[0] ?? ''));
     const index = me(s).index;
     const before = score(s, index);
     const events = s.events.length;
@@ -341,34 +334,36 @@ describe('推しの解釈で加えた16枚（ユーザー決定 2026-11-06）', 
     return { before, after: score(s, index), result: raid?.type === 'raid' ? raid.result : '' };
   };
 
-  it('補正 noRaidPointLoss：防衛失敗で点数を失わない（データで与えて検査する）', () => {
-    // ユーザー決定 2026-11-06、rules.md v0.8 7-5-1
-    // 名誉ある犠牲は調整案（2026-11-08）で「防衛成功で1点」に変わり、この補正を使うカードはなくなった。
+  it('名誉ある犠牲：防衛成功のたびに1点', () => {
+    // 2026-11-08 作成の調整案（「防衛失敗で点数を失わない」から変更）、rules.md v0.8 7-4-5
     const card = idOf('名誉ある犠牲');
-    const data = withScripts({ civ: { [card]: [{ ability: 'modifier', modifier: { kind: 'noRaidPointLoss' } }] } });
-    const without = afterRaid([], data);
+    // 第1ラウンドの襲撃カード1は防衛ライン1・撃退ライン3。軍事レベル1なら防衛成功。
+    const without = raidScores([], 1);
+    expect(without.result).toBe('defended');
+    expect(without.after).toBe(without.before);
+    const withCard = raidScores([card], 1);
+    expect(withCard.after).toBe(withCard.before + 1);
+    // 防衛失敗では得ない。
+    const failed = raidScores([card], 0);
+    expect(failed.result).toBe('defenseFailed');
+    expect(failed.after).toBe(failed.before - 1);
+  });
+
+  it('防衛失敗で点数を失わない補正（noRaidPointLoss）は、点の減少だけを打ち消す', () => {
+    // ユーザー決定 2026-11-06、rules.md v0.8 7-5-1。いまはこの補正を持つカードがないため、名誉ある犠牲に補正を持たせたデータで確かめる。
+    const card = idOf('名誉ある犠牲');
+    const withModifier = {
+      ...d,
+      civilizationCards: d.civilizationCards.map((c) => (c.id === card ? { ...c, script: [{ ability: 'modifier' as const, modifier: { kind: 'noRaidPointLoss' as const } }] } : c)),
+    };
+    const without = raidScores([], 0, withModifier);
     expect(without.result).toBe('defenseFailed');
     expect(without.after).toBeLessThan(without.before);
-    const withCard = afterRaid([card], data);
-    expect(withCard.result).toBe('defenseFailed');
+    const withCard = raidScores([card], 0, withModifier);
     expect(withCard.after).toBe(withCard.before);
   });
 
-  it('名誉ある犠牲：防衛成功で1点を得て、防衛失敗では点数を失う', () => {
-    // 調整案（2026-11-08、commit 14876e6）、rules.md v0.8 7-5-1、16-1-4
-    const card = idOf('名誉ある犠牲');
-    const defend = (state: GameState): number => state.defenseLine;
-    const without = afterRaid([], d, defend);
-    expect(without.result).toBe('defended');
-    const withCard = afterRaid([card], d, defend);
-    expect(withCard.result).toBe('defended');
-    expect(withCard.after - withCard.before).toBe(without.after - without.before + 1);
-    const failed = afterRaid([card]);
-    expect(failed.result).toBe('defenseFailed');
-    expect(failed.after).toBeLessThan(failed.before);
-  });
-
-  it('兵法：手札を0〜2枚捨て、捨てた枚数だけ軍事レベルを上げる', () => {
+  it('兵法：手札を0〜3枚捨て、捨てた枚数だけ軍事レベルを上げる', () => {
     // ユーザー決定 2026-11-06、rules.md v0.8 7-1-2
     const card = idOf('兵法');
     let s = edit(base(), (_, p) => {
@@ -401,7 +396,7 @@ describe('推しの解釈で加えた16枚（ユーザー決定 2026-11-06）', 
   });
 
   it('建設業：住宅以外の建物を建てる度に2金、住宅では1金', () => {
-    // ユーザー決定 2026-11-06、調整案（2026-11-08、commit 14876e6）で住宅の1金を加えた。rules.md v0.8 16-1-4
+    // ユーザー決定 2026-11-06（住宅の1金は 2026-11-08 作成の調整案）、rules.md v0.8 16-1-4
     const card = idOf('建設業');
     const gold = (building: string): number => {
       let s = playCard(base(), '001', (p) => (p.played = [card]));

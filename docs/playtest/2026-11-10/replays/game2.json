@@ -92,7 +92,6 @@
     "act:migration:normal",
     "end",
     "space:sc:10#0",
-    "order:0",
     "card:086",
     "end",
     "pass",
@@ -203,7 +202,6 @@
     "pass",
     "bonus:8",
     "space:sc:10#0",
-    "order:0",
     "card:005",
     "end",
     "pass",
@@ -320,7 +318,6 @@
     "tile:A7:forest",
     "end",
     "space:sc:10#0",
-    "order:0",
     "card:058",
     "end",
     "act:build:normal",
@@ -403,7 +400,6 @@
     "end",
     "space:sc:10#0",
     "temp:0",
-    "order:1",
     "card:033",
     "card:003",
     "build:shop:C1",
@@ -542,7 +538,6 @@
     "pass",
     "space:sc:10#0",
     "temp:0",
-    "order:0",
     "card:045",
     "card:029",
     "free:materials_to_tempworker",
@@ -606,5 +601,5 @@
     "raid:none",
     "raid:skip"
   ],
-  "dataVersion": "53d24859"
+  "dataVersion": "f4ec8c2e"
 }

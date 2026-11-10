@@ -434,10 +434,13 @@ export type SpecialCitizenEffect = {
 export type SpecialCitizen = ProvisionalMark & {
   readonly id: string;
   readonly effects: readonly SpecialCitizenEffect[];
+  /**
+   * いまの効果の文言（ユーザー決定 2026-11-10）。チューナーで効果を原本から変えたカードだけが持ち、画面は原本の
+   * effects の代わりにこれを出す。原本の文言（effects）は design/ と一致させるため変えない。
+   */
+  readonly revisedEffects?: readonly SpecialCitizenEffect[];
   readonly open_issues: readonly string[];
   readonly clarifications?: readonly string[];
-  /** ユーザー決定で原本から変えた点（原本の文言は effects のまま残し、画面ではこれを添える。2026-11-10）。 */
-  readonly changes?: readonly string[];
   readonly script: Script;
 };
 

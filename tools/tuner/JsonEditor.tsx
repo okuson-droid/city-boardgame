@@ -111,7 +111,8 @@ const Primitive = ({
 }) => {
   const options = enumFor(keyName, path);
   const cls = `field-input${changedClass(value, base)}`;
-  if (isReadOnly(keyName, unlocked)) return <span className="readonly">{readonlyText(value)}</span>;
+  // いまの効果の文言（revisedEffects、2026-11-10）は原本ではないため、中の文言・時機も編集できる。
+  if (isReadOnly(keyName, unlocked) && !path.includes('revisedEffects')) return <span className="readonly">{readonlyText(value)}</span>;
   if (options !== null && (typeof value === 'string' || value === null)) {
     return (
       <select className={cls} value={value === null ? '' : value} onChange={(e) => onSet(path, e.target.value === '' ? null : e.target.value)}>

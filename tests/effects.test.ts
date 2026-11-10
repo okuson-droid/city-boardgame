@@ -8,7 +8,8 @@ import { natureParkScore, plannedCityMatches } from '../src/game/planned.ts';
 import { spiritAdjacency } from '../src/game/effects.ts';
 import { finalScores } from '../src/game/scoring.ts';
 import type { GameState, PlayerState } from '../src/game/types.ts';
-import { edit, firstTurn, ids, me, play, top, untilTurn, withScripts, withoutCharacters } from './helpers/game.ts';
+import type { GameData, NatureParkCard, PlannedCityCard, Script } from '../src/data/index.ts';
+import { edit, firstTurn, ids, me, play, top, untilTurn, withoutCharacters } from './helpers/game.ts';
 
 const d = GAME_DATA;
 
@@ -271,43 +272,22 @@ describe('命令：placeTiles・build・playCard', () => {
     expect(me(s).gold).toBe(100 - 10);
   });
 
-  it('特別市民10の専用スペースで文明カードを1枚無料でプレイし、もう1枚まで通常のコストでプレイできる', () => {
-    // rules.md v0.8 6-2-4、6-2-5、decisions.md 3-4（選択を伴う効果が2つあれば順番を尋ねる）
-    // 2枚目（通常のコスト）は調整案（2026-11-08、commit 14876e6）で加えた。
+  it('特別市民10の専用スペースで文明カードを無料でプレイする', () => {
+    // rules.md v0.8 6-2-4、6-2-5
     let s = edit(base(), (_, p) => {
       p.specialCitizens = ['10'];
-      p.hand = ['005', '006'];
+      p.hand = ['005'];
       p.gold = 0;
     });
     const key = 'space:sc:10#0';
     expect(ids(s)).toContain(key);
-    s = play(s, key, 'order:0', 'card:005');
+    s = play(s, key, 'card:005');
     expect(me(s).played).toEqual(['005']);
     expect(me(s).goldProduction).toBeGreaterThanOrEqual(25);
-    // 金が0では2枚目を払えず、選択肢のないタスクは不発として取り除かれる（16-2-5）。
-    expect(top(s).t).toBe('turn');
-    expect(me(s).hand).toEqual(['006']);
     s = applyMove(s, 'end');
     s = untilTurn(s);
     // 占有型で1ラウンドに1回（他のプレイヤーには出ない）。
     expect(ids(s)).not.toContain(key);
-  });
-});
-
-describe('特別市民10：2枚目は通常のコスト', () => {
-  it('無料の1枚の後、通常のコストで2枚目をプレイできる', () => {
-    // rules.md v0.8 6-2-4、6-2-5、調整案（2026-11-08、commit 14876e6）
-    const cost = d.civilizationCards.find((c) => c.id === '006')?.cost.gold ?? 0;
-    let s = edit(base(), (_, p) => {
-      p.specialCitizens = ['10'];
-      p.hand = ['005', '006'];
-      p.gold = 30;
-    });
-    s = play(s, 'space:sc:10#0', 'order:0', 'card:005');
-    expect(ids(s)).toEqual(['card:006', 'done']);
-    s = applyMove(s, 'card:006');
-    expect(me(s).played).toEqual(['005', '006']);
-    expect(me(s).gold).toBe(30 - cost);
   });
 });
 
@@ -355,22 +335,6 @@ describe('命令：expeditionRewards（017）・chooseOne・copyAction', () => {
     expect(ids(s)).toEqual(['choose:0', 'choose:1', 'choose:2']);
     s = applyMove(s, 'choose:0');
     expect(me(s).infraLevel).toBe(1);
-  });
-
-  it('特別市民04：ラウンドに1回、フリーアクションで軍事レベルかインフラレベルを1上げる', () => {
-    // 調整案（2026-11-08、commit 14876e6）、rules.md v0.8 9-3-3、16-1-4
-    let s = edit(base(), (_, p) => {
-      p.specialCitizens = ['04'];
-      p.militaryLevel = 0;
-      p.infraLevel = 0;
-    });
-    const key = 'ability:sc:04#0';
-    s = applyMove(s, key);
-    expect(ids(s)).toEqual(['choose:0', 'choose:1']);
-    s = applyMove(s, 'choose:0');
-    expect(me(s).militaryLevel).toBe(1);
-    expect(me(s).infraLevel).toBe(0);
-    expect(ids(s)).not.toContain(key);
   });
 
   it('特別市民11：占有されたスペースや未解放の最上位の効果も使え、そのスペースを占有しない', () => {
@@ -447,21 +411,6 @@ describe('常時効果（出来事への反応、16-1-4）', () => {
     expect(me(s).regularWorkers).toBe(6);
     // 聖女の1資材と、最上位の移住の2資材（ユーザー決定 2026-11-07）。
     expect(me(s).materials).toBe(1 + 2);
-  });
-
-  it('特別市民03：獲得時にプレイ済みの文明カード1枚につき1点（生活・福祉）', () => {
-    // 調整案（2026-11-08）、ユーザー決定 2026-11-10（獲得時に直した）。rules.md v0.8 9-3-2、17-4-3
-    let s = edit(base(), (state, p) => {
-      p.played = ['001', '002', '003'];
-      p.hand = ['005'];
-      p.gold = 100;
-      state.scRevealed = ['03', ...state.scRevealed.filter((id) => id !== '03')];
-      state.stack.push({ t: 'chooseSpecialCitizen', player: p.index });
-    });
-    const owner = me(s).index;
-    s = applyMove(s, 'sc:03');
-    const fromCard = () => scoreEvents(s, owner).filter((e) => e.type === 'score' && e.source === 'sc:03');
-    expect(fromCard().map((e) => (e.type === 'score' ? [e.points, e.axis] : []))).toEqual([[3, 'welfare']]);
   });
 
   it('聖女：通常ワーカーが10人になった時、特別な市民カードを1枚獲得する（1回だけ）', () => {
@@ -709,150 +658,234 @@ describe('キャラクターの準備・最初の手番・終了時（19-5）', 
   });
 });
 
-describe('計画都市（第13章、19-1-6、19-4-7）', () => {
-  const card = d.plannedCityCards.find((c) => c.id === 'PC01');
+/**
+ * 計画都市・自然公園の仕組みのテストは、テスト用のカードで行う（2026-11-10）。データのカードの形はチューナーで
+ * 調整されるため、データのカードに頼るとテストが調整のたびに壊れる。
+ */
+const TEST_PLANNED: PlannedCityCard = {
+  id: 'PCT',
+  name: 'テスト用の計画都市',
+  shape: '直線3軒',
+  slots: [
+    { q: 0, r: 0, terrain: 'plains', building: 'house' },
+    { q: 1, r: 0, terrain: null, building: 'shop' },
+    { q: 2, r: 0, terrain: 'water', building: null },
+  ],
+  benefit: { kind: 'gold', amount: 3 },
+  provisional: true,
+};
+const TEST_PARK: NatureParkCard = {
+  id: 'NPT',
+  name: 'テスト用の自然公園',
+  sets: [
+    { cells: [{ q: 0, r: 0, terrain: 'forest' }, { q: 1, r: 0, terrain: 'forest' }] },
+    { cells: [{ q: 0, r: 0, terrain: 'forest' }, { q: 1, r: 0, terrain: 'plains' }, { q: 2, r: 0, terrain: 'plains' }] },
+    {
+      cells: [
+        { q: 0, r: 0, terrain: 'forest' },
+        { q: 1, r: 0, terrain: 'forest' },
+        { q: 0, r: 1, terrain: 'water' },
+        { q: 1, r: -1, terrain: 'water' },
+      ],
+    },
+  ],
+  provisional: true,
+};
+/** テスト用のカードを加えたデータ。scripts で特別な市民カードの効果を差し替えられる。 */
+const testData = (scripts: Record<string, Script> = {}): GameData => ({
+  ...d,
+  plannedCityCards: [...d.plannedCityCards, TEST_PLANNED],
+  natureParkCards: [...d.natureParkCards, TEST_PARK],
+  specialCitizens: d.specialCitizens.map((c) => (scripts[c.id] !== undefined ? { ...c, script: scripts[c.id] as Script } : c)),
+});
 
-  /** PC01（直線3：平原の建物・住宅・水場の商店）を満たす配置を作る。 */
+describe('計画都市（第13章、19-1-6、19-4-7）', () => {
+  const card = TEST_PLANNED;
+  const td = testData();
+  const optionIds = (s: GameState): string[] => getOptions(s, td).map((o) => o.id);
+
+  /** テスト用の計画都市（直線3：平原の住宅・商店・水場の建物）を満たす配置を作る。 */
   const satisfy = (p: PlayerState): void => {
     p.land = { E1: 'plains', E2: 'forest', E3: 'water', F1: 'forest' };
-    p.buildings = { E1: 'office', E2: 'house', E3: 'shop' };
+    p.buildings = { E1: 'house', E2: 'shop', E3: 'office' };
   };
 
   it('形状と一致する建物の組があれば満たし、回転を認める', () => {
     // rules.md v0.8 13-2、19-1-6
-    if (card === undefined) throw new Error('PC01 がない');
     const p = structuredClone(me(base()));
     satisfy(p);
     expect(plannedCityMatches(card, p)).toBe(true);
     // 逆向き（180度回転）。
     p.land = { E1: 'water', E2: 'forest', E3: 'plains', F1: 'forest' };
-    p.buildings = { E1: 'shop', E2: 'house', E3: 'office' };
+    p.buildings = { E1: 'office', E2: 'shop', E3: 'house' };
     expect(plannedCityMatches(card, p)).toBe(true);
-    p.buildings = { E1: 'shop', E2: 'shop', E3: 'office' };
+    p.buildings = { E1: 'office', E2: 'house', E3: 'house' };
     expect(plannedCityMatches(card, p)).toBe(false);
   });
 
   it('土地種だけを指定したマスにも建物が要る（建物の種類は問わない）', () => {
     // rules.md v0.8 13-2-1、13-2-2（2. 土地種のみ指定し、建物種は任意）
-    if (card === undefined) throw new Error('PC01 がない');
     const p = structuredClone(me(base()));
     satisfy(p);
-    // PC01 の1マス目は「平原（建物の種類は任意）」。建物を外すと満たさない。
-    p.buildings = { E2: 'house', E3: 'shop' };
+    // 3マス目は「水場（建物の種類は任意）」。建物を外すと満たさない。
+    p.buildings = { E1: 'house', E2: 'shop' };
     expect(plannedCityMatches(card, p)).toBe(false);
     // 種類は何でもよい。
-    p.buildings = { E1: 'camp', E2: 'house', E3: 'shop' };
+    p.buildings = { E1: 'house', E2: 'shop', E3: 'camp' };
     expect(plannedCityMatches(card, p)).toBe(true);
   });
 
   it('達成宣言は手番中の選択肢で、先着順に7・5・3点（自然・環境）と恩恵を得る', () => {
     // rules.md v0.8 13-3-1、13-3-4、13-3-8、17-5-1
     let s = edit(base(), (state, p) => {
-      state.plannedCityRevealed = ['PC01', 'PC02'];
+      state.plannedCityRevealed = ['PCT'];
+      state.plannedCityClaims = { PCT: [] };
       satisfy(p);
       p.gold = 0;
     });
-    expect(ids(s)).toContain('plan:PC01');
-    s = applyMove(s, 'plan:PC01');
+    expect(optionIds(s)).toContain('plan:PCT');
+    s = applyMove(s, 'plan:PCT', td);
     expect(me(s).score).toBe(7);
-    expect(me(s).gold).toBe(card?.benefit.kind === 'gold' ? card.benefit.amount : -1);
+    expect(me(s).gold).toBe(3);
     expect(scoreEvents(s, me(s).index).at(-1)).toMatchObject({ axis: 'nature', points: 7 });
-    expect(ids(s)).not.toContain('plan:PC01');
+    expect(optionIds(s)).not.toContain('plan:PCT');
   });
 
   it('宣言できるのはプレイ人数−1人まで', () => {
     // rules.md v0.8 13-3-5
     const s = edit(base(), (state, p) => {
-      state.plannedCityRevealed = ['PC01'];
-      state.plannedCityClaims = { PC01: state.players.filter((q) => q.index !== p.index).map((q) => q.index) };
+      state.plannedCityRevealed = ['PCT'];
+      state.plannedCityClaims = { PCT: state.players.filter((q) => q.index !== p.index).map((q) => q.index) };
       satisfy(p);
     });
-    expect(ids(s)).not.toContain('plan:PC01');
+    expect(optionIds(s)).not.toContain('plan:PCT');
   });
 
   it('デザイナー専用のカードは本人だけが宣言でき、7点', () => {
     // rules.md v0.8 19-5-3
     let s = edit(base(), (state, p) => {
       state.plannedCityRevealed = [];
-      p.privatePlannedCities = ['PC01'];
-      state.plannedCityClaims = { PC01: [] };
+      p.privatePlannedCities = ['PCT'];
+      state.plannedCityClaims = { PCT: [] };
       satisfy(p);
     });
-    s = applyMove(s, 'plan:PC01');
+    s = applyMove(s, 'plan:PCT', td);
     expect(me(s).score).toBe(7);
   });
 });
 
 describe('自然公園（第14章、19-1-5、19-4-8）', () => {
+  const td = testData();
+
   it('建物のない土地で、得点が最大になる割り当てを数え、同じ土地を複数セットで共有しない', () => {
     // rules.md v0.8 14-2-1、14-3-1、14-3-4、19-4-8（2枚の組は3点：ユーザー決定 2026-11-07）
     const p = structuredClone(me(base()));
-    p.natureParkCard = 'NP01';
-    // NP01：森林・水場の2枚／森林・山岳・森林の三角形／水場・平原・森林・森林の4枚。
-    p.land = { E1: 'forest', F1: 'water' };
+    p.natureParkCard = 'NPT';
+    // テスト用の自然公園：森林2枚／森林・平原・平原の直線／森林・森林・水場・水場の菱形。
+    p.land = { E1: 'forest', F1: 'forest' };
     p.buildings = {};
-    expect(natureParkScore(d, p)).toBe(3);
+    expect(natureParkScore(td, p)).toBe(d.params.scoring.natureParkPointsBySetSize['2']);
     p.buildings = { E1: 'house' };
-    expect(natureParkScore(d, p)).toBe(0);
+    expect(natureParkScore(td, p)).toBe(0);
   });
 
-  it('補正 natureParkPoints：自然公園の得点を10・15・20点に置き換える（データで与えて検査する）', () => {
-    // data_special_citizens.json 08（元の効果）、rules.md v0.8 17-5-2
-    // 特別市民08 は調整案（2026-11-08）で別の効果に変わり、この補正を使うカードはなくなった。
-    const data = withScripts({ sc: { '08': [{ ability: 'modifier', modifier: { kind: 'natureParkPoints', table: { '2': 10, '3': 15, '4': 20 } } }] } });
+  it('自然公園の得点を置き換える補正（natureParkPoints）', () => {
+    // rules.md v0.8 17-5-2。いまはこの補正を持つカードがないため（特別市民08 は 2026-11-08 作成の調整案で変えた）、
+    // 特別市民08 に補正を持たせたデータで確かめる。
+    const tdWith = testData({ '08': [{ ability: 'modifier', modifier: { kind: 'natureParkPoints', table: { '2': 10, '3': 15, '4': 20 } } }] });
     const p = structuredClone(me(base()));
-    p.natureParkCard = 'NP01';
-    p.land = { E1: 'forest', F1: 'water' };
+    p.natureParkCard = 'NPT';
+    p.land = { E1: 'forest', F1: 'forest' };
     p.buildings = {};
-    expect(natureParkScore(data, p)).toBe(3);
     p.specialCitizens = ['08'];
-    expect(natureParkScore(data, p)).toBe(10);
+    expect(natureParkScore(tdWith, p)).toBe(10);
   });
 
   it('自然公園の得点は終了時の自然・環境に入る', () => {
     // rules.md v0.8 17-5-1
     const s = structuredClone(base());
     for (const p of s.players) {
-      p.natureParkCard = 'NP01';
-      p.land = { E1: 'forest', F1: 'water' };
+      p.natureParkCard = 'NPT';
+      p.land = { E1: 'forest', F1: 'forest' };
       p.buildings = {};
     }
-    expect(finalScores(s).every((f) => f.axes.nature >= 3)).toBe(true);
+    expect(finalScores(s, td).every((f) => f.axes.nature >= (d.params.scoring.natureParkPointsBySetSize['2'] ?? 0))).toBe(true);
+  });
+});
+
+describe('特別な市民カードの調整（2026-11-08 作成の調整案）', () => {
+  it('特別市民04：1ラウンドに1回、軍事レベルかインフラレベルを1上げる', () => {
+    // 2026-11-08 作成の調整案、rules.md v0.8 10-1（フリーアクション）
+    let s = edit(base(), (_, p) => {
+      p.specialCitizens = ['04'];
+      p.militaryLevel = 0;
+      p.infraLevel = 0;
+    });
+    s = applyMove(s, 'ability:sc:04#0');
+    expect(ids(s)).toEqual(['choose:0', 'choose:1']);
+    s = applyMove(s, 'choose:1');
+    expect(me(s).infraLevel).toBe(1);
+    expect(ids(s)).not.toContain('ability:sc:04#0');
+  });
+
+  it('特別市民08：獲得時に計画都市カードを1枚引いて自分専用にする', () => {
+    // 2026-11-08 作成の調整案、rules.md v0.8 9-3-2、19-5-3（デザイナーの専用の計画都市と同じ扱い）
+    let s = edit(base(), (state, p) => {
+      p.materials = 5;
+      p.infraLevel = 3;
+      p.infraRewardsClaimed = [1, 2, 3];
+      state.scRevealed = ['08', ...state.scRevealed.filter((c) => c !== '08')];
+    });
+    const top = s.plannedCityDeck[0];
+    s = play(s, 'act:welfare:normal', 'sc:08');
+    expect(me(s).specialCitizens).toContain('08');
+    expect(me(s).privatePlannedCities).toEqual([top]);
+  });
+
+  it('特別市民03：獲得時にプレイ済みの文明カード1枚につき1点を得る', () => {
+    // 2026-11-08 作成の調整案、獲得時の処理はユーザー決定 2026-11-10。rules.md v0.8 9-3-2、17-4-3（生活・福祉）
+    let s = edit(base(), (state, p) => {
+      p.materials = 5;
+      p.infraLevel = 3;
+      p.infraRewardsClaimed = [1, 2, 3];
+      p.played = ['004', '005', '006'];
+      state.scRevealed = ['03', ...state.scRevealed.filter((c) => c !== '03')];
+    });
+    const score = me(s).score;
+    s = play(s, 'act:welfare:normal', 'sc:03');
+    expect(me(s).specialCitizens).toContain('03');
+    expect(me(s).score).toBe(score + 3);
+  });
+
+  it('特別市民10：無料で1枚プレイした後、通常のコストでもう1枚プレイしてよい', () => {
+    // 2026-11-08 作成の調整案、rules.md v0.8 6-2-4、9-2-4
+    let s = edit(base(), (_, p) => {
+      p.specialCitizens = ['10'];
+      p.hand = ['005', '004'];
+      p.gold = 100;
+    });
+    s = play(s, 'space:sc:10#0', 'card:005');
+    expect(me(s).played).toEqual(['005']);
+    expect(top(s).t).toBe('playCard');
+    expect(ids(s)).toEqual(['card:004', 'done']);
+    s = applyMove(s, 'done');
+    expect(me(s).played).toEqual(['005']);
   });
 });
 
 describe('終了時の得点の補正', () => {
-  it('補正 goldPointsMultiplier：金から得る点数が2倍（データで与えて検査する）', () => {
-    // data_special_citizens.json 04（元の効果）。金の点は収入（金の生産力）から数える（ユーザー決定 2026-11-06）。
-    // 特別市民04 は調整案（2026-11-08）でフリーアクションに変わり、この補正を使うカードはなくなった。rules.md v0.8 17-2-2
-    const data = withScripts({ sc: { '04': [{ ability: 'modifier', modifier: { kind: 'goldPointsMultiplier', value: 2 } }] } });
+  it('金から得る点数を倍にする補正（goldPointsMultiplier）', () => {
+    // 金の点は収入（金の生産力）から数える（ユーザー決定 2026-11-06）。いまはこの補正を持つカードがないため
+    // （特別市民04 は 2026-11-08 作成の調整案で変えた）、特別市民04 に補正を持たせたデータで確かめる。
+    const tdWith = testData({ '04': [{ ability: 'modifier', modifier: { kind: 'goldPointsMultiplier', value: 2 } }] });
     const s = structuredClone(base());
     const p = playerOf(s, 0);
     p.goldProduction = 40;
     p.buildings = {};
-    const before = finalScores(s, data).find((f) => f.player === 0)?.axes.economy ?? 0;
+    const before = finalScores(s, tdWith).find((f) => f.player === 0)?.axes.economy ?? 0;
     p.specialCitizens = ['04'];
-    const after = finalScores(s, data).find((f) => f.player === 0)?.axes.economy ?? 0;
+    const after = finalScores(s, tdWith).find((f) => f.player === 0)?.axes.economy ?? 0;
     expect(after - before).toBe(2);
-  });
-
-  it('特別市民08：終了時、建物の種類の数だけ点数を得る', () => {
-    // 調整案（2026-11-08、commit 14876e6）、rules.md v0.8 17-0-1
-    let s = edit(base(), (state) => {
-      state.round = 5;
-      for (const p of state.players) {
-        p.specialCitizens = ['08'];
-        p.land = { E1: 'water', F1: 'water', E2: 'plains' };
-        p.buildings = { E1: 'shop', F1: 'office', E2: 'shop' };
-      }
-    });
-    while (decider(s) !== null && getOptions(s).length > 0) {
-      s = applyMove(s, top(s).t === 'turn' ? 'pass' : (ids(s)[0] ?? ''));
-    }
-    for (const p of s.players) {
-      const sc08 = scoreEvents(s, p.index).filter((e) => e.type === 'score' && e.source === 'sc:08');
-      expect(sc08.map((e) => (e.type === 'score' ? e.points : 0))).toEqual([2]);
-    }
   });
 
   it('特別市民05〜07 と資本家は 17-0-1 手順4 で処理し、資本家は終了時に資材の生産力を得る', () => {

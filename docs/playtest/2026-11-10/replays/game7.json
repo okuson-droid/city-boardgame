@@ -369,13 +369,12 @@
     "end",
     "space:sc:10#0",
     "temp:1",
-    "order:1",
-    "card:085",
     "card:100",
     "tile:C3:water",
     "tile:C5:mountain",
     "tile:D6:plains",
     "tile:F3:forest",
+    "card:085",
     "end",
     "space:sc:14#1",
     "tile:C7:forest",
@@ -491,7 +490,6 @@
     "end",
     "space:sc:10#0",
     "temp:0",
-    "order:0",
     "card:046",
     "card:102",
     "end",
@@ -553,5 +551,5 @@
     "raid:repel",
     "raid:none"
   ],
-  "dataVersion": "53d24859"
+  "dataVersion": "f4ec8c2e"
 }

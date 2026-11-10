@@ -192,7 +192,6 @@
     "tile:B2:plains",
     "end",
     "space:sc:10#0",
-    "order:0",
     "card:095",
     "build:office:E1",
     "end",
@@ -264,7 +263,6 @@
     "end",
     "space:sc:10#0",
     "temp:1",
-    "order:0",
     "card:069",
     "card:004",
     "end",
@@ -524,7 +522,6 @@
     "count:0",
     "end",
     "space:sc:10#0",
-    "order:0",
     "card:071",
     "card:120",
     "order:0",
@@ -548,5 +545,5 @@
     "tile:A7:plains",
     "raid:none"
   ],
-  "dataVersion": "53d24859"
+  "dataVersion": "f4ec8c2e"
 }

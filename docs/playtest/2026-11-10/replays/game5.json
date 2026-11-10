@@ -351,7 +351,6 @@
     "end",
     "space:sc:10#0",
     "temp:1",
-    "order:0",
     "card:093",
     "build:house:C7",
     "build:house:D6",
@@ -499,7 +498,6 @@
     "tile:A4:forest",
     "end",
     "space:sc:10#0",
-    "order:0",
     "card:052",
     "build:shop:D7",
     "build:shop:C8",
@@ -576,5 +574,5 @@
     "raid:repel",
     "raid:defense"
   ],
-  "dataVersion": "53d24859"
+  "dataVersion": "f4ec8c2e"
 }

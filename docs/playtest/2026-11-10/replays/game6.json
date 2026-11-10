@@ -390,7 +390,6 @@
     "end",
     "space:sc:10#0",
     "temp:0",
-    "order:0",
     "card:079",
     "card:085",
     "end",
@@ -540,7 +539,6 @@
     "end",
     "space:sc:10#0",
     "temp:0",
-    "order:0",
     "card:047",
     "card:046",
     "end",
@@ -601,5 +599,5 @@
     "raid:repel",
     "raid:defense"
   ],
-  "dataVersion": "53d24859"
+  "dataVersion": "f4ec8c2e"
 }
