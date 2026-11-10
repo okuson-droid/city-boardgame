@@ -842,6 +842,21 @@ describe('特別な市民カードの調整（2026-11-08 作成の調整案）',
     expect(me(s).privatePlannedCities).toEqual([top]);
   });
 
+  it('特別市民03：獲得時にプレイ済みの文明カード1枚につき1点を得る', () => {
+    // 2026-11-08 作成の調整案、獲得時の処理はユーザー決定 2026-11-10。rules.md v0.8 9-3-2、17-4-3（生活・福祉）
+    let s = edit(base(), (state, p) => {
+      p.materials = 5;
+      p.infraLevel = 3;
+      p.infraRewardsClaimed = [1, 2, 3];
+      p.played = ['004', '005', '006'];
+      state.scRevealed = ['03', ...state.scRevealed.filter((c) => c !== '03')];
+    });
+    const score = me(s).score;
+    s = play(s, 'act:welfare:normal', 'sc:03');
+    expect(me(s).specialCitizens).toContain('03');
+    expect(me(s).score).toBe(score + 3);
+  });
+
   it('特別市民10：無料で1枚プレイした後、通常のコストでもう1枚プレイしてよい', () => {
     // 2026-11-08 作成の調整案、rules.md v0.8 6-2-4、9-2-4
     let s = edit(base(), (_, p) => {

@@ -87,6 +87,10 @@
         {
           "timing": "常時",
           "text": "文明カードをプレイする度に2点を得る"
+        },
+        {
+          "timing": "獲得時",
+          "text": "プレイ済みの文明カード1枚につき1点を得る"
         }
       ],
       "open_issues": [],
@@ -106,7 +110,7 @@
           ]
         },
         {
-          "ability": "onPlay",
+          "ability": "onAcquire",
           "do": [
             {
               "op": "gain",
@@ -115,7 +119,8 @@
                 "count": "playedCivCards",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "welfare"
             }
           ]
         }
