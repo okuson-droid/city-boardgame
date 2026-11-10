@@ -65,6 +65,17 @@ describe('記録の再生（指示書 3）', () => {
     expect(JSON.stringify(record)).toBe(before);
   });
 
+  it('席を指定した move は、選択待ちがその席でなければ記録を変えずに失敗する', () => {
+    // rules.md v0.8 2-6-7（ドラフトの順番）。席ごとに別の打ち手が同じ記録を打つための確かめ。
+    const record = newRecord({ playerCount: 3 }, 4);
+    const first = getOptions(stateOf(record))[0];
+    if (first === undefined) throw new Error('選択肢がない');
+    const other = (first.player + 1) % 3;
+    expect(() => applyMoves(record, ['1'], undefined, other)).toThrow(PlayError);
+    const ok = applyMoves(record, ['1'], undefined, first.player);
+    expect(ok.record.moves).toEqual([first.id]);
+  });
+
   it('番号での指定は、同じ位置の選択肢 ID での指定と同じ局面になる', () => {
     let byNumber = newRecord({ playerCount: 4 }, 5);
     let byId = newRecord({ playerCount: 4 }, 5);

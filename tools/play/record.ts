@@ -2,7 +2,7 @@
 // 局面は常に replay(config, seed, moves) で作り直し、GameState そのものは保存しない。
 // 純粋関数（記録の作成・選択の適用・取り消し・記録の一覧）と、ファイルの読み書きを分けて置く。
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DATA_VERSION, GAME_DATA, type GameData } from '../../src/data/index.ts';
 import { applyMove, createGame, decider, getOptions, type GameConfig, type GameEvent, type GameState } from '../../src/game/index.ts';
@@ -96,18 +96,29 @@ export type MoveResult = { readonly record: PlayRecord; readonly state: GameStat
 
 /**
  * 選択肢を順に適用する。途中で選択肢にない指定が来たら PlayError を投げ、記録は変えない（全部通るか、何も変えないか）。
- * 選択待ちのプレイヤーが途中で替わっても続けて適用する。
+ * 選択待ちのプレイヤーが途中で替わっても続けて適用する。seat を渡すと、選択待ちがその席でない指定が来た時点で失敗する
+ * （席ごとに別の打ち手が同じ記録を打つとき、他の席の手を指さないようにする）。
  */
-export const applyMoves = (record: PlayRecord, specs: readonly string[], d: GameData = GAME_DATA): MoveResult =>
-  applyMovesFrom(stateOf(record, d), record, specs, d);
+export const applyMoves = (record: PlayRecord, specs: readonly string[], d: GameData = GAME_DATA, seat?: number): MoveResult =>
+  applyMovesFrom(stateOf(record, d), record, specs, d, seat);
 
 /** applyMoves の本体。state は record を再生した局面であること（呼び出し側が持っている局面を使い回すため）。 */
-export const applyMovesFrom = (start: GameState, record: PlayRecord, specs: readonly string[], d: GameData = GAME_DATA): MoveResult => {
+export const applyMovesFrom = (
+  start: GameState,
+  record: PlayRecord,
+  specs: readonly string[],
+  d: GameData = GAME_DATA,
+  seat?: number,
+): MoveResult => {
   if (specs.length === 0) throw new PlayError('適用する選択肢を指定すること');
   let state = start;
   const moves = [...record.moves];
   const steps: Step[] = [];
   for (const spec of specs) {
+    const deciding = decider(state);
+    if (seat !== undefined && deciding !== seat) {
+      throw new PlayError(`いまの選択待ちは P${deciding ?? '-'} であり、P${seat} は選べない：${spec}`);
+    }
     const id = resolveSpec(state, spec, d);
     const next = applyMove(state, id, d);
     moves.push(id);
@@ -166,7 +177,10 @@ export const readRecord = (path: string): PlayRecord => {
 
 export const writeRecord = (path: string, record: PlayRecord): void => {
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, `${JSON.stringify(record, null, 2)}\n`);
+  // 別の打ち手が同時に読んでも書きかけを読まないよう、写しに書いてから置き換える。
+  const temp = `${path}.${process.pid}.tmp`;
+  writeFileSync(temp, `${JSON.stringify(record, null, 2)}\n`);
+  renameSync(temp, path);
 };
 
 export const recordExists = (path: string): boolean => existsSync(path);

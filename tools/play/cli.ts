@@ -3,7 +3,7 @@
 // 成功は終了コード0、失敗は1とし、失敗の理由を標準エラーに1行で出す。
 
 import { DATA_VERSION } from '../../src/data/index.ts';
-import type { GameConfig } from '../../src/game/index.ts';
+import { decider, isGameOver, type GameConfig } from '../../src/game/index.ts';
 import {
   applyMoves,
   dataChanged,
@@ -32,6 +32,10 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
       選択肢 ID か、直前の show の番号（1始まり）を順に適用する。1つでも選べなければ記録を変えずに失敗する。
   undo [<手数>]
       記録の末尾から手数（既定1）を取り除く。分析用の取り消しで、ルール上の巻き戻し（第15章）とは異なりチェックポイントを越えて戻せる。
+  wait --seat <番号> [--timeout <秒>]
+      席 <番号> の番が来るまで待ち（既定300秒）、前回のその席の選択の後に起きたことと、その席の視点の局面を出す。
+      時間切れなら「まだ番ではない」と出して終わる（もう一度呼ぶ）。ゲームが終われば最終得点を出す。
+  move ... --seat <番号>   選択待ちがその席でなければ記録を変えずに失敗する（席ごとに別の打ち手が打つとき）。
   log [--from <手数>]      記録の選択を、手数・選択したプレイヤー・ラベルとともに出す。
   score [--json]           終局していれば最終得点の内訳、していなければ得点トラックの現在値を出す。
   --help                   この説明を出す。
@@ -46,7 +50,7 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
 
 type Args = { readonly positional: string[]; readonly flags: Map<string, string | true> };
 
-const VALUE_FLAGS = new Set(['file', 'players', 'seed', 'names', 'as', 'player', 'from']);
+const VALUE_FLAGS = new Set(['file', 'players', 'seed', 'names', 'as', 'player', 'from', 'seat', 'timeout']);
 
 const parseArgs = (argv: readonly string[]): Args => {
   const positional: string[] = [];
@@ -118,6 +122,28 @@ const show = (record: PlayRecord, args: Args): string => {
   return args.flags.has('json') ? JSON.stringify(showModel(state, opts), null, 2) : renderShow(state, opts);
 };
 
+/** 同期で待つ（wait の見回り。シェルの sleep を使わずに済ませる）。 */
+const sleep = (ms: number): void => {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+};
+
+/** 席 seat の番が来たときの出力：前回のその席の選択の後に起きたことと、その席の視点の局面。 */
+const turnReport = (record: PlayRecord, seat: number, args: Args): string => {
+  const steps = logSteps(record);
+  let last = -1;
+  steps.forEach((s, i) => {
+    if (s.player === seat) last = i;
+  });
+  const since = steps.slice(last + 1);
+  const state = stateOf(record);
+  const shown = since.slice(-40);
+  const head =
+    since.length === 0
+      ? ''
+      : `== 前回の P${seat} の選択の後に起きたこと（${since.length}手${since.length > shown.length ? '、最後の40手だけ' : ''}）\n${renderSteps(state, shown)}\n\n`;
+  return `${head}${show(record, { ...args, flags: new Map([...args.flags, ['as', String(seat)]]) })}`;
+};
+
 const run = (argv: readonly string[]): string => {
   const args = parseArgs(argv);
   const [command, ...rest] = args.positional;
@@ -146,9 +172,37 @@ const run = (argv: readonly string[]): string => {
       return show(load(path), args);
     case 'move': {
       const record = load(path);
-      const result = applyMoves(record, rest);
+      const seat = int(args, 'seat');
+      checkPlayer(record, seat, 'seat');
+      const result = applyMoves(record, rest, undefined, seat);
       writeRecord(path, result.record);
-      return `${renderSteps(result.state, result.steps)}\n\n${show(result.record, args)}`;
+      // 席を指定したときは、選択待ちが他の席に移っても視点をその席に保つ（他の席の手札を出さない）。
+      const view = seat === undefined || args.flags.has('as') ? args : { ...args, flags: new Map([...args.flags, ['as', String(seat)]]) };
+      return `${renderSteps(result.state, result.steps)}\n\n${show(result.record, view)}`;
+    }
+    case 'wait': {
+      const seat = int(args, 'seat');
+      if (seat === undefined) throw new PlayError('--seat を指定すること');
+      const limit = Date.now() + (int(args, 'timeout') ?? 300) * 1000;
+      for (;;) {
+        let record: PlayRecord | null = null;
+        try {
+          record = readRecord(path);
+        } catch (e) {
+          if (!(e instanceof PlayError)) throw e;
+        }
+        if (record !== null) {
+          checkPlayer(record, seat, 'seat');
+          const state = stateOf(record);
+          const deciding = decider(state);
+          if (isGameOver(state)) return `ゲーム終了\n\n${renderScore(state)}`;
+          if (deciding === seat) return turnReport(record, seat, args);
+          if (Date.now() >= limit) return `まだ P${seat} の番ではない（選択待ち P${deciding ?? '-'}）。もう一度 wait を呼ぶこと`;
+        } else if (Date.now() >= limit) {
+          throw new PlayError(`記録を読めない：${path}`);
+        }
+        sleep(1000);
+      }
     }
     case 'undo': {
       const record = load(path);
