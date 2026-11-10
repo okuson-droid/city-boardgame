@@ -25,7 +25,7 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
 使い方: npm run -s play -- <コマンド> [引数] [--file <パス>]（記録の既定は ${DEFAULT_RECORD_PATH}）
   new --players <3|4> --seed <整数> [--snake] [--names a,b,c] [--force]
       新しい記録を作り、局面を出す。既にファイルがあれば --force のときだけ上書きする。--snake はスネークドラフト。
-  show [--as <番号|all>] [--player <番号>] [--board] [--json]
+  show [--as <番号|all>] [--seat <番号>] [--player <番号>] [--board] [--json]（--as がなければ --seat の席が視点）
       局面と、選択待ちのプレイヤーの選択肢を出す。番号はプレイヤー番号（0始まり）。
       --as は視点（省略時は選択待ちのプレイヤー、all はすべての手札を見る分析用）。--player はそのプレイヤーの詳細。
   move <選択肢> [<選択肢> ...]
@@ -36,7 +36,7 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
       席 <番号> の番が来るまで待ち（既定300秒）、前回のその席の選択の後に起きたことと、その席の視点の局面を出す。
       時間切れなら「まだ番ではない」と出して終わる（もう一度呼ぶ）。ゲームが終われば最終得点を出す。
   move ... --seat <番号>   選択待ちがその席でなければ記録を変えずに失敗する（席ごとに別の打ち手が打つとき）。
-  log [--from <手数>]      記録の選択を、手数・選択したプレイヤー・ラベルとともに出す。
+  log [--from <手数>] [--seat <番号>]（--seat はその席の選択だけ）      記録の選択を、手数・選択したプレイヤー・ラベルとともに出す。
   score [--json]           終局していれば最終得点の内訳、していなければ得点トラックの現在値を出す。
   --help                   この説明を出す。
 
@@ -109,7 +109,9 @@ const load = (path: string): PlayRecord => {
 };
 
 const show = (record: PlayRecord, args: Args): string => {
-  const viewer = viewerArg(args);
+  // --as がなく --seat があれば、その席を視点にする（席ごとの打ち手が他の席の手札を見ないように）。
+  const seat = int(args, 'seat');
+  const viewer = viewerArg(args) ?? seat;
   const player = int(args, 'player');
   checkPlayer(record, typeof viewer === 'number' ? viewer : undefined, 'as');
   checkPlayer(record, player, 'player');
@@ -216,7 +218,9 @@ const run = (argv: readonly string[]): string => {
       const record = load(path);
       const from = int(args, 'from') ?? 1;
       const steps = logSteps(record);
-      const text = renderLog(stateOf(record), steps, from);
+      const seat = int(args, 'seat');
+      checkPlayer(record, seat, 'seat');
+      const text = renderLog(stateOf(record), seat === undefined ? steps : steps.filter((s) => s.player === seat), from);
       return text === '' ? '記録に選択がない' : text;
     }
     case 'score': {

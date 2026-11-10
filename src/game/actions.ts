@@ -6,6 +6,7 @@ import type { CellId } from './board.ts';
 import {
   baseBuildCost,
   buildEffects,
+  boardOf,
   buildingCount,
   drawCivCards,
   emit,
@@ -109,7 +110,7 @@ export const placeTilesOptions = (d: GameData, state: GameState, task: TaskOf<'p
       // 大規模開拓：この配置で置いた種類は置けない。置く順番は選べる（ユーザー決定 2026-11-06）。
       const used = task.distinct === true ? new Set(task.placed.map((c) => player.land[c])) : new Set<Terrain | undefined>();
       for (const tile of tiles.filter((t) => !used.has(t))) {
-        options.push(opt(task.player, `tile:${cell}:${tile}`, tileLabel(cell, terrain, tile)));
+        options.push(opt(task.player, `tile:${cell}:${tile}`, tileLabel(cell, terrain, tile, boardOf(d, player).squares[cell]?.bonus ?? null)));
       }
       continue;
     }
@@ -119,7 +120,7 @@ export const placeTilesOptions = (d: GameData, state: GameState, task: TaskOf<'p
       const mismatches = task.mismatches + (tile === terrain ? 0 : 1);
       // コストは配置をすべて選んだ時点で確定する。残りを地形一致で置いても払えない選び方は選べない（6-1-7）。
       if (pioneerMinCost(d, player, tier, tilesTotal, mismatches) <= player.materials) {
-        options.push(opt(task.player, `tile:${cell}:${tile}`, tileLabel(cell, terrain, tile)));
+        options.push(opt(task.player, `tile:${cell}:${tile}`, tileLabel(cell, terrain, tile, boardOf(d, player).squares[cell]?.bonus ?? null)));
       }
     }
   }

@@ -106,6 +106,7 @@ export type PlayerView = {
   readonly hand: readonly CardView[] | null;
   readonly played: readonly { readonly id: string; readonly name: string; readonly effect: string }[];
   readonly natureParks: readonly string[];
+  readonly natureParkPoints: number;
   readonly passed: boolean;
   readonly score: number;
 };
@@ -255,6 +256,7 @@ const playerView = (state: GameState, d: GameData, viewer: Viewer, index: number
     hand: canSee(viewer, index) ? p.hand.map((id) => cardView(state, d, p, id)) : null,
     played: p.played.map((id) => ({ id, name: queries.civCardName(d, id), effect: queries.civCardEffect(d, id) })),
     natureParks: natureParkLines(d, p),
+    natureParkPoints: queries.natureParkPoints(p, d),
     passed: p.passed,
     score: p.score,
   };
@@ -450,7 +452,7 @@ const playerLines = (v: PlayerView, full: boolean): string[] => {
     ...(v.hand ?? []).map((c) => `  ${c.id}「${c.name}」 金${c.cost} [${c.tags.join('・')}] ${c.points}点: ${c.effect}`),
     `プレイ済み: ${v.played.length}枚 ${full ? '' : v.played.map((c) => c.name).join('、')}`,
     ...(full ? v.played.map((c) => `  ${c.name}: ${c.effect}`) : []),
-    `自然公園:${v.natureParks.length === 0 ? ' なし' : ''}`,
+    `自然公園:${v.natureParks.length === 0 ? ' なし' : `（建物のない土地タイルの組で数える。いま終わったら${v.natureParkPoints}点）`}`,
     ...v.natureParks.map((n) => `  ${n}`),
     `得点トラック: ${v.score}${v.passed ? '（パス済み）' : ''}`,
   ];
@@ -625,7 +627,8 @@ export const eventText = (state: GameState, e: GameEvent, d: GameData = GAME_DAT
     case 'raid':
       return `${p} 襲撃：${RAID_DECLARED[e.declared] ?? e.declared}、${RAID_RESULTS[e.result] ?? e.result}`;
     case 'fizzle':
-      return `${p} 実行できず不発になった`;
+      // 襲撃の fizzle は、雲隠れなどで自分の襲撃の処理を行わなかったことを表す。
+      return e.what === 'raid' ? `${p} 襲撃の処理を行わなかった` : `${p} 実行できず不発になった`;
     case 'plannedCity':
       return `${p} ${queries.plannedCityName(d, e.card)}を${e.rank}番目に達成（${e.points}点）`;
     case 'ability':
@@ -662,46 +665,57 @@ export const renderLog = (state: GameState, steps: readonly Step[], from = 1): s
 // 得点
 // ---------------------------------------------------------------------------
 
-export type ScoreModel =
-  | {
-      readonly over: true;
-      readonly players: readonly {
-        readonly player: string;
-        readonly base: number;
-        readonly axes: Readonly<Record<string, number>>;
-        readonly total: number;
-        readonly rank: number;
-        readonly tiebreak: { readonly leftoverGold: number; readonly base: number };
-      }[];
-    }
-  | { readonly over: false; readonly players: readonly { readonly player: string; readonly score: number }[] };
-
-export const scoreModel = (state: GameState, d: GameData = GAME_DATA): ScoreModel => {
-  if (!isGameOver(state)) {
-    return { over: false, players: state.players.map((p) => ({ player: who(state, p.index), score: p.score })) };
-  }
-  return {
-    over: true,
-    players: finalScores(state, d).map((s) => {
-      const axes: Record<string, number> = {};
-      for (const axis of SCORE_AXES) axes[queries.axisLabel(axis)] = s.axes[axis];
-      return { player: who(state, s.player), base: s.base, axes, total: s.total, rank: s.rank, tiebreak: { leftoverGold: s.leftoverGold, base: s.base } };
-    }),
-  };
+export type ScoreModel = {
+  /** 終局しているか。していなければ、得点はいま終わったときの見込み（終了時の能力を除く）である。 */
+  readonly over: boolean;
+  readonly players: readonly {
+    readonly player: string;
+    /** 得点トラックの現在値。 */
+    readonly track: number;
+    readonly base: number;
+    readonly baseParts: { readonly land: number; readonly buildings: number; readonly workers: number };
+    readonly axes: Readonly<Record<string, number>>;
+    readonly total: number;
+    readonly rank: number;
+    readonly tiebreak: { readonly leftoverGold: number; readonly base: number };
+    /** ゲーム中に得点トラックへ入った点の出どころ別の合計。 */
+    readonly sources: readonly { readonly source: string; readonly axis: string; readonly points: number }[];
+    readonly natureParks: number;
+  }[];
 };
+
+export const scoreModel = (state: GameState, d: GameData = GAME_DATA): ScoreModel => ({
+  over: isGameOver(state),
+  players: finalScores(state, d).map((s) => {
+    const axes: Record<string, number> = {};
+    for (const axis of SCORE_AXES) axes[queries.axisLabel(axis)] = s.axes[axis];
+    const p = playerAt(state, s.player);
+    return {
+      player: who(state, s.player),
+      track: p.score,
+      base: s.base,
+      baseParts: s.baseParts,
+      axes,
+      total: s.total,
+      rank: s.rank,
+      tiebreak: { leftoverGold: s.leftoverGold, base: s.base },
+      sources: queries.scoreSources(state, s.player, d),
+      natureParks: queries.natureParkPoints(p, d),
+    };
+  }),
+});
 
 export const renderScore = (state: GameState, d: GameData = GAME_DATA): string => {
   const m = scoreModel(state, d);
-  if (!m.over) {
-    return ['終局していない。得点トラックの現在値：', ...m.players.map((p) => `${p.player}: ${p.score}`)].join('\n');
-  }
   return [
-    '最終得点（第17章）',
-    ...m.players.map(
-      (p) =>
-        `${p.rank}位 ${p.player}: 合計${p.total}（基礎${p.base} ${Object.entries(p.axes)
-          .map(([k, n]) => `${k}${n}`)
-          .join(' ')}）同点判定：残った金${p.tiebreak.leftoverGold}・基礎得点${p.tiebreak.base}`,
-    ),
+    m.over ? '最終得点（第17章）' : '終局していない。いま終わったときの見込み（ゲーム終了時の能力は含まない）：',
+    ...m.players.flatMap((p) => [
+      `${p.rank}位 ${p.player}: 合計${p.total}（得点トラック${p.track}）`,
+      `  基礎${p.base}（土地${p.baseParts.land}・建物${p.baseParts.buildings}・通常ワーカー${p.baseParts.workers}） ${Object.entries(p.axes)
+        .map(([k, n]) => `${k}${n}`)
+        .join(' ')}（自然公園${p.natureParks}を含む）`,
+      `  ゲーム中の得点：${p.sources.map((x) => `${x.source} ${x.points}点（${x.axis}）`).join('、') || 'なし'}`,
+      `  同点判定：残った金${p.tiebreak.leftoverGold}・基礎得点${p.tiebreak.base}`,
+    ]),
   ].join('\n');
 };

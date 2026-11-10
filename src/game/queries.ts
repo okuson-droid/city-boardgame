@@ -3,7 +3,8 @@
 import { GAME_DATA } from '../data/index.ts';
 import { ICON_KEYS } from '../data/icon-keys.ts';
 import type { Action, Building, GameData, RaidCard, RaidEffect, Terrain, Tier, UnlockCondition } from '../data/types.ts';
-import { grantText as grantTextOf } from './labels.ts';
+import { axisLabel as axisLabelOf, grantText as grantTextOf, sourceName as sourceNameOf } from './labels.ts';
+import { natureParkScore } from './planned.ts';
 import { buildTotalCost, civCardCost, expeditionTable } from './actions.ts';
 import { buildingCount, cardHouseCount, landCount, playerOf, regularWorkerCap, usableRegular, usableTemp } from './core.ts';
 import { decider, isTopUnlocked } from './engine.ts';
@@ -386,3 +387,20 @@ export const civPileCounts = (state: GameState): { deck: number; discard: number
   deck: state.civDeck.length,
   discard: state.civDiscard.length,
 });
+
+/** 自然公園カードの得点（建物のない土地の組で数える、第14章）。いま終わったときの値である。 */
+export const natureParkPoints = (player: PlayerState, d: GameData = GAME_DATA): number => natureParkScore(d, player);
+
+/** ゲーム中に得点トラックへ入った点を、出どころと評価軸ごとにまとめる（17-0-3）。出どころは表示用の名前にする。 */
+export const scoreSources = (state: GameState, player: number, d: GameData = GAME_DATA): { source: string; axis: string; points: number }[] => {
+  const totals = new Map<string, { source: string; axis: string; points: number }>();
+  for (const e of state.events) {
+    if (e.type !== 'score' || e.player !== player) continue;
+    const source = sourceNameOf(d, e.source.split('#')[0] ?? e.source);
+    const key = `${source}|${e.axis}`;
+    const entry = totals.get(key) ?? { source, axis: axisLabelOf(e.axis), points: 0 };
+    entry.points += e.points;
+    totals.set(key, entry);
+  }
+  return [...totals.values()].sort((a, b) => b.points - a.points);
+};

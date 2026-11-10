@@ -127,12 +127,24 @@ export const bonusTileText = (d: GameData, id: number): string => {
 
 /** 能力の出どころの名前（"char:hero"・"sc:09"・"civ:018" など）。 */
 export const sourceName = (d: GameData, source: string): string => {
-  const [kind = '', rest = ''] = source.split(':');
+  const colon = source.indexOf(':');
+  const kind = colon < 0 ? source : source.slice(0, colon);
+  const rest = colon < 0 ? '' : source.slice(colon + 1);
   switch (kind) {
+    case 'infraOverflow':
+      return 'インフラの超過';
+    case 'terrainBonus':
+      return `${buildingLabel(rest as Building)}の地形ボーナス`;
+    case 'pass':
+      return `ボーナスタイル${rest.replace(/^bonusTile:/, '')}のパス時`;
+    case 'raid':
+      return `襲撃カード${rest}`;
+    case 'drill':
+      return '教練の超過';
     case 'char':
       return `キャラクター「${characterName(d, rest)}」`;
     case 'sc':
-      return `特別な市民カード ${rest}`;
+      return `特別な市民カード${rest}`;
     case 'civ':
       return `文明カード ${civCardName(d, rest)}`;
     case 'plannedCity':
@@ -164,8 +176,8 @@ export const conversionLabel = (conv: { readonly pay: Payment; readonly gain: Gr
   return `フリーアクション：${pay} → ${grantShort(conv.gain)}`;
 };
 
-export const tileLabel = (cell: CellId, cellTerrain: Terrain, tile: Terrain): string =>
-  `${cell}（${terrainLabel(cellTerrain)}）に${terrainLabel(tile)}の土地タイルを置く${cellTerrain === tile ? '' : '（地形と異なる）'}`;
+export const tileLabel = (cell: CellId, cellTerrain: Terrain, tile: Terrain, bonus: Grant | null = null): string =>
+  `${cell}（${terrainLabel(cellTerrain)}）に${terrainLabel(tile)}の土地タイルを置く${cellTerrain === tile ? '' : '（地形と異なる）'}${bonus === null ? '' : `（マスボーナス：${grantText(bonus)}）`}`;
 
 export const buildLabel = (cell: CellId, building: Building): string => `${cell} に${buildingLabel(building)}を建てる`;
 
