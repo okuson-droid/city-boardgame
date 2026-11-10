@@ -313,7 +313,7 @@ export const showModel = (state: GameState, opts: ShowOptions = {}, d: GameData 
       outcomes: raidCard === null ? null : queries.describeRaidOutcomes(raidCard, d),
       players: state.players.map((p) => {
         const need = queries.raidNeed(state, p);
-        return `${who(state, p.index)} 軍事Lv${p.militaryLevel}（防衛あと${need.defense}・撃退あと${need.repel}、トークン${p.militaryTokens}）`;
+        return `${who(state, p.index)} 軍事Lv${p.militaryLevel}（宣言に払うトークン 防衛${need.defense}・撃退${need.repel}、所持${p.militaryTokens}）`;
       }),
     },
     actionBoard: ACTIONS.map((action) => ({

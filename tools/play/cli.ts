@@ -237,6 +237,9 @@ try {
   process.stdout.write(`${run(process.argv.slice(2))}\n`);
 } catch (e) {
   const message = e instanceof Error ? e.message : String(e);
-  process.stderr.write(`${message.split('\n')[0] ?? message}\n`);
+  const line = message.split('\n')[0] ?? message;
+  process.stderr.write(`${line}\n`);
+  // 標準出力だけを読む呼び出し方（パイプで絞るなど）でも失敗が分かるよう、標準出力にも出す。
+  process.stdout.write(`失敗：${line}\n`);
   process.exitCode = 1;
 }
