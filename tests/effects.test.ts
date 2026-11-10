@@ -449,6 +449,21 @@ describe('常時効果（出来事への反応、16-1-4）', () => {
     expect(me(s).materials).toBe(1 + 2);
   });
 
+  it('特別市民03：獲得時にプレイ済みの文明カード1枚につき1点（生活・福祉）', () => {
+    // 調整案（2026-11-08）、ユーザー決定 2026-11-10（獲得時に直した）。rules.md v0.8 9-3-2、17-4-3
+    let s = edit(base(), (state, p) => {
+      p.played = ['001', '002', '003'];
+      p.hand = ['005'];
+      p.gold = 100;
+      state.scRevealed = ['03', ...state.scRevealed.filter((id) => id !== '03')];
+      state.stack.push({ t: 'chooseSpecialCitizen', player: p.index });
+    });
+    const owner = me(s).index;
+    s = applyMove(s, 'sc:03');
+    const fromCard = () => scoreEvents(s, owner).filter((e) => e.type === 'score' && e.source === 'sc:03');
+    expect(fromCard().map((e) => (e.type === 'score' ? [e.points, e.axis] : []))).toEqual([[3, 'welfare']]);
+  });
+
   it('聖女：通常ワーカーが10人になった時、特別な市民カードを1枚獲得する（1回だけ）', () => {
     // data_characters.json saint
     let s = edit(base(), (_, p) => {
