@@ -13,6 +13,7 @@ import {
   loadRoom,
   moveInRoom,
   RoomError,
+  replayOfRoom,
   summaryOf,
   undoInRoom,
   viewFor,
@@ -119,6 +120,7 @@ export type ServiceDeps = { readonly store: RoomStore; readonly notify: Notify; 
  * - view {code, key} → RoomView
  * - move {code, key, move, logLength} → {ok}
  * - undo {code, key, toTurnStart?} → {ok}（toTurnStart が真なら手番の最初まで戻す）
+ * - replay {code, key} → ReplayRecord（終局後だけ。記録の保存、ユーザー決定 2026-11-10）
  */
 export const handleAction = async (body: Readonly<Record<string, unknown>>, deps: ServiceDeps): Promise<unknown> => {
   const { store, notify } = deps;
@@ -152,6 +154,9 @@ export const handleAction = async (body: Readonly<Record<string, unknown>>, deps
       undoInRoom(room, await seatOf(room, body['key']), undefined, body['toTurnStart'] === true);
       await save(store, notify, room, version);
       return { ok: true };
+    case 'replay':
+      await seatOf(room, body['key']);
+      return replayOfRoom(room);
     default:
       throw new RoomError(400, `知らない操作である：${action}`);
   }

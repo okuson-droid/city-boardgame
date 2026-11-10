@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { DATA_VERSION, GAME_DATA } from '../data/index.ts';
-import { decider } from '../game/engine.ts';
+import { decider, isGameOver } from '../game/engine.ts';
+import { downloadReplay } from './replay-file.ts';
 import { explainUndo } from '../game/explain.ts';
 import { forgetSession, loadSessions, saveSession, type RoomMessage, type Session, type Transport } from '../online/client.ts';
 import { Game, type GameController, type Settings } from './Game.tsx';
@@ -195,6 +196,8 @@ export const OnlineGame = ({
     undoReason: explainUndo(state) ?? (mine ? null : '直前の選択をした席だけが取り消せる'),
     busy,
     message: fatal ?? (!connected ? 'サーバーとの接続が切れた。繋ぎ直しています…' : notice),
+    // 記録はシードを含み全員の手札を再現できるため、終局後にだけ保存できる（19-6-1、ユーザー決定 2026-11-10）。
+    ...(isGameOver(state) ? { saveReplay: () => run(async () => downloadReplay(await transport.replay(session))) } : {}),
   };
   return <Game ctl={ctl} settings={settings} onRestart={onLeave} />;
 };

@@ -5,6 +5,7 @@
 // 席の鍵はブラウザに保存し、同じ席に戻れるようにする（再接続、ユーザー決定 2026-11-03）。
 
 import type { GameState, GameVariants } from '../game/types.ts';
+import type { ReplayRecord } from '../game/replay.ts';
 import type { RoomSummary } from './rooms.ts';
 import { openBroadcast } from './supabase-realtime.ts';
 
@@ -68,6 +69,8 @@ export type Transport = {
   readonly move: (session: Session, move: string, logLength: number) => Promise<unknown>;
   /** toTurnStart が真なら手番の最初まで戻す。 */
   readonly undo: (session: Session, toTurnStart?: boolean) => Promise<unknown>;
+  /** 対局の記録（リプレイ）。終局後だけ受け取れる。 */
+  readonly replay: (session: Session) => Promise<ReplayRecord>;
   /**
    * 局面の知らせを受け取る。onStatus の fatal は、繋ぎ直しても回復しない誤り（部屋が無い、データの版が変わった）の文章で、
    * このとき購読は止まる。
@@ -88,6 +91,7 @@ export const serverTransport: Transport = {
   join: (code, name) => post(`/api/rooms/${encodeURIComponent(normalizeCode(code))}/join`, { name }),
   move: (session, move, logLength) => post(`/api/rooms/${session.code}/move`, { key: session.key, move, logLength }),
   undo: (session, toTurnStart) => post(`/api/rooms/${session.code}/undo`, { key: session.key, ...(toTurnStart === true ? { toTurnStart: true } : {}) }),
+  replay: (session) => post<ReplayRecord>(`/api/rooms/${session.code}/replay`, { key: session.key }),
   // EventSource は切れても自動で繋ぎ直す。
   subscribe: (session, onMessage, onStatus) => {
     const source = new EventSource(`/api/rooms/${session.code}/stream?key=${encodeURIComponent(session.key)}`);
@@ -141,6 +145,7 @@ export const supabaseTransport = (config: SupabaseClientConfig): Transport => {
     join: (code, name) => call({ action: 'join', code: normalizeCode(code), name }),
     move: (session, move, logLength) => andRefresh({ action: 'move', code: session.code, key: session.key, move, logLength }),
     undo: (session, toTurnStart) => andRefresh({ action: 'undo', code: session.code, key: session.key, ...(toTurnStart === true ? { toTurnStart: true } : {}) }),
+    replay: (session) => call<ReplayRecord>({ action: 'replay', code: session.code, key: session.key }),
     subscribe: (session, onMessage, onStatus) => {
       let stopped = false;
       let version = -1;

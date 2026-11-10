@@ -27,6 +27,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 - 完了：手番の最初へ戻るボタン・チューナーの形の編集とカードのプレビュー（ユーザー決定 2026-11-08）。main に取り込み済み。
 - 完了：オンライン版の Supabase 化と GitHub Pages への配置（ユーザー決定 2026-11-03、`docs/online-supabase.md`）。模擬に対する受け入れ検査（`npm run accept:supabase`）は合格。main に取り込み済み。本物の Supabase では、Edge Function とテーブルが動き部屋を作れることを確かめた（2026-11-04）。Project URL はパスを捨てて起点だけを使う（`projectOrigin`）。
 
+- 完了：記録（リプレイ）の保存・読み込み・再生と、途中の局面からの再開（ユーザー決定 2026-11-10、`src/game/replay.ts`・`src/ui/Replay.tsx`）。対話プレイの7局の記録と知見は `docs/playtest/2026-11-10/`。
 - 完了：対話プレイ用のコマンド（`tools/play/`、`npm run play`、指示書 2026-11-10）。選択肢のラベルを名前と内容が分かる文に改めた（`src/game/labels.ts`）。調整案（2026-11-08）を正とし、文言・`changes`・単体テストを合わせた（ユーザー決定 2026-11-10）。
 
 ## 構成
@@ -86,6 +87,9 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `src/ui/Online.tsx` | オンライン版の入口（部屋を作る・入る・続きから）と対局画面 |
 | `server/main.ts` | オンライン版のサーバー（node:http だけ、SSE＋HTTP）。`server/vite.config.ts` で `dist-server/main.js` にまとめる |
 | `tools/play/` | 対話プレイ用のコマンド。`record.ts`（記録の再生・選択の適用・取り消し、ファイルの読み書き）、`render.ts`（局面・選択肢・出来事・得点の文字化と `--json` の模型）、`cli.ts`（引数と入出力だけ）、`vite.config.ts`（`dist-play/cli.js` へのビルド） |
+| `src/game/replay.ts` | 対局の記録（リプレイ）の形 `ReplayRecord`（`{ format, config, seed, moves, dataVersion }`）、検査 `parseReplay`、作成 `replayRecordOf`、再生 `replayTo`・`replayPrefix`。対話プレイの記録・画面の保存と再生・オンライン版の `replay` が同じ形を使う |
+| `src/ui/Replay.tsx`・`replay-file.ts` | 記録の再生画面（1手ずつ進め・戻す、自動で進める、手数へ飛ぶ、この局面から遊ぶ）と、ファイルの保存・読み込み |
+| `docs/playtest/` | 対話プレイの対局の記録（`replays/*.json`）と知見 |
 | `src/game/labels.ts` | 選択肢のラベルと文字表示のための名前・説明（内部の識別子を出さない。効果文は効果スクリプトから組み立てる） |
 | `tools/tuner/labels.ts` | チューナーの画面に出す項目名・選択肢の日本語 |
 | `tools/tuner/github.ts` | 公開ページのチューナーの GitHub への保存（Git Data API で1つの commit、保存先の最新に変更点を適用し直す） |
@@ -189,6 +193,14 @@ npm run import:rules -- <フォルダー>  # ルール解説のスライドを�
 - 説明の数値は `GAME_DATA` から読む（チューナーで値を変えても説明が食い違わない）。台本を変えたら `tests/tutorial.test.ts`（全キャラクターで最後まで通るか）と `npm run accept:tutorial` を通す。
 - 台本にない選択や、光らせる指定のない手順では、選べる選択肢を光らせる。マスに対応する選択肢は `cell:<マス>` も光らせる（`patternsOf`）。
 - 画面は `GameController.seat` を席0に固定し、取り消しは使わない。光らせる所作は CSS（`data-target` の属性セレクタ）で強調し、それ以外の所作は薄くする。案内の札は、横長の画面では右の個人の情報の列の上（`coach-left` の手順も同じ位置）、縮退配置では右上に置く。個人ボードのマス（SVG の g）には枠線を付けず、六角形の縁取りで光らせる。
+
+## 記録（リプレイ）の約束事（ユーザー決定 2026-11-10）
+
+- 記録の形は1つ（`src/game/replay.ts` の `ReplayRecord`）で、対話プレイの記録ファイルと同じである。画面で保存したファイルはコマンドの `--file` で読め、コマンドの記録は画面の「記録を再生する」で読める。
+- 保存：ゲーム画面の上部の「記録を保存」（`data-ui="save-replay"`）と終了時の得点の窓（`final-save-replay`）。ローカル版はいつでも保存できる（1台で交代して遊ぶため手札は全員に見えている）。オンライン版は記録がシードを含み全員の手札と山札を再現できるため、終局後にだけ保存できる（窓口の `replay`、`replayOfRoom`、19-6-1）。チュートリアルには出さない。
+- 再生：トップページの「記録を再生する」（`data-ui="load-replay"`）でファイルを選ぶ。再生の画面はゲーム画面を読むだけの形（`GameController.readOnly`）で出し、どのタブでも手札を見せる（`revealAll`）。操作帯（`replay-bar`）で最初・1手戻る・自動で進める・1手進む・最後・手数へ飛ぶを行い、選んだ人とラベルを出す。局面は20手ごとに写しを取り、手前の写しから再生し直す。
+- 復元：再生の画面の「この局面から遊ぶ」で、その局面からローカル版の対局として続ける（取り消しの記録も引き継ぐ）。
+- データの版：記録の `dataVersion` がいまの `DATA_VERSION` と違えば警告し、選べなくなった手があればその手前までだけ再生する（`replayPrefix`）。
 
 ## 対話プレイ用のコマンドの約束事（指示書 2026-11-10）
 

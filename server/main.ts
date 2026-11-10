@@ -8,7 +8,7 @@ import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { join, resolve } from 'node:path';
-import { createRoom, joinRoom, parseVariants, loadRoom, moveInRoom, RoomError, summaryOf, undoInRoom, viewFor, type Room, type RoomRecord } from '../src/online/rooms.ts';
+import { createRoom, joinRoom, parseVariants, loadRoom, moveInRoom, replayOfRoom, RoomError, summaryOf, undoInRoom, viewFor, type Room, type RoomRecord } from '../src/online/rooms.ts';
 
 const PORT = Number(process.env['PORT'] ?? 8787);
 const HOST = process.env['HOST'] ?? '0.0.0.0';
@@ -224,6 +224,12 @@ const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> 
       saveRoom(room);
       broadcast(room);
       sendJson(res, 200, { ok: true });
+      return;
+    }
+    case 'replay': {
+      // 対局の記録（終局後だけ、ユーザー決定 2026-11-10）。
+      seatOf(room, body['key']);
+      sendJson(res, 200, replayOfRoom(room));
       return;
     }
     default:

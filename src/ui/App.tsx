@@ -13,6 +13,9 @@ import { TutorialGame } from './Tutorial.tsx';
 import { Catalog, type CatalogView } from './Catalog.tsx';
 import { RulesButton } from './RulesDeck.tsx';
 import { playTurnChime, useSoundEnabled } from './sound.ts';
+import type { ReplayRecord } from '../game/replay.ts';
+import { ReplayViewer } from './Replay.tsx';
+import { readReplayFile } from './replay-file.ts';
 
 const readSettings = (): Settings => {
   const params = new URLSearchParams(window.location.hash.slice(1));
@@ -44,6 +47,8 @@ const Screen = () => {
   const [catalog, setCatalog] = useState<CatalogView | null>(null);
   const [snakeDraft, setSnakeDraft] = useState(false);
   const [soundOn, setSoundOn] = useSoundEnabled();
+  const [replay, setReplay] = useState<ReplayRecord | null>(null);
+  const [replayError, setReplayError] = useState<string | null>(null);
   useEffect(() => {
     // 試遊（調整案のデータ）ではオンライン版を出さない。サーバーのデータと食い違うためである。
     if (!TUNER_PLAYTEST) void detectTransport().then(setTransport);
@@ -56,7 +61,20 @@ const Screen = () => {
     return <OnlineGame key={session.code} transport={transport} session={session} settings={settings} onLeave={() => setSession(null)} />;
   }
   if (game !== null) {
-    return <LocalGame key={game.seed} initial={game} settings={settings} onRestart={() => setGame(null)} />;
+    return <LocalGame key={`${game.seed}-${game.log.length}`} initial={game} settings={settings} onRestart={() => setGame(null)} />;
+  }
+  if (replay !== null) {
+    return (
+      <ReplayViewer
+        record={replay}
+        settings={settings}
+        onLeave={() => setReplay(null)}
+        onContinue={(state) => {
+          setReplay(null);
+          setGame(state);
+        }}
+      />
+    );
   }
   return (
     <div className="start">
@@ -141,6 +159,31 @@ const Screen = () => {
           <a className="btn" data-ui="tuner-link" href={TUNER_URL}>
             データを編集する（チューナー）
           </a>
+        ) : null}
+      </div>
+      <div className="start-row replay-row">
+        <label className="btn" data-ui="load-replay">
+          記録を再生する
+          <input
+            type="file"
+            accept="application/json,.json"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = '';
+              if (file === undefined) return;
+              setReplayError(null);
+              readReplayFile(file)
+                .then(setReplay)
+                .catch((error: unknown) => setReplayError(error instanceof Error ? error.message : String(error)));
+            }}
+          />
+        </label>
+        <span className="muted">「記録を保存」で保存したファイル（対話プレイの記録も同じ形）を読み込み、1手ずつ見たり、途中の局面から続きを遊んだりできる。</span>
+        {replayError !== null ? (
+          <span className="error" data-ui="load-replay-error">
+            {replayError}
+          </span>
         ) : null}
       </div>
       {transport !== null ? <OnlineEntry transport={transport} onEnter={setSession} /> : null}

@@ -5,18 +5,24 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DATA_VERSION, GAME_DATA, type GameData } from '../../src/data/index.ts';
-import { applyMove, createGame, decider, getOptions, type GameConfig, type GameEvent, type GameState } from '../../src/game/index.ts';
+import {
+  applyMove,
+  createGame,
+  decider,
+  getOptions,
+  parseReplay,
+  REPLAY_FORMAT,
+  ReplayError,
+  type GameConfig,
+  type GameEvent,
+  type GameState,
+  type ReplayRecord,
+} from '../../src/game/index.ts';
 
-export const RECORD_FORMAT = 'city-boardgame-play/1';
+export const RECORD_FORMAT = REPLAY_FORMAT;
 
-export type PlayRecord = {
-  readonly format: typeof RECORD_FORMAT;
-  readonly config: GameConfig;
-  readonly seed: number;
-  readonly moves: readonly string[];
-  /** 記録を作ったときのゲームデータの版（src/data/ の内容の FNV-1a、DATA_VERSION）。 */
-  readonly dataVersion: string;
-};
+/** 記録の形は、画面の「記録を保存」「記録を再生」と同じ（src/game/replay.ts の ReplayRecord）。 */
+export type PlayRecord = ReplayRecord;
 
 /** 失敗の理由。CLI はこの文を標準エラーに1行で出す。 */
 export class PlayError extends Error {}
@@ -157,21 +163,6 @@ export const logSteps = (record: PlayRecord, d: GameData = GAME_DATA): Step[] =>
 
 export const DEFAULT_RECORD_PATH = '.play/game.json';
 
-const isRecord = (value: unknown): value is PlayRecord => {
-  if (typeof value !== 'object' || value === null) return false;
-  const v = value as Record<string, unknown>;
-  const config = v.config as Record<string, unknown> | undefined;
-  return (
-    typeof config === 'object' &&
-    config !== null &&
-    typeof config.playerCount === 'number' &&
-    typeof v.seed === 'number' &&
-    Array.isArray(v.moves) &&
-    v.moves.every((m) => typeof m === 'string') &&
-    typeof v.dataVersion === 'string'
-  );
-};
-
 export const readRecord = (path: string): PlayRecord => {
   if (!existsSync(path)) throw new PlayError(`記録がない：${path}（new で作ること）`);
   let value: unknown;
@@ -180,8 +171,11 @@ export const readRecord = (path: string): PlayRecord => {
   } catch (e) {
     throw new PlayError(`記録を読めない：${path}（${e instanceof Error ? e.message : String(e)}）`);
   }
-  if (!isRecord(value)) throw new PlayError(`記録の形式が正しくない：${path}`);
-  return { ...value, format: RECORD_FORMAT };
+  try {
+    return parseReplay(value);
+  } catch (e) {
+    throw new PlayError(`${e instanceof ReplayError ? e.message : String(e)}：${path}`);
+  }
 };
 
 export const writeRecord = (path: string, record: PlayRecord): void => {

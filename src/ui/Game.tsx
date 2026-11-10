@@ -3,11 +3,13 @@
 // - オンライン版（seat＝席の番号）：視点を自分の席に固定する。他の席の手番では選択肢を出さない（6-2）。
 // どちらでも、画面の持ち主以外の手札の内容は画面にも DOM にも出さない（19-6-1）。
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { CellId } from '../game/board.ts';
 import { applyMove, decider, isGameOver } from '../game/engine.ts';
 import { explain, explainUndo } from '../game/explain.ts';
 import { undoLast, undoToTurnStart } from '../game/history.ts';
+import { replayRecordOf } from '../game/replay.ts';
+import { downloadReplay } from './replay-file.ts';
 import { pendingPicks } from '../game/queries.ts';
 import type { GameEvent, GameState } from '../game/types.ts';
 import { DeltaChips, RoundSummary, sumDeltas } from './Motion.tsx';
@@ -38,11 +40,18 @@ export type GameController = {
   /** 選択を送っている途中か（オンライン版）。 */
   readonly busy?: boolean;
   readonly message?: string | null;
+  /** 記録（リプレイ）を保存する。無ければボタンを出さない（チュートリアル、ユーザー決定 2026-11-10）。 */
+  readonly saveReplay?: () => void;
+  /** 記録の再生中：選択肢を出さず、取り消しと手番の音を使わない。 */
+  readonly readOnly?: boolean;
+  /** 記録の再生中：どのタブでも手札の内容を見せる（終わった対局の記録のため、19-6-1 の対象外）。 */
+  readonly revealAll?: boolean;
 };
 
 /** ローカル版：状態を手元で持ち、選択をその場で適用する。 */
 export const LocalGame = ({ initial, settings, onRestart }: { initial: GameState; settings: Settings; onRestart: () => void }) => {
   const [state, setState] = useState(initial);
+  const saveReplay = (): void => downloadReplay(replayRecordOf(state));
   const ctl: GameController = {
     state,
     seat: null,
@@ -56,21 +65,35 @@ export const LocalGame = ({ initial, settings, onRestart }: { initial: GameState
       if (back !== null) setState(back);
     },
     undoReason: explainUndo(state),
+    // 1台で交代して遊ぶため、手札はもともと全員に見えている。いつでも保存できる。
+    saveReplay,
   };
   return <Game ctl={ctl} settings={settings} onRestart={onRestart} />;
 };
 
-export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settings: Settings; onRestart: () => void }) => {
+export const Game = ({
+  ctl,
+  settings,
+  onRestart,
+  toolbar,
+}: {
+  ctl: GameController;
+  settings: Settings;
+  onRestart: () => void;
+  /** 上部の帯の下に置く操作（記録の再生の操作帯）。 */
+  toolbar?: ReactNode;
+}) => {
   const state = ctl.state;
-  // オンライン版では、自分の席の選択待ちのときだけ選択肢を出す。送信中も出さない。
+  // オンライン版では、自分の席の選択待ちのときだけ選択肢を出す。送信中と記録の再生中も出さない。
   const model = useMemo(
-    () => ((ctl.seat !== null && decider(state) !== ctl.seat) || ctl.busy === true ? waitingModel(state) : buildModel(state)),
-    [state, ctl.seat, ctl.busy],
+    () =>
+      (ctl.seat !== null && decider(state) !== ctl.seat) || ctl.busy === true || ctl.readOnly === true ? waitingModel(state) : buildModel(state),
+    [state, ctl.seat, ctl.busy, ctl.readOnly],
   );
   const owner = model.owner;
-  /** 手札を見せてよい席。ローカル版は選択待ちのプレイヤー、オンライン版は自分の席。 */
-  const handOwner = ctl.seat ?? owner;
-  const [view, setView] = useState<number>(handOwner ?? 0);
+  const [view, setView] = useState<number>(ctl.seat ?? owner ?? decider(state) ?? 0);
+  /** 手札を見せてよい席。ローカル版は選択待ちのプレイヤー、オンライン版は自分の席、記録の再生は表示中のタブ。 */
+  const handOwner = ctl.revealAll === true ? view : (ctl.seat ?? owner);
   const [chooser, setChooser] = useState<Choice[] | null>(null);
   const [buildType, setBuildType] = useState<Building | null>(null);
   const [freeOpen, setFreeOpen] = useState(false);
@@ -84,7 +107,7 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
   const [draftFolded, setDraftFolded] = useState(false);
   const drafting = state.stack[state.stack.length - 1]?.t === 'draftPick';
   // 手番（いま選ぶ人）の席。上部のタブと下の帯で目立たせる（ユーザー決定 2026-11-06）。
-  const turnSeat = isGameOver(state) ? null : ctl.seat !== null ? decider(state) : owner;
+  const turnSeat = isGameOver(state) ? null : ctl.seat !== null || ctl.readOnly === true ? decider(state) : owner;
   const draftPicker = drafting ? decider(state) : null;
   useEffect(() => setDraftFolded(false), [draftPicker]);
 
@@ -102,7 +125,7 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
     setFocus(null);
     // ラウンドの区切りを1画面で見せる（ui_design.md 4-3）。演出「なし」では出さない。
     const started = added.find((e) => e.type === 'round');
-    if (started?.type === 'round' && settings.speed !== 'none') setSummary(started.round);
+    if (started?.type === 'round' && settings.speed !== 'none' && ctl.readOnly !== true) setSummary(started.round);
     // 依存は状態の変化だけにする。
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
@@ -124,7 +147,7 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
   useEffect(() => {
     const before = lastTurn.current;
     lastTurn.current = turnSeat;
-    if (turnSeat === null || turnSeat === before) return;
+    if (turnSeat === null || turnSeat === before || ctl.readOnly === true) return;
     if (ctl.seat === null || turnSeat === ctl.seat) playTurnChime();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [turnSeat]);
@@ -256,6 +279,15 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
         >
           {soundOn ? '音：入' : '音：切'}
         </button>
+        {ctl.saveReplay !== undefined ? (
+          <Tip text="対局の記録（リプレイ）をファイルに保存する。トップページの「記録を再生する」で読み込める">
+            <button type="button" className="btn" data-ui="save-replay" onClick={ctl.saveReplay}>
+              記録を保存
+            </button>
+          </Tip>
+        ) : null}
+        {ctl.readOnly === true ? null : (
+          <>
         <Tip text={undoReason}>
           <button type="button" className="btn" data-ui="undo" aria-disabled={undoReason !== null} disabled={undoReason !== null} onClick={undo}>
             取り消し
@@ -278,7 +310,10 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
             </button>
           </Tip>
         ) : null}
+          </>
+        )}
       </header>
+      {toolbar}
 
       {draftOpen && picker !== undefined ? (
         <main className="layout">
@@ -357,7 +392,7 @@ export const Game = ({ ctl, settings, onRestart }: { ctl: GameController; settin
       />
 
       {summary !== null && !isGameOver(state) ? <RoundSummary state={state} round={summary} onClose={() => setSummary(null)} /> : null}
-      {isGameOver(state) ? <FinalScores state={state} onRestart={onRestart} /> : null}
+      {isGameOver(state) ? <FinalScores state={state} onRestart={onRestart} {...(ctl.saveReplay !== undefined ? { onSaveReplay: ctl.saveReplay } : {})} {...(ctl.readOnly === true ? { restartLabel: '再生を閉じる' } : {})} /> : null}
       <div className="rotate">横向きにしてください</div>
     </div>
   );
