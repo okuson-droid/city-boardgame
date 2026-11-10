@@ -76,7 +76,7 @@ const CardList = ({ kind, q }: { kind: CardKind; q: string }) => {
     return (
       <>
         {GAME_DATA.specialCitizens
-          .filter((c) => includes(q, c.id, ...c.effects.map((e) => e.text)))
+          .filter((c) => includes(q, c.id, ...c.effects.map((e) => e.text), ...(c.changes ?? [])))
           .map((c) => (
             <Item
               key={c.id}
@@ -96,6 +96,15 @@ const CardList = ({ kind, q }: { kind: CardKind; q: string }) => {
                   <b>{e.timing}</b>：{e.text}
                 </p>
               ))}
+              {c.changes && c.changes.length > 0 ? (
+                <ul className="char-changes">
+                  {c.changes.map((text, i) => (
+                    <li key={i}>
+                      <b>変更</b>：{text}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </Item>
           ))}
       </>

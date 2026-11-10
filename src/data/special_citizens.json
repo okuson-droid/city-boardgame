@@ -85,6 +85,9 @@
       ],
       "open_issues": [],
       "provisional": false,
+      "changes": [
+        "文明カードをプレイする度に2点を得る（1点から変更）。（調整案 2026-11-08、ユーザー決定 2026-11-10）"
+      ],
       "script": [
         {
           "ability": "on",
@@ -94,8 +97,22 @@
             {
               "op": "gain",
               "res": "points",
-              "amount": 1,
+              "amount": 2,
               "axis": "welfare"
+            }
+          ]
+        },
+        {
+          "ability": "onPlay",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "playedCivCards",
+                "per": 1,
+                "times": 1
+              }
             }
           ]
         }
@@ -111,13 +128,36 @@
       ],
       "open_issues": [],
       "provisional": false,
+      "changes": [
+        "ゲーム終了時の2倍はなくし、1ラウンドに1回のフリーアクションで軍事レベルかインフラレベルを1上げる。（調整案 2026-11-08、ユーザー決定 2026-11-10）"
+      ],
       "script": [
         {
-          "ability": "modifier",
-          "modifier": {
-            "kind": "goldPointsMultiplier",
-            "value": 2
-          }
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "chooseOne",
+              "options": [
+                [
+                  {
+                    "op": "raise",
+                    "track": "military",
+                    "amount": 1
+                  }
+                ],
+                [
+                  {
+                    "op": "raise",
+                    "track": "infra",
+                    "amount": 1
+                  }
+                ]
+              ]
+            }
+          ]
         }
       ]
     },
@@ -219,17 +259,32 @@
       ],
       "open_issues": [],
       "provisional": false,
+      "changes": [
+        "自然公園の得点の置き換えはなくし、獲得時に専用の計画都市カードを1枚引き、ゲーム終了時に建設済みの建物の種類1つにつき1点を得る。（調整案 2026-11-08、ユーザー決定 2026-11-10）"
+      ],
       "script": [
         {
-          "ability": "modifier",
-          "modifier": {
-            "kind": "natureParkPoints",
-            "table": {
-              "2": 10,
-              "3": 15,
-              "4": 20
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "drawPlannedCity",
+              "count": 1
             }
-          }
+          ]
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingTypes",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
         }
       ]
     },
@@ -281,6 +336,9 @@
         "アクションスペースは獲得したプレイヤー専用の占有型で、1ラウンドに1回だけ使用できる（rules.md 6-2-4、6-2-5）。"
       ],
       "provisional": false,
+      "changes": [
+        "文明カード1枚を無料でプレイした後、さらに1枚まで通常のコストでプレイしてよい。（調整案 2026-11-08、ユーザー決定 2026-11-10）"
+      ],
       "script": [
         {
           "ability": "actionSpace",
@@ -290,6 +348,12 @@
               "op": "playCard",
               "count": 1,
               "free": true
+            },
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": false,
+              "upTo": true
             }
           ]
         }
@@ -312,10 +376,13 @@
         "アクションスペースは獲得したプレイヤー専用の占有型で、1ラウンドに1回だけ使用できる（rules.md 6-2-4、6-2-5）。"
       ],
       "provisional": false,
+      "changes": [
+        "必要なワーカーは2人（3人から変更）。（調整案 2026-11-08、ユーザー決定 2026-11-10）"
+      ],
       "script": [
         {
           "ability": "actionSpace",
-          "workers": 3,
+          "workers": 2,
           "do": [
             {
               "op": "copyAction"
@@ -334,6 +401,9 @@
       ],
       "open_issues": [],
       "provisional": false,
+      "changes": [
+        "加えて、ゲーム終了時に住宅1軒につき1点を得る。（調整案 2026-11-08、ユーザー決定 2026-11-10）"
+      ],
       "script": [
         {
           "ability": "modifier",
@@ -342,6 +412,20 @@
             "building": "house",
             "materials": -1
           }
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingsOfType:house",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
         }
       ]
     },
@@ -405,13 +489,16 @@
         "アクションスペースは獲得したプレイヤー専用の占有型で、1ラウンドに1回だけ使用できる（rules.md 6-2-4、6-2-5）。"
       ],
       "provisional": false,
+      "changes": [
+        "獲得時は任意の種類の土地タイル3枚、専用スペースは地形と同じ種類の土地タイル2枚を無料で置く。（調整案 2026-11-08、ユーザー決定 2026-11-10）"
+      ],
       "script": [
         {
           "ability": "onAcquire",
           "do": [
             {
               "op": "placeTiles",
-              "count": 2,
+              "count": 3,
               "tile": "any"
             }
           ]
@@ -422,8 +509,8 @@
           "do": [
             {
               "op": "placeTiles",
-              "count": 1,
-              "tile": "any"
+              "count": 2,
+              "tile": "match"
             }
           ]
         }
@@ -465,6 +552,9 @@
       ],
       "open_issues": [],
       "provisional": false,
+      "changes": [
+        "加えて、臨時ワーカー1人につき2金を得る。（調整案 2026-11-08、ユーザー決定 2026-11-10）"
+      ],
       "script": [
         {
           "ability": "freeAction",
@@ -479,6 +569,15 @@
                 "count": "regularWorkers",
                 "per": 1,
                 "times": 1
+              }
+            },
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "tempWorkers",
+                "per": 1,
+                "times": 2
               }
             }
           ]
@@ -581,6 +680,9 @@
       ],
       "open_issues": [],
       "provisional": false,
+      "changes": [
+        "金の生産力を6、資材の生産力を3上げる（4・2から変更）。（調整案 2026-11-08、ユーザー決定 2026-11-10）"
+      ],
       "script": [
         {
           "ability": "onAcquire",
@@ -588,12 +690,12 @@
             {
               "op": "gain",
               "res": "goldProduction",
-              "amount": 4
+              "amount": 6
             },
             {
               "op": "gain",
               "res": "materialProduction",
-              "amount": 2
+              "amount": 3
             }
           ]
         }

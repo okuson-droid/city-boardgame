@@ -436,6 +436,8 @@ export type SpecialCitizen = ProvisionalMark & {
   readonly effects: readonly SpecialCitizenEffect[];
   readonly open_issues: readonly string[];
   readonly clarifications?: readonly string[];
+  /** ユーザー決定で原本から変えた点（原本の文言は effects のまま残し、画面ではこれを添える。2026-11-10）。 */
+  readonly changes?: readonly string[];
   readonly script: Script;
 };
 

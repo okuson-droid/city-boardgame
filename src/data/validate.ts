@@ -728,6 +728,7 @@ export const parseSpecialCitizens = (value: unknown, path = 'special_citizens'):
       }),
       open_issues: readStringArray(field(o, 'open_issues', q), `${q}.open_issues`),
       ...readOptionalStringArray(o, 'clarifications', q),
+      ...readOptionalStringArray(o, 'changes', q),
       script: readScriptField(o, q),
     };
   });
