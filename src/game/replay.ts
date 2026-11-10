@@ -69,7 +69,7 @@ export type ReplayStep = {
 export type ReplayTurn = { readonly player: number; readonly round: number; readonly from: number; readonly to: number };
 
 /** 続けて同じプレイヤーが選んだ手を1つの手番にまとめる（ドラフトの1枚・襲撃の宣言も1つの手番になる）。 */
-export const replayTurns = (steps: readonly ReplayStep[]): ReplayTurn[] => {
+export const replayTurns = (steps: readonly { readonly index: number; readonly player: number; readonly round: number }[]): ReplayTurn[] => {
   const turns: ReplayTurn[] = [];
   for (const step of steps) {
     const last = turns[turns.length - 1];

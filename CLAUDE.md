@@ -4,7 +4,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 
 ## 現在の段階
 
-- 指示書：`design/指示書_2026-11-03_初期実装.md`、`design/指示書_2026-11-10_対話プレイ.md`
+- 指示書：`design/指示書_2026-11-03_初期実装.md`、`design/指示書_2026-11-10_対話プレイ.md`、`design/指示書_2026-11-11_対話プレイ軽量化.md`
 - 完了：3-1 データ層（`src/data/`、`src/game/board.ts`）。main に取り込み済み。
 - 完了：3-2 ゲームロジックの骨格（`src/game/`）。main に取り込み済み。
 - 完了：3-3 効果（命令セットは `docs/effect-commands.md`）。main に取り込み済み。
@@ -29,6 +29,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 
 - 完了：記録（リプレイ）の保存・読み込み・再生と、途中の局面からの再開（ユーザー決定 2026-11-10、`src/game/replay.ts`・`src/ui/Replay.tsx`）。対話プレイの7局の記録と知見は `docs/playtest/2026-11-10/`。
 - 完了：対話プレイ用のコマンド（`tools/play/`、`npm run play`、指示書 2026-11-10）。選択肢のラベルを名前と内容が分かる文に改めた（`src/game/labels.ts`）。調整案（2026-11-08）を正とする（ユーザー決定 2026-11-10）。
+- 完了：対話プレイの出力の軽量化（指示書 2026-11-11、decisions.md 3-5）。既定の出力を短い形にし、従来の全文は `--full`。取り込み後の確認（指示書 7、シード 20261120 の1局で打ち手が弱くならないか）は未実施。
 
 ## 構成
 
@@ -86,11 +87,11 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `src/ui/DraftScreen.tsx` | ドラフトの専用画面（選ぶ順番の帯・選んだもののまとめ・種類ごとのタブ・個人ボードの地図 `BoardMap`・キャラクターの文言） |
 | `src/ui/Online.tsx` | オンライン版の入口（部屋を作る・入る・続きから）と対局画面 |
 | `server/main.ts` | オンライン版のサーバー（node:http だけ、SSE＋HTTP）。`server/vite.config.ts` で `dist-server/main.js` にまとめる |
-| `tools/play/` | 対話プレイ用のコマンド。`record.ts`（記録の再生・選択の適用・取り消し、ファイルの読み書き）、`online.ts`（オンライン版の部屋に席として入って打つ）、`render.ts`（局面・選択肢・出来事・得点の文字化と `--json` の模型）、`cli.ts`（引数と入出力だけ）、`vite.config.ts`（`dist-play/cli.js` へのビルド） |
+| `tools/play/` | 対話プレイ用のコマンド。`record.ts`（記録の再生・選択の適用・取り消し、ファイルの読み書き）、`online.ts`（オンライン版の部屋に席として入って打つ）、`compact.ts`（既定の短い出力・選択肢の畳み方・`ref`・`resume`・手番ごとのまとめ）、`measure.ts`（出力量の計測）、`render.ts`（局面・選択肢・出来事・得点の文字化と `--json` の模型）、`cli.ts`（引数と入出力だけ）、`vite.config.ts`（`dist-play/cli.js` へのビルド） |
 | `src/game/replay.ts` | 対局の記録（リプレイ）の形 `ReplayRecord`（`{ format, config, seed, moves, dataVersion }`）、検査 `parseReplay`、作成 `replayRecordOf`、再生 `replayTo`・`replayPrefix`。対話プレイの記録・画面の保存と再生・オンライン版の `replay` が同じ形を使う |
 | `src/ui/Replay.tsx`・`replay-file.ts` | 記録の再生画面（1手ずつ・手番ずつ進め・戻す、自動で進める、手数へ飛ぶ、視点の固定、この手番の行動、この局面から遊ぶ）と、ファイルの保存・読み込み |
-| `src/game/narrate.ts` | `eventText`：出来事（GameEvent）を文にする。対話プレイのコマンドの出来事の出力と、記録の再生画面の「この手番の行動」が共用する |
-| `docs/playtest/` | 対話プレイの対局の記録（`replays/*.json`）と知見 |
+| `src/game/narrate.ts` | `eventText`：出来事（GameEvent）を文にする。手番ごとのまとめ `turnDelta`・`deltaText`・`turnSummary` と、出来事の列だけからの手番の区切り `eventTurns`（オンライン版の写しのため）。対話プレイのコマンドと記録の再生画面が共用する |
+| `docs/playtest/` | 対局の回し方（`README.md`）、打ち手への指示（`player-brief.md`）と知見の要約（`knowledge-play.md`）、日付ごとの記録（`<日付>/replays/*.json`）と経緯の知見 |
 | `src/game/labels.ts` | 選択肢のラベルと文字表示のための名前・説明（内部の識別子を出さない。効果文は効果スクリプトから組み立てる） |
 | `tools/tuner/labels.ts` | チューナーの画面に出す項目名・選択肢の日本語 |
 | `tools/tuner/github.ts` | 公開ページのチューナーの GitHub への保存（Git Data API で1つの commit、保存先の最新に変更点を適用し直す） |
@@ -121,7 +122,8 @@ npm run supabase:deploy  # 上のビルドのあと Edge Function を配置す�
 npm run accept:supabase  # Supabase の模擬に対するオンライン版の受け入れ検査
 npm run accept:tutorial  # チュートリアルの受け入れ検査
 npm run play:build    # 対話プレイ用のコマンドを dist-play/cli.js にビルドする
-npm run -s play -- <コマンド>  # 対話プレイ（new・show・move・undo・log・score、--help で一覧）。ビルドはしない
+npm run -s play -- <コマンド>  # 対話プレイ（new・show・move・wait・ref・resume・undo・log・score・online、--help で一覧）。ビルドはしない
+npm run -s play:measure -- --file <記録>  # 席ごとの出力量（従来の全文と既定の形）を数える
 npm run import:rules -- <フォルダー>  # ルール解説のスライドを取り込み直す（project/deck.json・project/slides/・blobs/ を置いたフォルダー）
 ```
 
@@ -207,6 +209,15 @@ npm run import:rules -- <フォルダー>  # ルール解説のスライドを�
 
 ## 対話プレイ用のコマンドの約束事（指示書 2026-11-10）
 
+- 出力の軽量化（指示書 2026-11-11、decisions.md 3-5）：既定の出力を短い形（`compact.ts`）にし、従来の全文（`render.ts` の `renderShow`・`renderSteps`）は `--full` のときだけ出す。`new` は全文、`--brief` は既定の形に吸収して何もしない。
+  - `move` は出来事・自分の要約1行・次の選択肢（次の選択待ちが他の席なら「選択待ち：P1」）だけを出す（選択肢を除いて15行以内、テストで確かめる）。全局面は `show` で見る。
+  - 対局中に変わらない文言（アクションボードの効果文・キャラクターの能力・ボーナスタイル・襲撃カード・建物・フリーアクション）は `ref` に分け、`show`・`wait` は ID と名前と数値だけを出す。アクションボードは置かれたスペースだけ。手札は1行ずつ（効果文は `show --only hand` か `ref --card`）。
+  - 新しく公開・獲得したもの（特別な市民カード・計画都市・ボーナスタイル・手札に加わった文明カード・襲撃カード）は、その時点の出来事に1回だけ内容を出す。記録の側は `Step.reveal`（`revealOf`）、オンライン版は資格情報の `seen` との差（`revealSince`）で求める。
+  - `--only <欄,...>`（progress・raid・actions・shared・self・hand・others・board・events・options）は指定した欄だけを、`--full` の該当する欄と同じ詳しい形で出す。知らない欄は使える名前を添えて失敗する。
+  - 選択肢の畳み方は選択肢 ID の接頭辞と `targetOf` の種類だけで決める（`foldOptions`）：`free:<変換>:<カード>`、`card:`、`sc:`、`draft:<種類>:`、マスを対象にする選択肢は選択肢が8個を超えたら「種類:値:マス」（建設）は種類と値で、それ以外（土地タイル）はマスでまとめる。畳んだ行の `［接頭辞*］` と項目の先頭の語で ID が読め、`readFolded` で番号と ID の組に戻せる（テストで `getOptions` と一致を確かめる）。
+  - `wait` の他の席の分は手番ごとに1行（`replayTurns`・`turnSummary`、記録の再生画面と共用）。自動の処理は視点の増減と共通の結果（ラウンド・襲撃・終了）だけ。オンライン版は選択と出来事の対応を持たないため `eventTurns` で区切る。
+  - 打ち手の作り直し：`wait --round R` は局面のラウンドが R より先なら番を待たずに終える（ドラフトと準備は第1ラウンド、`effectiveRound`）。`resume --seat N` は ref・局面・手札の効果文・その席の手番ごとのまとめ・得点の見込みを1回で出す。ノート（`.play/notes/P<席>.md`）はコマンドが読み書きしない。
+  - 打ち手はリポジトリの外の作業ディレクトリで `node <リポジトリ>/dist-play/cli.js` を呼ぶ（このファイルを読み込ませないため）。運用は `docs/playtest/README.md`。
 - 1回の呼び出しで完結し、入力待ちを作らない。ルールを再実装せず、合法手は `getOptions`、進行は `applyMove`、得点は `finalScores`、派生値は `queries` だけから得る。足りない派生値は queries.ts に足す。
 - 記録は JSON 1つ（既定 `.play/game.json`、`--file` で指定）で、`{ format, config, seed, moves, dataVersion }` を持つ。局面は常に `replay` 相当の再生で作り、GameState は保存しない。`dataVersion` は `DATA_VERSION` で、食い違えば警告し、再生に失敗したら「データが変わったため再生できない」で止める。
 - `move` は選択肢 ID か直前の `show` の番号（1始まり、`getOptions` の順）を順に適用し、1つでも選べなければ記録を一切変えない。
