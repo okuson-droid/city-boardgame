@@ -86,7 +86,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `src/ui/DraftScreen.tsx` | ドラフトの専用画面（選ぶ順番の帯・選んだもののまとめ・種類ごとのタブ・個人ボードの地図 `BoardMap`・キャラクターの文言） |
 | `src/ui/Online.tsx` | オンライン版の入口（部屋を作る・入る・続きから）と対局画面 |
 | `server/main.ts` | オンライン版のサーバー（node:http だけ、SSE＋HTTP）。`server/vite.config.ts` で `dist-server/main.js` にまとめる |
-| `tools/play/` | 対話プレイ用のコマンド。`record.ts`（記録の再生・選択の適用・取り消し、ファイルの読み書き）、`render.ts`（局面・選択肢・出来事・得点の文字化と `--json` の模型）、`cli.ts`（引数と入出力だけ）、`vite.config.ts`（`dist-play/cli.js` へのビルド） |
+| `tools/play/` | 対話プレイ用のコマンド。`record.ts`（記録の再生・選択の適用・取り消し、ファイルの読み書き）、`online.ts`（オンライン版の部屋に席として入って打つ）、`render.ts`（局面・選択肢・出来事・得点の文字化と `--json` の模型）、`cli.ts`（引数と入出力だけ）、`vite.config.ts`（`dist-play/cli.js` へのビルド） |
 | `src/game/replay.ts` | 対局の記録（リプレイ）の形 `ReplayRecord`（`{ format, config, seed, moves, dataVersion }`）、検査 `parseReplay`、作成 `replayRecordOf`、再生 `replayTo`・`replayPrefix`。対話プレイの記録・画面の保存と再生・オンライン版の `replay` が同じ形を使う |
 | `src/ui/Replay.tsx`・`replay-file.ts` | 記録の再生画面（1手ずつ・手番ずつ進め・戻す、自動で進める、手数へ飛ぶ、視点の固定、この手番の行動、この局面から遊ぶ）と、ファイルの保存・読み込み |
 | `src/game/narrate.ts` | `eventText`：出来事（GameEvent）を文にする。対話プレイのコマンドの出来事の出力と、記録の再生画面の「この手番の行動」が共用する |
@@ -215,6 +215,7 @@ npm run import:rules -- <フォルダー>  # ルール解説のスライドを�
 - 選択肢のラベル（`Option.label`）は、ラベルだけで何を選ぶ手か分かる文にする（払うもの・得るもの、アクション名・段階・ワーカー数、カードやマスの名前と内容）。内部の識別子を含めない（tests/play-cli.test.ts が乱択プレイアウトで確かめる）。識別子と並び順は変えない。
 - `show` の既定の出力は個人ボードを除いて150行以内を目安とする（tests/play-cli.test.ts が確かめる）。
 - 配布用ビルドとオンラインのビルドには含めない。
+- オンライン版の部屋で打つ（ユーザー決定 2026-11-10、人と AI の対戦）：`online join|create|show|wait|move`。人がブラウザのオンライン版で作った部屋に、打ち手が席として入る。窓口は Supabase の Edge Function だけ（既定は公開ページの Project URL、`--url`・`PLAY_ONLINE_URL` で替える）。局面は窓口の `view` が返す伏せた写しだけを使い、選択肢はそれに `getOptions` を掛けて作る。席の鍵と、前回どこまで出来事を見たか（`seenEvents`）は資格情報ファイル（既定 `.play/online/<コード>-<席>.json`）に置く。部屋のデータの版が手元と違えば止める。窓口は1手ずつ受けるため、`move` に並べた途中で失敗するとそれより前の手は送られたままになる。
 
 ## チューナーの約束事
 
