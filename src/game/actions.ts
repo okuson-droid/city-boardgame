@@ -33,6 +33,7 @@ import { hasModifier, mismatchExtraMaterials, modifiersOf } from './abilities.ts
 import { runCommands } from './effects.ts';
 import type { Command } from '../data/script.ts';
 import { BUILDINGS, TERRAINS, type Action, type Building, type GameData, type Grant, type Terrain, type Tier } from '../data/types.ts';
+import { buildLabel, civCardName, grantText, tileLabel, commandText } from './labels.ts';
 import type { BuildPick, BuildSpec, ChoiceEffect, GameState, Option, PlayerState, Task } from './types.ts';
 
 type TaskOf<T extends Task['t']> = Extract<Task, { t: T }>;
@@ -78,7 +79,7 @@ export const pioneerCountOptions = (d: GameData, state: GameState, task: TaskOf<
   // 枚数は空きマスの数まで（ユーザー決定 2026-11-03、19-1-4 に揃える）。
   return range(1, pioneerMaxTiles(d, player, task.tier))
     .filter((k) => pioneerMinCost(d, player, task.tier, k, 0) <= player.materials)
-    .map((k) => opt(task.player, `count:${k}`, `${k}枚配置する`));
+    .map((k) => opt(task.player, `count:${k}`, `土地タイルを${k}枚置く（資材${pioneerMinCost(d, player, task.tier, k, 0)}〜）`));
 };
 
 export const applyPioneerCount = (state: GameState, task: TaskOf<'pioneerCount'>, id: string): void => {
@@ -108,7 +109,7 @@ export const placeTilesOptions = (d: GameData, state: GameState, task: TaskOf<'p
       // 大規模開拓：この配置で置いた種類は置けない。置く順番は選べる（ユーザー決定 2026-11-06）。
       const used = task.distinct === true ? new Set(task.placed.map((c) => player.land[c])) : new Set<Terrain | undefined>();
       for (const tile of tiles.filter((t) => !used.has(t))) {
-        options.push(opt(task.player, `tile:${cell}:${tile}`, `${cell} に ${tile}`));
+        options.push(opt(task.player, `tile:${cell}:${tile}`, tileLabel(cell, terrain, tile)));
       }
       continue;
     }
@@ -118,7 +119,7 @@ export const placeTilesOptions = (d: GameData, state: GameState, task: TaskOf<'p
       const mismatches = task.mismatches + (tile === terrain ? 0 : 1);
       // コストは配置をすべて選んだ時点で確定する。残りを地形一致で置いても払えない選び方は選べない（6-1-7）。
       if (pioneerMinCost(d, player, tier, tilesTotal, mismatches) <= player.materials) {
-        options.push(opt(task.player, `tile:${cell}:${tile}`, `${cell} に ${tile}`));
+        options.push(opt(task.player, `tile:${cell}:${tile}`, tileLabel(cell, terrain, tile)));
       }
     }
   }
@@ -248,7 +249,7 @@ export const canBuildRight = (d: GameData, player: PlayerState): boolean => canB
 export const buildOptions = (d: GameData, state: GameState, task: TaskOf<'build'>): Option[] => {
   const player = playerOf(state, task.player);
   const options = buildCandidates(d, player, task.spec, task.picks).map((p) =>
-    opt(task.player, `build:${p.building}:${p.cell}`, `${p.cell} に ${p.building}`),
+    opt(task.player, `build:${p.building}:${p.cell}`, buildLabel(p.cell, p.building)),
   );
   if (task.picks.length >= task.spec.min && (task.picks.length > 0 || task.spec.min === 0)) {
     options.push(opt(task.player, 'done', '建設する建物を確定する'));
@@ -305,7 +306,7 @@ export const importCountOptions = (d: GameData, state: GameState, task: TaskOf<'
   // 交換0回は選べない（6-1-6-2）。
   return range(1, spec.maxTimes)
     .filter((k) => k * spec.payGold <= player.gold)
-    .map((k) => opt(task.player, `count:${k}`, `${k}回交換する`));
+    .map((k) => opt(task.player, `count:${k}`, `${k}回交換する（金${k * spec.payGold} → 資材${k * spec.gainMaterials + spec.bonusMaterials}）`));
 };
 
 export const applyImportCount = (state: GameState, d: GameData, task: TaskOf<'importCount'>, id: string): void => {
@@ -326,7 +327,7 @@ export const exportCountOptions = (d: GameData, state: GameState, task: TaskOf<'
   const spec = d.params.actions.export[task.tier];
   return range(1, spec.maxTimes)
     .filter((k) => k * spec.payMaterials <= player.materials)
-    .map((k) => opt(task.player, `count:${k}`, `${k}回交換する`));
+    .map((k) => opt(task.player, `count:${k}`, `${k}回交換する（資材${k * spec.payMaterials} → 金${k * spec.gainGold + spec.bonusGold}）`));
 };
 
 export const applyExportCount = (state: GameState, d: GameData, task: TaskOf<'exportCount'>, id: string): void => {
@@ -369,7 +370,7 @@ export const drillRaiseOptions = (d: GameData, state: GameState, task: TaskOf<'d
   const player = playerOf(state, task.player);
   const cost = drillTokenCost(d, player);
   const max = Math.min(d.params.actions.drill[task.tier].maxRaises, Math.floor(tokenBudget(d, player) / cost));
-  return range(0, max).map((k) => opt(task.player, `count:${k}`, `上昇処理を${k}回行う`));
+  return range(0, max).map((k) => opt(task.player, `count:${k}`, k === 0 ? '軍事レベルを上げない' : `軍事レベルを${k}上げる（軍事力トークン${k * cost}個を払う）`));
 };
 
 export const applyDrillRaise = (state: GameState, d: GameData, task: TaskOf<'drillRaise'>, id: string): void => {
@@ -472,7 +473,7 @@ export const expeditionOptions = (d: GameData, state: GameState, task: TaskOf<'e
   const player = playerOf(state, task.player);
   const table = expeditionTable(d, player);
   const options = expeditionCandidates(d, player, task).map((i) =>
-    opt(task.player, `reward:${i}`, `レベル${table[i]?.level ?? '?'}の報酬`),
+    opt(task.player, `reward:${i}`, `レベル${table[i]?.level ?? '?'}の報酬：${[...(table[i]?.grants ?? []).map(grantText), ...(table[i]?.command ? [commandText(table[i].command)] : [])].join('・')}`),
   );
   if (task.picks.length > 0) {
     options.push(opt(task.player, 'done', '報酬を確定する'));
@@ -558,7 +559,7 @@ export const actionChoiceOptions = (d: GameData, state: GameState, task: TaskOf<
   }
   const choices = d.params.actions.welfare[task.tier].choices;
   return welfareAffordable(d, player, task.tier).map((i) =>
-    opt(task.player, `count:${i}`, `資材${choices[i]?.payMaterials}を払いインフラを${choices[i]?.infra}上げる`),
+    opt(task.player, `count:${i}`, `資材${choices[i]?.payMaterials}を払いインフラレベルを${choices[i]?.infra}上げる`),
   );
 };
 
@@ -587,7 +588,7 @@ export const welfareConvertOptions = (d: GameData, state: GameState, task: TaskO
   const options = [opt(task.player, 'convert:0', '変換しない')];
   // 同じ福祉で得た臨時ワーカーは変換に使えない（ユーザー決定 2026-11-03、3-4-4-2）。
   if (welfareConvertible(d, player)) {
-    options.push(opt(task.player, 'convert:1', '臨時ワーカー1人を資材に変換する'));
+    options.push(opt(task.player, 'convert:1', `臨時ワーカー1人を資材${d.params.buildings.effects.office.welfareConvertMaterialsByCount[buildingCount(player, 'office')] ?? 0}に変換する`));
   }
   return options;
 };
@@ -622,7 +623,7 @@ export const migrationCountOptions = (d: GameData, state: GameState, task: TaskO
   const spec = d.params.actions.migration[task.tier];
   const otherEffective = spec.materials > 0 || (spec.tempWorkers > 0 && tempRoom(d, player) > 0);
   const max = Math.min(spec.regularWorkers, regularRoom(d, player));
-  return range(otherEffective ? 0 : 1, max).map((k) => opt(task.player, `count:${k}`, `通常ワーカーを${k}人獲得する`));
+  return range(otherEffective ? 0 : 1, max).map((k) => opt(task.player, `count:${k}`, `通常ワーカーを${k}人獲得する${spec.materials > 0 ? `（資材${spec.materials}も得る）` : ''}`));
 };
 
 export const applyMigrationCount = (state: GameState, d: GameData, task: TaskOf<'migrationCount'>, id: string): void => {
@@ -638,9 +639,9 @@ export const applyMigrationCount = (state: GameState, d: GameData, task: TaskOf<
 // 研究（6-3-9、19-2-8）と捨て札
 // ---------------------------------------------------------------------------
 
-export const discardOptions = (state: GameState, task: TaskOf<'discard'>): Option[] => {
+export const discardOptions = (d: GameData, state: GameState, task: TaskOf<'discard'>): Option[] => {
   const player = playerOf(state, task.player);
-  const options = [...new Set(player.hand)].map((card) => opt(task.player, `card:${card}`, `${card} を捨てる`));
+  const options = [...new Set(player.hand)].map((card) => opt(task.player, `card:${card}`, `文明カード ${civCardName(d, card)} を捨てる`));
   // 兵法：「〜枚まで」は途中で（0枚でも）終えられる。
   if (task.raise !== undefined && options.length > 0) {
     options.push(opt(task.player, 'done', '捨てるのを終える'));
@@ -698,7 +699,7 @@ export const spreadOptions = (d: GameData, state: GameState, task: TaskOf<'sprea
   const player = playerOf(state, task.player);
   const spec = d.params.actions.spread[task.tier];
   const options = playableCards(d, player, spec.goldDiscount).map((card) =>
-    opt(task.player, `card:${card}`, `${card} をプレイする（${civCardCost(d, player, card, spec.goldDiscount)}金）`),
+    opt(task.player, `card:${card}`, `文明カード ${civCardName(d, card)} をプレイする（金${civCardCost(d, player, card, spec.goldDiscount)}）`),
   );
   // 払えるカードがなければ選択肢はなく、タスクは不発として終わる（16-2-5）。
   if (task.played > 0 && spec.cardsIsMax && options.length > 0) {

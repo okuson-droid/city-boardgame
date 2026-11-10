@@ -339,3 +339,6 @@ const describeAbility = (keys: IconKeys, ability: Ability): string => {
 /** 効果スクリプトから補足表示の文章を組み立てる。能力ごとに1文。 */
 export const describeScript = (script: Script, keys: IconKeys = ICON_KEYS): string[] =>
   script.map((ability) => describeAbility(keys, ability));
+
+/** 命令の列の文章（選択肢のラベル用。能力の見出しを付けない）。 */
+export const describeCommands = (commands: readonly Command[], keys: IconKeys = ICON_KEYS): string => describeDo(keys, commands);
