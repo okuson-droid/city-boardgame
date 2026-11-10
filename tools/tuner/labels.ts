@@ -310,6 +310,7 @@ const KEY_LABELS: Table = {
   defended: '防衛成功',
   repelled: '撃退成功',
   cardEffectKinds: '襲撃カードの効果のうち適用する種類',
+  revisedEffects: 'いまの効果の文言（画面に出す）',
   freeActions: 'フリーアクション',
   conversions: '交換',
   pay: '支払うもの',

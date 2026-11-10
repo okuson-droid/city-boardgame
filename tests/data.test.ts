@@ -176,12 +176,12 @@ describe('個人ボード', () => {
     }
   });
 
-  it('マスボーナスは各ボード6マスにあり、E1・F1 にはない', () => {
-    // rules.md v0.8 4-4-4-2、指示書 2-2
-    const allowed = ['materials:1', 'gold:2', 'drawCivCards:1', 'militaryTokens:1'];
+  it('マスボーナスは各ボード9マスにあり、E1・F1 にはない', () => {
+    // rules.md v0.8 4-4-4-2、指示書 2-2（マスの数と中身は 2026-11-08 作成の調整案）
+    const allowed = ['materials:1', 'materials:2', 'gold:3', 'gold:6', 'drawCivCards:1', 'drawCivCards:2', 'militaryTokens:2', 'specialCitizen:1', 'tempWorkers:1', 'points:4'];
     for (const board of GAME_DATA.boards) {
       const bonusCells = CELL_IDS.filter((id) => board.squares[id]?.bonus !== null);
-      expect(bonusCells).toHaveLength(6);
+      expect(bonusCells).toHaveLength(9);
       expect(bonusCells).not.toContain('E1');
       expect(bonusCells).not.toContain('F1');
       for (const id of bonusCells) {
@@ -298,10 +298,10 @@ describe('ドラフトの候補数（ユーザー決定 2026-11-03）', () => {
 });
 
 describe('計画都市カード・自然公園カード', () => {
-  it('計画都市カードは8枚で、建物数は3〜5軒、条件は3種類を組み合わせる', () => {
-    // rules.md v0.8 13-2-1、13-2-2、指示書 2-3
+  it('計画都市カードは13枚で、建物数は3〜5軒、条件は3種類を組み合わせる', () => {
+    // rules.md v0.8 13-2-1、13-2-2、指示書 2-3（枚数と恩恵は 2026-11-08 作成の調整案）
     const cards = GAME_DATA.plannedCityCards;
-    expect(cards).toHaveLength(8);
+    expect(cards).toHaveLength(13);
     const kinds = new Set<string>();
     for (const card of cards) {
       expect(card.provisional).toBe(true);
@@ -312,7 +312,7 @@ describe('計画都市カード・自然公園カード', () => {
       );
       expect(cardKinds.size).toBeGreaterThanOrEqual(2);
       cardKinds.forEach((k) => kinds.add(k));
-      expect(['gold:3', 'materials:2', 'drawCivCards:1']).toContain(`${card.benefit.kind}:${card.benefit.amount}`);
+      expect(card.benefit.amount).toBeGreaterThan(0);
     }
     expect(kinds).toEqual(new Set(['both', 'terrain', 'building']));
   });
@@ -334,7 +334,8 @@ describe('計画都市カード・自然公園カード', () => {
 describe('設計文書からの取り込み', () => {
   const stripAdded = (item: unknown): unknown => {
     // changes はユーザー決定で原本から変えた点の説明（2026-11-06）。原本にはないため除いて照らす。
-    const { provisional: _p, script: _s, changes: _c, ...rest } = item as Record<string, unknown>;
+    // revisedEffects は特別な市民カードのいまの効果の文言（2026-11-10）。原本にはないため除いて照らす。
+    const { provisional: _p, script: _s, changes: _c, revisedEffects: _r, ...rest } = item as Record<string, unknown>;
     return rest;
   };
 

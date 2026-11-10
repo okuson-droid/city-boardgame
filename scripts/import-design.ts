@@ -67,10 +67,13 @@ const importPlain = (source: string, target: string, listKey: string, scripts: R
   const items = asRecords(original[listKey]).map((item) => {
     // 原本から変えた効果の説明（changes、ユーザー決定）は src/data/ にあれば保つ。
     const changes = existing.get(String(item['id']))?.['changes'];
+    // いまの効果の文言（revisedEffects、特別な市民カード、ユーザー決定 2026-11-10）も保つ。
+    const revisedEffects = existing.get(String(item['id']))?.['revisedEffects'];
     return {
       ...item,
       provisional: false,
       ...(Array.isArray(changes) ? { changes } : {}),
+      ...(Array.isArray(revisedEffects) ? { revisedEffects } : {}),
       script: scriptOf(scripts, existing, String(item['id'])),
     };
   });

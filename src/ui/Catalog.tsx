@@ -76,7 +76,7 @@ const CardList = ({ kind, q }: { kind: CardKind; q: string }) => {
     return (
       <>
         {GAME_DATA.specialCitizens
-          .filter((c) => includes(q, c.id, ...c.effects.map((e) => e.text)))
+          .filter((c) => includes(q, c.id, ...(c.revisedEffects ?? c.effects).map((e) => e.text)))
           .map((c) => (
             <Item
               key={c.id}
@@ -91,11 +91,21 @@ const CardList = ({ kind, q }: { kind: CardKind; q: string }) => {
               }
             >
               <p className="catalog-name">特別な市民カード {c.id}</p>
-              {c.effects.map((e, i) => (
+              {/* 効果を原本から変えたカードは、いまの効果の文言を出し、原本の文言を添える（ユーザー決定 2026-11-10）。 */}
+              {(c.revisedEffects ?? c.effects).map((e, i) => (
                 <p key={i}>
                   <b>{e.timing}</b>：{e.text}
                 </p>
               ))}
+              {c.revisedEffects !== undefined ? (
+                <ul className="char-changes">
+                  {c.effects.map((e, i) => (
+                    <li key={i}>
+                      <b>原本</b>：{e.timing}：{e.text}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </Item>
           ))}
       </>
