@@ -114,12 +114,21 @@ export const applyMovesFrom = (
   let state = start;
   const moves = [...record.moves];
   const steps: Step[] = [];
-  for (const spec of specs) {
+  for (const [i, spec] of specs.entries()) {
+    // 複数を並べた途中で止まったときは、何個目で止まったかと、記録を変えていないことを添える。
+    const where = specs.length > 1 ? `（${specs.length}個中${i + 1}個目で止まった。記録は変えていない）` : '';
     const deciding = decider(state);
     if (seat !== undefined && deciding !== seat) {
-      throw new PlayError(`いまの選択待ちは P${deciding ?? '-'} であり、P${seat} は選べない：${spec}`);
+      throw new PlayError(`いまの選択待ちは P${deciding ?? '-'} であり、P${seat} は選べない：${spec}${where}`);
     }
-    const id = resolveSpec(state, spec, d);
+    let id: string;
+    try {
+      id = resolveSpec(state, spec, d);
+    } catch (e) {
+      const acted = state.stack[state.stack.length - 1];
+      const hint = acted?.t === 'turn' && acted.acted && spec.startsWith('act:') ? '（この手番のアクションは済んでいる。end で手番を終える）' : '';
+      throw new PlayError(`${e instanceof Error ? e.message : String(e)}${hint}${where}`);
+    }
     const next = applyMove(state, id, d);
     moves.push(id);
     steps.push(stepFrom(state, next, moves.length, id, d));

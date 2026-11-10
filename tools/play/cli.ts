@@ -25,7 +25,7 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
 使い方: npm run -s play -- <コマンド> [引数] [--file <パス>]（記録の既定は ${DEFAULT_RECORD_PATH}）
   new --players <3|4> --seed <整数> [--snake] [--names a,b,c] [--force]
       新しい記録を作り、局面を出す。既にファイルがあれば --force のときだけ上書きする。--snake はスネークドラフト。
-  show [--as <番号|all>] [--seat <番号>] [--player <番号>] [--board] [--json]（--as がなければ --seat の席が視点）
+  show [--as <番号|all>] [--seat <番号>] [--player <番号>] [--board] [--brief] [--json]（--as がなければ --seat の席が視点。--brief はアクションボードの効果文を省く。wait・move にも付けられる）
       局面と、選択待ちのプレイヤーの選択肢を出す。番号はプレイヤー番号（0始まり）。
       --as は視点（省略時は選択待ちのプレイヤー、all はすべての手札を見る分析用）。--player はそのプレイヤーの詳細。
   move <選択肢> [<選択肢> ...]
@@ -119,6 +119,7 @@ const show = (record: PlayRecord, args: Args): string => {
     ...(viewer === undefined ? {} : { as: viewer }),
     ...(player === undefined ? {} : { player }),
     ...(args.flags.has('board') ? { board: true } : {}),
+    ...(args.flags.has('brief') ? { brief: true } : {}),
   };
   const state = stateOf(record);
   return args.flags.has('json') ? JSON.stringify(showModel(state, opts), null, 2) : renderShow(state, opts);

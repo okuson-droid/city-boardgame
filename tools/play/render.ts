@@ -30,6 +30,8 @@ export type ShowOptions = {
   readonly player?: number;
   /** 視点のプレイヤーの個人ボードを出す。選択肢がマスを対象にしていれば指定がなくても出す。 */
   readonly board?: boolean;
+  /** 短い出力（アクションボードの効果文とドラフトの候補の説明を省く）。 */
+  readonly brief?: boolean;
 };
 
 const PHASES: Record<GameState['phase'], string> = { draft: 'ドラフト', play: 'アクション', raid: '襲撃', over: '終了' };
@@ -113,6 +115,7 @@ export type PlayerView = {
 
 export type ShowModel = {
   readonly viewer: Viewer;
+  readonly brief: boolean;
   readonly progress: {
     readonly round: number;
     readonly rounds: number;
@@ -292,6 +295,7 @@ export const showModel = (state: GameState, opts: ShowOptions = {}, d: GameData 
   const visibleOptions = deciding === null || canSee(viewer, deciding);
   return {
     viewer,
+    brief: opts.brief === true,
     progress: {
       round: state.round,
       rounds: d.params.rounds,
@@ -517,7 +521,7 @@ export const renderModel = (m: ShowModel): string[] => {
       `${a.action}: ${a.spaces
         .map((s) => {
           const flags = [`W${s.workers}`, s.shared ? '共有' : '', s.unlocked === null ? '' : s.unlocked ? '解放済み' : `未解放・${s.unlock}`].filter((x) => x !== '');
-          return `${s.tier}（${flags.join('・')}）${s.users.length > 0 ? `[${s.users.join(',')}]` : ''} ${s.text}`;
+          return `${s.tier}（${flags.join('・')}）${s.users.length > 0 ? `[${s.users.join(',')}]` : ''}${m.brief ? '' : ` ${s.text}`}`;
         })
         .join('｜')}`,
     );
