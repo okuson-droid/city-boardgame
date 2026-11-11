@@ -7,3 +7,17 @@ export { describeScript, iconSequence, type IconToken } from './icons.ts';
 export { targetOf, type PanelKind, type Target } from './targets.ts';
 export { explain, explainUndo } from './explain.ts';
 export * as queries from './queries.ts';
+export {
+  parseReplay,
+  REPLAY_FORMAT,
+  replayDataChanged,
+  ReplayError,
+  replayPrefix,
+  replayRecordOf,
+  replayTo,
+  type ReplayRecord,
+  type ReplayStep,
+  type ReplayTurn,
+  replayTurns,
+} from './replay.ts';
+export { deltaText, eventText, eventTurns, turnDelta, turnSummary } from './narrate.ts';

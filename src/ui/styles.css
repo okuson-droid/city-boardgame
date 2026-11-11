@@ -2548,3 +2548,81 @@ h3 {
     overflow-x: auto;
   }
 }
+
+/* 記録の再生の操作帯（ユーザー決定 2026-11-10）。ゲーム画面の格子の外に重ね、終了時の得点の窓より手前に出す。 */
+.replay-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(1100px, calc(100vw - 16px));
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink, #222);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 25%);
+  font-size: 13px;
+}
+.replay-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.replay-controls input[type='range'] {
+  width: min(200px, 30vw);
+}
+.replay-fixed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.replay-turn {
+  max-height: 28vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  padding-top: 4px;
+}
+.replay-turn p {
+  margin: 0 0 2px;
+}
+.replay-turn-head {
+  font-weight: bold;
+}
+.replay-steps {
+  margin: 0;
+  padding-left: 3.2em;
+}
+.replay-step {
+  margin: 1px 0;
+}
+.replay-step .link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.replay-step.current .link {
+  font-weight: bold;
+  text-decoration: underline;
+}
+.replay-step.future {
+  opacity: 0.45;
+}
+.replay-step-detail {
+  display: block;
+  color: #555;
+  font-size: 12px;
+}
+.replay-warn {
+  margin: 0;
+  color: #b5423b;
+}

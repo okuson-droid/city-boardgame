@@ -8,3 +8,5 @@ server/rooms/
 supabase/functions/rooms/bundle.js
 supabase/.temp/
 dist-supabase/
+dist-play/
+.play/

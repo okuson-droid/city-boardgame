@@ -14,6 +14,8 @@ export type FinalScore = {
   readonly total: number;
   /** 基礎得点（17-1）。 */
   readonly base: number;
+  /** 基礎得点の内訳（土地タイル・建物・通常ワーカーの分）。 */
+  readonly baseParts: { readonly land: number; readonly buildings: number; readonly workers: number };
   /** 評価軸ごとの得点。ゲーム中の得点を含む。「その他」は 17-0-2。 */
   readonly axes: Readonly<Record<ScoreAxis, number>>;
   /**
@@ -45,10 +47,12 @@ const scorePlayer = (state: GameState, d: GameData, player: PlayerState): Omit<F
   }
 
   // 基礎得点（17-1-3、17-1-4）。
-  const base =
-    Math.floor(landCount(player) / s.base.landTilesPerPoint) +
-    Math.floor(buildingCount(player) / s.base.buildingsPerPoint) +
-    Math.floor(player.regularWorkers / s.base.regularWorkersPerPoint);
+  const baseParts = {
+    land: Math.floor(landCount(player) / s.base.landTilesPerPoint),
+    buildings: Math.floor(buildingCount(player) / s.base.buildingsPerPoint),
+    workers: Math.floor(player.regularWorkers / s.base.regularWorkersPerPoint),
+  };
+  const base = baseParts.land + baseParts.buildings + baseParts.workers;
 
   // 経済・産業（17-2 からの変更、ユーザー決定 2026-11-06）：残った金・資材ではなく、収入（金の生産力・資材の生産力）を
   // 商店・工房の数による換算率（17-2-2、17-2-3 の表のまま）で得点にする。残った金・資材は得点にしない。
@@ -78,7 +82,7 @@ const scorePlayer = (state: GameState, d: GameData, player: PlayerState): Omit<F
   axes.nature += natureParkScore(d, player);
 
   const total = base + SCORE_AXES.reduce((sum, axis) => sum + axes[axis], 0);
-  return { player: player.index, total, base, axes, leftoverGold };
+  return { player: player.index, total, base, baseParts, axes, leftoverGold };
 };
 
 /** 最終得点と順位（17-7）。同点は残った金、基礎得点の順に比べ、それでも同じなら同順位とする。 */

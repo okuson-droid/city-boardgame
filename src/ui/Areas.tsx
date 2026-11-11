@@ -512,7 +512,18 @@ const AXIS_LABELS: Record<ScoreAxis, string> = {
   other: 'その他',
 };
 
-export const FinalScores = ({ state, onRestart }: { state: GameState; onRestart: () => void }) => {
+export const FinalScores = ({
+  state,
+  onRestart,
+  onSaveReplay,
+  restartLabel = '最初から',
+}: {
+  state: GameState;
+  onRestart: () => void;
+  /** 記録（リプレイ）の保存。無ければボタンを出さない。 */
+  onSaveReplay?: () => void;
+  restartLabel?: string;
+}) => {
   const scores = finalScores(state);
   return (
     <div className="overlay" data-final="true">
@@ -568,9 +579,16 @@ export const FinalScores = ({ state, onRestart }: { state: GameState; onRestart:
             </tr>
           </tbody>
         </table>
-        <button type="button" className="btn" data-ui="restart" onClick={onRestart}>
-          最初から
-        </button>
+        <div className="start-row">
+          {onSaveReplay !== undefined ? (
+            <button type="button" className="btn primary" data-ui="final-save-replay" onClick={onSaveReplay}>
+              記録を保存
+            </button>
+          ) : null}
+          <button type="button" className="btn" data-ui="restart" onClick={onRestart}>
+            {restartLabel}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -23,7 +23,10 @@
     "supabase:deploy": "npm run supabase:build && npx --yes supabase@2.121.0 functions deploy rooms --no-verify-jwt --use-api",
     "accept:supabase": "VITE_SUPABASE_URL=http://localhost:8799 VITE_SUPABASE_ANON_KEY=test-anon-key vite build --outDir dist-supabase && npm run supabase:build && ONLINE_BACKEND=supabase-mock node --experimental-strip-types --no-warnings e2e/online.ts",
     "build:tuner": "vite build --config tools/tuner/vite.pages.config.ts --mode index && vite build --config tools/tuner/vite.pages.config.ts --mode play",
-    "accept:tutorial": "vite build && node --experimental-strip-types --no-warnings e2e/tutorial.ts"
+    "accept:tutorial": "vite build && node --experimental-strip-types --no-warnings e2e/tutorial.ts",
+    "play:build": "vite build --config tools/play/vite.config.ts",
+    "play:measure": "node dist-play/cli.js measure",
+    "play": "node -e \"require('fs').existsSync('dist-play/cli.js')||(console.error('dist-play/cli.js がない。先に npm run play:build を実行すること。'),process.exit(1))\" && node dist-play/cli.js"
   },
   "dependencies": {
     "react": "^19.3.1",

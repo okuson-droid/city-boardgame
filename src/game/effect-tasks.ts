@@ -19,6 +19,7 @@ import { conditionHolds, runCommands } from './effects.ts';
 import { declarablePlannedCities } from './planned.ts';
 import { ACTIONS, TERRAINS, TIERS, type Action, type GameData, type Terrain, type Tier } from '../data/types.ts';
 import type { Command } from '../data/script.ts';
+import { abilityLabel, actionLabel, civCardName, commandsLabel, plannedCityName, terrainLabel, tierLabel } from './labels.ts';
 import type { GameState, Option, PlayerState, Task } from './types.ts';
 
 type TaskOf<T extends Task['t']> = Extract<Task, { t: T }>;
@@ -92,7 +93,7 @@ const freeAbilityUsable = (state: GameState, d: GameData, player: PlayerState, o
 export const abilityFreeOptions = (state: GameState, d: GameData, player: PlayerState): Option[] =>
   abilitiesOf(d, player)
     .filter((owned) => freeAbilityUsable(state, d, player, owned))
-    .map((owned) => opt(player.index, `ability:${owned.key}`, `フリーアクション ${owned.key}`));
+    .map((owned) => opt(player.index, `ability:${owned.key}`, abilityLabel(d, owned.source, owned.ability)));
 
 export const applyAbilityFree = (state: GameState, d: GameData, player: PlayerState, key: string): void => {
   const owned = ownedByKey(d, player, key);
@@ -117,7 +118,7 @@ export const spaceOptions = (state: GameState, d: GameData, player: PlayerState,
         commandsFeasible(state, d, player, a.do)
       );
     })
-    .map((owned) => opt(player.index, `space:${owned.key}`, `専用スペース ${owned.source}`));
+    .map((owned) => opt(player.index, `space:${owned.key}`, abilityLabel(d, owned.source, owned.ability)));
 
 export const spaceWorkerCost = (d: GameData, player: PlayerState, key: string): number => {
   const a = ownedByKey(d, player, key).ability;
@@ -138,7 +139,7 @@ export const startSpace = (state: GameState, d: GameData, player: PlayerState, k
 // ---------------------------------------------------------------------------
 
 export const planOptions = (state: GameState, d: GameData, player: PlayerState): Option[] =>
-  declarablePlannedCities(state, d, player).map((id) => opt(player.index, `plan:${id}`, `計画都市 ${id} の達成を宣言する`));
+  declarablePlannedCities(state, d, player).map((id) => opt(player.index, `plan:${id}`, `${plannedCityName(d, id)}の達成を宣言する`));
 
 export const applyPlan = (state: GameState, d: GameData, player: PlayerState, id: string): void => {
   const card = d.plannedCityCards.find((c) => c.id === id);
@@ -170,7 +171,7 @@ export const playCardOptions = (d: GameData, state: GameState, task: TaskOf<'pla
   const player = playerOf(state, task.player);
   const options = [...new Set(player.hand)]
     .filter((card) => task.free || civCardCost(d, player, card) <= player.gold)
-    .map((card) => opt(task.player, `card:${card}`, `${card} をプレイする`));
+    .map((card) => opt(task.player, `card:${card}`, `文明カード ${civCardName(d, card)} をプレイする${task.free ? '（無料）' : `（金${civCardCost(d, player, card)}）`}`));
   // 「〜枚まで」「プレイしてもよい」は、プレイできるカードがあっても終えられる。
   if (task.upTo === true && options.length > 0) {
     options.push(opt(task.player, 'done', 'プレイを終える'));
@@ -190,7 +191,7 @@ export const applyPlayCard = (state: GameState, d: GameData, task: TaskOf<'playC
 };
 
 export const chooseOneOptions = (task: TaskOf<'chooseOne'>): Option[] =>
-  task.options.map((commands, i) => opt(task.player, `choose:${i}`, commands.map((c) => c.op).join('・')));
+  task.options.map((commands, i) => opt(task.player, `choose:${i}`, commandsLabel(commands)));
 
 export const applyChooseOne = (state: GameState, d: GameData, task: TaskOf<'chooseOne'>, id: string): void => {
   removeTask(state, task);
@@ -206,7 +207,7 @@ const copyCandidates = (d: GameData, player: PlayerState): { action: Action; tie
 
 export const copyActionOptions = (d: GameData, state: GameState, task: TaskOf<'copyAction'>): Option[] =>
   copyCandidates(d, playerOf(state, task.player)).map(({ action, tier }) =>
-    opt(task.player, `copy:${action}:${tier}`, `${action}（${tier}）の効果を使う`),
+    opt(task.player, `copy:${action}:${tier}`, `${actionLabel(action)}・${tierLabel(tier)}の効果を使う`),
   );
 
 export const applyCopyAction = (state: GameState, d: GameData, task: TaskOf<'copyAction'>, id: string): void => {
@@ -217,7 +218,7 @@ export const applyCopyAction = (state: GameState, d: GameData, task: TaskOf<'cop
 
 export const spiritPlaceOptions = (d: GameData, state: GameState, task: TaskOf<'spiritPlace'>): Option[] =>
   spiritOptions(d, playerOf(state, task.player)).map(({ terrain, cell }) =>
-    opt(task.player, `spirit:${terrain}:${cell}`, `${cell} に精霊チップ（${terrain}）`),
+    opt(task.player, `spirit:${terrain}:${cell}`, `${cell} に精霊チップ（${terrainLabel(terrain)}）と${terrainLabel(terrain)}の土地タイルを置く`),
   );
 
 export const applySpiritPlace = (state: GameState, d: GameData, task: TaskOf<'spiritPlace'>, id: string): void => {
@@ -238,7 +239,7 @@ export const heroStartOptions = (d: GameData, state: GameState, task: TaskOf<'he
   const player = playerOf(state, task.player);
   const board = boardOf(d, player);
   return CELL_IDS.filter((c) => board.squares[c]?.terrain === 'mountain' && player.land[c] === undefined).map((cell) =>
-    opt(task.player, `hero:${cell}`, `${cell} に山岳タイルと砦を置く`),
+    opt(task.player, `hero:${cell}`, `${cell} に山岳の土地タイルと砦を置く`),
   );
 };
 

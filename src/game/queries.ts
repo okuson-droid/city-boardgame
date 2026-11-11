@@ -2,7 +2,9 @@
 
 import { GAME_DATA } from '../data/index.ts';
 import { ICON_KEYS } from '../data/icon-keys.ts';
-import type { Action, Building, GameData, RaidCard, RaidEffect, Tier, UnlockCondition } from '../data/types.ts';
+import type { Action, Building, GameData, RaidCard, RaidEffect, Terrain, Tier, UnlockCondition } from '../data/types.ts';
+import { axisLabel as axisLabelOf, grantText as grantTextOf, sourceName as sourceNameOf } from './labels.ts';
+import { natureParkScore } from './planned.ts';
 import { buildTotalCost, civCardCost, expeditionTable } from './actions.ts';
 import { buildingCount, cardHouseCount, landCount, playerOf, regularWorkerCap, usableRegular, usableTemp } from './core.ts';
 import { decider, isTopUnlocked } from './engine.ts';
@@ -337,3 +339,74 @@ export {
   type BuildingInfo,
   type ExpeditionRow,
 } from './reference.ts';
+
+// ---------------------------------------------------------------------------
+// 文字表示（tools/play、指示書 2026-11-10 対話プレイ 2-4）のための派生値
+// ---------------------------------------------------------------------------
+
+export {
+  abilityLabel,
+  axisLabel,
+  actionSpaceLabel,
+  bonusTileText,
+  boardName,
+  characterName,
+  civCardEffect,
+  civCardName,
+  plannedCityName,
+  sourceName,
+  specialCitizenText,
+  terrainLabel,
+  tierLabel,
+} from './labels.ts';
+
+/** いまのラウンドの襲撃カード。ドラフト中（ラウンド0）は未公開のため null。 */
+export const currentRaidCard = (state: GameState, d: GameData = GAME_DATA): RaidCard | null => {
+  if (state.round < 1) return null;
+  const id = state.raidOrder[state.round - 1];
+  return d.raidCards.find((c) => c.id === id) ?? null;
+};
+
+/** トラックの次の到達報酬（未獲得で、いまのレベルより上の最小のもの）。なければ null。 */
+export const nextTrackReward = (
+  player: PlayerState,
+  track: 'military' | 'infra',
+  d: GameData = GAME_DATA,
+): { level: number; text: string } | null => {
+  const level = track === 'military' ? player.militaryLevel : player.infraLevel;
+  const reward = d.params[track].rewards.filter((r) => r.level > level).sort((a, b) => a.level - b.level)[0];
+  return reward === undefined ? null : { level: reward.level, text: reward.grants.map(grantTextOf).join('・') };
+};
+
+/** 置いた土地タイルの種類ごとの枚数。 */
+export const landByType = (player: PlayerState): Record<Terrain, number> => {
+  const counts: Record<Terrain, number> = { water: 0, mountain: 0, plains: 0, forest: 0 };
+  for (const t of Object.values(player.land)) if (t !== undefined) counts[t] += 1;
+  return counts;
+};
+
+/** 計画都市カードの達成者（先着順）。 */
+export const plannedCityClaimers = (state: GameState, id: string): number[] => state.plannedCityClaims[id] ?? [];
+
+/** 文明カードの山札と捨て札の枚数（中身と順序は出さない、19-6-1）。 */
+export const civPileCounts = (state: GameState): { deck: number; discard: number } => ({
+  deck: state.civDeck.length,
+  discard: state.civDiscard.length,
+});
+
+/** 自然公園カードの得点（建物のない土地の組で数える、第14章）。いま終わったときの値である。 */
+export const natureParkPoints = (player: PlayerState, d: GameData = GAME_DATA): number => natureParkScore(d, player);
+
+/** ゲーム中に得点トラックへ入った点を、出どころと評価軸ごとにまとめる（17-0-3）。出どころは表示用の名前にする。 */
+export const scoreSources = (state: GameState, player: number, d: GameData = GAME_DATA): { source: string; axis: string; points: number }[] => {
+  const totals = new Map<string, { source: string; axis: string; points: number }>();
+  for (const e of state.events) {
+    if (e.type !== 'score' || e.player !== player) continue;
+    const source = sourceNameOf(d, e.source.split('#')[0] ?? e.source);
+    const key = `${source}|${e.axis}`;
+    const entry = totals.get(key) ?? { source, axis: axisLabelOf(e.axis), points: 0 };
+    entry.points += e.points;
+    totals.set(key, entry);
+  }
+  return [...totals.values()].sort((a, b) => b.points - a.points);
+};
