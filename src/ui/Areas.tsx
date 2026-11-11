@@ -6,7 +6,7 @@ import { BUILDINGS, SCORE_AXES, type RaidCard, type ScoreAxis } from '../data/ty
 import { explain } from '../game/explain.ts';
 import type { IconToken } from '../game/icons.ts';
 import { abilitiesOf } from '../game/abilities.ts';
-import { buildingBreakdown, buildingCount, describeRaidOutcomes, housesOnCard, isTopUnlocked, playDiscount, workerSummary } from '../game/queries.ts';
+import { buildingBreakdown, buildingCount, describeRaidOutcomes, housesOnCard, isTopUnlocked, playDiscount, specialCitizenName, workerSummary } from '../game/queries.ts';
 import { finalScores } from '../game/scoring.ts';
 import type { GameEvent, GameState, PlayerState } from '../game/types.ts';
 import { ACTIONS } from '../data/types.ts';
@@ -136,7 +136,7 @@ export const SharedArea = ({
             return (
               <CardFrame key={id} optionId={option?.id} onChoose={onChoose} className="sc">
                 <div className="card-head">
-                  <span className="card-name">市民{id}</span>
+                  <span className="card-name">{specialCitizenName(id)}</span>
                 </div>
                 {card ? <ScriptView script={card.script} /> : null}
               </CardFrame>
@@ -170,7 +170,7 @@ const eventTokens = (e: GameEvent): IconToken[] | null => {
     case 'cardsDrawn':
       return [tok('resources', 'drawCivCards', e.count)];
     case 'specialCitizen':
-      return [tok('resources', 'specialCitizen'), { icon: 'num', label: e.card, value: e.card }];
+      return [tok('resources', 'specialCitizen'), { icon: 'num', label: specialCitizenName(e.card), value: e.card }];
     case 'raid':
       return [tok('results', e.result)];
     case 'pass':
@@ -447,7 +447,7 @@ export const HandArea = ({
               const card = GAME_DATA.specialCitizens.find((c) => c.id === id);
               const used = owned.some((o) => o.source === `sc:${id}` && state.occupied.includes(o.key));
               return (
-                <AbilityCard key={id} className="sc" title={`市民${id}${used ? '（使用済み）' : ''}`} options={abilityOptions(`sc:${id}`)} onChoose={onChoose}>
+                <AbilityCard key={id} className="sc" title={`${specialCitizenName(id)}${used ? '（使用済み）' : ''}`} options={abilityOptions(`sc:${id}`)} onChoose={onChoose}>
                   {card ? <ScriptView script={card.script} /> : null}
                 </AbilityCard>
               );

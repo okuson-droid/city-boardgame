@@ -6,6 +6,7 @@ import { applyMove, createGame, decider, getOptions } from '../src/game/engine.t
 import { describeScript, iconSequence } from '../src/game/icons.ts';
 import { natureParkScore, plannedCityMatches } from '../src/game/planned.ts';
 import { spiritAdjacency } from '../src/game/effects.ts';
+import { specialCitizenName } from '../src/game/queries.ts';
 import { finalScores } from '../src/game/scoring.ts';
 import type { GameState, PlayerState } from '../src/game/types.ts';
 import type { GameData, NatureParkCard, PlannedCityCard, Script } from '../src/data/index.ts';
@@ -671,7 +672,7 @@ const TEST_PLANNED: PlannedCityCard = {
     { q: 1, r: 0, terrain: null, building: 'shop' },
     { q: 2, r: 0, terrain: 'water', building: null },
   ],
-  benefit: { kind: 'gold', amount: 3 },
+  benefits: [{ kind: 'gold', amount: 3 }],
   provisional: true,
 };
 const TEST_PARK: NatureParkCard = {
@@ -749,6 +750,23 @@ describe('計画都市（第13章、19-1-6、19-4-7）', () => {
     expect(me(s).gold).toBe(3);
     expect(scoreEvents(s, me(s).index).at(-1)).toMatchObject({ axis: 'nature', points: 7 });
     expect(optionIds(s)).not.toContain('plan:PCT');
+  });
+
+  it('達成の報酬は複数の種類を持て、すべて得る', () => {
+    // rules.md v0.8 13-3-8（複数の種類はユーザー決定 2026-11-11）
+    const multi: PlannedCityCard = { ...card, benefits: [{ kind: 'gold', amount: 3 }, { kind: 'materials', amount: 2 }, { kind: 'points', amount: 1 }] };
+    const tdMulti: GameData = { ...td, plannedCityCards: td.plannedCityCards.map((c) => (c.id === 'PCT' ? multi : c)) };
+    let s = edit(base(), (state, p) => {
+      state.plannedCityRevealed = ['PCT'];
+      state.plannedCityClaims = { PCT: [] };
+      satisfy(p);
+      p.gold = 0;
+      p.materials = 0;
+    });
+    s = applyMove(s, 'plan:PCT', tdMulti);
+    expect(me(s).gold).toBe(3);
+    expect(me(s).materials).toBe(2);
+    expect(me(s).score).toBe(7 + 1);
   });
 
   it('宣言できるのはプレイ人数−1人まで', () => {
@@ -855,6 +873,13 @@ describe('特別な市民カードの調整（2026-11-08 作成の調整案）',
     s = play(s, 'act:welfare:normal', 'sc:03');
     expect(me(s).specialCitizens).toContain('03');
     expect(me(s).score).toBe(score + 3);
+  });
+
+  it('特別な市民カードの呼び名は名前があれば名前、なければ「市民<id>」', () => {
+    // カード名はユーザー決定 2026-11-11（原本にはない）。rules.md v0.8 9-3
+    const named: GameData = { ...d, specialCitizens: d.specialCitizens.map((c) => (c.id === '03' ? { ...c, name: '名士' } : { ...c, name: '' })) };
+    expect(specialCitizenName('03', named)).toBe('名士');
+    expect(specialCitizenName('04', named)).toBe('市民04');
   });
 
   it('特別市民10：無料で1枚プレイした後、通常のコストでもう1枚プレイしてよい', () => {

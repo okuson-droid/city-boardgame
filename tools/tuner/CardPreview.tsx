@@ -3,7 +3,7 @@
 // 効果は面の下の「効果（命令と引数）」で直し、その結果がすぐ面に映る。値が型に合わず描けないときは、理由を出して描かない。
 
 import { Component, useState, type ReactNode } from 'react';
-import { CIV_TAGS, ICON_KEYS, type BonusTile, type NatureParkCard, type PlannedCityCard, type RaidCard, type Script } from '../../src/data/index.ts';
+import { CIV_TAGS, GRANT_KINDS, ICON_KEYS, TERRAINS, type BonusTile, type Grant, type GrantKind, type Terrain, type NatureParkCard, type PlannedCityCard, type RaidCard, type Script } from '../../src/data/index.ts';
 import { describeRaidOutcomes } from '../../src/game/queries.ts';
 import { BonusTileView, NatureParkView, PlannedCityView, ScriptView } from '../../src/ui/Cards.tsx';
 import { Icon, IconRow } from '../../src/ui/Icon.tsx';
@@ -64,7 +64,20 @@ const InlineNumber = ({ value, onSet, className, label }: { value: number; onSet
   );
 };
 
-const InlineText = ({ value, onSet, label }: { value: string; onSet: (v: string) => void; label: string }) => {
+/** 面の上の文字。allowEmpty なら空にでき（名前を外す）、空のときは placeholder を出す。 */
+const InlineText = ({
+  value,
+  onSet,
+  label,
+  allowEmpty = false,
+  placeholder = '',
+}: {
+  value: string;
+  onSet: (v: string) => void;
+  label: string;
+  allowEmpty?: boolean;
+  placeholder?: string;
+}) => {
   const [editing, setEditing] = useState(false);
   if (editing) {
     return (
@@ -75,7 +88,8 @@ const InlineText = ({ value, onSet, label }: { value: string; onSet: (v: string)
         autoFocus
         aria-label={label}
         onBlur={(e) => {
-          if (e.target.value.trim() !== '') onSet(e.target.value.trim());
+          const v = e.target.value.trim();
+          if (v !== '' || allowEmpty) onSet(v);
           setEditing(false);
         }}
         onKeyDown={(e) => {
@@ -87,8 +101,59 @@ const InlineText = ({ value, onSet, label }: { value: string; onSet: (v: string)
   }
   return (
     <button type="button" className="inline-target card-name" title={`${label}を直す`} data-ui="preview-edit" onClick={() => setEditing(true)}>
-      {value}
+      {value !== '' ? value : placeholder}
     </button>
+  );
+};
+
+/**
+ * 計画都市の達成の報酬（ユーザー決定 2026-11-11：複数の種類を持てる）。1行が得るもの1つで、種類・数（無料建設は地形も）を選び、
+ * 足し・消せる。報酬は1つ以上なければならない（check.ts）。
+ */
+const BenefitsEditor = ({ benefits, onChange }: { benefits: readonly Grant[]; onChange: (list: Grant[]) => void }) => {
+  const replace = (i: number, next: Grant) => onChange(benefits.map((b, j) => (j === i ? next : b)));
+  const withKind = (b: Grant, kind: GrantKind): Grant =>
+    kind === 'freeBuildOnTerrain' ? { kind, amount: b.amount, terrain: b.kind === 'freeBuildOnTerrain' ? b.terrain : 'plains' } : { kind, amount: b.amount };
+  return (
+    <div className="benefits-editor" data-ui="benefits-editor">
+      <span className="small">達成の報酬</span>
+      {benefits.map((b, i) => (
+        <div key={i} className="benefit-row">
+          <select aria-label="得るもの" value={b.kind} onChange={(e) => replace(i, withKind(b, e.target.value as GrantKind))}>
+            {GRANT_KINDS.map((k) => (
+              <option key={k} value={k}>
+                {valueLabel(k, 'kind')}
+              </option>
+            ))}
+          </select>
+          {b.kind === 'freeBuildOnTerrain' ? (
+            <select aria-label="地形" value={b.terrain} onChange={(e) => replace(i, { ...b, terrain: e.target.value as Terrain })}>
+              {TERRAINS.map((t) => (
+                <option key={t} value={t}>
+                  {valueLabel(t, 'terrain')}
+                </option>
+              ))}
+            </select>
+          ) : null}
+          <input
+            type="number"
+            min={1}
+            aria-label="数"
+            value={b.amount}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              if (Number.isFinite(v) && v >= 1) replace(i, { ...b, amount: Math.floor(v) });
+            }}
+          />
+          <button type="button" className="btn small" disabled={benefits.length <= 1} onClick={() => onChange(benefits.filter((_, j) => j !== i))}>
+            消す
+          </button>
+        </div>
+      ))}
+      <button type="button" className="btn small" data-ui="benefit-add" onClick={() => onChange([...benefits, { kind: 'gold', amount: 1 }])}>
+        報酬を足す
+      </button>
+    </div>
   );
 };
 
@@ -177,7 +242,22 @@ export const CardPreview = ({ kind, item, onSet }: { kind: string; item: unknown
       case 'civ':
         return <CivFace card={any as unknown as CivItem} onSet={onSet} />;
       case 'sc':
-        return <ScriptCard name={`市民${String(any['id'])}`} script={any['script'] as Script} className="sc" provisional={any['provisional'] === true} />;
+        // カード名（ユーザー決定 2026-11-11）は面の上で直せる。空にすると「市民<id>」と出す。
+        return (
+          <div className="card sc preview-card">
+            <div className="card-head">
+              <InlineText
+                value={typeof any['name'] === 'string' ? any['name'] : ''}
+                placeholder={`市民${String(any['id'])}`}
+                allowEmpty
+                label="カード名"
+                onSet={(v) => onSet(['name'], v)}
+              />
+              {any['provisional'] === true ? <span className="provisional-badge">仮</span> : null}
+            </div>
+            <ScriptView script={any['script'] as Script} />
+          </div>
+        );
       case 'char':
         return <ScriptCard name={String(any['name'])} script={any['script'] as Script} className="character" provisional={any['provisional'] === true} />;
       case 'planned': {
@@ -187,10 +267,7 @@ export const CardPreview = ({ kind, item, onSet }: { kind: string; item: unknown
             <div className="card pc preview-card">
               <PlannedCityView card={card} />
             </div>
-            <label className="small preview-field">
-              達成の報酬の数
-              <InlineNumber value={card.benefit.amount} className="preview-amount" label="達成の報酬の数" onSet={(v) => onSet(['benefit', 'amount'], v)} />
-            </label>
+            <BenefitsEditor benefits={card.benefits} onChange={(list) => onSet(['benefits'], list)} />
           </div>
         );
       }
@@ -218,6 +295,7 @@ export const CardPreview = ({ kind, item, onSet }: { kind: string; item: unknown
       <h3>プレビュー（ゲーム画面と同じ面）</h3>
       <PreviewBoundary resetKey={JSON.stringify(item)}>{body}</PreviewBoundary>
       {kind === 'civ' ? <p className="muted small">面の上の名前・コスト・分類・得点を押すと直せる。効果は下の「効果（命令と引数）」で直す。</p> : null}
+      {kind === 'sc' ? <p className="muted small">面の上のカード名を押すと直せる。空にすると「市民{String(any['id'])}」と出す。</p> : null}
     </section>
   );
 };

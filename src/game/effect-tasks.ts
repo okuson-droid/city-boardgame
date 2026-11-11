@@ -153,8 +153,13 @@ export const applyPlan = (state: GameState, d: GameData, player: PlayerState, id
   emit(state, d, { type: 'plannedCity', player: player.index, card: id, rank: rank + 1, points });
   // 計画都市の得点は自然・環境に含める（17-5-1）。
   addScore(state, d, player, points, 'nature', `plannedCity:${id}`);
-  // 達成宣言時に恩恵を得る（13-3-8）。
-  processEffects(state, d, player, [{ k: 'grant', grant: card.benefit, source: `plannedCity:${id}` }]);
+  // 達成宣言時に恩恵を得る（13-3-8）。複数あれば、選択を伴うものが2つ以上のとき処理の順番を尋ねる（decisions.md 3-4）。
+  processEffects(
+    state,
+    d,
+    player,
+    card.benefits.map((grant) => ({ k: 'grant' as const, grant, source: `plannedCity:${id}` })),
+  );
 };
 
 // ---------------------------------------------------------------------------

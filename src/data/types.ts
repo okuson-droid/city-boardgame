@@ -366,7 +366,8 @@ export type PlannedCityCard = ProvisionalMark & {
   /** 形状の呼び名（表示用）。判定には slots を用いる。 */
   readonly shape: string;
   readonly slots: readonly PlannedCitySlot[];
-  readonly benefit: Grant;
+  /** 達成宣言時に得るもの（13-3-8）。複数の種類を持てる（ユーザー決定 2026-11-11。以前は1種類の benefit）。 */
+  readonly benefits: readonly Grant[];
 };
 
 export type NatureParkCell = ShapeCell & { readonly terrain: Terrain };
@@ -433,6 +434,11 @@ export type SpecialCitizenEffect = {
 
 export type SpecialCitizen = ProvisionalMark & {
   readonly id: string;
+  /**
+   * カード名（ユーザー決定 2026-11-11、チューナーで付ける）。原本にはない。空の文字は名前なしとし、画面は「市民<id>」と出す
+   * （`specialCitizenName`、queries.ts）。
+   */
+  readonly name: string;
   readonly effects: readonly SpecialCitizenEffect[];
   /**
    * いまの効果の文言（ユーザー決定 2026-11-10）。チューナーで効果を原本から変えたカードだけが持ち、画面は原本の

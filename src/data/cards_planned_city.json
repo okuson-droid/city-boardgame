@@ -4,7 +4,7 @@
     "全カードが仮置きである（指示書 2-3）。",
     "slots の q・r はアキシャル座標の相対位置（src/game/board.ts）。回転を認め鏡像は認めない（rules.md v0.8 19-1-6）。",
     "terrain・building の null は「任意」を表す。条件の3種類（13-2-2）は、両方指定・土地種のみ・建物種のみの slot の組み合わせで表す。",
-    "benefit は達成宣言時に得る恩恵（13-3-8）である。"
+    "benefits は達成宣言時に得る恩恵（13-3-8）の列である。複数の種類を持てる（ユーザー決定 2026-11-11）。"
   ],
   "cards": [
     {
@@ -31,10 +31,12 @@
           "building": "shop"
         }
       ],
-      "benefit": {
-        "kind": "gold",
-        "amount": 5
-      },
+      "benefits": [
+        {
+          "kind": "gold",
+          "amount": 5
+        }
+      ],
       "provisional": true
     },
     {
@@ -61,10 +63,12 @@
           "building": null
         }
       ],
-      "benefit": {
-        "kind": "drawCivCards",
-        "amount": 1
-      },
+      "benefits": [
+        {
+          "kind": "drawCivCards",
+          "amount": 1
+        }
+      ],
       "provisional": true
     },
     {
@@ -91,10 +95,12 @@
           "building": null
         }
       ],
-      "benefit": {
-        "kind": "materials",
-        "amount": 2
-      },
+      "benefits": [
+        {
+          "kind": "materials",
+          "amount": 2
+        }
+      ],
       "provisional": true
     },
     {
@@ -127,10 +133,12 @@
           "building": "university"
         }
       ],
-      "benefit": {
-        "kind": "gold",
-        "amount": 8
-      },
+      "benefits": [
+        {
+          "kind": "gold",
+          "amount": 8
+        }
+      ],
       "provisional": true
     },
     {
@@ -163,10 +171,12 @@
           "building": "fort"
         }
       ],
-      "benefit": {
-        "kind": "tempWorkers",
-        "amount": 1
-      },
+      "benefits": [
+        {
+          "kind": "tempWorkers",
+          "amount": 1
+        }
+      ],
       "provisional": true
     },
     {
@@ -199,10 +209,12 @@
           "building": null
         }
       ],
-      "benefit": {
-        "kind": "drawCivCards",
-        "amount": 2
-      },
+      "benefits": [
+        {
+          "kind": "drawCivCards",
+          "amount": 2
+        }
+      ],
       "provisional": true
     },
     {
@@ -235,10 +247,12 @@
           "building": null
         }
       ],
-      "benefit": {
-        "kind": "militaryTokens",
-        "amount": 6
-      },
+      "benefits": [
+        {
+          "kind": "militaryTokens",
+          "amount": 6
+        }
+      ],
       "provisional": true
     },
     {
@@ -271,10 +285,12 @@
           "building": "workshop"
         }
       ],
-      "benefit": {
-        "kind": "materials",
-        "amount": 3
-      },
+      "benefits": [
+        {
+          "kind": "materials",
+          "amount": 3
+        }
+      ],
       "provisional": true
     },
     {
@@ -313,10 +329,12 @@
           "building": "house"
         }
       ],
-      "benefit": {
-        "kind": "specialCitizen",
-        "amount": 1
-      },
+      "benefits": [
+        {
+          "kind": "specialCitizen",
+          "amount": 1
+        }
+      ],
       "provisional": true
     },
     {
@@ -355,10 +373,12 @@
           "building": "university"
         }
       ],
-      "benefit": {
-        "kind": "drawCivCards",
-        "amount": 3
-      },
+      "benefits": [
+        {
+          "kind": "drawCivCards",
+          "amount": 3
+        }
+      ],
       "provisional": true
     },
     {
@@ -397,10 +417,12 @@
           "building": "fort"
         }
       ],
-      "benefit": {
-        "kind": "materials",
-        "amount": 5
-      },
+      "benefits": [
+        {
+          "kind": "materials",
+          "amount": 5
+        }
+      ],
       "provisional": true
     },
     {
@@ -439,10 +461,12 @@
           "building": "workshop"
         }
       ],
-      "benefit": {
-        "kind": "gold",
-        "amount": 12
-      },
+      "benefits": [
+        {
+          "kind": "gold",
+          "amount": 12
+        }
+      ],
       "provisional": true
     },
     {
@@ -481,10 +505,12 @@
           "building": null
         }
       ],
-      "benefit": {
-        "kind": "tempWorkers",
-        "amount": 2
-      },
+      "benefits": [
+        {
+          "kind": "tempWorkers",
+          "amount": 2
+        }
+      ],
       "provisional": true
     }
   ]

@@ -636,7 +636,7 @@ export const parsePlannedCityCards = (value: unknown, path = 'cards_planned_city
           building: readNullable(field(so, 'building', sp), `${sp}.building`, readBuilding),
         };
       }),
-      benefit: readGrant(field(o, 'benefit', q), `${q}.benefit`),
+      benefits: readArray(field(o, 'benefits', q), `${q}.benefits`, readGrant),
     };
   });
 
@@ -718,6 +718,8 @@ export const parseSpecialCitizens = (value: unknown, path = 'special_citizens'):
     return {
       ...readProvisional(o, q),
       id: readString(field(o, 'id', q), `${q}.id`),
+      // カード名は原本にないため省略できる（ユーザー決定 2026-11-11）。
+      name: 'name' in o ? readString(o['name'], `${q}.name`) : '',
       effects: readArray(field(o, 'effects', q), `${q}.effects`, readSpecialCitizenEffect),
       ...('revisedEffects' in o ? { revisedEffects: readArray(o['revisedEffects'], `${q}.revisedEffects`, readSpecialCitizenEffect) } : {}),
       open_issues: readStringArray(field(o, 'open_issues', q), `${q}.open_issues`),

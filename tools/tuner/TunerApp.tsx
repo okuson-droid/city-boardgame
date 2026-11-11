@@ -562,7 +562,7 @@ export const TunerApp = () => {
                 base={baseItem}
                 path={[]}
                 onSet={onSetIn(file, prefix)}
-                skip={['script', ...(kind.id === 'planned' ? ['slots'] : []), ...(kind.id === 'nature' ? ['sets'] : [])]}
+                skip={['script', ...(kind.id === 'planned' ? ['slots', 'benefits'] : []), ...(kind.id === 'nature' ? ['sets'] : [])]}
                 unlocked={itemIsNew}
               />
               {isObject(item) && 'script' in item ? (

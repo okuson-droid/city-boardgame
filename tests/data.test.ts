@@ -145,6 +145,14 @@ describe('参照と内訳の整合検査', () => {
     expect(issues).toContain('plannedCityCards[0].slots：形状がつながっていない');
     expect(issues).toContain('natureParkCards[0].sets[0].cells：森林を含まない');
   });
+
+  it('達成の報酬が1つもない計画都市を検出する', () => {
+    // rules.md v0.8 13-3-8（複数の種類はユーザー決定 2026-11-11）
+    const raw = mutateRaw((r) => {
+      at(r, 'plannedCityCards', 'cards', 0)['benefits'] = [];
+    });
+    expect(issuesOf(parseGameData(raw)).join('\n')).toContain('plannedCityCards[0].benefits：達成時に得るものが1つもない');
+  });
 });
 
 describe('個人ボード', () => {
@@ -312,7 +320,8 @@ describe('計画都市カード・自然公園カード', () => {
       );
       expect(cardKinds.size).toBeGreaterThanOrEqual(2);
       cardKinds.forEach((k) => kinds.add(k));
-      expect(card.benefit.amount).toBeGreaterThan(0);
+      expect(card.benefits.length).toBeGreaterThan(0);
+      for (const b of card.benefits) expect(b.amount).toBeGreaterThan(0);
     }
     expect(kinds).toEqual(new Set(['both', 'terrain', 'building']));
   });
@@ -351,7 +360,12 @@ describe('設計文書からの取り込み', () => {
     // 指示書 3-1、rules.md v0.8 19-4-4（特別な住民カードと同一物）
     const original = readDesignJson('data_special_citizens.json')['cards'] as { id: string }[];
     expect(original).toHaveLength(20);
-    expect(GAME_DATA.specialCitizens.filter((c) => original.some((o) => o.id === c.id)).map(stripAdded)).toEqual(original);
+    // 特別な市民カードの name はカード名（ユーザー決定 2026-11-11）。原本にはないため除いて照らす。
+    const stripName = (item: unknown): unknown => {
+      const { name: _n, ...rest } = stripAdded(item) as Record<string, unknown>;
+      return rest;
+    };
+    expect(GAME_DATA.specialCitizens.filter((c) => original.some((o) => o.id === c.id)).map(stripName)).toEqual(original);
   });
 
   it('襲撃カードは design/data_raid_cards.json の値と文言のまま取り込み、第19章の解釈を加える', () => {

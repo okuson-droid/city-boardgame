@@ -250,6 +250,10 @@ const checkCards = (data: GameData, report: Report): void => {
     if (!isConnectedAxial(card.slots)) {
       report(`${path}.slots`, '形状がつながっていない、または同じ位置が重複している');
     }
+    // 達成の報酬は1つ以上（13-3-8。複数の種類はユーザー決定 2026-11-11）。
+    if (card.benefits.length === 0) {
+      report(`${path}.benefits`, '達成時に得るものが1つもない');
+    }
   });
 
   // 自然公園カード（rules.md 14-1、14-2）
