@@ -35,6 +35,10 @@
         {
           "kind": "gold",
           "amount": 5
+        },
+        {
+          "kind": "materialProduction",
+          "amount": 1
         }
       ],
       "provisional": true
@@ -66,6 +70,10 @@
       "benefits": [
         {
           "kind": "drawCivCards",
+          "amount": 1
+        },
+        {
+          "kind": "materialProduction",
           "amount": 1
         }
       ],
@@ -99,6 +107,10 @@
         {
           "kind": "materials",
           "amount": 2
+        },
+        {
+          "kind": "materialProduction",
+          "amount": 1
         }
       ],
       "provisional": true
@@ -137,6 +149,10 @@
         {
           "kind": "gold",
           "amount": 8
+        },
+        {
+          "kind": "materialProduction",
+          "amount": 1
         }
       ],
       "provisional": true
@@ -175,6 +191,10 @@
         {
           "kind": "tempWorkers",
           "amount": 1
+        },
+        {
+          "kind": "goldProduction",
+          "amount": 5
         }
       ],
       "provisional": true
@@ -213,6 +233,10 @@
         {
           "kind": "drawCivCards",
           "amount": 2
+        },
+        {
+          "kind": "goldProduction",
+          "amount": 5
         }
       ],
       "provisional": true
@@ -251,6 +275,10 @@
         {
           "kind": "militaryTokens",
           "amount": 6
+        },
+        {
+          "kind": "goldProduction",
+          "amount": 5
         }
       ],
       "provisional": true
@@ -289,6 +317,10 @@
         {
           "kind": "materials",
           "amount": 3
+        },
+        {
+          "kind": "goldProduction",
+          "amount": 5
         }
       ],
       "provisional": true
@@ -333,6 +365,10 @@
         {
           "kind": "specialCitizen",
           "amount": 1
+        },
+        {
+          "kind": "points",
+          "amount": 2
         }
       ],
       "provisional": true
@@ -377,6 +413,10 @@
         {
           "kind": "drawCivCards",
           "amount": 3
+        },
+        {
+          "kind": "points",
+          "amount": 2
         }
       ],
       "provisional": true
@@ -421,6 +461,10 @@
         {
           "kind": "materials",
           "amount": 5
+        },
+        {
+          "kind": "points",
+          "amount": 2
         }
       ],
       "provisional": true
@@ -465,6 +509,10 @@
         {
           "kind": "gold",
           "amount": 12
+        },
+        {
+          "kind": "points",
+          "amount": 2
         }
       ],
       "provisional": true
@@ -508,6 +556,10 @@
       "benefits": [
         {
           "kind": "tempWorkers",
+          "amount": 2
+        },
+        {
+          "kind": "points",
           "amount": 2
         }
       ],
