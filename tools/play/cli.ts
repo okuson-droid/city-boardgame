@@ -95,6 +95,7 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
       部屋に入り、席の資格情報を .play/online/<コード>-<席>.json に保存する（--creds で場所を替える）。
   online create --players <3|4> --name <名前> [--snake] [--url ...]   部屋を作り、ルームコードと資格情報を出す。
   online show --creds <パス> [--only <欄,...>] [--board] [--json] [--full]   自分の席の視点の局面を出す。
+  online ref --creds <パス> [--only <欄,...>] [--card <番号,...>]   ref と同じ（変わらない文言・遠征の報酬表・カードの内容）。
   online wait --creds <パス> [--round <ラウンド>] [--timeout <秒>] [--only ...] [--full]
       自分の番が来るまで待ち（既定300秒）、前回の出力の後に起きたことと局面を出す。対局の開始前は全員の入室を待つ。
   online move <選択肢> [<選択肢> ...] --creds <パス> [--only ...] [--full]
@@ -323,6 +324,15 @@ const online = async (args: Args, rest: readonly string[]): Promise<string> => {
       const creds = readCredentials(credsPath());
       return onlineShow(await viewRoom(creds), args);
     }
+    case 'ref': {
+      // 変わらない文言（ref と同じ）。局面は窓口の伏せた写しを使う。
+      const creds = readCredentials(credsPath());
+      const view = await viewRoom(creds);
+      if (view.state === null) throw new PlayError('対局がまだ始まっていない（全員の入室を待つ）');
+      const only = str(args, 'only');
+      const cards = str(args, 'card')?.split(',').map((c) => c.trim()).filter((c) => c !== '') ?? [];
+      return refLines(view.state, view.seat, only === undefined ? undefined : parseRefSections(only), cards).join('\n');
+    }
     case 'wait': {
       const path = credsPath();
       const creds = readCredentials(path);
@@ -356,7 +366,7 @@ const online = async (args: Args, rest: readonly string[]): Promise<string> => {
       return [`送った選択：${sent.join(' ')}`, ...events, ...tailLines(view.state, view.seat, args.flags.has('board') ? { board: true } : {})].join('\n');
     }
     default:
-      throw new PlayError(`知らない online のコマンドである：${sub ?? '（なし）'}（join・create・show・wait・move）`);
+      throw new PlayError(`知らない online のコマンドである：${sub ?? '（なし）'}（join・create・show・ref・wait・move）`);
   }
 };
 
