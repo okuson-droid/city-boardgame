@@ -7,6 +7,7 @@ import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
 import type { IconToken } from '../game/icons.ts';
 import type { GameEvent, GameState } from '../game/types.ts';
 import type { Grant } from '../data/types.ts';
+import { grantTokens } from './Cards.tsx';
 import { IconRow } from './Icon.tsx';
 import { grantText } from '../game/queries.ts';
 import { colorOf } from './model.ts';
@@ -65,16 +66,6 @@ export const DeltaChips = ({ changes, speed }: { changes: Record<string, number>
 };
 
 /** 軍事・インフラのトラック。上がった段を1段ずつ動かし、到達報酬の段を強調する。 */
-const keyEntry = (section: keyof typeof ICON_KEYS, key: string): { icon: string; label: string } =>
-  (ICON_KEYS[section] as Readonly<Record<string, { icon: string; label: string }>>)[key] ?? { icon: `${section}.${key}`, label: key };
-
-/** 到達報酬1つのアイコン（ユーザー決定 2026-11-06：トラックの下に報酬を絵で示す）。 */
-const grantTokens = (g: Grant): IconToken[] => {
-  if (g.kind === 'landTiles') return [{ ...keyEntry('commands', 'placeTiles'), value: g.amount }];
-  if (g.kind === 'buildRight') return [{ ...keyEntry('commands', 'build'), value: g.amount }];
-  if (g.kind === 'freeBuildOnTerrain') return [keyEntry('terrains', g.terrain), { ...keyEntry('commands', 'build'), value: g.amount }];
-  return [{ ...keyEntry('resources', g.kind), value: g.amount }];
-};
 
 export const TrackBar = ({
   track,

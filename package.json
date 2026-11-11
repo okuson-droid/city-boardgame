@@ -8,6 +8,8 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:live": "TEST_DATA=live vitest run",
+    "test:pin": "node --experimental-strip-types --no-warnings scripts/pin-test-data.ts",
     "gen:data": "node --experimental-strip-types --no-warnings scripts/generate-boards.ts",
     "import:design": "node --experimental-strip-types --no-warnings scripts/import-design.ts",
     "import:rules": "node --experimental-strip-types --no-warnings scripts/import-rules-deck.ts",

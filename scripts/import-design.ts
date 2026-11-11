@@ -69,7 +69,10 @@ const importPlain = (source: string, target: string, listKey: string, scripts: R
     const changes = existing.get(String(item['id']))?.['changes'];
     // いまの効果の文言（revisedEffects、特別な市民カード、ユーザー決定 2026-11-10）も保つ。
     const revisedEffects = existing.get(String(item['id']))?.['revisedEffects'];
+    // カード名（name、特別な市民カード、ユーザー決定 2026-11-11）は原本にないため、src/data/ の値を保つ。
+    const name = existing.get(String(item['id']))?.['name'];
     return {
+      ...(typeof name === 'string' ? { id: item['id'], name } : {}),
       ...item,
       provisional: false,
       ...(Array.isArray(changes) ? { changes } : {}),

@@ -2,6 +2,7 @@
 // 画面に依存しない関数だけを置き、単体テストで確かめる。
 
 import { checkGameData, DataValidationError, parseGameData, rawFromFiles, type DataFiles, type DataIssue } from '../../src/data/index.ts';
+import { selfPlayCheck } from '../../src/game/selfplay.ts';
 
 export type Path = readonly (string | number)[];
 
@@ -231,6 +232,19 @@ export const validateFiles = (files: DataFiles): DataIssue[] => {
     if (error instanceof Error) return [{ path: '（全体）', message: error.message }];
     throw error;
   }
+};
+
+/** 保存前の自動対戦の局数（3人・4人を交互に）。数秒で終わる数にする。 */
+export const SELF_PLAY_GAMES = 10;
+
+/**
+ * 自動対戦による検査（ユーザー決定 2026-11-11、再発防止の C）。型検査と整合検査を通ったデータで乱択の対局を進め、
+ * 処理が止まる・合法手が尽きる・終局しない・不変条件が破れるといった問題を返す。型検査で見つからない、
+ * データの値の組み合わせで起きる不具合を保存の前に見つけるためである。
+ */
+export const selfPlayFiles = async (files: DataFiles, onProgress?: (done: number, total: number) => void): Promise<DataIssue[]> => {
+  const problems = await selfPlayCheck(parseGameData(rawFromFiles(files)), SELF_PLAY_GAMES, onProgress);
+  return problems.map((p) => ({ path: `自動対戦（${p.playerCount}人・シード${p.seed}）`, message: p.message }));
 };
 
 // ---------------------------------------------------------------------------

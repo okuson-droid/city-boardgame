@@ -1,0 +1,522 @@
+{
+  "provisional": true,
+  "notes": [
+    "全カードが仮置きである（指示書 2-4）。",
+    "各カードは2枚・3枚・4枚のセットを1つずつ持ち、どのセットも森林を含む（rules.md v0.8 14-1-4）。",
+    "cells の q・r はアキシャル座標の相対位置（src/game/board.ts）。回転を認め鏡像は認めない（rules.md v0.8 19-1-5）。"
+  ],
+  "cards": [
+    {
+      "id": "NP01",
+      "name": "自然公園カード01",
+      "sets": [
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "mountain"
+            },
+            {
+              "q": 0,
+              "r": 1,
+              "terrain": "forest"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "water"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "plains"
+            },
+            {
+              "q": 0,
+              "r": 1,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": -1,
+              "terrain": "forest"
+            }
+          ]
+        }
+      ],
+      "provisional": true
+    },
+    {
+      "id": "NP02",
+      "name": "自然公園カード02",
+      "sets": [
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "mountain"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
+            },
+            {
+              "q": 0,
+              "r": 1,
+              "terrain": "forest"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "mountain"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "plains"
+            },
+            {
+              "q": 1,
+              "r": -1,
+              "terrain": "forest"
+            },
+            {
+              "q": 0,
+              "r": 1,
+              "terrain": "forest"
+            }
+          ]
+        }
+      ],
+      "provisional": true
+    },
+    {
+      "id": "NP03",
+      "name": "自然公園カード03",
+      "sets": [
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "mountain"
+            },
+            {
+              "q": 1,
+              "r": 1,
+              "terrain": "forest"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "plains"
+            },
+            {
+              "q": 2,
+              "r": 0,
+              "terrain": "water"
+            },
+            {
+              "q": 3,
+              "r": 0,
+              "terrain": "forest"
+            }
+          ]
+        }
+      ],
+      "provisional": true
+    },
+    {
+      "id": "NP04",
+      "name": "自然公園カード04",
+      "sets": [
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "mountain"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
+            },
+            {
+              "q": 1,
+              "r": 1,
+              "terrain": "forest"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "plains"
+            },
+            {
+              "q": 2,
+              "r": 0,
+              "terrain": "mountain"
+            },
+            {
+              "q": 3,
+              "r": 0,
+              "terrain": "forest"
+            }
+          ]
+        }
+      ],
+      "provisional": true
+    },
+    {
+      "id": "NP05",
+      "name": "自然公園カード05",
+      "sets": [
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "mountain"
+            },
+            {
+              "q": 2,
+              "r": 0,
+              "terrain": "forest"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
+            },
+            {
+              "q": 2,
+              "r": 0,
+              "terrain": "plains"
+            },
+            {
+              "q": 2,
+              "r": 1,
+              "terrain": "forest"
+            }
+          ]
+        }
+      ],
+      "provisional": true
+    },
+    {
+      "id": "NP06",
+      "name": "自然公園カード06",
+      "sets": [
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "mountain"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
+            },
+            {
+              "q": 2,
+              "r": 0,
+              "terrain": "forest"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "mountain"
+            },
+            {
+              "q": 2,
+              "r": 0,
+              "terrain": "plains"
+            },
+            {
+              "q": 2,
+              "r": 1,
+              "terrain": "forest"
+            }
+          ]
+        }
+      ],
+      "provisional": true
+    },
+    {
+      "id": "NP07",
+      "name": "自然公園カード07",
+      "sets": [
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 1,
+              "terrain": "mountain"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "water"
+            },
+            {
+              "q": 2,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 1,
+              "terrain": "plains"
+            }
+          ]
+        }
+      ],
+      "provisional": true
+    },
+    {
+      "id": "NP08",
+      "name": "自然公園カード08",
+      "sets": [
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "mountain"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 1,
+              "terrain": "water"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "q": 0,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 0,
+              "terrain": "mountain"
+            },
+            {
+              "q": 2,
+              "r": 0,
+              "terrain": "forest"
+            },
+            {
+              "q": 1,
+              "r": 1,
+              "terrain": "plains"
+            }
+          ]
+        }
+      ],
+      "provisional": true
+    }
+  ]
+}

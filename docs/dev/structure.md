@@ -71,4 +71,6 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
 | `tools/tuner/` | チューナー。`proposal.ts`（調整案の作成・差分・適用・保存と読み込み・検査・Markdown）、`TunerApp.tsx`（画面）、`JsonEditor.tsx`（汎用フォーム）、`ScriptEditor.tsx`（効果を命令と引数の単位で編集）、`BoardEditor.tsx`（個人ボード）、`vite.config.ts`（開発サーバーと書き戻しの口）、`play.html`（試遊） |
 | `scripts/import-design.ts` | `design/` から characters・special_citizens・raid_cards・cards_civilization を取り込む |
 | `scripts/generate-boards.ts` | 仮置きの個人ボードをシード付きで生成する |
-| `tests/` | Vitest の単体テスト。`tests/helpers/` に局面づくりと乱択プレイアウトの補助 |
+| `tests/` | Vitest の単体テスト。`tests/helpers/` に局面づくりと乱択プレイアウトの補助。`tests/fixtures/data/` は単体テストが読む固定したデータ、`tests/live-data.test.ts` はいまの src/data/ の検査（`docs/dev/testing.md`） |
+| `src/game/selfplay.ts` | 乱択の自動対戦（`playout`・`checkInvariants`・`selfPlayGame`・`selfPlayCheck`）。性質テストとチューナーの保存前の検査が共用する |
+| `scripts/pin-test-data.ts` | `npm run test:pin`：単体テストの固定したデータを取り直す |

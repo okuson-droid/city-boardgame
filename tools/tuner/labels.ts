@@ -345,7 +345,7 @@ const KEY_LABELS: Table = {
   slots: 'マスの条件',
   q: '横の位置（q）',
   r: '行（r）',
-  benefit: '達成時に得るもの',
+  benefits: '達成時に得るもの',
   sets: 'セット',
   cells: 'マス',
   // 特別な市民カード・キャラクター

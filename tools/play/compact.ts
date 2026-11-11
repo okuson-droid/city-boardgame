@@ -117,7 +117,7 @@ const plannedText = (d: GameData, id: string): string => {
     const parts = [s.terrain === null ? '' : queries.terrainLabel(s.terrain), s.building === null ? '任意の建物' : queries.buildingLabel(s.building)];
     return `(${s.q},${s.r})${parts.filter((x) => x !== '').join('の')}`;
   });
-  return `${card.name}（${id}）${card.shape}：${slots.join(' ')}／恩恵 ${queries.grantText(card.benefit)}`;
+  return `${card.name}（${id}）${card.shape}：${slots.join(' ')}／恩恵 ${card.benefits.map(queries.grantText).join('・')}`;
 };
 
 /** カード1枚の内容（文明カード・特別な市民カード・計画都市）。ref --card と、公開・獲得の出来事が使う。 */

@@ -30,7 +30,17 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      # 単体テストは固定したデータ（tests/fixtures/data/）で行い、いまのデータは型・整合・自動対戦だけを確かめる
+      # （tests/live-data.test.ts）。チューナーで調整しても、正しいデータなら公開は止まらない（ユーザー決定 2026-11-11、再発防止の A・B）。
       - run: npm test
+      # 特定のカードの効果を決め打ちしたテストを、いまのデータで走らせる。調整でカードを変えると落ちることがあるため、公開は止めずに
+      # 警告として知らせる（落ちたテストは、新しい効果に合わせて直すか、npm run test:pin で固定したデータを取り直す）。
+      - name: いまのデータで全テスト（公開は止めない）
+        run: |
+          if ! npm run test:live > live.log 2>&1; then
+            grep -E "^ *(×|FAIL)" live.log | head -20 || true
+            echo "::warning title=いまのデータで落ちるテストがある::調整でカードの効果が変わり、決め打ちしたテストと食い違っている。公開は続けた。ログの「いまのデータで全テスト」を見ること。"
+          fi
       - name: 画面をビルドする
         run: npm run build
         env:

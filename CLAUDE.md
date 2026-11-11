@@ -23,6 +23,7 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | チューナー（`tools/tuner/`）を変える | `docs/dev/tuner.md`、`docs/tuner-pages.md` |
 | オンライン版（`server/`・`src/online/`・`supabase/`）を変える | `docs/dev/online.md`、`docs/online-supabase.md` |
 | 文明カードの取り込み・識別子の対応 | `docs/civ-cards-xlsx.md` |
+| テストを書く・データの形を変える・公開の検査を変える | `docs/dev/testing.md` |
 | これまでの経過を知る | `docs/dev/progress.md` |
 
 ## コマンド
@@ -30,7 +31,9 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 ```bash
 npm install
 npm run typecheck     # tsc --noEmit
-npm test              # vitest run
+npm test              # vitest run（固定したデータ tests/fixtures/data/ で行う。いまの src/data/ は tests/live-data.test.ts が確かめる）
+npm run test:live     # いまの src/data/ で全テスト（調整で食い違ったテストを知るため。公開は止めない）
+npm run test:pin      # tests/fixtures/data/ をいまの src/data/ の写しで取り直す（データの形を変えたとき）
 npm run build         # dist/index.html（1枚の HTML）
 npm run dev           # 開発サーバー
 npm run import:design # design/ からデータを取り込み直す
@@ -62,6 +65,7 @@ npm run import:rules -- <フォルダー>  # ルール解説のスライドを�
 - `Math.random()` を使わない。乱数は `src/game/rng.ts` を使う。
 - 導入するライブラリは TypeScript・React・Vite・Vitest・vite-plugin-singlefile・Playwright に限る（型定義の `@types/*` を除く）。追加が必要なら導入前に報告する。
 - ブランチの完了条件：`npm run typecheck`・`npm test`・`npm run build` がすべて通ること。
+- 単体テストは固定したデータ（`tests/fixtures/data/`）で行う（ユーザー決定 2026-11-11）。`src/data/` のデータの形を変えたら（項目を足す・名前を変えるなど）、`npm run test:pin` で写しを取り直してからテストを直す。詳しくは `docs/dev/testing.md`。
 
 ## 既知の制約・落とし穴
 

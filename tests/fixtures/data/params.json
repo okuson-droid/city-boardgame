@@ -1,0 +1,834 @@
+{
+  "provisional": false,
+  "rulesVersion": "0.8",
+  "rounds": 5,
+  "playerCount": {
+    "min": 3,
+    "max": 4
+  },
+  "setupByPlayerCount": {
+    "3": {
+      "specialCitizensRevealed": 4,
+      "plannedCityRevealed": 2,
+      "bonusTilesOnBoard": 6,
+      "plannedCityMaxDeclarers": 2,
+      "draftBoardCandidates": 5,
+      "draftCharacterCandidates": 10
+    },
+    "4": {
+      "specialCitizensRevealed": 5,
+      "plannedCityRevealed": 3,
+      "bonusTilesOnBoard": 7,
+      "plannedCityMaxDeclarers": 3,
+      "draftBoardCandidates": 5,
+      "draftCharacterCandidates": 10
+    }
+  },
+  "board": {
+    "terrainCounts": {
+      "water": 7,
+      "mountain": 7,
+      "plains": 16,
+      "forest": 15
+    },
+    "initialCells": [
+      "E1",
+      "F1"
+    ],
+    "initialTerrain": "forest"
+  },
+  "initial": {
+    "gold": 0,
+    "materials": 5,
+    "goldProduction": 20,
+    "materialProduction": 3,
+    "regularWorkers": 5,
+    "tempWorkers": 2,
+    "civCards": 3,
+    "militaryLevel": 0,
+    "infraLevel": 0
+  },
+  "workers": {
+    "regularBase": 5,
+    "housesPerExtraRegular": 2,
+    "regularMax": 10,
+    "tempMax": 3
+  },
+  "land": {
+    "materialsPerTile": 2,
+    "mismatchExtraMaterials": 1,
+    "minTotalMaterials": 0
+  },
+  "buildings": {
+    "limits": {
+      "shop": 3,
+      "workshop": 3,
+      "fort": 3,
+      "office": 3,
+      "university": 3,
+      "house": 10,
+      "camp": 3
+    },
+    "cost": {
+      "shop": {
+        "gold": 5,
+        "materials": 3
+      },
+      "workshop": {
+        "gold": 5,
+        "materials": 3
+      },
+      "fort": {
+        "gold": 5,
+        "materials": 3
+      },
+      "office": {
+        "gold": 5,
+        "materials": 3
+      },
+      "university": {
+        "gold": 5,
+        "materials": 3
+      },
+      "house": {
+        "gold": 2,
+        "materials": 2
+      },
+      "camp": {
+        "gold": 5,
+        "materials": 3
+      }
+    },
+    "minCost": 0,
+    "terrainBonus": [
+      {
+        "terrain": "mountain",
+        "buildings": [
+          "workshop",
+          "fort"
+        ],
+        "grant": {
+          "kind": "materials",
+          "amount": 1
+        }
+      },
+      {
+        "terrain": "water",
+        "buildings": [
+          "shop",
+          "office"
+        ],
+        "grant": {
+          "kind": "gold",
+          "amount": 2
+        }
+      },
+      {
+        "terrain": "plains",
+        "buildings": [
+          "university"
+        ],
+        "grant": {
+          "kind": "points",
+          "amount": 3
+        }
+      },
+      {
+        "terrain": "plains",
+        "buildings": [
+          "house"
+        ],
+        "grant": {
+          "kind": "points",
+          "amount": 1
+        }
+      }
+    ],
+    "effects": {
+      "shop": {
+        "goldProductionOnBuild": 2,
+        "goldProductionAfterImportByCount": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "workshop": {
+        "materialProductionOnBuild": 1,
+        "goldAfterExportByCount": [
+          0,
+          2,
+          4,
+          6
+        ]
+      },
+      "fort": {
+        "militaryOnBuild": 1,
+        "drillTokenCostByCount": [
+          4,
+          3,
+          2,
+          1
+        ]
+      },
+      "office": {
+        "infraOnBuild": 1,
+        "welfareConvertMaterialsByCount": [
+          0,
+          2,
+          3,
+          4
+        ],
+        "welfareConvertMaxWorkers": 1
+      },
+      "university": {
+        "drawOnBuild": 2,
+        "civCardGoldDiscountPerUniversity": 1
+      },
+      "camp": {
+        "landTilesOnBuild": 1,
+        "adjacentMaterialDiscount": 1,
+        "maxTotalDiscount": 1
+      }
+    }
+  },
+  "actions": {
+    "workerCost": {
+      "normal": 1,
+      "upper": 2,
+      "top": 2
+    },
+    "shared": [
+      {
+        "action": "pioneer",
+        "tier": "normal"
+      },
+      {
+        "action": "build",
+        "tier": "normal"
+      },
+      {
+        "action": "migration",
+        "tier": "normal"
+      },
+      {
+        "action": "spread",
+        "tier": "normal"
+      }
+    ],
+    "unlockTop": {
+      "pioneer": {
+        "metric": "totalBuildings",
+        "atLeast": 4
+      },
+      "build": {
+        "metric": "landTiles",
+        "atLeast": 7
+      },
+      "import": {
+        "metric": "buildingsOfType",
+        "building": "shop",
+        "atLeast": 2
+      },
+      "export": {
+        "metric": "buildingsOfType",
+        "building": "workshop",
+        "atLeast": 2
+      },
+      "drill": {
+        "metric": "buildingsOfType",
+        "building": "fort",
+        "atLeast": 2
+      },
+      "expedition": {
+        "metric": "militaryLevel",
+        "atLeast": 5
+      },
+      "welfare": {
+        "metric": "buildingsOfType",
+        "building": "office",
+        "atLeast": 2
+      },
+      "migration": {
+        "metric": "buildingsOfType",
+        "building": "house",
+        "atLeast": 5
+      },
+      "research": {
+        "metric": "buildingsOfType",
+        "building": "university",
+        "atLeast": 2
+      },
+      "spread": {
+        "metric": "civCardsPlayed",
+        "atLeast": 4
+      }
+    },
+    "pioneer": {
+      "normal": {
+        "maxTiles": 2,
+        "materialDiscount": 0
+      },
+      "upper": {
+        "maxTiles": 3,
+        "materialDiscount": 1
+      },
+      "top": {
+        "maxTiles": 4,
+        "materialDiscount": 2
+      }
+    },
+    "build": {
+      "normal": {
+        "maxBuildings": 2,
+        "goldDiscount": 0,
+        "materialDiscount": 0
+      },
+      "upper": {
+        "maxBuildings": 3,
+        "goldDiscount": 1,
+        "materialDiscount": 1
+      },
+      "top": {
+        "maxBuildings": 4,
+        "goldDiscount": 2,
+        "materialDiscount": 2
+      }
+    },
+    "import": {
+      "normal": {
+        "payGold": 3,
+        "gainMaterials": 1,
+        "maxTimes": 3,
+        "bonusMaterials": 0
+      },
+      "upper": {
+        "payGold": 3,
+        "gainMaterials": 1,
+        "maxTimes": 5,
+        "bonusMaterials": 1
+      },
+      "top": {
+        "payGold": 3,
+        "gainMaterials": 1,
+        "maxTimes": 7,
+        "bonusMaterials": 2
+      }
+    },
+    "export": {
+      "normal": {
+        "payMaterials": 1,
+        "gainGold": 5,
+        "maxTimes": 3,
+        "bonusGold": 0
+      },
+      "upper": {
+        "payMaterials": 1,
+        "gainGold": 5,
+        "maxTimes": 5,
+        "bonusGold": 3
+      },
+      "top": {
+        "payMaterials": 1,
+        "gainGold": 5,
+        "maxTimes": 7,
+        "bonusGold": 6
+      }
+    },
+    "drill": {
+      "normal": {
+        "choices": [
+          {
+            "payGold": 3,
+            "gainTokens": 3
+          }
+        ],
+        "maxRaises": 1
+      },
+      "upper": {
+        "choices": [
+          {
+            "payGold": 6,
+            "gainTokens": 5
+          }
+        ],
+        "maxRaises": 2
+      },
+      "top": {
+        "choices": [
+          {
+            "payGold": 3,
+            "gainTokens": 3
+          },
+          {
+            "payGold": 6,
+            "gainTokens": 5
+          },
+          {
+            "payGold": 9,
+            "gainTokens": 8
+          }
+        ],
+        "maxRaises": 3
+      }
+    },
+    "expedition": {
+      "rewards": [
+        {
+          "level": 0,
+          "grants": [
+            {
+              "kind": "gold",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "level": 1,
+          "grants": [
+            {
+              "kind": "materials",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "grants": [
+            {
+              "kind": "landTiles",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "grants": [
+            {
+              "kind": "buildRight",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "grants": [
+            {
+              "kind": "points",
+              "amount": 2
+            }
+          ]
+        }
+      ],
+      "selection": {
+        "normal": {
+          "mode": "distinct",
+          "max": 2
+        },
+        "upper": {
+          "mode": "distinct",
+          "max": 3
+        },
+        "top": {
+          "mode": "total",
+          "total": 4,
+          "maxSame": 2
+        }
+      }
+    },
+    "welfare": {
+      "normal": {
+        "choices": [
+          {
+            "payMaterials": 1,
+            "infra": 1
+          }
+        ],
+        "tempWorkers": 0
+      },
+      "upper": {
+        "choices": [
+          {
+            "payMaterials": 3,
+            "infra": 2
+          }
+        ],
+        "tempWorkers": 1
+      },
+      "top": {
+        "choices": [
+          {
+            "payMaterials": 1,
+            "infra": 1
+          },
+          {
+            "payMaterials": 3,
+            "infra": 2
+          },
+          {
+            "payMaterials": 6,
+            "infra": 3
+          }
+        ],
+        "tempWorkers": 1
+      }
+    },
+    "migration": {
+      "normal": {
+        "tempWorkers": 0,
+        "regularWorkers": 1,
+        "regularWorkersIsMax": false,
+        "materials": 1
+      },
+      "upper": {
+        "tempWorkers": 1,
+        "regularWorkers": 2,
+        "regularWorkersIsMax": true,
+        "materials": 1
+      },
+      "top": {
+        "tempWorkers": 1,
+        "regularWorkers": 3,
+        "regularWorkersIsMax": true,
+        "materials": 2
+      }
+    },
+    "research": {
+      "normal": {
+        "draw": 2,
+        "playCards": 0
+      },
+      "upper": {
+        "draw": 3,
+        "playCards": 0
+      },
+      "top": {
+        "draw": 3,
+        "playCards": 1
+      }
+    },
+    "spread": {
+      "normal": {
+        "maxCards": 1,
+        "cardsIsMax": false,
+        "goldDiscount": 0
+      },
+      "upper": {
+        "maxCards": 3,
+        "cardsIsMax": true,
+        "goldDiscount": 0
+      },
+      "top": {
+        "maxCards": 4,
+        "cardsIsMax": true,
+        "goldDiscount": 2
+      }
+    }
+  },
+  "military": {
+    "max": 12,
+    "rewards": [
+      {
+        "level": 3,
+        "grants": [
+          {
+            "kind": "militaryTokens",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "level": 6,
+        "grants": [
+          {
+            "kind": "materials",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "level": 9,
+        "grants": [
+          {
+            "kind": "landTiles",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "level": 12,
+        "grants": [
+          {
+            "kind": "freeBuildOnTerrain",
+            "terrain": "mountain",
+            "amount": 1
+          }
+        ]
+      }
+    ],
+    "overflowPointsPerRaise": 2
+  },
+  "infra": {
+    "max": 12,
+    "rewards": [
+      {
+        "level": 1,
+        "grants": [
+          {
+            "kind": "goldProduction",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "level": 2,
+        "grants": [
+          {
+            "kind": "tempWorkers",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 3,
+        "grants": [
+          {
+            "kind": "drawCivCards",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 4,
+        "grants": [
+          {
+            "kind": "specialCitizen",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 5,
+        "grants": [
+          {
+            "kind": "materialProduction",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 6,
+        "grants": [
+          {
+            "kind": "tempWorkers",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 7,
+        "grants": [
+          {
+            "kind": "drawCivCards",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 8,
+        "grants": [
+          {
+            "kind": "specialCitizen",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 9,
+        "grants": [
+          {
+            "kind": "landTiles",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "grants": [
+          {
+            "kind": "tempWorkers",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 11,
+        "grants": [
+          {
+            "kind": "drawCivCards",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 12,
+        "grants": [
+          {
+            "kind": "specialCitizen",
+            "amount": 1
+          }
+        ]
+      }
+    ],
+    "overflowPointsPerRaise": 2
+  },
+  "raid": {
+    "firstRoundCard": 1,
+    "basePointsPerRound": {
+      "defenseFailed": -1,
+      "defended": 0,
+      "repelled": 0
+    },
+    "cardEffectKinds": {
+      "defenseFailed": [],
+      "defended": [],
+      "repelled": [
+        "gold",
+        "materials",
+        "landTiles"
+      ]
+    }
+  },
+  "freeActions": {
+    "conversions": [
+      {
+        "id": "gold_to_materials",
+        "pay": {
+          "kind": "gold",
+          "amount": 5
+        },
+        "gain": {
+          "kind": "materials",
+          "amount": 1
+        }
+      },
+      {
+        "id": "gold_to_civcard",
+        "pay": {
+          "kind": "gold",
+          "amount": 15
+        },
+        "gain": {
+          "kind": "drawCivCards",
+          "amount": 1
+        }
+      },
+      {
+        "id": "materials_to_gold",
+        "pay": {
+          "kind": "materials",
+          "amount": 1
+        },
+        "gain": {
+          "kind": "gold",
+          "amount": 1
+        }
+      },
+      {
+        "id": "tokens_to_materials",
+        "pay": {
+          "kind": "militaryTokens",
+          "amount": 3
+        },
+        "gain": {
+          "kind": "materials",
+          "amount": 1
+        }
+      },
+      {
+        "id": "civcard_to_materials",
+        "pay": {
+          "kind": "civCards",
+          "amount": 1
+        },
+        "gain": {
+          "kind": "materials",
+          "amount": 1
+        }
+      },
+      {
+        "id": "tempworker_to_materials",
+        "pay": {
+          "kind": "tempWorkers",
+          "amount": 1
+        },
+        "gain": {
+          "kind": "materials",
+          "amount": 1
+        }
+      },
+      {
+        "id": "materials_to_tempworker",
+        "pay": {
+          "kind": "materials",
+          "amount": 4
+        },
+        "gain": {
+          "kind": "tempWorkers",
+          "amount": 1
+        }
+      }
+    ]
+  },
+  "civCards": {
+    "emptyDeckFallbackMaterials": 1
+  },
+  "bonusTiles": {
+    "kinds": 10
+  },
+  "scoring": {
+    "base": {
+      "landTilesPerPoint": 2,
+      "buildingsPerPoint": 1,
+      "regularWorkersPerPoint": 1
+    },
+    "goldPerPointByShops": [
+      20,
+      5,
+      4,
+      3
+    ],
+    "materialsPerPointByWorkshops": [
+      10,
+      3,
+      2,
+      1
+    ],
+    "civCardsPerPointByUniversities": [
+      5,
+      4,
+      3,
+      2
+    ],
+    "regularWorkerPointsByOffices": [
+      0,
+      0.5,
+      1,
+      2
+    ],
+    "plannedCityPointsByRank": [
+      7,
+      5,
+      3
+    ],
+    "natureParkPointsBySetSize": {
+      "2": 3,
+      "3": 5,
+      "4": 7
+    }
+  },
+  "characters": {
+    "spiritChipReturnRound": 3
+  }
+}

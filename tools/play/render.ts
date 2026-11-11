@@ -182,7 +182,7 @@ const planCondition = (d: GameData, id: string): { condition: string; benefit: s
     const parts = [s.terrain === null ? '' : queries.terrainLabel(s.terrain), s.building === null ? '任意の建物' : queries.buildingLabel(s.building)];
     return `(${s.q},${s.r})${parts.filter((x) => x !== '').join('の')}`;
   });
-  return { condition: `${card.shape}：${slots.join(' ')}`, benefit: queries.grantText(card.benefit) };
+  return { condition: `${card.shape}：${slots.join(' ')}`, benefit: card.benefits.map(queries.grantText).join('・') };
 };
 
 const cardView = (state: GameState, d: GameData, player: PlayerState, id: string): CardView => {

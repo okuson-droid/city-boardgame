@@ -1,0 +1,188 @@
+{
+  "importedFrom": "design/data_raid_cards.json",
+  "provisional": false,
+  "schema": "raid_cards",
+  "version": "0.1",
+  "updated": "2026-11-03",
+  "source": "防衛ライン・撃退ラインの増加値はユーザー指定（2026-11-03）。固有効果は rules.md 7-6-1 の文言のまま。",
+  "notes": [
+    "defense_increase・repel_increase は rules.md 7-4-2 で累積する増加値である。",
+    "第1ラウンドはカード1を固定で使用し、カード2〜5はシャッフルして第2〜5ラウンドに使用する（rules.md 7-3）。",
+    "撃退ラインの増加値の合計は12、防衛ラインの増加値の合計は7である。第5ラウンドの撃退ラインは順序によらず12になり、rules.md 7-2-3「撃退ラインの最大値は12」と一致する。",
+    "固有効果の得点と基本得点の合算の読み方は未決（decisions.md 2-26）。"
+  ],
+  "cards": [
+    {
+      "id": 1,
+      "defense_increase": 1,
+      "repel_increase": 3,
+      "on_defense_fail": "次の収入後、3金を失う",
+      "on_repel": "土地タイル1枚を即時配置",
+      "open_issues": [
+        "2-26",
+        "2-27",
+        "2-22"
+      ],
+      "provisional": false,
+      "clarifications": [
+        "「襲撃ラウンド数」は、その襲撃を判定するラウンドの番号（1〜5）である（rules.md v0.8 19-3-1）。",
+        "7-5-1 の基本得点に加えて、この固有効果を適用する（rules.md v0.8 19-3-3）。",
+        "「〜を失う」で保有量が足りない場合は、保有量を0にして終える（rules.md v0.8 19-3-4）。",
+        "撃退成功時の土地タイルは資材を支払わずに 4-2 に従って配置する（rules.md v0.8 19-1-1）。"
+      ],
+      "replacesBasePoints": false,
+      "defenseFailEffects": [
+        {
+          "kind": "loseGold",
+          "amount": 3,
+          "perRound": false,
+          "afterNextIncome": true
+        }
+      ],
+      "repelEffects": [
+        {
+          "kind": "landTiles",
+          "amount": 1,
+          "perRound": false,
+          "afterNextIncome": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "defense_increase": 1,
+      "repel_increase": 1,
+      "on_defense_fail": "次の収入後、襲撃ラウンド数×1資材を失う",
+      "on_repel": "襲撃ラウンド数×1資材",
+      "open_issues": [
+        "2-26",
+        "2-27"
+      ],
+      "provisional": false,
+      "clarifications": [
+        "「襲撃ラウンド数」は、その襲撃を判定するラウンドの番号（1〜5）である（rules.md v0.8 19-3-1）。",
+        "7-5-1 の基本得点に加えて、この固有効果を適用する（rules.md v0.8 19-3-3）。",
+        "「〜を失う」で保有量が足りない場合は、保有量を0にして終える（rules.md v0.8 19-3-4）。"
+      ],
+      "replacesBasePoints": false,
+      "defenseFailEffects": [
+        {
+          "kind": "loseMaterials",
+          "amount": 1,
+          "perRound": true,
+          "afterNextIncome": true
+        }
+      ],
+      "repelEffects": [
+        {
+          "kind": "materials",
+          "amount": 1,
+          "perRound": true,
+          "afterNextIncome": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "defense_increase": 1,
+      "repel_increase": 3,
+      "on_defense_fail": "金の生産力を襲撃ラウンド数分失う",
+      "on_repel": "襲撃ラウンド数分の土地タイルを配置",
+      "open_issues": [
+        "2-26",
+        "2-27",
+        "2-22"
+      ],
+      "provisional": false,
+      "clarifications": [
+        "「襲撃ラウンド数」は、その襲撃を判定するラウンドの番号（1〜5）である（rules.md v0.8 19-3-1）。",
+        "7-5-1 の基本得点に加えて、この固有効果を適用する（rules.md v0.8 19-3-3）。",
+        "金の生産力は0未満にならない（rules.md v0.8 19-3-4）。",
+        "撃退成功時の土地タイルは資材を支払わずに 4-2 に従って配置する（rules.md v0.8 19-1-1）。"
+      ],
+      "replacesBasePoints": false,
+      "defenseFailEffects": [
+        {
+          "kind": "loseGoldProduction",
+          "amount": 1,
+          "perRound": true,
+          "afterNextIncome": false
+        }
+      ],
+      "repelEffects": [
+        {
+          "kind": "landTiles",
+          "amount": 1,
+          "perRound": true,
+          "afterNextIncome": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "defense_increase": 2,
+      "repel_increase": 2,
+      "on_defense_fail": "次の収入後、襲撃ラウンド数×2金を失う",
+      "on_repel": "襲撃ラウンド数×1金と同数の点",
+      "open_issues": [
+        "2-26",
+        "2-27"
+      ],
+      "provisional": false,
+      "clarifications": [
+        "「襲撃ラウンド数」は、その襲撃を判定するラウンドの番号（1〜5）である（rules.md v0.8 19-3-1）。",
+        "7-5-1 の基本得点に加えて、この固有効果を適用する（rules.md v0.8 19-3-3）。",
+        "「〜を失う」で保有量が足りない場合は、保有量を0にして終える（rules.md v0.8 19-3-4）。"
+      ],
+      "replacesBasePoints": false,
+      "defenseFailEffects": [
+        {
+          "kind": "loseGold",
+          "amount": 2,
+          "perRound": true,
+          "afterNextIncome": true
+        }
+      ],
+      "repelEffects": [
+        {
+          "kind": "gold",
+          "amount": 3,
+          "perRound": true,
+          "afterNextIncome": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "defense_increase": 2,
+      "repel_increase": 3,
+      "on_defense_fail": "襲撃ラウンド数×−3点",
+      "on_repel": "襲撃ラウンド数×4点",
+      "open_issues": [
+        "2-26"
+      ],
+      "provisional": false,
+      "clarifications": [
+        "「襲撃ラウンド数」は、その襲撃を判定するラウンドの番号（1〜5）である（rules.md v0.8 19-3-1）。",
+        "得点は基本得点を含めた合算後の数値であり、7-5-1 の基本得点は加えない（rules.md v0.8 19-3-3）。"
+      ],
+      "replacesBasePoints": true,
+      "defenseFailEffects": [
+        {
+          "kind": "loseGold",
+          "amount": 2,
+          "perRound": true,
+          "afterNextIncome": true
+        }
+      ],
+      "repelEffects": [
+        {
+          "kind": "gold",
+          "amount": 3,
+          "perRound": true,
+          "afterNextIncome": false
+        }
+      ]
+    }
+  ]
+}

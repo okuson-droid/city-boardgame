@@ -30,6 +30,8 @@ import {
   serializeProposal,
   setInFiles,
   summarizeChange,
+  SELF_PLAY_GAMES,
+  selfPlayFiles,
   toMarkdown,
   validateFiles,
   type Change,
@@ -200,7 +202,18 @@ export const TunerApp = () => {
     window.open('play.html', '_blank');
   };
 
-  const exportToData = (): void => {
+  /**
+   * 自動対戦で確かめる（ユーザー決定 2026-11-11、再発防止の C）。保存・書き出しの前に行い、問題があれば止める。
+   * 通れば true を返す。
+   */
+  const selfPlay = async (): Promise<boolean> => {
+    const found = await selfPlayFiles(work, (done, total) => setMessage(`自動対戦で確かめています…（${done}/${total}局）`));
+    setIssues(found);
+    if (found.length > 0) setMessage(`自動対戦で問題が見つかった（${found.length}件）。下の「検査」の欄を見て直すこと。`);
+    return found.length === 0;
+  };
+
+  const exportToData = async (): Promise<void> => {
     if (!check()) {
       setMessage('検査で問題が見つかったため書き出さなかった。');
       return;
@@ -209,6 +222,7 @@ export const TunerApp = () => {
       setMessage('変更点がない。');
       return;
     }
+    if (!(await selfPlay())) return;
     const md = toMarkdown(proposal, base);
     void fetch('/__tuner/export', {
       method: 'POST',
@@ -225,7 +239,7 @@ export const TunerApp = () => {
   };
 
   /** GitHub に1つの commit として保存する（案A、ユーザー決定 2026-11-04）。 */
-  const saveGitHub = (): void => {
+  const saveGitHub = async (): Promise<void> => {
     setSavedUrl(null);
     if (!check()) {
       setMessage('検査で問題が見つかったため GitHub に保存しなかった。');
@@ -241,8 +255,16 @@ export const TunerApp = () => {
       setMessage('GitHub の設定（リポジトリ・ブランチ・トークン）を入れること。');
       return;
     }
-    const md = toMarkdown(proposal, base);
     setSaving(true);
+    const passed = await selfPlay().catch((error: unknown) => {
+      setMessage(`自動対戦で確かめられなかった：${String(error)}`);
+      return false;
+    });
+    if (!passed) {
+      setSaving(false);
+      return;
+    }
+    const md = toMarkdown(proposal, base);
     setMessage('GitHub に保存しています…');
     saveToGitHub({
       token: github.token,
@@ -338,11 +360,11 @@ export const TunerApp = () => {
           試遊
         </button>
         {DEV_SERVER ? (
-          <button type="button" className="btn primary" onClick={exportToData}>
+          <button type="button" className="btn primary" onClick={() => void exportToData()}>
             書き出し
           </button>
         ) : null}
-        <button type="button" className="btn primary" data-ui="github-save" disabled={saving} onClick={saveGitHub}>
+        <button type="button" className="btn primary" data-ui="github-save" disabled={saving} onClick={() => void saveGitHub()}>
           GitHub に保存
         </button>
         <button type="button" className="btn" data-ui="github-settings" onClick={() => setGithubOpen(!githubOpen)}>
@@ -562,7 +584,7 @@ export const TunerApp = () => {
                 base={baseItem}
                 path={[]}
                 onSet={onSetIn(file, prefix)}
-                skip={['script', ...(kind.id === 'planned' ? ['slots'] : []), ...(kind.id === 'nature' ? ['sets'] : [])]}
+                skip={['script', ...(kind.id === 'planned' ? ['slots', 'benefits'] : []), ...(kind.id === 'nature' ? ['sets'] : [])]}
                 unlocked={itemIsNew}
               />
               {isObject(item) && 'script' in item ? (
@@ -595,8 +617,21 @@ export const TunerApp = () => {
           </section>
           <section>
             <h3>検査</h3>
+            <button
+              type="button"
+              className="btn small"
+              data-ui="self-play"
+              onClick={() => {
+                if (!check()) return;
+                void selfPlay().then((ok) => {
+                  if (ok) setMessage(`自動対戦（${SELF_PLAY_GAMES}局）で問題は見つからなかった。`);
+                });
+              }}
+            >
+              自動対戦で確かめる
+            </button>
             {issues === null ? (
-              <p className="muted small">保存・試遊・書き出しの前に自動で行う。</p>
+              <p className="muted small">保存・試遊・書き出しの前に自動で行う。GitHub への保存と書き出しの前には、自動対戦（{SELF_PLAY_GAMES}局）でも確かめる。</p>
             ) : issues.length === 0 ? (
               <p className="ok">問題なし</p>
             ) : (

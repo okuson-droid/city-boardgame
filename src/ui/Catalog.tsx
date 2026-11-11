@@ -8,7 +8,7 @@ import { GAME_DATA } from '../data/index.ts';
 import { BoardMap } from './Board.tsx';
 import { BonusTileView, CivCardView, NatureParkView, PlannedCityView, ScriptView } from './Cards.tsx';
 import { bonusTotals } from './DraftScreen.tsx';
-import { describeRaidOutcomes } from '../game/queries.ts';
+import { describeRaidOutcomes, specialCitizenName } from '../game/queries.ts';
 import { IconRow } from './Icon.tsx';
 
 export type CatalogView = 'cards' | 'characters' | 'boards';
@@ -76,21 +76,24 @@ const CardList = ({ kind, q }: { kind: CardKind; q: string }) => {
     return (
       <>
         {GAME_DATA.specialCitizens
-          .filter((c) => includes(q, c.id, ...(c.revisedEffects ?? c.effects).map((e) => e.text)))
+          .filter((c) => includes(q, c.id, c.name, ...(c.revisedEffects ?? c.effects).map((e) => e.text)))
           .map((c) => (
             <Item
               key={c.id}
               card={
                 <div className="card sc">
                   <div className="card-head">
-                    <span className="card-name">市民{c.id}</span>
+                    <span className="card-name">{specialCitizenName(c.id)}</span>
                     {c.provisional ? <span className="provisional-badge">仮</span> : null}
                   </div>
                   <ScriptView script={c.script} />
                 </div>
               }
             >
-              <p className="catalog-name">特別な市民カード {c.id}</p>
+              <p className="catalog-name">
+                特別な市民カード {c.id}
+                {c.name !== '' ? `　${c.name}` : ''}
+              </p>
               {/* 効果を原本から変えたカードは、いまの効果の文言を出し、原本の文言を添える（ユーザー決定 2026-11-10）。 */}
               {(c.revisedEffects ?? c.effects).map((e, i) => (
                 <p key={i}>

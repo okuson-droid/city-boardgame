@@ -2,9 +2,9 @@
 
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
 import type { Script } from '../data/script.ts';
-import type { BonusTile, PlannedCityCard, NatureParkCard } from '../data/types.ts';
+import type { BonusTile, Grant, PlannedCityCard, NatureParkCard } from '../data/types.ts';
 import { describeScript, iconSequence, type IconToken } from '../game/icons.ts';
-import { civCardCost } from '../game/queries.ts';
+import { civCardCost, grantText } from '../game/queries.ts';
 import type { PlayerState } from '../game/types.ts';
 import { IconRow } from './Icon.tsx';
 import { ShapeView } from './Board.tsx';
@@ -146,9 +146,20 @@ const plannedCells = (card: PlannedCityCard) =>
       : { art: ICON_ART[`bld.${s.building}`] ?? '', title: entry('buildings', s.building).label }),
   }));
 
-const plannedBenefit = (card: PlannedCityCard): IconToken[] => [
-  tok('resources', card.benefit.kind === 'drawCivCards' ? 'drawCivCards' : card.benefit.kind, card.benefit.amount),
-];
+const keyEntry = (section: keyof typeof ICON_KEYS, key: string): { icon: string; label: string } =>
+  (ICON_KEYS[section] as Readonly<Record<string, { icon: string; label: string }>>)[key] ?? { icon: `${section}.${key}`, label: key };
+
+/** 得るもの1つのアイコン（到達報酬はユーザー決定 2026-11-06、計画都市の達成の報酬も同じ描き方にする）。 */
+export const grantTokens = (g: Grant): IconToken[] => {
+  if (g.kind === 'landTiles') return [{ ...keyEntry('commands', 'placeTiles'), value: g.amount }];
+  if (g.kind === 'buildRight') return [{ ...keyEntry('commands', 'build'), value: g.amount }];
+  if (g.kind === 'freeBuildOnTerrain') return [keyEntry('terrains', g.terrain), { ...keyEntry('commands', 'build'), value: g.amount }];
+  return [{ ...keyEntry('resources', g.kind), value: g.amount }];
+};
+
+/** 計画都市の達成の報酬（複数の種類を持てる、ユーザー決定 2026-11-11）。 */
+const plannedBenefit = (card: PlannedCityCard): IconToken[] => card.benefits.flatMap(grantTokens);
+const plannedBenefitText = (card: PlannedCityCard): string => `達成の報酬：${card.benefits.map(grantText).join('・')}`;
 
 /**
  * カードの拡大表示の枠（ユーザー決定 2026-11-06：計画都市・自然公園の形が小さくて見づらいため）。
@@ -219,7 +230,9 @@ const PlannedCityZoom = ({ card, onClose }: { card: PlannedCityCard; onClose: ()
       </div>
       <div className="pc-zoom-foot">
         <span className="civ-section-label">達成</span>
-        <IconRow tokens={plannedBenefit(card)} />
+        <Tip text={plannedBenefitText(card)}>
+          <IconRow tokens={plannedBenefit(card)} />
+        </Tip>
       </div>
       <ul className="pc-zoom-needs">
         {[...needs.entries()].map(([name, n]) => (
@@ -247,7 +260,9 @@ export const PlannedCityView = ({ card }: { card: PlannedCityCard }) => {
       </div>
       <div className="pc-reward">
         <span className="civ-section-label">達成</span>
-        <IconRow tokens={plannedBenefit(card)} size="sm" />
+        <Tip text={plannedBenefitText(card)}>
+          <IconRow tokens={plannedBenefit(card)} size="sm" />
+        </Tip>
       </div>
       {zoom ? <PlannedCityZoom card={card} onClose={() => setZoom(false)} /> : null}
     </>

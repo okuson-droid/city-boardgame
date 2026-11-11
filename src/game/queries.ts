@@ -28,6 +28,12 @@ const RAID_EFFECT_TEXT: Record<RaidEffect['kind'], (n: string) => string> = {
  * 襲撃の結果ごとに実際に起きること（params.raid から組み立てる）。2026-11-07 のユーザー決定により、
  * 襲撃カードの効果は結果ごとに定めた種類だけを適用するため、原本の文言ではなくこちらを画面に出す。
  */
+/** 特別な市民カードの呼び名。名前（ユーザー決定 2026-11-11）がなければ「市民<id>」とする。 */
+export const specialCitizenName = (id: string, d: GameData = GAME_DATA): string => {
+  const name = d.specialCitizens.find((c) => c.id === id)?.name ?? '';
+  return name !== '' ? name : `市民${id}`;
+};
+
 export const describeRaidOutcomes = (card: RaidCard, d: GameData = GAME_DATA): { defenseFailed: string; defended: string; repelled: string } => {
   const raid = d.params.raid;
   const line = (result: 'defenseFailed' | 'defended' | 'repelled', effects: readonly RaidEffect[]): string => {
