@@ -56,11 +56,12 @@ export const parseSections = (spec: string): Section[] => {
   return SECTIONS.filter((s) => names.includes(s));
 };
 
-export const REF_SECTIONS = ['actions', 'characters', 'bonus', 'raid', 'buildings', 'free', 'public'] as const;
+export const REF_SECTIONS = ['actions', 'expedition', 'characters', 'bonus', 'raid', 'buildings', 'free', 'public'] as const;
 export type RefSection = (typeof REF_SECTIONS)[number];
 
 const REF_LABELS: Readonly<Record<RefSection, string>> = {
   actions: 'アクションボード',
+  expedition: '遠征の報酬表',
   characters: 'キャラクター',
   bonus: 'ボーナスタイル',
   raid: '襲撃カード',
@@ -366,7 +367,32 @@ const optionSection = (state: GameState, m: ShowModel, full: boolean, d: GameDat
     const tile = owner?.land[cell as keyof typeof owner.land];
     return tile === undefined ? '' : `（${queries.terrainLabel(tile)}）`;
   };
-  return [head, ...foldedLines(foldOptions(p.options, d, cellInfo))];
+  // 遠征の報酬は、足したときに確定で払う軍事力トークンを添える（ラベルは変えず、表示の側で足す）。
+  const notes = queries.expeditionPickNotes(state, d);
+  const options = p.options.map((o) => {
+    const cost = notes?.costs[o.id];
+    return cost === undefined ? o : { ...o, label: `${o.label}（確定時の軍事力トークン計${cost}）` };
+  });
+  return [head, ...foldedLines(foldOptions(options, d, cellInfo)), ...unavailableLines(state, d)];
+};
+
+/** 理由ごとにまとめた「選べないもの」の行（ユーザー決定 2026-11-11）。 */
+const groupByReason = (items: readonly { name: string; reason: string }[]): string[] => {
+  const byReason = new Map<string, string[]>();
+  for (const it of items) byReason.set(it.reason, [...(byReason.get(it.reason) ?? []), it.name]);
+  return [...byReason].map(([reason, names]) => `  ${names.join('・')}：${reason}`);
+};
+
+/** 選択肢に出ないもの（アクションスペース・建物・遠征の報酬）と理由。判定は queries（explain と同じ処理）に任せる。 */
+export const unavailableLines = (state: GameState, d: GameData = GAME_DATA): string[] => {
+  const spaces = queries.unavailableSpaces(state, d).map((u) => ({ name: `${queries.actionLabel(u.action)}・${queries.tierLabel(u.tier)}`, reason: u.reason }));
+  const buildings = queries.unavailableBuildings(state, d).map((u) => ({ name: queries.buildingLabel(u.building), reason: u.reason }));
+  const rewards = (queries.expeditionPickNotes(state, d)?.unavailable ?? []).map((u) => ({ name: `Lv${u.level}`, reason: u.reason }));
+  return [
+    ...(spaces.length > 0 ? ['選べないアクション:', ...groupByReason(spaces)] : []),
+    ...(buildings.length > 0 ? ['選べない建物:', ...groupByReason(buildings)] : []),
+    ...(rewards.length > 0 ? ['選べない遠征の報酬:', ...groupByReason(rewards)] : []),
+  ];
 };
 
 const viewerSelf = (state: GameState, viewer: Viewer): number => (viewer === 'all' ? (decider(state) ?? 0) : viewer);
@@ -681,6 +707,22 @@ export const refLines = (
           );
         }
         break;
+      case 'expedition': {
+        // 報酬表（指揮官などの追加報酬を含む）。目標値（選んだ報酬の最も高いレベル）と軍事レベルの差だけ軍事力トークンを払う（6-3-6-3）。
+        const rows = queries.expeditionRows(selfPlayer ?? null, d);
+        lines.push(`== 遠征の報酬表（目標値＝選んだ報酬の最も高いレベル。軍事レベルとの差だけ軍事力トークンを払う。自分 P${self}：軍事Lv${selfPlayer?.militaryLevel ?? 0}・トークン${selfPlayer?.militaryTokens ?? 0}）`);
+        for (const r of rows) {
+          const need = Math.max(0, r.level - (selfPlayer?.militaryLevel ?? 0));
+          lines.push(`Lv${r.level}: ${r.text}${r.extra ? '（追加）' : ''}｜${need === 0 ? 'トークンなしで届く' : `トークン${need}`}`);
+        }
+        lines.push(
+          `選べる数: ${TIERS.map((t) => {
+            const sel = d.params.actions.expedition.selection[t];
+            return `${queries.tierLabel(t)} ${sel.mode === 'distinct' ? `異なる報酬を${sel.max}つまで` : `合計${sel.total}個まで（同じ報酬は${sel.maxSame}個まで）`}`;
+          }).join('｜')}`,
+        );
+        break;
+      }
       case 'characters': {
         lines.push('== キャラクター');
         const ids = [...state.players.map((p) => p.characterId).filter((c): c is string => c !== null), ...state.draftPool.characters];

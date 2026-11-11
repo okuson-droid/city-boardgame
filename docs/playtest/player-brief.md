@@ -15,7 +15,7 @@
 4. 「ラウンド N は終わった」と出たら、ノートを書いて終える（次のラウンドは新しい打ち手が引き継ぐ）。
 5. 「ゲーム終了」と出たら、知見を書いて終える。
 
-全局面が要るときだけ `play show --seat <席> --only <欄>` を使う（欄：progress・raid・actions・shared・self・hand・others・board・options）。効果文は `play ref --seat <席>`、カードは `play ref --card <番号>`。`--full` と自作の grep・sed は使わない。
+全局面が要るときだけ `play show --seat <席> --only <欄>` を使う（欄：progress・raid・actions・shared・self・hand・others・board・options）。効果文は `play ref --seat <席>`、カードは `play ref --card <番号>`、遠征の報酬表は `play ref --seat <席> --only expedition`。選択肢の後の「選べない〜」の行に、選べない理由が出る。`--full` と自作の grep・sed は使わない。
 
 ## ノート（ラウンドの終わりに上書き、1.5KB 以内）
 書く：方針、次のラウンドに最初に打つ手、狙っているカード・マス・ボーナスタイル、気づいたルールの穴と分かりにくい箇所。

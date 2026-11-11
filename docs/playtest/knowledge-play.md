@@ -27,5 +27,6 @@
 - score の見込みに終了時の能力は入らない。
 
 ## コマンドのこつ
-- 効果文は ref、手札の効果は show --only hand、カードは ref --card。
+- 効果文は ref、手札の効果は show --only hand、カードは ref --card、遠征の報酬表は ref --only expedition。
+- 選択肢の後の「選べない〜」に、選べない理由が出る。
 - 選択肢が1つの段は自動で飛ぶ。迷ったら1つずつ指す。
