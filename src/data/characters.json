@@ -16,7 +16,7 @@
   "characters": [
     {
       "id": "hero",
-      "name": "英雄",
+      "name": "不敗の英雄 ツバキ",
       "label": "防衛",
       "axis": "軍事・防衛",
       "initial_bonus": [
@@ -76,7 +76,7 @@
     },
     {
       "id": "commander",
-      "name": "指揮官",
+      "name": "歴戦の指揮官 クロユリ",
       "label": "軍事",
       "axis": "軍事・防衛",
       "initial_bonus": [],
@@ -141,7 +141,7 @@
     },
     {
       "id": "merchant",
-      "name": "豪商",
+      "name": "比類なき豪商 ボタン",
       "label": "経済",
       "axis": "経済・産業",
       "initial_bonus": [
@@ -167,7 +167,7 @@
             {
               "op": "gain",
               "res": "goldProduction",
-              "amount": 5
+              "amount": 8
             }
           ]
         },
@@ -202,12 +202,28 @@
               "amount": 2
             }
           ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": {
+            "res": "gold",
+            "amount": 5
+          },
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 1,
+              "tile": "match"
+            }
+          ]
         }
       ]
     },
     {
       "id": "capitalist",
-      "name": "資本家",
+      "name": "苛烈なる令嬢 ヤマブキ",
       "label": "産業",
       "axis": "経済・産業",
       "initial_bonus": [
@@ -272,7 +288,7 @@
     },
     {
       "id": "scholar",
-      "name": "学者",
+      "name": "飽くなき研究者 リンドウ",
       "label": "学術",
       "axis": "文化・学術",
       "initial_bonus": [
@@ -337,12 +353,41 @@
               ]
             }
           ]
+        },
+        {
+          "ability": "on",
+          "event": "cardPlayed",
+          "filter": {
+            "tag": "academic"
+          },
+          "do": [
+            {
+              "op": "chooseOne",
+              "options": [
+                [
+                  {
+                    "op": "gain",
+                    "res": "drawCivCards",
+                    "amount": 1
+                  }
+                ],
+                [
+                  {
+                    "op": "playCard",
+                    "count": 1,
+                    "free": false,
+                    "upTo": true
+                  }
+                ]
+              ]
+            }
+          ]
         }
       ]
     },
     {
       "id": "artist",
-      "name": "芸術家",
+      "name": "天性の芸術家 スズラン",
       "label": "文化",
       "axis": "文化・学術",
       "initial_bonus": [],
@@ -387,12 +432,30 @@
               "axis": "other"
             }
           ]
+        },
+        {
+          "ability": "on",
+          "event": "cardPlayed",
+          "filter": {
+            "tags": [
+              "literature",
+              "art",
+              "music"
+            ]
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
+            }
+          ]
         }
       ]
     },
     {
       "id": "saint",
-      "name": "聖女",
+      "name": "博愛の聖女 ヒマワリ",
       "label": "生活",
       "axis": "生活・福祉",
       "initial_bonus": [
@@ -462,7 +525,7 @@
     },
     {
       "id": "bureaucrat",
-      "name": "官僚",
+      "name": "聡明なる官僚 スイレン",
       "label": "福祉",
       "axis": "生活・福祉",
       "initial_bonus": [
@@ -567,7 +630,7 @@
     },
     {
       "id": "spirit_caller",
-      "name": "精霊使い",
+      "name": "無垢なる精霊使い アヤメ",
       "label": "自然",
       "axis": "自然・環境",
       "initial_bonus": [],
@@ -621,7 +684,7 @@
               "amount": {
                 "count": "spiritAdjacency",
                 "per": 1,
-                "times": 1
+                "times": 2
               },
               "axis": "other"
             }
@@ -631,7 +694,7 @@
     },
     {
       "id": "designer",
-      "name": "デザイナー",
+      "name": "稀代のデザイナー アジサイ",
       "label": "環境",
       "axis": "自然・環境",
       "initial_bonus": [
@@ -675,6 +738,31 @@
             {
               "op": "drawPlannedCity",
               "count": 2
+            }
+          ]
+        },
+        {
+          "ability": "actionSpace",
+          "workers": 2,
+          "do": [
+            {
+              "op": "if",
+              "cond": {
+                "left": "freeLandTerrains",
+                "op": ">=",
+                "right": 4
+              },
+              "then": [
+                {
+                  "op": "build",
+                  "max": 2,
+                  "upTo": false,
+                  "buildings": null,
+                  "terrain": null,
+                  "payGold": false,
+                  "payMaterials": false
+                }
+              ]
             }
           ]
         }

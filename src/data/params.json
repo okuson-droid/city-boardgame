@@ -120,7 +120,7 @@
         ],
         "grant": {
           "kind": "gold",
-          "amount": 2
+          "amount": 3
         }
       },
       {
@@ -304,16 +304,16 @@
         "bonusMaterials": 0
       },
       "upper": {
-        "payGold": 3,
-        "gainMaterials": 1,
-        "maxTimes": 5,
+        "payGold": 5,
+        "gainMaterials": 3,
+        "maxTimes": 2,
         "bonusMaterials": 1
       },
       "top": {
-        "payGold": 3,
-        "gainMaterials": 1,
-        "maxTimes": 7,
-        "bonusMaterials": 2
+        "payGold": 5,
+        "gainMaterials": 3,
+        "maxTimes": 2,
+        "bonusMaterials": 3
       }
     },
     "export": {
@@ -321,19 +321,19 @@
         "payMaterials": 1,
         "gainGold": 5,
         "maxTimes": 3,
-        "bonusGold": 0
+        "bonusGold": 4
       },
       "upper": {
         "payMaterials": 1,
         "gainGold": 5,
         "maxTimes": 5,
-        "bonusGold": 3
+        "bonusGold": 8
       },
       "top": {
         "payMaterials": 1,
         "gainGold": 5,
         "maxTimes": 7,
-        "bonusGold": 6
+        "bonusGold": 12
       }
     },
     "drill": {
@@ -576,8 +576,8 @@
         "level": 1,
         "grants": [
           {
-            "kind": "goldProduction",
-            "amount": 2
+            "kind": "points",
+            "amount": 1
           }
         ]
       },
@@ -612,8 +612,8 @@
         "level": 5,
         "grants": [
           {
-            "kind": "materialProduction",
-            "amount": 1
+            "kind": "points",
+            "amount": 2
           }
         ]
       },
@@ -648,8 +648,8 @@
         "level": 9,
         "grants": [
           {
-            "kind": "landTiles",
-            "amount": 2
+            "kind": "points",
+            "amount": 3
           }
         ]
       },
@@ -829,6 +829,6 @@
     }
   },
   "characters": {
-    "spiritChipReturnRound": 3
+    "spiritChipReturnRound": 2
   }
 }
