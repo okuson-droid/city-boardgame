@@ -11,6 +11,7 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
   - `--only <欄,...>`（progress・raid・actions・shared・self・hand・others・board・events・options）は指定した欄だけを、`--full` の該当する欄と同じ詳しい形で出す。知らない欄は使える名前を添えて失敗する。
   - 選択肢の畳み方は選択肢 ID の接頭辞と `targetOf` の種類だけで決める（`foldOptions`）：`free:<変換>:<カード>`、`card:`、`sc:`、`draft:<種類>:`、マスを対象にする選択肢は選択肢が8個を超えたら「種類:値:マス」（建設）は種類と値で、それ以外（土地タイル）はマスでまとめる。畳んだ行の `［接頭辞*］` と項目の先頭の語で ID が読め、`readFolded` で番号と ID の組に戻せる（テストで `getOptions` と一致を確かめる）。
   - `wait` の他の席の分は手番ごとに1行（`replayTurns`・`turnSummary`、記録の再生画面と共用）。自動の処理は視点の増減と共通の結果（ラウンド・襲撃・終了）だけ。オンライン版は選択と出来事の対応を持たないため `eventTurns` で区切る。
+  - 選べないものの理由（ユーザー決定 2026-11-11、2026-11-11 の確認の対局の要望）：選択肢の欄の後に、選べないアクションスペース（行動を選ぶ場面、`queries.unavailableSpaces`、文は `explain`）・建物（建築の場面、`unavailableBuildings`・`unavailableBuildReasons`）・遠征の報酬（`expeditionPickNotes`・`expeditionNotes`）を理由ごとにまとめて出す。遠征の報酬の選択肢には、足したときに確定で払う軍事力トークンを添える（ラベルは変えず表示の側で足す）。判定は候補を作る処理（`buildCandidates`・`expeditionCanAdd`・`explain`）と同じ。`ref --only expedition` は遠征の報酬表（追加報酬を含む）と、視点の軍事レベルから届くか・払うトークンを出す。
   - 打ち手の作り直し：`wait --round R` は局面のラウンドが R より先なら番を待たずに終える（ドラフトと準備は第1ラウンド、`effectiveRound`）。`resume --seat N` は ref・局面・手札の効果文・その席の手番ごとのまとめ・得点の見込みを1回で出す。ノート（`.play/notes/P<席>.md`）はコマンドが読み書きしない。
   - 打ち手はリポジトリの外の作業ディレクトリで `node <リポジトリ>/dist-play/cli.js` を呼ぶ（リポジトリの CLAUDE.md を読み込ませないため。ただし同じセッションから起動した打ち手には CLAUDE.md が自動で入る。2026-11-11 に CLAUDE.md を約7KB に縮めた）。運用は `docs/playtest/README.md`。
 - 1回の呼び出しで完結し、入力待ちを作らない。ルールを再実装せず、合法手は `getOptions`、進行は `applyMove`、得点は `finalScores`、派生値は `queries` だけから得る。足りない派生値は queries.ts に足す。

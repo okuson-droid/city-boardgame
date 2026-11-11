@@ -2,10 +2,11 @@
 
 import { GAME_DATA } from '../data/index.ts';
 import { ICON_KEYS } from '../data/icon-keys.ts';
-import type { Action, Building, GameData, RaidCard, RaidEffect, Terrain, Tier, UnlockCondition } from '../data/types.ts';
+import { ACTIONS, TIERS, type Action, type Building, type GameData, type RaidCard, type RaidEffect, type Terrain, type Tier, type UnlockCondition } from '../data/types.ts';
 import { axisLabel as axisLabelOf, grantText as grantTextOf, sourceName as sourceNameOf } from './labels.ts';
 import { natureParkScore } from './planned.ts';
-import { buildTotalCost, civCardCost, expeditionTable } from './actions.ts';
+import { buildTotalCost, civCardCost, expeditionNotes as expeditionNotesOf, expeditionTable, unavailableBuildReasons } from './actions.ts';
+import { explain } from './explain.ts';
 import { buildingCount, cardHouseCount, landCount, playerOf, regularWorkerCap, usableRegular, usableTemp } from './core.ts';
 import { decider, isTopUnlocked } from './engine.ts';
 import type { IconToken } from './icons.ts';
@@ -409,4 +410,36 @@ export const scoreSources = (state: GameState, player: number, d: GameData = GAM
     totals.set(key, entry);
   }
   return [...totals.values()].sort((a, b) => b.points - a.points);
+};
+
+// ---------------------------------------------------------------------------
+// 選べないものの理由（対話プレイの表示のため、ユーザー決定 2026-11-11）
+// ---------------------------------------------------------------------------
+
+/** 行動を選ぶ場面で、選べないアクションスペースと理由（explain の文）。アクションの後や他の場面では空。 */
+export const unavailableSpaces = (state: GameState, d: GameData = GAME_DATA): { action: Action; tier: Tier; reason: string }[] => {
+  const task = state.stack[state.stack.length - 1];
+  if (task?.t !== 'turn' || task.acted) return [];
+  return ACTIONS.flatMap((action) =>
+    TIERS.flatMap((tier) => {
+      const reason = explain(state, { kind: 'actionSpace', action, tier }, null, d);
+      return reason === null ? [] : [{ action, tier, reason }];
+    }),
+  );
+};
+
+/** 建築の選択中に、候補に出ない建物の種類と理由。建築の場面でなければ空。 */
+export const unavailableBuildings = (state: GameState, d: GameData = GAME_DATA): { building: Building; reason: string }[] => {
+  const task = state.stack[state.stack.length - 1];
+  if (task?.t !== 'build') return [];
+  return unavailableBuildReasons(d, playerOf(state, task.player), task.spec, task.picks);
+};
+
+/** 遠征の報酬の選択中の、選べる報酬の確定時のトークンと、選べない報酬の理由。遠征の場面でなければ null。 */
+export const expeditionPickNotes = (
+  state: GameState,
+  d: GameData = GAME_DATA,
+): { readonly costs: Readonly<Record<string, number>>; readonly unavailable: readonly { readonly level: number; readonly reason: string }[] } | null => {
+  const task = state.stack[state.stack.length - 1];
+  return task?.t === 'expeditionPick' ? expeditionNotesOf(d, state, task) : null;
 };

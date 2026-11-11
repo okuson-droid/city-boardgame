@@ -237,6 +237,35 @@ const buildCandidates = (d: GameData, player: PlayerState, spec: BuildSpec, pick
   return result;
 };
 
+/**
+ * 建築の選択中に候補に出ない建物の種類と、その理由（対話プレイの表示のため、ユーザー決定 2026-11-11）。
+ * 判定は buildCandidates と同じ（上限・空き地・コスト）。spec で種類が決まっていればその種類だけを見る。
+ */
+export const unavailableBuildReasons = (
+  d: GameData,
+  player: PlayerState,
+  spec: BuildSpec,
+  picks: readonly BuildPick[],
+): { readonly building: Building; readonly reason: string }[] => {
+  const offered = new Set(buildCandidates(d, player, spec, picks).map((c) => c.building));
+  const pickedCells = new Set(picks.map((p) => p.cell));
+  const cells = buildableCells(d, player).filter((cell) => !pickedCells.has(cell) && (spec.terrain === null || player.land[cell] === spec.terrain));
+  const now = buildTotalCost(d, player, picks, spec);
+  return (spec.buildings ?? BUILDINGS)
+    .filter((b) => !offered.has(b))
+    .map((building) => {
+      const picked = picks.filter((p) => p.building === building).length;
+      if (remainingBuildingStock(d, player, building) - picked <= 0) return { building, reason: '上限に達した' };
+      if (cells.length === 0) return { building, reason: '建てられる空き地がない' };
+      const costs = cells.map((cell) => buildTotalCost(d, player, [...picks, { building, cell }], spec));
+      const cheapest = costs.reduce((a, b) => (a.gold + a.materials <= b.gold + b.materials ? a : b));
+      return {
+        building,
+        reason: `払えない（足すと合計 金${cheapest.gold}・資材${cheapest.materials}、いま 金${now.gold}・資材${now.materials}、所持 金${player.gold}・資材${player.materials}）`,
+      };
+    });
+};
+
 const parseBuild = (id: string): BuildPick => {
   const [building, cell] = parseParts(id, 'build');
   return { building: building as Building, cell: cell as CellId };
@@ -469,6 +498,42 @@ const expeditionProbe = (tier: Tier): TaskOf<'expeditionPick'> => ({
   mode: 'action',
   count: 0,
 });
+
+/**
+ * 遠征の報酬の選択中の補足（対話プレイの表示のため、ユーザー決定 2026-11-11）。
+ * 選べる報酬は、それを足したときに確定で払う軍事力トークン（目標値と軍事レベルの差、6-3-6-3）。
+ * 選べない報酬は理由。判定は expeditionCanAdd と同じ。
+ */
+export const expeditionNotes = (
+  d: GameData,
+  state: GameState,
+  task: TaskOf<'expeditionPick'>,
+): { readonly costs: Readonly<Record<string, number>>; readonly unavailable: readonly { readonly level: number; readonly reason: string }[] } => {
+  const player = playerOf(state, task.player);
+  const table = expeditionTable(d, player);
+  const costs: Record<string, number> = {};
+  const unavailable: { level: number; reason: string }[] = [];
+  const selection = d.params.actions.expedition.selection[task.tier];
+  const total = task.mode === 'card' ? task.count : selection.mode === 'distinct' ? selection.max : selection.total;
+  const maxSame = task.mode === 'card' ? 1 : (sameRewardLimit(d, player, task.tier) ?? (selection.mode === 'distinct' ? 1 : selection.maxSame));
+  table.forEach((entry, i) => {
+    if (expeditionCanAdd(d, player, task, task.picks, i)) {
+      costs[`reward:${i}`] = task.mode === 'card' ? 0 : expeditionTokenCost(table, player, [...task.picks, i]);
+      return;
+    }
+    if (task.picks.length >= total) return;
+    const same = task.picks.filter((x) => x === i).length;
+    const reason = !rewardExecutable(d, player, entry)
+      ? '実行できない（置ける土地・建てられる場所がない）'
+      : same >= maxSame
+        ? '同じ報酬を選べる回数に達した'
+        : task.mode === 'card'
+          ? '軍事レベルより上'
+          : `軍事力トークンが足りない（必要${expeditionTokenCost(table, player, [...task.picks, i])}、使える${tokenBudget(d, player)}）`;
+    unavailable.push({ level: entry.level, reason });
+  });
+  return { costs, unavailable };
+};
 
 export const expeditionOptions = (d: GameData, state: GameState, task: TaskOf<'expeditionPick'>): Option[] => {
   const player = playerOf(state, task.player);

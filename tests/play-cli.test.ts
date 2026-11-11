@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { ACTIONS, GAME_DATA, TIERS } from '../src/data/index.ts';
+import { ACTIONS, BUILDINGS, GAME_DATA, TIERS } from '../src/data/index.ts';
 import { finalScores, getOptions, isGameOver, queries, replay, replayTurns, turnDelta, turnSummary, type GameState } from '../src/game/index.ts';
 import {
   compactJson,
@@ -370,6 +370,51 @@ describe('出力の軽量化（指示書 2026-11-11）', () => {
     expect(state.round).toBeGreaterThan(1);
     expect(effectiveRound(state) > state.round - 1).toBe(true);
     expect(effectiveRound(state) > state.round).toBe(false);
+  });
+
+  it('選べないアクション・建物・遠征の報酬は、選択肢と重ならず、合わせると全体になる（ユーザー決定 2026-11-11）', async () => {
+    // rules.md v0.8 6-1-6・6-1-7（実行できない選び方）、6-2-1（使用済み）、6-3-6-3（遠征の目標値とトークン）
+    await yieldToRunner();
+    let turns = 0;
+    let builds = 0;
+    let expeditions = 0;
+    for (const seed of [36, 37]) {
+      const { walked } = walk(3, seed, 3000);
+      for (const { before } of walked) {
+        const ids = getOptions(before).map((o) => o.id);
+        const task = before.stack[before.stack.length - 1];
+        if (task?.t === 'turn' && !task.acted) {
+          const offered = ids.filter((id) => id.startsWith('act:')).map((id) => id.slice(4));
+          const missing = queries.unavailableSpaces(before).map((u) => `${u.action}:${u.tier}`);
+          expect(new Set([...offered, ...missing]).size).toBe(ACTIONS.length * TIERS.length);
+          expect(offered.filter((x) => missing.includes(x))).toEqual([]);
+          turns += 1;
+        }
+        if (task?.t === 'build') {
+          const offered = new Set(ids.filter((id) => id.startsWith('build:')).map((id) => id.split(':')[1]));
+          const missing = queries.unavailableBuildings(before).map((u) => u.building as string);
+          expect(missing.filter((b) => offered.has(b))).toEqual([]);
+          expect(new Set([...offered, ...missing])).toEqual(new Set(task.spec.buildings ?? BUILDINGS));
+          builds += 1;
+        }
+        const notes = queries.expeditionPickNotes(before);
+        if (notes !== null) {
+          // 選べる報酬にはすべてトークンの数が付き、付いたものはすべて選べる。
+          expect(Object.keys(notes.costs).sort()).toEqual(ids.filter((id) => id.startsWith('reward:')).sort());
+          expeditions += 1;
+        }
+      }
+    }
+    expect(turns).toBeGreaterThan(20);
+    expect(builds).toBeGreaterThan(5);
+    expect(expeditions).toBeGreaterThan(0);
+  }, 120_000);
+
+  it('ref の遠征の報酬表は、報酬表のすべての行を出す', () => {
+    // rules.md v0.8 6-3-6（遠征）
+    const { state } = walk(3, 38, 200);
+    const text = refLines(state, 0, ['expedition']).join('\n');
+    for (const r of queries.expeditionRows(state.players[0] ?? null)) expect(text).toContain(`Lv${r.level}: ${r.text}`);
   });
 
   it('2026-11-10 の7局の記録は終局まで再生でき、最終得点が README の値と一致する', async () => {
