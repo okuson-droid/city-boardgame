@@ -20,4 +20,4 @@ export {
   type ReplayTurn,
   replayTurns,
 } from './replay.ts';
-export { eventText } from './narrate.ts';
+export { deltaText, eventText, eventTurns, turnDelta, turnSummary } from './narrate.ts';

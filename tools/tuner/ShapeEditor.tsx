@@ -1,6 +1,6 @@
 // 計画都市・自然公園の形の編集（ユーザー決定 2026-11-08：タイルの配置関係を直感的に決められるようにする）。
 // 六角形のマス目をクリックしてマスを足し、選んだマスの地形（計画都市は建物も）を押して決める。
-// 座標はアキシャル座標 (q, r) で、r は行、6方向の隣接は (±1,0)・(0,±1)・(1,−1)・(−1,1)（CLAUDE.md「データの約束事」）。
+// 座標はアキシャル座標 (q, r) で、r は行、6方向の隣接は (±1,0)・(0,±1)・(1,−1)・(−1,1)（docs/dev/rules-and-data.md「データの約束事」）。
 
 import { useState } from 'react';
 import { BUILDINGS, TERRAINS, type Building, type Terrain } from '../../src/data/index.ts';

@@ -47,10 +47,59 @@ export type Step = {
   readonly label: string;
   /** 選択した時点の選択待ちのタスクの種類。 */
   readonly task: string;
+  /** 選択した時点のラウンド（ドラフト中は 0）。 */
+  readonly round: number;
   readonly events: readonly GameEvent[];
+  /** その選択の処理で新しく公開・獲得されたもの（表示の側が視点で絞る。手札は持ち主の視点でだけ出す）。 */
+  readonly reveal: Reveal;
 };
 
-const stepFrom = (state: GameState, next: GameState, index: number, id: string, d: GameData): Step => {
+/** 1手で新しく公開・獲得されたもの（指示書 2026-11-11 2-2）。 */
+export type Reveal = {
+  readonly specialCitizens: readonly string[];
+  readonly plannedCities: readonly string[];
+  readonly bonusTiles: readonly number[];
+  /** プレイヤーごとの、新しく手札に入った文明カード（非公開。持ち主の視点でだけ出す）。 */
+  readonly hands: Readonly<Record<number, readonly string[]>>;
+  /** プレイヤーごとの、新しく得た専用の計画都市カード（デザイナー）。 */
+  readonly privatePlanned: Readonly<Record<number, readonly string[]>>;
+  /** プレイヤーごとの、新しく獲得した特別な市民カード。 */
+  readonly acquired: Readonly<Record<number, readonly string[]>>;
+};
+
+/** before に無く after にある要素（同じ番号のカードが複数あれば数で比べる）。 */
+export const added = <T>(before: readonly T[], after: readonly T[]): T[] => {
+  const left = [...before];
+  const out: T[] = [];
+  for (const x of after) {
+    const i = left.indexOf(x);
+    if (i >= 0) left.splice(i, 1);
+    else out.push(x);
+  }
+  return out;
+};
+
+export const revealOf = (state: GameState, next: GameState): Reveal => {
+  const perPlayer = <T>(pick: (p: GameState['players'][number]) => readonly T[]): Record<number, T[]> => {
+    const out: Record<number, T[]> = {};
+    next.players.forEach((p, i) => {
+      const was = state.players[i];
+      const diff = added(was === undefined ? [] : pick(was), pick(p));
+      if (diff.length > 0) out[i] = diff;
+    });
+    return out;
+  };
+  return {
+    specialCitizens: added(state.scRevealed, next.scRevealed),
+    plannedCities: added(state.plannedCityRevealed, next.plannedCityRevealed),
+    bonusTiles: added(state.bonusTilesOnBoard, next.bonusTilesOnBoard),
+    hands: perPlayer((p) => p.hand),
+    privatePlanned: perPlayer((p) => p.privatePlannedCities),
+    acquired: perPlayer((p) => p.specialCitizens),
+  };
+};
+
+export const stepFrom = (state: GameState, next: GameState, index: number, id: string, d: GameData): Step => {
   const option = getOptions(state, d).find((o) => o.id === id);
   return {
     index,
@@ -58,7 +107,9 @@ const stepFrom = (state: GameState, next: GameState, index: number, id: string, 
     id,
     label: option?.label ?? id,
     task: state.stack[state.stack.length - 1]?.t ?? '',
+    round: state.round,
     events: next.events.slice(state.events.length),
+    reveal: revealOf(state, next),
   };
 };
 

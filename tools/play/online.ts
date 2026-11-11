@@ -10,7 +10,7 @@ import { dirname } from 'node:path';
 import { DATA_VERSION, GAME_DATA, type GameData } from '../../src/data/index.ts';
 import { decider, eventText, getOptions, isGameOver, type GameState } from '../../src/game/index.ts';
 import type { RoomSummary } from '../../src/online/rooms.ts';
-import { PlayError, resolveSpec } from './record.ts';
+import { added, PlayError, resolveSpec, type Reveal } from './record.ts';
 
 /** 窓口の既定（公開ページのオンライン版が使う Supabase のプロジェクト）。--url か PLAY_ONLINE_URL で替える。 */
 export const DEFAULT_ONLINE_URL = 'https://tybkebtddcgcewizwpua.supabase.co';
@@ -22,6 +22,50 @@ export type OnlineCredentials = {
   readonly key: string;
   /** 前回の出力までに見た出来事の数（state.events の長さ）。 */
   readonly seenEvents: number;
+  /** 前回の出力の時点で公開・獲得されていたもの（新しく公開されたものの内容を1回だけ出すため、指示書 2026-11-11 2-2）。 */
+  readonly seen?: Seen;
+};
+
+/** 前回の出力の時点の公開物と自分の手札。 */
+export type Seen = {
+  readonly specialCitizens: readonly string[];
+  readonly plannedCities: readonly string[];
+  readonly bonusTiles: readonly number[];
+  readonly hand: readonly string[];
+  readonly privatePlanned: readonly (readonly string[])[];
+  readonly acquired: readonly (readonly string[])[];
+};
+
+export const seenOf = (state: GameState, seat: number): Seen => ({
+  specialCitizens: [...state.scRevealed],
+  plannedCities: [...state.plannedCityRevealed],
+  bonusTiles: [...state.bonusTilesOnBoard],
+  hand: [...(state.players[seat]?.hand ?? [])],
+  privatePlanned: state.players.map((p) => [...p.privatePlannedCities]),
+  acquired: state.players.map((p) => [...p.specialCitizens]),
+});
+
+/** 前回の出力から新しく公開・獲得されたもの。前回の記録がなければ何も出さない（最初の出力は局面に全部出るため）。 */
+export const revealSince = (seen: Seen | undefined, state: GameState, seat: number): Reveal => {
+  const empty: Reveal = { specialCitizens: [], plannedCities: [], bonusTiles: [], hands: {}, privatePlanned: {}, acquired: {} };
+  if (seen === undefined) return empty;
+  const perPlayer = (before: readonly (readonly string[])[], pick: (i: number) => readonly string[]): Record<number, string[]> => {
+    const out: Record<number, string[]> = {};
+    state.players.forEach((_, i) => {
+      const diff = added(before[i] ?? [], pick(i));
+      if (diff.length > 0) out[i] = diff;
+    });
+    return out;
+  };
+  const hand = added(seen.hand, state.players[seat]?.hand ?? []);
+  return {
+    specialCitizens: added(seen.specialCitizens, state.scRevealed),
+    plannedCities: added(seen.plannedCities, state.plannedCityRevealed),
+    bonusTiles: added(seen.bonusTiles, state.bonusTilesOnBoard),
+    hands: hand.length > 0 ? { [seat]: hand } : {},
+    privatePlanned: perPlayer(seen.privatePlanned, (i) => state.players[i]?.privatePlannedCities ?? []),
+    acquired: perPlayer(seen.acquired, (i) => state.players[i]?.specialCitizens ?? []),
+  };
 };
 
 export type OnlineView = { readonly summary: RoomSummary; readonly seat: number; readonly version: number; readonly state: GameState | null };
@@ -60,7 +104,14 @@ export const readCredentials = (path: string): OnlineCredentials => {
   if (typeof v.url !== 'string' || typeof v.code !== 'string' || typeof v.seat !== 'number' || typeof v.key !== 'string') {
     throw new PlayError(`資格情報の形が正しくない：${path}`);
   }
-  return { url: v.url, code: v.code, seat: v.seat, key: v.key, seenEvents: typeof v.seenEvents === 'number' ? v.seenEvents : 0 };
+  return {
+    url: v.url,
+    code: v.code,
+    seat: v.seat,
+    key: v.key,
+    seenEvents: typeof v.seenEvents === 'number' ? v.seenEvents : 0,
+    ...(v.seen === undefined ? {} : { seen: v.seen }),
+  };
 };
 
 export const writeCredentials = (path: string, creds: OnlineCredentials): void => {

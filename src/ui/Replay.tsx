@@ -8,7 +8,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DATA_VERSION } from '../data/index.ts';
-import { eventText } from '../game/narrate.ts';
+import { deltaText, eventText, turnDelta } from '../game/narrate.ts';
 import { replayDataChanged, replayPrefix, replayTo, replayTurns, type ReplayRecord, type ReplayStep } from '../game/replay.ts';
 import type { GameState } from '../game/types.ts';
 import { Game, type GameController, type Settings } from './Game.tsx';
@@ -20,36 +20,8 @@ const CACHE_EVERY = 20;
 
 const AUTOPLAY_MS: Readonly<Record<string, number>> = { slow: 1500, normal: 700, fast: 250 };
 
-const DELTA_LABELS: Readonly<Record<string, string>> = {
-  gold: '金',
-  materials: '資材',
-  militaryTokens: '軍事力トークン',
-  goldProduction: '金の生産力',
-  materialProduction: '資材の生産力',
-  regularWorkers: '通常ワーカー',
-  tempWorkers: '臨時ワーカー',
-  militaryLevel: '軍事レベル',
-  infraLevel: 'インフラレベル',
-  score: '得点',
-  hand: '手札',
-};
-
-const signed = (n: number): string => (n > 0 ? `+${n}` : String(n));
-
 /** 手番のあいだの、そのプレイヤーの増減の合計（選択の処理によるものだけ）。 */
-const turnDelta = (steps: readonly ReplayStep[], player: number): string => {
-  const total: Record<string, number> = {};
-  for (const step of steps) {
-    for (const e of step.events) {
-      if (e.type !== 'delta' || e.player !== player || e.cause !== 'move') continue;
-      for (const [k, n] of Object.entries(e.changes)) total[k] = (total[k] ?? 0) + (n ?? 0);
-    }
-  }
-  return Object.entries(total)
-    .filter(([, n]) => n !== 0)
-    .map(([k, n]) => `${DELTA_LABELS[k] ?? k}${signed(n)}`)
-    .join(' ');
-};
+const turnDeltaText = (steps: readonly ReplayStep[], player: number): string => deltaText(turnDelta(steps.flatMap((s) => s.events), player));
 
 /**
  * 1手で起きたことの文。手番のプレイヤー自身の出来事は名前を省き、他のプレイヤーの出来事（襲撃・常時効果など）だけ名前を付ける。
@@ -217,7 +189,7 @@ export const ReplayViewer = ({
               <p className="replay-turn-head">
                 {turn.round === 0 ? 'ドラフト' : `第${turn.round}ラウンド`}・
                 <span style={{ color: colorOf(turn.player) }}>{nameOf(turn.player)}</span>の手番（{turn.from}〜{turn.to}手目）
-                {turnDelta(turnSteps, turn.player) !== '' ? <span className="muted">　この手番の増減：{turnDelta(turnSteps, turn.player)}</span> : null}
+                {turnDeltaText(turnSteps, turn.player) !== '' ? <span className="muted">　この手番の増減：{turnDeltaText(turnSteps, turn.player)}</span> : null}
               </p>
               <ol className="replay-steps">
                 {turnSteps.map((step) => {
