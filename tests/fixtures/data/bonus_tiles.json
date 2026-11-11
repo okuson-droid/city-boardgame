@@ -1,0 +1,209 @@
+{
+  "provisional": false,
+  "notes": [
+    "text は rules.md v0.8 11-2-1 の表の文言のまま。「／」で区切られた効果は両方適用する（11-2-2）。",
+    "効果の命令セット化は段階3（feat/effects）で行う。",
+    "roundStart はラウンド開始時の効果、passScore はパス時の得点（count の数 per につき points 点）であり、text を構造化したものである。"
+  ],
+  "tiles": [
+    {
+      "id": 1,
+      "text": "土地タイル1枚獲得／軍事力トークン1個獲得",
+      "rulesRef": "11-2-1",
+      "clarifications": [
+        {
+          "text": "土地タイルは資材を支払わずに 4-2 に従って配置する。",
+          "source": "rules.md v0.8 19-1-1",
+          "provisional": false
+        }
+      ],
+      "provisional": false,
+      "roundStart": [
+        {
+          "kind": "landTiles",
+          "amount": 1
+        },
+        {
+          "kind": "militaryTokens",
+          "amount": 1
+        }
+      ],
+      "passScore": null
+    },
+    {
+      "id": 2,
+      "text": "8金獲得",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false,
+      "roundStart": [
+        {
+          "kind": "gold",
+          "amount": 8
+        }
+      ],
+      "passScore": null
+    },
+    {
+      "id": 3,
+      "text": "資材2個獲得",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false,
+      "roundStart": [
+        {
+          "kind": "materials",
+          "amount": 2
+        }
+      ],
+      "passScore": null
+    },
+    {
+      "id": 4,
+      "text": "文明カード2枚を引き、手札全体から任意の1枚を捨てる",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false,
+      "roundStart": [
+        {
+          "kind": "drawCivCards",
+          "amount": 2
+        },
+        {
+          "kind": "discardCivCards",
+          "amount": 1
+        }
+      ],
+      "passScore": null
+    },
+    {
+      "id": 5,
+      "text": "臨時ワーカー1人獲得",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false,
+      "roundStart": [
+        {
+          "kind": "tempWorkers",
+          "amount": 1
+        }
+      ],
+      "passScore": null
+    },
+    {
+      "id": 6,
+      "text": "3金獲得／パス時、住宅1軒につき1点",
+      "rulesRef": "11-2-1",
+      "clarifications": [
+        {
+          "text": "パス時得点はパス宣言時点の状態を参照する。",
+          "source": "rules.md v0.8 11-2-5",
+          "provisional": false
+        }
+      ],
+      "provisional": false,
+      "roundStart": [
+        {
+          "kind": "gold",
+          "amount": 3
+        }
+      ],
+      "passScore": {
+        "count": "houses",
+        "per": 1,
+        "points": 1
+      }
+    },
+    {
+      "id": 7,
+      "text": "資材生産力＋1／パス時、建設済み建物の種類数につき1点",
+      "rulesRef": "11-2-1",
+      "clarifications": [
+        {
+          "text": "生産力の増加は獲得したラウンドの収入から反映し、タイルを返却しても失われない。",
+          "source": "rules.md v0.8 3-2-4、11-2-3",
+          "provisional": false
+        },
+        {
+          "text": "建物の種類数は、同じ種類を複数建設していても1種類として数える。",
+          "source": "rules.md v0.8 11-2-4",
+          "provisional": false
+        },
+        {
+          "text": "パス時得点はパス宣言時点の状態を参照する。",
+          "source": "rules.md v0.8 11-2-5",
+          "provisional": false
+        }
+      ],
+      "provisional": false,
+      "roundStart": [
+        {
+          "kind": "materialProduction",
+          "amount": 1
+        }
+      ],
+      "passScore": {
+        "count": "buildingTypes",
+        "per": 1,
+        "points": 1
+      }
+    },
+    {
+      "id": 8,
+      "text": "金生産力＋2／パス時、プレイ済み文明カード2枚につき1点",
+      "rulesRef": "11-2-1",
+      "clarifications": [
+        {
+          "text": "生産力の増加は獲得したラウンドの収入から反映し、タイルを返却しても失われない。",
+          "source": "rules.md v0.8 3-2-4、11-2-3",
+          "provisional": false
+        },
+        {
+          "text": "パス時得点はパス宣言時点の状態を参照する。",
+          "source": "rules.md v0.8 11-2-5",
+          "provisional": false
+        }
+      ],
+      "provisional": false,
+      "roundStart": [
+        {
+          "kind": "goldProduction",
+          "amount": 2
+        }
+      ],
+      "passScore": {
+        "count": "playedCivCards",
+        "per": 2,
+        "points": 1
+      }
+    },
+    {
+      "id": 9,
+      "text": "軍事レベル＋1",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false,
+      "roundStart": [
+        {
+          "kind": "militaryLevel",
+          "amount": 1
+        }
+      ],
+      "passScore": null
+    },
+    {
+      "id": 10,
+      "text": "インフラレベル＋1",
+      "rulesRef": "11-2-1",
+      "clarifications": [],
+      "provisional": false,
+      "roundStart": [
+        {
+          "kind": "infraLevel",
+          "amount": 1
+        }
+      ],
+      "passScore": null
+    }
+  ]
+}

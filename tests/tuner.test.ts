@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DATA_FILES, loadGameData, rawFromFiles } from '../src/data/index.ts';
+import { DATA_FILES, GAME_DATA, loadGameData, rawFromFiles } from '../src/data/index.ts';
+import { selfPlayGame } from '../src/game/selfplay.ts';
 import { isGameOver } from '../src/game/engine.ts';
 import { finalScores } from '../src/game/scoring.ts';
 import {
@@ -21,6 +22,7 @@ import {
   storeWork,
   summarizeChange,
   toMarkdown,
+  selfPlayFiles,
   validateFiles,
 } from '../tools/tuner/proposal.ts';
 import { playout, yieldToRunner } from './helpers/playout.ts';
@@ -127,6 +129,18 @@ describe('保存前の検査（指示書 3-5）', () => {
     expect(validateFiles(setInFiles(base, 'board_2.json', ['squares', 'A1', 'terrain'], terrain)).map((i) => i.path)).toContain(
       'boards[1].squares',
     );
+  });
+
+  it('自動対戦で確かめ、元データでは問題がない（ユーザー決定 2026-11-11、再発防止の C）', async () => {
+    // rules.md v0.8 12-1-1、1-0-6
+    expect(await selfPlayFiles(base)).toEqual([]);
+  });
+
+  it('自動対戦は処理が止まるデータを問題として返す（例外で止めない）', () => {
+    // rules.md v0.8 2-6-2（個人ボードがなければ準備できない）
+    const problems = selfPlayGame(3, 1, { ...GAME_DATA, boards: [] });
+    expect(problems).toHaveLength(1);
+    expect(problems[0]?.message).toContain('処理が止まった');
   });
 
   it('命令セットにない命令を検出する', () => {

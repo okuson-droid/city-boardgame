@@ -89,14 +89,18 @@ Claude Code がこのリポジトリで作業するときの手引きである�
 | `tools/tuner/` | チューナー。`proposal.ts`（調整案の作成・差分・適用・保存と読み込み・検査・Markdown）、`TunerApp.tsx`（画面）、`JsonEditor.tsx`（汎用フォーム）、`ScriptEditor.tsx`（効果を命令と引数の単位で編集）、`BoardEditor.tsx`（個人ボード）、`vite.config.ts`（開発サーバーと書き戻しの口）、`play.html`（試遊） |
 | `scripts/import-design.ts` | `design/` から characters・special_citizens・raid_cards・cards_civilization を取り込む |
 | `scripts/generate-boards.ts` | 仮置きの個人ボードをシード付きで生成する |
-| `tests/` | Vitest の単体テスト。`tests/helpers/` に局面づくりと乱択プレイアウトの補助 |
+| `tests/` | Vitest の単体テスト。`tests/helpers/` に局面づくりと乱択プレイアウトの補助。`tests/fixtures/data/` は単体テストが読む固定したデータ、`tests/live-data.test.ts` はいまの src/data/ の検査 |
+| `src/game/selfplay.ts` | 乱択の自動対戦（`playout`・`checkInvariants`・`selfPlayGame`・`selfPlayCheck`）。性質テストとチューナーの保存前の検査が共用する |
+| `scripts/pin-test-data.ts` | `npm run test:pin`：単体テストの固定したデータを取り直す |
 
 ## コマンド
 
 ```bash
 npm install
 npm run typecheck     # tsc --noEmit
-npm test              # vitest run
+npm test              # vitest run（固定したデータ tests/fixtures/data/ で行う。いまの src/data/ は tests/live-data.test.ts が確かめる）
+npm run test:live     # いまの src/data/ で全テスト（調整で食い違ったテストを知るため。公開は止めない）
+npm run test:pin      # tests/fixtures/data/ をいまの src/data/ の写しで取り直す
 npm run build         # dist/index.html（1枚の HTML）
 npm run dev           # 開発サーバー
 npm run import:design # design/ からデータを取り込み直す
@@ -126,6 +130,14 @@ npm run import:rules -- <フォルダー>  # ルール解説のスライドを�
 - 導入するライブラリは TypeScript・React・Vite・Vitest・vite-plugin-singlefile・Playwright に限る（型定義の `@types/*` を除く）。追加が必要なら導入前に報告する。
 - ブランチの完了条件：`npm run typecheck`・`npm test`・`npm run build` がすべて通ること。
 
+## テストのデータ（ユーザー決定 2026-11-11、チューナーからの保存で公開が止まった件の再発防止）
+
+- 単体テストは固定したデータ（`tests/fixtures/data/`）で行う。`vite.config.ts` の `pinnedTestData` が、Vitest の中だけ `src/data/` のゲームデータの JSON の代わりに同じ名前の写しを返す（`icon_keys.json` は写さない）。チューナーで `src/data/` を調整しても、単体テストの結果は変わらない。
+- いまの `src/data/` は `tests/live-data.test.ts` が確かめる（型と整合の検査、3人・4人の自動対戦 各30局）。どの値でも成り立つべきことだけを確かめ、特定のカードの値は決め打ちしない。
+- `npm run test:live`（`TEST_DATA=live`）はいまのデータで全テストを走らせる。`pages.yml` はこれを公開を止めない段で走らせ、落ちれば警告を出す。調整でカードの効果が変わり、決め打ちしたテストと食い違ったことを知らせるためである。
+- ゲームの仕組みとデータの形を同時に変えるとき（項目を足す・名前を変えるなど）は、`src/data/` を直したあと `npm run test:pin` で固定したデータを取り直し、テストを直してから commit する。データの形を変えたのに取り直さないと、単体テストが古い形のデータを読む。
+- チューナーは GitHub への保存と書き出しの前に、型検査・整合検査に加えて自動対戦（`SELF_PLAY_GAMES`＝10局、`selfPlayFiles`）で確かめ、処理が止まる・終局しない・不変条件が破れるなどの問題があれば止める。「検査」の欄の「自動対戦で確かめる」でも行える。
+
 ## ゲームロジックの約束事
 
 - 選択待ちモデル：`GameState.stack` の最上段が現在のタスクである。自動タスク（`roundStart`・`income`・`nextTurn` など）は `advance` が処理し、選択タスクは `applyMove(state, optionId)` を待つ。選択肢のない選択タスクは不発として取り除く（16-2-5、16-2-6、4-4-5）。
@@ -144,7 +156,7 @@ npm run import:rules -- <フォルダー>  # ルール解説のスライドを�
 - 得点は `addScore` で得点トラックに加え、評価軸を付けた `score` 出来事を残す（17-0-3）。評価軸の指定がない得点は `other`（17-0-2）。
 - 手番の最初へ戻す（ユーザー決定 2026-11-08）：`undoToTurnStart`（history.ts）は直前のチェックポイントの直後まで再生し直す。カードを引いた・特別な市民カードを獲得した選択はチェックポイントのため、その直後までしか戻らない。オンライン版は `undo` に `toTurnStart` を添え、戻す選択がすべてその席のものに限る（`undoInRoom`）。画面は上部の「手番の最初へ」（`data-ui="undo-turn"`、`GameController.undoTurn`、チュートリアルでは出さない）。
 - 巻き戻しは記録（`state.log`）の再生で行う。テストで局面を直接書き換えた状態は再生できないため、巻き戻しのテストは実際の選択だけで組み立てる。
-- 乱択プレイアウトの性質テスト（3人・4人で各100局）は約30秒かかる。
+- 乱択プレイアウトの性質テスト（3人・4人で各100局）は約30秒かかる。判定は `src/game/selfplay.ts` にあり、チューナーの保存前の検査と共用する。
 
 ## 画面の約束事
 

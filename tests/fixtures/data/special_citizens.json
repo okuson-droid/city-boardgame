@@ -1,0 +1,777 @@
+{
+  "importedFrom": "design/data_special_citizens.json",
+  "provisional": false,
+  "schema": "special_citizens",
+  "version": "0.1",
+  "updated": "2026-11-03",
+  "source": "暫定ルールブック Ver.0.1（Excel）特別な住民カード一覧シート",
+  "notes": [
+    "text と timing は原本の文言のまま収録した。表記揺れ・誤字も修正していない。",
+    "原本の一覧シートの表題は「特別な住民カード」、rules.md 本文の呼称は「特別な市民カード」である。同一物かどうかは未決（decisions.md 1-7）。",
+    "timing は原本の「→」の左側、text は右側である。1枚に「/」区切りで2つの効果がある場合は effects を2要素に分けた。",
+    "worker_cost はアクションスペース型の効果で原本に記載された必要ワーカー数である。",
+    "open_issues は claude/decisions.md の「4. 実装前に決めておきたい点」の項目番号である。",
+    "効果の命令セット化（効果スクリプト化）は未着手である。",
+    "clarifications はルール決定に基づく文言の解釈であり、原本の text は変更しない。"
+  ],
+  "cards": [
+    {
+      "id": "01",
+      "name": "",
+      "effects": [
+        {
+          "timing": "常時",
+          "text": "森林タイルを置く度に2点を得る"
+        }
+      ],
+      "open_issues": [
+        "2-23"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "on",
+          "event": "tilePlaced",
+          "filter": {
+            "terrain": "forest"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 2,
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "name": "",
+      "effects": [
+        {
+          "timing": "常時",
+          "text": "最上位アクションを実行する度に2点を得る"
+        }
+      ],
+      "open_issues": [
+        "3-7"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "on",
+          "event": "actionExecuted",
+          "filter": {
+            "tier": "top"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 2,
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "name": "",
+      "effects": [
+        {
+          "timing": "常時",
+          "text": "文明カードをプレイする度に1点を得る"
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "常時",
+          "text": "文明カードをプレイする度に2点を得る"
+        },
+        {
+          "timing": "獲得時",
+          "text": "プレイ済みの文明カード1枚につき1点を得る"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "on",
+          "event": "cardPlayed",
+          "filter": {},
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 2,
+              "axis": "welfare"
+            }
+          ]
+        },
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "playedCivCards",
+                "per": 1,
+                "times": 1
+              },
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "name": "",
+      "effects": [
+        {
+          "timing": "ゲーム終了時",
+          "text": "商店の件数によって金から得る点数が2倍になる"
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "1ラウンドにつき1回のフリーアクション",
+          "text": "軍事レベルかインフラレベルのどちらか一方を1上げる"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "chooseOne",
+              "options": [
+                [
+                  {
+                    "op": "raise",
+                    "track": "military",
+                    "amount": 1
+                  }
+                ],
+                [
+                  {
+                    "op": "raise",
+                    "track": "infra",
+                    "amount": 1
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "05",
+      "name": "",
+      "effects": [
+        {
+          "timing": "ゲーム終了時",
+          "text": "上限まで建てている建物1種類につき4点"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "maxedBuildingTypes",
+                "per": 1,
+                "times": 4
+              },
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "name": "",
+      "effects": [
+        {
+          "timing": "ゲーム終了時",
+          "text": "水場に建てている建物1軒につき2点"
+        }
+      ],
+      "open_issues": [
+        "2-23"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingsOnTerrain:water",
+                "per": 1,
+                "times": 2
+              },
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "07",
+      "name": "",
+      "effects": [
+        {
+          "timing": "ゲーム終了時",
+          "text": "山岳に建てている建物1軒につき2点"
+        }
+      ],
+      "open_issues": [
+        "2-23"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingsOnTerrain:mountain",
+                "per": 1,
+                "times": 2
+              },
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "08",
+      "name": "",
+      "effects": [
+        {
+          "timing": "ゲーム終了時",
+          "text": "自然公園カードの5/10/15点を、10/15/20点に置き換える"
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "獲得時",
+          "text": "計画都市カードを1枚引き、自分専用として公開する"
+        },
+        {
+          "timing": "ゲーム終了時",
+          "text": "建設済みの建物の種類1つにつき1点を得る"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "drawPlannedCity",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingTypes",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "09",
+      "name": "",
+      "effects": [
+        {
+          "timing": "1ワーカーの専用アクションスペース",
+          "worker_cost": 1,
+          "text": "建物1軒を無料で建設する"
+        }
+      ],
+      "open_issues": [],
+      "clarifications": [
+        "アクションスペースは獲得したプレイヤー専用の占有型で、1ラウンドに1回だけ使用できる（rules.md 6-2-4、6-2-5）。"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "actionSpace",
+          "workers": 1,
+          "do": [
+            {
+              "op": "build",
+              "max": 1,
+              "upTo": false,
+              "buildings": null,
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "name": "",
+      "effects": [
+        {
+          "timing": "1ワーカーの専用アクションスペース",
+          "worker_cost": 1,
+          "text": "文明カード1枚を無料でプレイする"
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "1ワーカーの専用アクションスペース",
+          "worker_cost": 1,
+          "text": "文明カード1枚を無料でプレイする。その後、文明カード1枚を通常のコストでプレイしてもよい"
+        }
+      ],
+      "open_issues": [
+        "2-7"
+      ],
+      "clarifications": [
+        "アクションスペースは獲得したプレイヤー専用の占有型で、1ラウンドに1回だけ使用できる（rules.md 6-2-4、6-2-5）。"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "actionSpace",
+          "workers": 1,
+          "do": [
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": true
+            },
+            {
+              "op": "later",
+              "do": [
+                {
+                  "op": "playCard",
+                  "count": 1,
+                  "free": false,
+                  "upTo": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "name": "",
+      "effects": [
+        {
+          "timing": "3ワーカーの専用アクションスペース",
+          "worker_cost": 3,
+          "text": "任意のアクションスペースの効果を使用する(占有されているアクションスペースでも、解放されていない最上位アクションでも良い)"
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "2ワーカーの専用アクションスペース",
+          "worker_cost": 2,
+          "text": "任意のアクションスペースの効果を使用する(占有されているアクションスペースでも、解放されていない最上位アクションでも良い)"
+        }
+      ],
+      "open_issues": [
+        "2-12",
+        "3-7"
+      ],
+      "clarifications": [
+        "アクションスペースは獲得したプレイヤー専用の占有型で、1ラウンドに1回だけ使用できる（rules.md 6-2-4、6-2-5）。"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "actionSpace",
+          "workers": 2,
+          "do": [
+            {
+              "op": "copyAction"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "name": "",
+      "effects": [
+        {
+          "timing": "常時",
+          "text": "住宅の建設に必要な資材が1少なくなる"
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "常時",
+          "text": "住宅の建設に必要な資材が1少なくなる"
+        },
+        {
+          "timing": "ゲーム終了時",
+          "text": "住宅1軒につき1点を得る"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "buildCost",
+            "building": "house",
+            "materials": -1
+          }
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingsOfType:house",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "name": "",
+      "effects": [
+        {
+          "timing": "獲得時",
+          "text": "住宅を2軒まで無料で建設する"
+        },
+        {
+          "timing": "常時",
+          "text": "通常ワーカーは獲得したターンから使用できる。"
+        }
+      ],
+      "open_issues": [],
+      "clarifications": [
+        "「獲得したターン」の「ターン」はラウンドを指す。獲得した通常ワーカーを獲得したラウンド中から使用できる（decisions.md 2-13、2026-11-03）。"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "build",
+              "max": 2,
+              "upTo": true,
+              "buildings": [
+                "house"
+              ],
+              "terrain": null,
+              "payGold": false,
+              "payMaterials": false
+            }
+          ]
+        },
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "regularWorkersImmediate"
+          }
+        }
+      ]
+    },
+    {
+      "id": "14",
+      "name": "",
+      "effects": [
+        {
+          "timing": "獲得時",
+          "text": "任意の土地タイル2枚を無料で配置する(マスと一致しなくてもよい)"
+        },
+        {
+          "timing": "1ワーカーのアクションスペース",
+          "worker_cost": 1,
+          "text": "任意の土地タイル1枚を無料で配置する(マスと一致しなくてもよい)"
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "獲得時",
+          "text": "任意の土地タイル3枚を無料で配置する(マスと一致しなくてもよい)"
+        },
+        {
+          "timing": "1ワーカーのアクションスペース",
+          "worker_cost": 1,
+          "text": "マスと同じ種類の土地タイル2枚を無料で配置する"
+        }
+      ],
+      "open_issues": [],
+      "clarifications": [
+        "アクションスペースは獲得したプレイヤー専用の占有型で、1ラウンドに1回だけ使用できる（rules.md 6-2-4、6-2-5）。"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 3,
+              "tile": "any"
+            }
+          ]
+        },
+        {
+          "ability": "actionSpace",
+          "workers": 1,
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 2,
+              "tile": "match"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "15",
+      "name": "",
+      "effects": [
+        {
+          "timing": "1ラウンドにつき1回のフリーアクション",
+          "text": "文明カードを2枚ドロー"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "16",
+      "name": "",
+      "effects": [
+        {
+          "timing": "1ラウンドにつき1回のフリーアクション",
+          "text": "通常ワーカー1人につき1金を得る"
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "1ラウンドにつき1回のフリーアクション",
+          "text": "通常ワーカー1人につき1金、臨時ワーカー1人につき2金を得る"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "regularWorkers",
+                "per": 1,
+                "times": 1
+              }
+            },
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "tempWorkers",
+                "per": 1,
+                "times": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "17",
+      "name": "",
+      "effects": [
+        {
+          "timing": "1ラウンドにつき1回のフリーアクション",
+          "text": "臨時ワーカー1人を得る"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "18",
+      "name": "",
+      "effects": [
+        {
+          "timing": "1ラウンドにつき1回のフリーアクション",
+          "text": "臨時ワーカー1人につき1資材を得る"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": {
+                "count": "tempWorkers",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "19",
+      "name": "",
+      "effects": [
+        {
+          "timing": "獲得時",
+          "text": "軍事トラックそ即座に3進め、4軍事トークンを得る"
+        }
+      ],
+      "open_issues": [
+        "5"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": 3
+            },
+            {
+              "op": "gain",
+              "res": "militaryTokens",
+              "amount": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "20",
+      "name": "",
+      "effects": [
+        {
+          "timing": "獲得時",
+          "text": "即座に金の生産を4、資材の生産を2上げる"
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "獲得時",
+          "text": "即座に金の生産を6、資材の生産を3上げる"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 6
+            },
+            {
+              "op": "gain",
+              "res": "materialProduction",
+              "amount": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

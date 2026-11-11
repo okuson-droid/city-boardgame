@@ -1,0 +1,684 @@
+{
+  "importedFrom": "design/data_characters.json",
+  "provisional": false,
+  "schema": "characters",
+  "version": "0.1",
+  "updated": "2026-11-03",
+  "source": "暫定ルールブック Ver.0.1（Excel）キャラクター一覧シート",
+  "notes": [
+    "text は原本の文言のまま収録した。表記揺れ・誤字も修正していない。",
+    "label は原本の名称に付された括弧内の語、axis は rules.md 2-5-2 に基づき label が属する評価軸である。",
+    "initial_bonus は原本の「追加初期資源」である。原本が「なし」の場合は空配列とした。",
+    "open_issues は claude/decisions.md の「4. 実装前に決めておきたい点」の項目番号である。",
+    "効果の命令セット化（効果スクリプト化）は未着手である。文言の未決点が解消してから行う。",
+    "clarifications はルール決定に基づく文言の解釈であり、原本の text は変更しない。"
+  ],
+  "characters": [
+    {
+      "id": "hero",
+      "name": "英雄",
+      "label": "防衛",
+      "axis": "軍事・防衛",
+      "initial_bonus": [
+        "軍事レベル1から始まる"
+      ],
+      "effects": [
+        {
+          "text": "初期配置タイルの代わりに山岳土地を選び、そこに土地タイルを置き、砦1軒を無料で建設する。"
+        },
+        {
+          "text": "撃退成功時、2点を得る。"
+        }
+      ],
+      "open_issues": [
+        "2-32",
+        "2-23"
+      ],
+      "provisional": false,
+      "changes": [
+        "初期資源に軍事力トークン4つを加える（ユーザー決定 2026-11-07）。"
+      ],
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": 1
+            },
+            {
+              "op": "gain",
+              "res": "militaryTokens",
+              "amount": 4
+            },
+            {
+              "op": "heroStart"
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "raid",
+          "filter": {
+            "result": "repelled"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 2,
+              "axis": "military"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "commander",
+      "name": "指揮官",
+      "label": "軍事",
+      "axis": "軍事・防衛",
+      "initial_bonus": [],
+      "effects": [
+        {
+          "text": "砦の建設コストが1資材安くなる。"
+        },
+        {
+          "text": "砦の建設時に軍事レベルが1上昇する。"
+        },
+        {
+          "text": "軍事レベルに基づく遠征の報酬に以下を追加する。",
+          "items": [
+            "レベル6：文明カード1枚ドロー",
+            "レベル9：臨時ワーカー1を獲得"
+          ]
+        }
+      ],
+      "open_issues": [
+        "1-8",
+        "2-24",
+        "2-35"
+      ],
+      "provisional": false,
+      "changes": [
+        "「砦の建設時に軍事レベルが1上昇する」をなくす（ユーザー決定 2026-11-07）。"
+      ],
+      "script": [
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "buildCost",
+            "building": "fort",
+            "materials": -1
+          }
+        },
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "expeditionRewards",
+            "add": [
+              {
+                "level": 6,
+                "command": {
+                  "op": "gain",
+                  "res": "drawCivCards",
+                  "amount": 1
+                }
+              },
+              {
+                "level": 9,
+                "command": {
+                  "op": "gain",
+                  "res": "tempWorkers",
+                  "amount": 1
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "merchant",
+      "name": "豪商",
+      "label": "経済",
+      "axis": "経済・産業",
+      "initial_bonus": [
+        "金の生産を5上昇"
+      ],
+      "effects": [
+        {
+          "text": "ラウンドに1回、以下のフリーアクションをそれぞれ行える。",
+          "items": [
+            "10金を支払い、臨時ワーカー1を得る",
+            "5金を支払い、2資材を得る"
+          ]
+        }
+      ],
+      "open_issues": [
+        "3-11"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 5
+            }
+          ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": {
+            "res": "gold",
+            "amount": 10
+          },
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": {
+            "res": "gold",
+            "amount": 5
+          },
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capitalist",
+      "name": "資本家",
+      "label": "産業",
+      "axis": "経済・産業",
+      "initial_bonus": [
+        "資材の生産を1上昇"
+      ],
+      "effects": [
+        {
+          "text": "山岳に土地タイルを配置した時、2資材を得る。"
+        },
+        {
+          "text": "ゲーム終了時、建物の数だけ資材を得る。"
+        }
+      ],
+      "open_issues": [
+        "2-23",
+        "2-37"
+      ],
+      "provisional": false,
+      "changes": [
+        "ゲーム終了時に得るのは資材ではなく資材の生産力（建物1軒につき1）とする（ユーザー決定 2026-11-06。経済・産業を収入で数えるため）。"
+      ],
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materialProduction",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "tilePlaced",
+          "filter": {
+            "terrain": "mountain"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "materialProduction",
+              "amount": {
+                "count": "buildings",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scholar",
+      "name": "学者",
+      "label": "学術",
+      "axis": "文化・学術",
+      "initial_bonus": [
+        "文明カード2枚ドロー"
+      ],
+      "effects": [
+        {
+          "text": "文明カードを3枚プレイするごとに、以下の内から1つを選択して適用する。",
+          "items": [
+            "インフラレベルを1上昇",
+            "土地タイル1枚を獲得",
+            "臨時ワーカー1を獲得"
+          ]
+        }
+      ],
+      "open_issues": [
+        "2-7",
+        "2-22"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "cardPlayed",
+          "filter": {},
+          "every": 3,
+          "do": [
+            {
+              "op": "chooseOne",
+              "options": [
+                [
+                  {
+                    "op": "raise",
+                    "track": "infra",
+                    "amount": 1
+                  }
+                ],
+                [
+                  {
+                    "op": "placeTiles",
+                    "count": 1,
+                    "tile": "match"
+                  }
+                ],
+                [
+                  {
+                    "op": "gain",
+                    "res": "tempWorkers",
+                    "amount": 1
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "artist",
+      "name": "芸術家",
+      "label": "文化",
+      "axis": "文化・学術",
+      "initial_bonus": [],
+      "effects": [
+        {
+          "text": "最初の手番開始時、文明カード1枚を無料でプレイする。"
+        },
+        {
+          "text": "文明カードをプレイする度に、2金と1点を得る。"
+        }
+      ],
+      "open_issues": [
+        "2-7",
+        "3-14"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "firstTurnStart",
+          "do": [
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": true
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "cardPlayed",
+          "filter": {},
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 2
+            },
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 1,
+              "axis": "other"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "saint",
+      "name": "聖女",
+      "label": "生活",
+      "axis": "生活・福祉",
+      "initial_bonus": [
+        "特別な住民カード1枚"
+      ],
+      "effects": [
+        {
+          "text": "通常ワーカーを獲得した時、1資材を獲得する。"
+        },
+        {
+          "text": "通常ワーカーが10人になった時、特別な市民カード1枚を獲得する。"
+        }
+      ],
+      "open_issues": [
+        "2-34"
+      ],
+      "clarifications": [
+        "追加初期資源の特別な住民カード1枚は、最初の手番開始時に公開カードから選んで獲得し、山札から1枚補充する（rules.md 9-3-2-2）。"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "firstTurnStart",
+          "do": [
+            {
+              "op": "gain",
+              "res": "specialCitizen",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "workerGained",
+          "filter": {
+            "kind": "regular"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "workerGained",
+          "filter": {
+            "kind": "regular",
+            "cond": {
+              "left": "regularWorkers",
+              "op": ">=",
+              "right": 10
+            }
+          },
+          "once": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "specialCitizen",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bureaucrat",
+      "name": "官僚",
+      "label": "福祉",
+      "axis": "生活・福祉",
+      "initial_bonus": [
+        "インフラレベル1から始まる"
+      ],
+      "effects": [
+        {
+          "text": "役所の建設コストが1資材安くなる。"
+        },
+        {
+          "text": "役所の建設時にインフラレベルが1上昇する。"
+        },
+        {
+          "text": "インフラレベルに応じて、以下のフリーアクションが解放される。",
+          "items": [
+            "レベル3：ラウンド中に1回、3金を得る",
+            "レベル6：ラウンド中に1回、1資材を得る",
+            "レベル9：ラウンド中に1回、臨時ワーカー1を得る"
+          ]
+        }
+      ],
+      "open_issues": [
+        "2-31",
+        "2-35",
+        "3-11"
+      ],
+      "provisional": false,
+      "changes": [
+        "「役所の建設時にインフラレベルが1上昇する」をなくす（ユーザー決定 2026-11-07）。"
+      ],
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "raise",
+              "track": "infra",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "buildCost",
+            "building": "office",
+            "materials": -1
+          }
+        },
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": {
+            "left": "infraLevel",
+            "op": ">=",
+            "right": 3
+          },
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 3
+            }
+          ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": {
+            "left": "infraLevel",
+            "op": ">=",
+            "right": 6
+          },
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": {
+            "left": "infraLevel",
+            "op": ">=",
+            "right": 9
+          },
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "spirit_caller",
+      "name": "精霊使い",
+      "label": "自然",
+      "axis": "自然・環境",
+      "initial_bonus": [],
+      "effects": [
+        {
+          "text": "土地種に対応した4種の精霊チップを持つ。"
+        },
+        {
+          "text": "フリーアクションで土地タイル1枚を対応する精霊チップと共に対応するマスに置くことができる。"
+        },
+        {
+          "text": "精霊チップが置いてある土地に建物を建設することはできない。"
+        },
+        {
+          "text": "精霊チップは3ラウンド目の襲撃の後に回収され、再度使用可能になる。"
+        },
+        {
+          "text": "ゲーム終了時、精霊チップのある土地に隣接する同種の土地タイル1枚につき1点。"
+        }
+      ],
+      "open_issues": [
+        "1-8",
+        "3-10",
+        "2-23"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": false,
+          "do": [
+            {
+              "op": "spiritPlace"
+            }
+          ]
+        },
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "noBuildOnSpiritLand"
+          }
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "spiritAdjacency",
+                "per": 1,
+                "times": 1
+              },
+              "axis": "other"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "designer",
+      "name": "デザイナー",
+      "label": "環境",
+      "axis": "自然・環境",
+      "initial_bonus": [
+        "土地タイル2枚"
+      ],
+      "effects": [
+        {
+          "text": "開拓でマスと異なる土地タイルを置く際の追加コストが不要になる。"
+        },
+        {
+          "text": "最初の手番開始時、自分専用の計画都市カード2枚を引く。"
+        }
+      ],
+      "open_issues": [
+        "1-3",
+        "2-33",
+        "2-38"
+      ],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "setup",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 2,
+              "tile": "match"
+            }
+          ]
+        },
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "pioneerMismatchExtra",
+            "value": 0
+          }
+        },
+        {
+          "ability": "firstTurnStart",
+          "do": [
+            {
+              "op": "drawPlannedCity",
+              "count": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
