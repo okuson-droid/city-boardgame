@@ -15,11 +15,13 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
 | `src/game/board.ts` | マスの座標・隣接・ヘクス距離・回転（rules.md 2-1-3〜2-1-3-3） |
 | `src/game/rng.ts` | シード付き擬似乱数（mulberry32）。状態は JSON で直列化できる |
 | `src/game/types.ts` | GameState・PlayerState・Task（選択待ちのタスク）・GameEvent・Option |
-| `src/game/engine.ts` | 公開窓口 `createGame`・`getOptions`・`applyMove`・`isGameOver`。準備・ドラフト・手番・パス・ラウンド・襲撃 |
+| `src/game/engine.ts` | 公開窓口 `createGame`・`getOptions`・`applyMove`・`isGameOver`。準備・ドラフト・手番・パス・ラウンド・襲撃。`endedCopy`（いま終局したと仮定した写し） |
 | `src/game/actions.ts` | 10アクションと、土地・建物の配置の選択タスク |
 | `src/game/core.ts` | 数え上げ、資源・トラック・カードの変化、効果の処理（`processEffects`）、出来事（`emit`） |
 | `src/game/scoring.ts` | `finalScores`（第17章、同点判定 17-7-2） |
-| `src/game/history.ts` | `replay`・`isCheckpoint`・`undoLast` |
+| `src/game/history.ts` | `replay`・`isCheckpoint`・`undoLast`・`hiddenFuture`（下見の先を見せない判定） |
+| `src/game/projection.ts` | `projectedScores`（いま終わったときの得点の見込み。終了時の能力を含む） |
+| `src/game/pitfalls.ts` | 落とし穴の注意（`PITFALL_RULES`・`pitfalls`・`pitfallLines`） |
 | `src/game/abilities.ts` | プレイヤーが持つ能力（キャラクター・特別な市民カード・プレイ済みの文明カード）と補正（modifier） |
 | `src/game/effects.ts` | 効果スクリプトの実行（`runCommands`）、指標、常時効果の反応 |
 | `src/game/effect-tasks.ts` | 効果由来の選択タスク、能力のフリーアクション・専用スペース、計画都市の達成宣言 |
@@ -58,7 +60,7 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
 | `src/ui/DraftScreen.tsx` | ドラフトの専用画面（選ぶ順番の帯・選んだもののまとめ・種類ごとのタブ・個人ボードの地図 `BoardMap`・キャラクターの文言） |
 | `src/ui/Online.tsx` | オンライン版の入口（部屋を作る・入る・続きから）と対局画面 |
 | `server/main.ts` | オンライン版のサーバー（node:http だけ、SSE＋HTTP）。`server/vite.config.ts` で `dist-server/main.js` にまとめる |
-| `tools/play/` | 対話プレイ用のコマンド。`record.ts`（記録の再生・選択の適用・取り消し、ファイルの読み書き）、`online.ts`（オンライン版の部屋に席として入って打つ）、`compact.ts`（既定の短い出力・選択肢の畳み方・`ref`・`resume`・手番ごとのまとめ）、`measure.ts`（出力量の計測）、`render.ts`（局面・選択肢・出来事・得点の文字化と `--json` の模型）、`cli.ts`（引数と入出力だけ）、`vite.config.ts`（`dist-play/cli.js` へのビルド） |
+| `tools/play/` | 対話プレイ用のコマンド。`record.ts`（記録の再生・選択の適用・取り消し、ファイルの読み書き）、`online.ts`（オンライン版の部屋に席として入って打つ）、`compact.ts`（既定の短い出力・選択肢の畳み方・`ref`・`resume`・手番ごとのまとめ）、`measure.ts`（出力量の計測）、`render.ts`（局面・選択肢・出来事・得点の文字化と `--json` の模型）、`preview.ts`（`move --dry-run` の下見と `--or` の比べ）、`plan.ts`（狙いの登録と知らせ・手番順の行）、`cli.ts`（引数と入出力だけ）、`vite.config.ts`（`dist-play/cli.js` へのビルド） |
 | `src/game/replay.ts` | 対局の記録（リプレイ）の形 `ReplayRecord`（`{ format, config, seed, moves, dataVersion }`）、検査 `parseReplay`、作成 `replayRecordOf`、再生 `replayTo`・`replayPrefix`。対話プレイの記録・画面の保存と再生・オンライン版の `replay` が同じ形を使う |
 | `src/ui/Replay.tsx`・`replay-file.ts` | 記録の再生画面（1手ずつ・手番ずつ進め・戻す、自動で進める、手数へ飛ぶ、視点の固定、この手番の行動、この局面から遊ぶ）と、ファイルの保存・読み込み |
 | `src/game/narrate.ts` | `eventText`：出来事（GameEvent）を文にする。手番ごとのまとめ `turnDelta`・`deltaText`・`turnSummary` と、出来事の列だけからの手番の区切り `eventTurns`（オンライン版の写しのため）。対話プレイのコマンドと記録の再生画面が共用する |

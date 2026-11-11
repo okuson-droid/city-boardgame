@@ -443,3 +443,32 @@ export const expeditionPickNotes = (
   const task = state.stack[state.stack.length - 1];
   return task?.t === 'expeditionPick' ? expeditionNotesOf(d, state, task) : null;
 };
+
+// ---------------------------------------------------------------------------
+// 狙いの状態（指示書 2026-11-12 対話プレイ強化 2-4）。公開情報だけから求める。
+// ---------------------------------------------------------------------------
+
+/** 特別な市民カードのありか：獲得したプレイヤーの番号、公開中なら 'revealed'、それ以外（山札・未公開）は null。 */
+export const specialCitizenHolder = (state: GameState, id: string): number | 'revealed' | null => {
+  const holder = state.players.find((p) => p.specialCitizens.includes(id));
+  if (holder !== undefined) return holder.index;
+  return state.scRevealed.includes(id) ? 'revealed' : null;
+};
+
+/** ボーナスタイルのありか：持っているプレイヤーの番号、場にあれば 'board'、それ以外は null。 */
+export const bonusTileHolder = (state: GameState, id: number): number | 'board' | null => {
+  const holder = state.players.find((p) => p.bonusTile === id);
+  if (holder !== undefined) return holder.index;
+  return state.bonusTilesOnBoard.includes(id) ? 'board' : null;
+};
+
+/** 計画都市の残りの順位と点（共有のカード。専用のカードと、上限まで達成されたカードは空）。 */
+export const plannedCityRemaining = (state: GameState, id: string, d: GameData = GAME_DATA): { rank: number; points: number }[] => {
+  if (state.players.some((p) => p.privatePlannedCities.includes(id))) return [];
+  const max = d.params.setupByPlayerCount[String(state.players.length)]?.plannedCityMaxDeclarers ?? 0;
+  const table = d.params.scoring.plannedCityPointsByRank;
+  const claimed = plannedCityClaimers(state, id).length;
+  const out: { rank: number; points: number }[] = [];
+  for (let rank = claimed; rank < max; rank += 1) out.push({ rank: rank + 1, points: table[rank] ?? 0 });
+  return out;
+};

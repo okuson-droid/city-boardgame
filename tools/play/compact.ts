@@ -24,7 +24,7 @@ import {
 } from '../../src/game/index.ts';
 import { conversionLabel } from '../../src/game/labels.ts';
 import { PlayError, type Reveal, type Step } from './record.ts';
-import { renderBoard, renderModel, scoreModel, showModel, type PlayerView, type ShowModel, type Viewer } from './render.ts';
+import { projectionLine, renderBoard, renderModel, scoreModel, showModel, type PlayerView, type ShowModel, type Viewer } from './render.ts';
 
 // ---------------------------------------------------------------------------
 // 欄（--only）
@@ -373,7 +373,7 @@ const optionSection = (state: GameState, m: ShowModel, full: boolean, d: GameDat
     const cost = notes?.costs[o.id];
     return cost === undefined ? o : { ...o, label: `${o.label}（確定時の軍事力トークン計${cost}）` };
   });
-  return [head, ...foldedLines(foldOptions(options, d, cellInfo)), ...unavailableLines(state, d)];
+  return [head, ...foldedLines(foldOptions(options, d, cellInfo)), ...unavailableLines(state, d), ...p.warnings];
 };
 
 /** 理由ごとにまとめた「選べないもの」の行（ユーザー決定 2026-11-11）。 */
@@ -776,9 +776,17 @@ export const refLines = (
 // ---------------------------------------------------------------------------
 
 /** move の既定の出力：出来事・自分の要約・次の選択肢（指示書 2-1）。 */
-export const moveOutput = (state: GameState, steps: readonly Step[], seat: number | undefined, opts: CompactOptions = {}, d: GameData = GAME_DATA): string => {
+export const moveOutput = (
+  state: GameState,
+  steps: readonly Step[],
+  seat: number | undefined,
+  opts: CompactOptions = {},
+  d: GameData = GAME_DATA,
+  notices: readonly string[] = [],
+): string => {
   const viewer: Viewer = opts.as ?? seat ?? steps[0]?.player ?? decider(state) ?? 0;
-  const events = stepLines(state, steps, viewer, d);
+  // 狙いの知らせ（plan、指示書 2026-11-12 2-4）は出来事の後に置く。
+  const events = [...stepLines(state, steps, viewer, d), ...notices];
   if (opts.only !== undefined) return compactShow(state, { ...opts, as: viewer }, d, events).join('\n');
   return [...events, ...tailLines(state, viewer, opts, d)].join('\n');
 };
@@ -803,22 +811,18 @@ export const ownTurnLines = (state: GameState, steps: readonly Step[], seat: num
     .filter((t) => t.player === seat)
     .map((t) => `R${t.round} ${turnSummary(state, seat, steps.filter((s) => s.index >= t.from && s.index <= t.to).flatMap((s) => s.events), d)}`);
 
-/** いま終わったときの得点の見込み（その席の分）。 */
-export const scoreLine = (state: GameState, seat: number, d: GameData = GAME_DATA): string => {
-  const m = scoreModel(state, d);
-  const p = m.players.find((x) => x.player.startsWith(`P${seat}`));
-  if (p === undefined) return '';
-  return `${m.over ? '最終得点' : 'いま終わったときの見込み（終了時の能力を除く）'}: ${p.rank}位 合計${p.total}（得点トラック${p.track}・基礎${p.base} ${Object.entries(p.axes).map(([k, n]) => `${k}${n}`).join(' ')}）｜全員 ${m.players.map((x) => `${x.player.split('（')[0]} ${x.total}`).join(' ')}`;
-};
+/** いま終わったときの得点の見込み（その席の分）。本体は render.ts の projectionLine（--full の自分の欄と共用）。 */
+export const scoreLine = (state: GameState, seat: number, d: GameData = GAME_DATA): string => projectionLine(scoreModel(state, d), seat);
 
 /** resume の出力（指示書 2-6）。作り直した打ち手が最初に1回だけ呼ぶ。 */
-export const resumeOutput = (state: GameState, steps: readonly Step[], seat: number, d: GameData = GAME_DATA): string =>
+export const resumeOutput = (state: GameState, steps: readonly Step[], seat: number, d: GameData = GAME_DATA, notices: readonly string[] = []): string =>
   [
     ...refLines(state, seat, REF_SECTIONS, [], d),
     ...compactShow(state, { as: seat }, d),
     ...compactShow(state, { as: seat, only: ['hand'] }, d),
     `== P${seat} のこれまでの手番`,
     ...(ownTurnLines(state, steps, seat, d).length > 0 ? ownTurnLines(state, steps, seat, d) : ['なし']),
+    ...notices,
     '== 得点',
     scoreLine(state, seat, d),
   ].join('\n');

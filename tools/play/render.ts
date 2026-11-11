@@ -12,6 +12,9 @@ import {
   finalScores,
   getOptions,
   isGameOver,
+  pitfallLines,
+  pitfalls,
+  projectedScores,
   queries,
   targetOf,
   type GameEvent,
@@ -166,6 +169,8 @@ export type ShowModel = {
     readonly picks: readonly string[];
     /** 選択肢。視点から見えないときは null（他人の選択肢は手札の内容を含むため）。 */
     readonly options: readonly { readonly n: number; readonly id: string; readonly label: string }[] | null;
+    /** 落とし穴の注意の行（src/game/pitfalls.ts、5行まで）。選択肢が見えないときは空。 */
+    readonly warnings: readonly string[];
   };
   /** ドラフトの残りの候補（ドラフト中だけ）。キャラクターは能力の文、個人ボードは --board のとき地図も出す。 */
   readonly draft: {
@@ -173,6 +178,8 @@ export type ShowModel = {
     readonly boards: readonly { readonly id: string; readonly name: string; readonly map: readonly string[] | null }[];
   } | null;
   readonly board: readonly string[] | null;
+  /** 視点の席の得点の見込み1行（projectedScores、終了時の能力を含む）。 */
+  readonly projection: string;
 };
 
 const planCondition = (d: GameData, id: string): { condition: string; benefit: string } => {
@@ -359,6 +366,7 @@ export const showModel = (state: GameState, opts: ShowOptions = {}, d: GameData 
       pendingCost: queries.pendingBuildCost(state, d),
       picks: queries.pendingPicks(state),
       options: visibleOptions ? options.map((o, i) => ({ n: i + 1, id: o.id, label: o.label })) : null,
+      warnings: visibleOptions ? pitfallLines(pitfalls(state, d)) : [],
     },
     draft:
       task?.t === 'draftPick'
@@ -376,6 +384,7 @@ export const showModel = (state: GameState, opts: ShowOptions = {}, d: GameData 
           }
         : null,
     board: showBoard ? renderBoard(state, self, cells, d) : null,
+    projection: projectionLine(scoreModel(state, d), self),
   };
 };
 
@@ -537,7 +546,7 @@ export const renderModel = (m: ShowModel): string[] => {
     ...sh.plannedCities.map((c) => `${c.name}（${c.id}${c.owner === null ? '' : `、P${c.owner} の専用`}）: ${c.condition}／恩恵 ${c.benefit}${c.claims.length > 0 ? `／達成 ${c.claims.join('・')}` : ''}`),
   );
   lines.push(`文明カード: 山札${sh.civDeck}枚・捨て札${sh.civDiscard}枚`);
-  lines.push(`== 自分 P${m.self.index}（${m.self.name}）`, ...playerLines(m.self, false));
+  lines.push(`== 自分 P${m.self.index}（${m.self.name}）`, ...playerLines(m.self, false), m.projection);
   if (m.detail !== null) lines.push(`== 詳細 P${m.detail.index}（${m.detail.name}）`, ...playerLines(m.detail, true));
   lines.push('== 他のプレイヤー', ...m.others.flatMap(otherLines));
   if (m.draft !== null) {
@@ -558,7 +567,7 @@ export const renderModel = (m: ShowModel): string[] => {
   } else if (p.options.length === 0) {
     lines.push('== 選択肢', 'なし（ゲーム終了。score で得点を見る）');
   } else {
-    lines.push(`== 選択肢（${p.player}：${p.heading}${extra.length > 0 ? `、${extra.join('、')}` : ''}）`, ...optionLines(p.options));
+    lines.push(`== 選択肢（${p.player}：${p.heading}${extra.length > 0 ? `、${extra.join('、')}` : ''}）`, ...optionLines(p.options), ...p.warnings);
   }
   return lines;
 };
@@ -592,8 +601,10 @@ export const renderLog = (state: GameState, steps: readonly Step[], from = 1): s
 // ---------------------------------------------------------------------------
 
 export type ScoreModel = {
-  /** 終局しているか。していなければ、得点はいま終わったときの見込み（終了時の能力を除く）である。 */
+  /** 終局しているか。していなければ、得点はいま終わったときの見込み（終了時の能力を含む、projectedScores）である。 */
   readonly over: boolean;
+  /** 終了の手順の途中に選択が要るため、見込みに含めなかった効果。 */
+  readonly omitted: readonly string[];
   readonly players: readonly {
     readonly player: string;
     /** 得点トラックの現在値。 */
@@ -610,31 +621,48 @@ export type ScoreModel = {
   }[];
 };
 
-export const scoreModel = (state: GameState, d: GameData = GAME_DATA): ScoreModel => ({
-  over: isGameOver(state),
-  players: finalScores(state, d).map((s) => {
-    const axes: Record<string, number> = {};
-    for (const axis of SCORE_AXES) axes[queries.axisLabel(axis)] = s.axes[axis];
-    const p = playerAt(state, s.player);
-    return {
-      player: who(state, s.player),
-      track: p.score,
-      base: s.base,
-      baseParts: s.baseParts,
-      axes,
-      total: s.total,
-      rank: s.rank,
-      tiebreak: { leftoverGold: s.leftoverGold, base: s.base },
-      sources: queries.scoreSources(state, s.player, d),
-      natureParks: queries.natureParkPoints(p, d),
-    };
-  }),
-});
+export const scoreModel = (state: GameState, d: GameData = GAME_DATA): ScoreModel => {
+  // いま終わったときの見込みは、局面の写しに終了の手順を掛けて求める（指示書 2026-11-12 対話プレイ強化 2-1）。
+  const projection = projectedScores(state, d);
+  const ended = projection.ended;
+  return {
+    over: isGameOver(state),
+    omitted: projection.omitted,
+    players: projection.scores.map((s) => {
+      const axes: Record<string, number> = {};
+      for (const axis of SCORE_AXES) axes[queries.axisLabel(axis)] = s.axes[axis];
+      const p = playerAt(state, s.player);
+      return {
+        player: who(state, s.player),
+        track: p.score,
+        base: s.base,
+        baseParts: s.baseParts,
+        axes,
+        total: s.total,
+        rank: s.rank,
+        tiebreak: { leftoverGold: s.leftoverGold, base: s.base },
+        sources: queries.scoreSources(ended, s.player, d),
+        natureParks: queries.natureParkPoints(playerAt(ended, s.player), d),
+      };
+    }),
+  };
+};
+
+/** その席の見込み1行（resume・show --only self・--full の自分の欄）。 */
+export const projectionLine = (m: ScoreModel, seat: number): string => {
+  const p = m.players.find((x) => x.player.startsWith(`P${seat}`));
+  if (p === undefined) return '';
+  return `${projectionHeading(m)}: ${p.rank}位 合計${p.total}（得点トラック${p.track}・基礎${p.base} ${Object.entries(p.axes).map(([k, n]) => `${k}${n}`).join(' ')}）｜全員 ${m.players.map((x) => `${x.player.split('（')[0]} ${x.total}`).join(' ')}`;
+};
+
+/** 見込みの見出し（含めなかった効果があれば添える）。 */
+export const projectionHeading = (m: Pick<ScoreModel, 'over' | 'omitted'>): string =>
+  m.over ? '最終得点（第17章）' : `いま終わったときの見込み（終了時の能力を含む${m.omitted.length > 0 ? `。選択が要るため含めなかった効果：${m.omitted.join('・')}` : ''}）`;
 
 export const renderScore = (state: GameState, d: GameData = GAME_DATA): string => {
   const m = scoreModel(state, d);
   return [
-    m.over ? '最終得点（第17章）' : '終局していない。いま終わったときの見込み（ゲーム終了時の能力は含まない）：',
+    m.over ? projectionHeading(m) : `終局していない。${projectionHeading(m)}：`,
     ...m.players.flatMap((p) => [
       `${p.rank}位 ${p.player}: 合計${p.total}（得点トラック${p.track}）`,
       `  基礎${p.base}（土地${p.baseParts.land}・建物${p.baseParts.buildings}・通常ワーカー${p.baseParts.workers}） ${Object.entries(p.axes)
