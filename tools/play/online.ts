@@ -125,6 +125,10 @@ export const writeCredentials = (path: string, creds: OnlineCredentials): void =
 // 窓口の操作
 // ---------------------------------------------------------------------------
 
+/** 終局した部屋の記録（ReplayRecord）を取る。窓口は終局後にだけ返す（19-6-1、ユーザー決定 2026-11-10）。 */
+export const replayRoom = async (creds: OnlineCredentials, call: Call = httpCall): Promise<unknown> =>
+  call(creds.url, { action: 'replay', code: creds.code, key: creds.key });
+
 export const viewRoom = async (creds: OnlineCredentials, call: Call = httpCall): Promise<OnlineView> => {
   const view = (await call(creds.url, { action: 'view', code: creds.code, key: creds.key })) as OnlineView;
   const version = view.summary.dataVersion;

@@ -44,4 +44,4 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
 
 - `move`・`move --dry-run`・`online move` で指定が選べなかったとき、失敗の文の2行目にその段の選択肢の ID を1行で添える（`record.ts` の `stageOptionsLine`。最後の区切りだけが違う ID は `build:house:{E3,F1}` とまとめる）。`fail` は標準出力に全文、標準エラーに1行目を出す。
 - `ref --only ids` は選択肢 ID の型の早見（`compact.ts` の `idLines`）。建物・地形・アクション・段階・フリーアクションの名前はデータの一覧から作る。`player-brief.md` は最初に1回見るよう案内する。
-
+- オンライン版の追加（2026-11-12、人との対局で）：`online move --dry-run`（伏せた写しに適用し何も送らない）、`online ref`、`online replay --file`（終局後に記録を保存）。伏せた写しでは、伏せた情報に触れる下見はそこで止め、注意と見込みは失敗したら省く。`online wait` はラウンドの終わりを番より先に見る。

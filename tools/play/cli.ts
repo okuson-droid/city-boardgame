@@ -3,7 +3,7 @@
 // 成功は終了コード0、失敗は1とし、失敗の理由を標準エラーに1行で出す。
 
 import { DATA_VERSION } from '../../src/data/index.ts';
-import { decider, isGameOver, type GameConfig, type GameState } from '../../src/game/index.ts';
+import { decider, isGameOver, parseReplay, type GameConfig, type GameState } from '../../src/game/index.ts';
 import {
   applyMoves,
   dataChanged,
@@ -25,6 +25,7 @@ import {
   eventsSince,
   joinOnline,
   moveOnline,
+  replayRoom,
   myTurn,
   readCredentials,
   revealSince,
@@ -123,6 +124,7 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
       部屋に入り、席の資格情報を .play/online/<コード>-<席>.json に保存する（--creds で場所を替える）。
   online create --players <3|4> --name <名前> [--snake] [--url ...]   部屋を作り、ルームコードと資格情報を出す。
   online show --creds <パス> [--only <欄,...>] [--board] [--json] [--full]   自分の席の視点の局面を出す。
+  online replay --creds <パス> --file <保存先>   終局した部屋の記録を保存する（窓口は終局後にだけ返す）。
   online ref --creds <パス> [--only <欄,...>] [--card <番号,...>]   対局中に変わらない文言（ref と同じ。ids で選択肢 ID の型）。
   online move --dry-run <選択肢> ... [--or <選択肢> ...] --creds <パス>   何も送らずに下見する（move --dry-run と同じ）。
   online wait --creds <パス> [--round <ラウンド>] [--timeout <秒>] [--state] [--only ...] [--full]
@@ -447,6 +449,14 @@ const online = async (args: Args, rest: readonly string[]): Promise<string> => {
       const creds = readCredentials(credsPath());
       return onlineShow(await viewRoom(creds), args);
     }
+    case 'replay': {
+      // 終局した部屋の記録を保存する（窓口は終局後にだけ返す）。--file に書く。
+      const out = str(args, 'file');
+      if (out === undefined) throw new PlayError('--file で保存先を指定すること');
+      const record = parseReplay(await replayRoom(readCredentials(credsPath())));
+      writeRecord(out, record);
+      return `記録を保存した：${out}（${record.moves.length}手）`;
+    }
     case 'ref': {
       // 対局中に変わらない文言（ゲーム14の要望）。伏せた写しから作るため、視点以外の手札は出ない。
       const view = await viewRoom(readCredentials(credsPath()));
@@ -495,7 +505,7 @@ const online = async (args: Args, rest: readonly string[]): Promise<string> => {
       return [`送った選択：${sent.join(' ')}`, ...events, ...tailLines(view.state, view.seat, args.flags.has('board') ? { board: true } : {})].join('\n');
     }
     default:
-      throw new PlayError(`知らない online のコマンドである：${sub ?? '（なし）'}（join・create・show・ref・wait・move）`);
+      throw new PlayError(`知らない online のコマンドである：${sub ?? '（なし）'}（join・create・show・ref・replay・wait・move）`);
   }
 };
 
