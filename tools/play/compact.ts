@@ -434,7 +434,8 @@ const detailedSection = (state: GameState, m: ShowModel, s: Section, d: GameData
 
 /** 既定の show（短い形）。only があれば、指定した欄だけを詳しい形で出す。 */
 export const compactShow = (state: GameState, opts: CompactOptions = {}, d: GameData = GAME_DATA, events: readonly string[] = []): string[] => {
-  const m = showModel(state, opts.as === undefined ? {} : { as: opts.as }, d);
+  // --board を付けたときは、ドラフトの残りの個人ボードの地図も共有の場の欄に出す（2026-11-12 のゲーム9の要望）。
+  const m = showModel(state, { ...(opts.as === undefined ? {} : { as: opts.as }), ...(opts.board === true && opts.only !== undefined ? { board: true } : {}) }, d);
   if (opts.only !== undefined) {
     return opts.only.flatMap((s) => (s === 'events' ? (events.length > 0 ? ['== 出来事', ...events] : ['== 出来事: なし']) : detailedSection(state, m, s, d)));
   }
