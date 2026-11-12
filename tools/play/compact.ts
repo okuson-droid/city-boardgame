@@ -689,7 +689,7 @@ export const idLines = (d: GameData = GAME_DATA): string[] => [
   `建設: build:<建物>:<マス>（建物 ${BUILDINGS.join('・')}）、決めたら done（上限まで選ぶと自動で確定する）`,
   `土地タイル: tile:<マス>:<地形>（地形 ${TERRAINS.join('・')}）`,
   '文明カード: card:<番号3桁>（プレイ・捨てる）、普及・研究の途中で終える done',
-  '遠征の報酬: reward:<レベル>（同じ報酬を複数選べる段では繰り返す）、決めたら done',
+  '遠征の報酬: reward:<添字>（報酬表の上からの番号で 0 始まり。レベルではない。ラベルに「レベルNの報酬」と出る。同じ報酬を複数選べる段では繰り返す）、決めたら done',
   '特別な市民カード: sc:<番号2桁>、その専用スペース space:sc:<番号>#<添字>、写す効果 copy:<アクション>:<段階>',
   '計画都市の宣言: plan:<番号>、効果の順番: order:<添字>、効果の選択: choose:<添字>、役所の変換: convert:0|1',
   '襲撃の宣言: raid:none・raid:defense・raid:repel',
