@@ -32,7 +32,7 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
 - 狙い：`plan --seat N [--set <狙い,...> | --clear]`（`tools/play/plan.ts`）。置き場は記録と同じディレクトリの `plan-P<席>.json`（記録には入れない）。状態は `queries.spaceUsers`・`specialCitizenHolder`・`bonusTileHolder`・`plannedCityClaimers`・`plannedCityRemaining` だけから求める。`wait`・`move`・`resume` の出来事の後に、前回の出力から変わった狙いを3行まで出す。自分の手で変わった状態（自分が使った・獲得した）と、ラウンドが替わって「空いている」に戻ったスペースは知らせない（記録だけ更新する）。`resume` とラウンドの最初の `wait` には手番順と自分より先に打つ席を1行で出す（出したラウンドは同じファイルの `orderShown`）。オンライン版の `online` には `plan` を付けていない（資格情報ごとの置き場を決めていないため）。
 - 序盤の定石：`docs/playtest/openings/<キャラクターの ID>.md`（1KB 以内）と `draft.md`。上限は `tests/play-strength.test.ts` が確かめる。
 
-## 待ちと引き継ぎの縮小（指示書案 2026-11-13、`docs/dev/drafts/`。ユーザー決定 2026-11-12「この下書きの通りに進めて」）
+## 待ちと引き継ぎの縮小（指示書 2026-11-13、decisions.md 3-7。ユーザー決定 2026-11-12「この下書きの通りに進めて」）
 
 - `wait` の既定（番が来たとき）は `compact.ts` の `waitOutput`：出来事（狙いの知らせを含む）・襲撃の行（ラウンドの最初の番だけ）・置かれたスペース・自分の要約1行・選択肢と注意。選べない理由は `unavailableFolded` で、前回の `wait` と同じなら「選べない N 件」の1行にする。襲撃の行を出したラウンドと選べない理由の署名は `plan-P<席>.json`（`raidShown`・`unavailable`）に持つ。`--state`・`--only`・`--json` は従来の局面全体。オンライン版は前回の内容を持たないため、襲撃の行と選べない理由を毎回出す。
 - `resume` は第2ラウンド以降の既定を `resumeBrief`（局面・手札・自分のキャラクターの能力・自分と場の特別な市民カードと計画都市・手番順と狙い・見込み）にする。第1ラウンドと `--ref` は従来の全文（`resumeOutput`）。

@@ -22,7 +22,7 @@ export type PlanFile = {
   readonly round: number;
   /** 手番順を出したラウンド（ラウンドの最初の wait に1回だけ出す）。 */
   readonly orderShown: number;
-  /** 襲撃の行を出したラウンド（ラウンドの最初の wait に1回だけ出す、指示書案 2026-11-13 2-1）。 */
+  /** 襲撃の行を出したラウンド（ラウンドの最初の wait に1回だけ出す、指示書 2026-11-13 2-1）。 */
   readonly raidShown?: number;
   /** 前回の wait に出した「選べない〜」の行の署名（変わらなければ1行にまとめる）。 */
   readonly unavailable?: string;

@@ -57,7 +57,7 @@ import {
 import { measure } from './measure.ts';
 import { clearPlan, orderLine, parseTargets, planList, planNotice, planPath, readPlan, setPlan, writePlan } from './plan.ts';
 
-/** wait と --then-wait の既定の時間切れ（秒）。打ち手の道具の上限（約120秒）より短くする（指示書案 2026-11-13 2-3）。 */
+/** wait と --then-wait の既定の時間切れ（秒）。打ち手の道具の上限（約120秒）より短くする（指示書 2026-11-13 2-3）。 */
 const WAIT_TIMEOUT = 100;
 import { compareOutput, previewOutput } from './preview.ts';
 import { renderLog, renderScore, renderShow, renderSteps, scoreModel, showModel, type ShowOptions, type Viewer } from './render.ts';
@@ -271,7 +271,7 @@ const notices = (recordPath: string, state: GameState, seat: number, withOrder: 
 };
 
 /**
- * wait の短い形の本体（指示書案 2026-11-13 2-1）。襲撃の行はラウンドの最初の番だけ、選べない理由は前回から変わったときだけ出す。
+ * wait の短い形の本体（指示書 2026-11-13 2-1）。襲撃の行はラウンドの最初の番だけ、選べない理由は前回から変わったときだけ出す。
  * 出した内容（襲撃の行のラウンド・選べない理由の署名）は狙いと同じファイルに残す。
  */
 const waitBody = (recordPath: string, state: GameState, seat: number, events: readonly string[]): string => {
@@ -324,7 +324,7 @@ const turnReport = (record: PlayRecord, seat: number, args: Args, recordPath: st
     // 既定：他の席の分は手番ごとに1行にまとめる（指示書 2-5）。
     const events = [...turnLines(state, since, seat), ...notices(recordPath, state, seat, 'roundFirst')];
     const head = prefix.length > 0 ? `${prefix.join('\n')}\n` : '';
-    // --state か --only か --json：従来の局面全体（指示書案 2026-11-13 2-1）。
+    // --state か --only か --json：従来の局面全体（指示書 2026-11-13 2-1）。
     if (args.flags.has('state') || args.flags.has('only') || args.flags.has('json')) return `${head}${showState(state, { ...compactOpts(record, args), as: seat }, args, events)}`;
     return `${head}${waitBody(recordPath, state, seat, events)}`;
   }
@@ -386,7 +386,7 @@ const onlineReport = (path: string, creds: OnlineCredentials, view: OnlineView, 
   const events = [...prefix, ...onlineEvents(creds, view, args)];
   markSeen(path, creds, view);
   const state = view.state;
-  // 番が来たときの既定は wait の短い形（指示書案 2026-11-13 2-1）。前回の内容を持たないため、襲撃の行と選べない理由は毎回出す。
+  // 番が来たときの既定は wait の短い形（指示書 2026-11-13 2-1）。前回の内容を持たないため、襲撃の行と選べない理由は毎回出す。
   if (state !== null && !isGameOver(state) && myTurn(state, view.seat) && !['full', 'state', 'only', 'json'].some((f) => args.flags.has(f))) {
     return waitOutput(state, view.seat, events, { raid: true, unavailable: unavailableFolded(state, undefined).lines }).join('\n');
   }
@@ -498,7 +498,7 @@ const online = async (args: Args, rest: readonly string[]): Promise<string> => {
       markSeen(path, creds, view);
       const only = str(args, 'only');
       if (only !== undefined) return onlineShow(view, args, events);
-      // --then-wait（指示書案 2026-11-13 2-3）：自分の番でなくなったら、そのまま番を待つ。
+      // --then-wait（指示書 2026-11-13 2-3）：自分の番でなくなったら、そのまま番を待つ。
       if (args.flags.has('then-wait') && !isGameOver(view.state) && !myTurn(view.state, view.seat)) {
         return onlineWaitFor(path, readCredentials(path), args, [`送った選択：${sent.join(' ')}`, ...events]);
       }
@@ -564,7 +564,7 @@ const run = (argv: readonly string[]): string | Promise<string> => {
       if (args.flags.has('then-wait') && seat === undefined) throw new PlayError('--then-wait は --seat と一緒に使う');
       const result = applyMoves(record, rest, undefined, seat);
       writeRecord(path, result.record);
-      // --then-wait（指示書案 2026-11-13 2-3）：選択待ちが他の席に移ったら、そのまま番を待って wait の短い形で出す。
+      // --then-wait（指示書 2026-11-13 2-3）：選択待ちが他の席に移ったら、そのまま番を待って wait の短い形で出す。
       if (args.flags.has('then-wait') && seat !== undefined && !args.flags.has('full') && !isGameOver(result.state) && decider(result.state) !== seat) {
         return waitFor(path, seat, args, ['== 適用した選択', ...stepLines(result.state, result.steps, seat)]);
       }
@@ -608,7 +608,7 @@ const run = (argv: readonly string[]): string | Promise<string> => {
       checkPlayer(record, seat, 'seat');
       const steps = logSteps(record);
       const state = stateOf(record);
-      // 第2ラウンド以降の既定は短い形（指示書案 2026-11-13 2-2）。第1ラウンドと --ref は従来の全文。
+      // 第2ラウンド以降の既定は短い形（指示書 2026-11-13 2-2）。第1ラウンドと --ref は従来の全文。
       if (effectiveRound(state) >= 2 && !args.flags.has('ref')) {
         const plan = readPlan(planPath(path, seat));
         return resumeBrief(state, seat, [...notices(path, state, seat, 'always'), ...planList(state, readPlan(planPath(path, seat)), seat).slice(plan.targets.length === 0 ? 1 : 0)]);

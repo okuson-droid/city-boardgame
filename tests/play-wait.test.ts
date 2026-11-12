@@ -1,4 +1,4 @@
-// wait・resume の既定の出力の縮小と move --then-wait の検査（指示書案 2026-11-13 待ちと引き継ぎの縮小 3）。
+// wait・resume の既定の出力の縮小と move --then-wait の検査（指示書 2026-11-13 待ちと引き継ぎの縮小 3）。
 // ルールと数値は変えない。表示の形と、非公開情報（rules.md v0.8 19-6-1）を守っていることを確かめる。
 
 import { describe, expect, it } from 'vitest';
@@ -38,7 +38,7 @@ const walk = (players: number, seed: number) => {
   return out;
 };
 
-describe('wait の既定の出力（指示書案 2026-11-13 2-1）', () => {
+describe('wait の既定の出力（指示書 2026-11-13 2-1）', () => {
   it('選択肢・注意・選べない理由を除いて、出来事の行数＋6行以内であり、局面の残りの欄を出さない', async () => {
     // rules.md v0.8 19-6-1（選択肢は選択待ちの視点でだけ出す）
     await yieldToRunner();
@@ -80,7 +80,7 @@ describe('wait の既定の出力（指示書案 2026-11-13 2-1）', () => {
   });
 });
 
-describe('resume の短い形（指示書案 2026-11-13 2-2）', () => {
+describe('resume の短い形（指示書 2026-11-13 2-2）', () => {
   it('第2ラウンド以降の既定に、アクションボードの効果文・他のキャラクター・建物表が現れず、--ref（従来）には現れる', async () => {
     await yieldToRunner();
     const walked = walk(3, 94);
@@ -107,7 +107,7 @@ describe('resume の短い形（指示書案 2026-11-13 2-2）', () => {
   }, 120_000);
 });
 
-describe('move --then-wait（指示書案 2026-11-13 2-3）', () => {
+describe('move --then-wait（指示書 2026-11-13 2-3）', () => {
   // CLI の入出力を通して確かめる。dist-play/cli.js（npm run play:build）が無ければ飛ばす。
   const cli = join(process.cwd(), 'dist-play/cli.js');
   it.skipIf(!existsSync(cli))('選択待ちが同じ席なら従来の move の出力、他の席に移って時間切れなら待ちの文を出し、記録は move と同じに変わる', () => {
