@@ -6,10 +6,10 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { GAME_DATA } from '../src/data/index.ts';
+import { ACTIONS, BUILDINGS, GAME_DATA, TERRAINS, TIERS } from '../src/data/index.ts';
 import { decider, getOptions, isGameOver, type GameState } from '../src/game/index.ts';
-import { compactShow, effectiveRound, resumeBrief, resumeOutput, unavailableFolded, unavailableLines, waitOutput } from '../tools/play/compact.ts';
-import { applyMovesFrom, logSteps, newRecord, stateOf, type PlayRecord } from '../tools/play/record.ts';
+import { compactShow, effectiveRound, refLines, resumeBrief, resumeOutput, unavailableFolded, unavailableLines, waitOutput } from '../tools/play/compact.ts';
+import { applyMoves, applyMovesFrom, logSteps, newRecord, stageOptionsLine, stateOf, type PlayRecord } from '../tools/play/record.ts';
 import { playout, yieldToRunner } from './helpers/playout.ts';
 
 const hiddenCards = (state: GameState, viewer: number): string[] => {
@@ -138,4 +138,44 @@ describe('move --then-wait（指示書案 2026-11-13 2-3）', () => {
     expect(after.moves.slice(-specs.length)).toEqual(specs);
     expect(decider(stateOf(after))).not.toBe(seat);
   }, 60_000);
+});
+
+describe('選べない指定のときのその段の選択肢と、ID の型の早見（ゲーム13の効率化の方法 C・D）', () => {
+  it('その段の選択肢の行から、getOptions のすべての ID が読み取れる', async () => {
+    // rules.md v0.8 19-6-1（選択肢は選択待ちの視点でだけ出す。行は選択待ちの席の失敗にだけ添える）
+    await yieldToRunner();
+    const expand = (line: string): Set<string> => {
+      const body = line.replace(/^この段（[^）]*）の選択肢：/, '');
+      const ids = new Set<string>();
+      for (const item of body.split(' ')) {
+        const m = /^(.*):\{(.*)\}$/.exec(item);
+        if (m === null) ids.add(item);
+        else for (const t of (m[2] ?? '').split(',')) ids.add(`${m[1]}:${t}`);
+      }
+      return ids;
+    };
+    let checked = 0;
+    for (const { state } of walk(3, 96).filter((_, i) => i % 3 === 0)) {
+      const line = stageOptionsLine(state, GAME_DATA, 100_000);
+      const options = getOptions(state);
+      if (options.length === 0) {
+        expect(line).toBe('');
+        continue;
+      }
+      expect(expand(line)).toEqual(new Set(options.map((o) => o.id)));
+      checked += 1;
+    }
+    expect(checked).toBeGreaterThan(50);
+  }, 120_000);
+
+  it('applyMoves の失敗の文に、その段の選択肢の行が2行目として付く', () => {
+    const record = newRecord({ playerCount: 3 }, 97);
+    expect(() => applyMoves(record, ['nosuch'])).toThrow(/\nこの段（[^）]*）の選択肢：draft:/);
+  });
+
+  it('ref --only ids は、建物・地形・アクション・段階の名前をデータの一覧から出す', () => {
+    const text = refLines(stateOf(newRecord({ playerCount: 3 }, 98)), 0, ['ids']).join('\n');
+    for (const name of [...BUILDINGS, ...TERRAINS, ...ACTIONS, ...TIERS]) expect(text).toContain(name);
+    for (const c of GAME_DATA.params.freeActions.conversions) expect(text).toContain(c.id);
+  });
 });

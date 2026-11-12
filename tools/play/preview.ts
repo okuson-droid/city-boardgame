@@ -7,7 +7,7 @@ import { GAME_DATA, SCORE_AXES, type GameData } from '../../src/data/index.ts';
 import { DELTA_KEYS, snapshot } from '../../src/game/deltas.ts';
 import { applyMove, decider, deltaText, hiddenFuture, projectedScores, queries, type GameState } from '../../src/game/index.ts';
 import { stepLines } from './compact.ts';
-import { PlayError, resolveSpec, stepFrom, type Step } from './record.ts';
+import { PlayError, resolveSpec, stageOptionsLine, stepFrom, type Step } from './record.ts';
 
 /** 1つの手順の下見の結果。 */
 export type Preview = {
@@ -40,7 +40,8 @@ export const previewSequence = (state: GameState, specs: readonly string[], seat
     try {
       id = resolveSpec(current, spec, d);
     } catch (e) {
-      return { specs, steps, start: state, end: current, stopped: null, failed: `${nth}（${spec}）は選べない：${e instanceof Error ? e.message : String(e)}` };
+      const stage = stageOptionsLine(current, d);
+      return { specs, steps, start: state, end: current, stopped: null, failed: `${nth}（${spec}）は選べない：${e instanceof Error ? e.message : String(e)}${stage === '' ? '' : `\n  ${stage}`}` };
     }
     const next = applyMove(current, id, d);
     const hidden = hiddenFuture(current, next);

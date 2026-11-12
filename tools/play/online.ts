@@ -10,7 +10,7 @@ import { dirname } from 'node:path';
 import { DATA_VERSION, GAME_DATA, type GameData } from '../../src/data/index.ts';
 import { decider, eventText, getOptions, isGameOver, type GameState } from '../../src/game/index.ts';
 import type { RoomSummary } from '../../src/online/rooms.ts';
-import { added, PlayError, resolveSpec, type Reveal } from './record.ts';
+import { added, PlayError, resolveSpec, type Reveal, stageOptionsLine } from './record.ts';
 
 /** 窓口の既定（公開ページのオンライン版が使う Supabase のプロジェクト）。--url か PLAY_ONLINE_URL で替える。 */
 export const DEFAULT_ONLINE_URL = 'https://tybkebtddcgcewizwpua.supabase.co';
@@ -194,7 +194,8 @@ export const moveOnline = async (
     try {
       id = resolveSpec(state, spec, d);
     } catch (e) {
-      throw new PlayError(`${e instanceof Error ? e.message : String(e)}${done}`);
+      const stage = stageOptionsLine(state, d);
+      throw new PlayError(`${e instanceof Error ? e.message : String(e)}${done}${stage === '' ? '' : `\n${stage}`}`);
     }
     try {
       await call(creds.url, { action: 'move', code: creds.code, key: creds.key, move: id, logLength: state.log.length });

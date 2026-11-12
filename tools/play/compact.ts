@@ -56,7 +56,7 @@ export const parseSections = (spec: string): Section[] => {
   return SECTIONS.filter((s) => names.includes(s));
 };
 
-export const REF_SECTIONS = ['actions', 'expedition', 'characters', 'bonus', 'raid', 'buildings', 'free', 'public'] as const;
+export const REF_SECTIONS = ['actions', 'expedition', 'characters', 'bonus', 'raid', 'buildings', 'free', 'public', 'ids'] as const;
 export type RefSection = (typeof REF_SECTIONS)[number];
 
 const REF_LABELS: Readonly<Record<RefSection, string>> = {
@@ -68,6 +68,7 @@ const REF_LABELS: Readonly<Record<RefSection, string>> = {
   buildings: '建物',
   free: 'フリーアクション',
   public: '公開中のカード',
+  ids: '選択肢 ID の型',
 };
 
 export const parseRefSections = (spec: string): RefSection[] => {
@@ -676,6 +677,27 @@ export const eventTurnLines = (state: GameState, events: readonly GameEvent[], v
 // 参照（ref、指示書 2-2）
 // ---------------------------------------------------------------------------
 
+/**
+ * 選択肢 ID の型の早見（ref --only ids、ゲーム13の効率化の方法 D）。名前はデータの一覧から作り、手で書かない。
+ * 選択肢が1つしかない段は自動で飛ぶため、その段の ID は並べなくてよい。
+ */
+export const idLines = (d: GameData = GAME_DATA): string[] => [
+  '== 選択肢 ID の型（1手番は行動から end まで1回の move に並べてよい。選択肢が1つしかない段は自動で飛ぶので書かない）',
+  `行動: act:<アクション>:<段階>（アクション ${ACTIONS.join('・')}／段階 ${TIERS.join('・')}）、手番を終える end、パス pass（続けて bonus:<番号>。最終ラウンドは無い）`,
+  'ワーカーの内訳: temp:<臨時ワーカーの人数>（使える臨時ワーカーがいて内訳を選べるときだけ出る段）',
+  '数を選ぶ段: count:<数>（開拓の枚数・輸入と輸出の回数・教練と福祉の組・移住の人数・教練で軍事レベルを上げる数・傭兵団の金に替える数）',
+  `建設: build:<建物>:<マス>（建物 ${BUILDINGS.join('・')}）、決めたら done（上限まで選ぶと自動で確定する）`,
+  `土地タイル: tile:<マス>:<地形>（地形 ${TERRAINS.join('・')}）`,
+  '文明カード: card:<番号3桁>（プレイ・捨てる）、普及・研究の途中で終える done',
+  '遠征の報酬: reward:<レベル>（同じ報酬を複数選べる段では繰り返す）、決めたら done',
+  '特別な市民カード: sc:<番号2桁>、その専用スペース space:sc:<番号>#<添字>、写す効果 copy:<アクション>:<段階>',
+  '計画都市の宣言: plan:<番号>、効果の順番: order:<添字>、効果の選択: choose:<添字>、役所の変換: convert:0|1',
+  '襲撃の宣言: raid:none・raid:defense・raid:repel',
+  `フリーアクション: free:<変換>（${d.params.freeActions.conversions.map((c) => c.id).join('・')}）、手札を捨てる変換は free:<変換>:<カード番号>`,
+  'キャラクターと能力: hero:<マス>（英雄の初期配置）、spirit:<地形>:<マス>（精霊チップ）、ability:<出どころ>#<添字>（能力のフリーアクション）',
+  'マスは英字と数字（例 E3）。ID が分からないときは play show --only options。指定が選べないときは、その段の選択肢がエラーの2行目に出る。',
+];
+
 export const refLines = (
   state: GameState,
   viewer: Viewer,
@@ -753,6 +775,9 @@ export const refLines = (
       case 'free':
         lines.push('== フリーアクション（自分の手番中、アクションの前後に何度でも）');
         for (const c of d.params.freeActions.conversions) lines.push(conversionLabel(c).replace(/^フリーアクション：/, ''));
+        break;
+      case 'ids':
+        lines.push(...idLines(d));
         break;
       case 'public': {
         lines.push('== 公開中のカード');
@@ -893,7 +918,7 @@ export const resumeBrief = (state: GameState, seat: number, extra: readonly stri
     ...extra,
     '== 得点',
     scoreLine(state, seat, d),
-    '（アクションボード・他のキャラクター・建物・襲撃カード・遠征の報酬表は ref、これまでの手番は log --seat、従来の全文は resume --ref）',
+    '（アクションボード・他のキャラクター・建物・襲撃カード・遠征の報酬表は ref、選択肢 ID の型は ref --only ids、これまでの手番は log --seat、従来の全文は resume --ref）',
   ].join('\n');
 };
 

@@ -40,3 +40,8 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
 - `wait` と `--then-wait` の既定の時間切れは 100 秒（`WAIT_TIMEOUT`）。打ち手の道具の上限（約120秒）より短くする。
 - 検査は `tests/play-wait.test.ts`（`--then-wait` は `dist-play/cli.js` があるときだけ CLI を通して確かめる）。
 
+## 選べない指定のときの選択肢と、ID の型の早見（ゲーム13の効率化の方法 C・D、ユーザー決定 2026-11-12）
+
+- `move`・`move --dry-run`・`online move` で指定が選べなかったとき、失敗の文の2行目にその段の選択肢の ID を1行で添える（`record.ts` の `stageOptionsLine`。最後の区切りだけが違う ID は `build:house:{E3,F1}` とまとめる）。`fail` は標準出力に全文、標準エラーに1行目を出す。
+- `ref --only ids` は選択肢 ID の型の早見（`compact.ts` の `idLines`）。建物・地形・アクション・段階・フリーアクションの名前はデータの一覧から作る。`player-brief.md` は最初に1回見るよう案内する。
+
