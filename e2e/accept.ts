@@ -133,7 +133,7 @@ const play = async (run: Run): Promise<Result> => {
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
-  await page.goto(`file://${html}#speed=${run.speed}&seed=${run.seed}`);
+  await page.goto(`file://${html}#speed=${run.speed}&seed=${run.seed}&confirm=off`);
   await page.click(`[data-ui="players-${run.players}"]`);
   await page.click('[data-target="start"]');
 

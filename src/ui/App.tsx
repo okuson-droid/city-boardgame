@@ -24,6 +24,8 @@ const readSettings = (): Settings => {
     speed: speed === 'none' || speed === 'fast' ? speed : 'standard',
     // 視点は勝手に変えない（ユーザー決定 2026-11-06）。オンライン版で他の人の手番を追うのは #follow=on か「追いかける」を入にしたときだけ。
     follow: params.get('follow') === 'on',
+    // 取り消せない選択の前に確かめる（ユーザー決定 2026-11-12）。受け入れ検査は #confirm=off で切る。
+    confirm: params.get('confirm') !== 'off',
   };
 };
 
