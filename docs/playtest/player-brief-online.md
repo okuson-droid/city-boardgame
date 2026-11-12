@@ -11,12 +11,12 @@
 2. ラウンドの最初に計画を立てる（取られうる占有型のスペース・特別な市民カード・ボーナスタイルを先に、共有のスペースは後に。それぞれに先を越されたときの代わり）。計画はノートの先頭に書く。
 3. `play online wait --creds C --round <ラウンド>` で番を待つ。「まだ〜の番ではない」なら同じものをもう一度呼ぶ（人の手番は数分かかる）。
 4. 1手番は行動から `end` まで1回の `play online move <選択肢...> --creds C --then-wait --round <ラウンド>` にまとめる（打った後に次の番まで待つ）。オンライン版は1手ずつ送るため、途中で失敗するとそれより前の手は送られたままになる。迷う段は1つずつ送る。
-5. ID の型：行動 `act:<アクション>:<段階>`、ワーカーの内訳 `temp:N`、数 `count:N`、建設 `build:<建物>:<マス>`（建物 shop・workshop・fort・office・university・house・camp）、土地 `tile:<マス>:<地形>`（water・mountain・plains・forest）、カード `card:<番号>`、報酬 `reward:N`、特別な市民 `sc:<番号>`、`end`、`pass` の後に `bonus:N`。選べない指定のときは、その段の選択肢が失敗の文の2行目に出る。
+5. ID の型は最初に `play online ref --creds C --only ids` で1回見る。選べない指定のときは、その段の選択肢が失敗の文の2行目に出る。迷う手は `play online move --dry-run <手順> --or <手順> --creds C` で比べる（何も送らない）。
 6. 「注意：」はその選択肢を選ぶ前に読む。
 7. 「ラウンド N は終わった」でノートを、「ゲーム終了」で知見を書いて終える。
 
 ## 見るもの
-`play online show --creds C --only <欄>`（progress・raid・actions・shared・self・hand・others・board・options）。局面全体は `online wait --state`。`--full` と自作の grep・sed・head・tail は使わない。
+`play online show --creds C --only <欄>`（progress・raid・actions・shared・self・hand・others・board・options）、効果文は `play online ref --creds C`（`--card <番号>`・`--only buildings` など）。局面全体は `online wait --state`。`--full` と自作の grep・sed・head・tail は使わない。
 
 ## ノート（ラウンドの終わりに上書き、1.5KB 以内）
 先頭に計画。方針・次の初手・狙い。局面の写しは書かない。
