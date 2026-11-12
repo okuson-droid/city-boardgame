@@ -399,10 +399,11 @@ const onlineWaitFor = async (path: string, creds: OnlineCredentials, args: Args,
   for (;;) {
     const view = await viewRoom(creds);
     const state = view.state;
-    if (state !== null && (isGameOver(state) || myTurn(state, creds.seat))) return onlineReport(path, creds, view, args, prefix);
-    if (state !== null && round !== undefined && effectiveRound(state) > round) {
+    // ラウンドの終わりを番より先に見る（ゲーム14で、次のラウンドの最初が自分の番だと「終わった」が出なかった）。
+    if (state !== null && !isGameOver(state) && round !== undefined && effectiveRound(state) > round) {
       return `${head}ラウンド ${round} は終わった（いまは第${effectiveRound(state)}ラウンド）。ノートを書いて終えること`;
     }
+    if (state !== null && (isGameOver(state) || myTurn(state, creds.seat))) return onlineReport(path, creds, view, args, prefix);
     if (Date.now() >= limit) {
       return state === null
         ? `${head}まだ始まっていない（入室 ${view.summary.names.length}／${view.summary.playerCount}人）。もう一度 wait を呼ぶこと`
