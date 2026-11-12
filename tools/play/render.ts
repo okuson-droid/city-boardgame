@@ -366,7 +366,15 @@ export const showModel = (state: GameState, opts: ShowOptions = {}, d: GameData 
       pendingCost: queries.pendingBuildCost(state, d),
       picks: queries.pendingPicks(state),
       options: visibleOptions ? options.map((o, i) => ({ n: i + 1, id: o.id, label: o.label })) : null,
-      warnings: visibleOptions ? pitfallLines(pitfalls(state, d)) : [],
+      warnings: visibleOptions
+        ? (() => {
+            try {
+              return pitfallLines(pitfalls(state, d));
+            } catch {
+              return [];
+            }
+          })()
+        : [],
     },
     draft:
       task?.t === 'draftPick'
@@ -384,7 +392,14 @@ export const showModel = (state: GameState, opts: ShowOptions = {}, d: GameData 
           }
         : null,
     board: showBoard ? renderBoard(state, self, cells, d) : null,
-    projection: projectionLine(scoreModel(state, d), self),
+    projection: (() => {
+      // オンライン版の伏せた写しで、終了の手順が伏せた情報に触れると失敗しうる。そのときは見込みの行を省く。
+      try {
+        return projectionLine(scoreModel(state, d), self);
+      } catch {
+        return 'いま終わったときの見込み：伏せた情報が要るため出せない（score で見る）';
+      }
+    })(),
   };
 };
 

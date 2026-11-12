@@ -43,7 +43,13 @@ export const previewSequence = (state: GameState, specs: readonly string[], seat
       const stage = stageOptionsLine(current, d);
       return { specs, steps, start: state, end: current, stopped: null, failed: `${nth}（${spec}）は選べない：${e instanceof Error ? e.message : String(e)}${stage === '' ? '' : `\n  ${stage}`}` };
     }
-    const next = applyMove(current, id, d);
+    let next: GameState;
+    try {
+      next = applyMove(current, id, d);
+    } catch {
+      // オンライン版の伏せた写しでは、他の席の手札など伏せた情報が要る処理に進めない（ゲーム14で「存在しない文明カードである：?」）。
+      return { specs, steps, start: state, end: current, stopped: `${nth}（${spec}）からは下見できない（伏せた情報が要る）`, failed: null };
+    }
     const hidden = hiddenFuture(current, next);
     if (hidden !== null) {
       return { specs, steps, start: state, end: current, stopped: `${nth}（${spec}）からは下見できない（${HIDDEN_REASON[hidden]}）`, failed: null };
