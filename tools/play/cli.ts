@@ -43,7 +43,11 @@ import {
   parseRefSections,
   parseSections,
   refLines,
+  resumeBrief,
   resumeOutput,
+  stepLines,
+  unavailableFolded,
+  waitOutput,
   revealLines,
   tailLines,
   turnLines,
@@ -51,6 +55,9 @@ import {
 } from './compact.ts';
 import { measure } from './measure.ts';
 import { clearPlan, orderLine, parseTargets, planList, planNotice, planPath, readPlan, setPlan, writePlan } from './plan.ts';
+
+/** wait と --then-wait の既定の時間切れ（秒）。打ち手の道具の上限（約120秒）より短くする（指示書案 2026-11-13 2-3）。 */
+const WAIT_TIMEOUT = 100;
 import { compareOutput, previewOutput } from './preview.ts';
 import { renderLog, renderScore, renderShow, renderSteps, scoreModel, showModel, type ShowOptions, type Viewer } from './render.ts';
 
@@ -77,21 +84,27 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
       --seat を付けると、選択待ちがその席でなければ記録を変えずに失敗する（席ごとに別の打ち手が打つとき）。
       選択肢の後の「注意：」の行は、過去に失点になった型（自然公園を崩す・撃退を選べる・役所の変換が出ない・残したままのパス・
       選ばずに済ませられない建設）に当たる選択肢の事実である（5行まで）。登録した狙いが変われば、出来事の後に「狙い：」の行が出る。
+  move <選択肢> ... --seat <番号> --then-wait [--round <ラウンド>] [--timeout <秒>]
+      適用した後、選択待ちが他の席に移ったら、そのまま番を待って wait と同じ形で出す（手番の終わり・番待ち・次の手を1回にする）。
+      end・pass は補わない（並べること）。
   move --dry-run <選択肢> ... [--or <選択肢> ...] [--seat <番号>]
       記録を変えずに下見する。1通りなら、起きた出来事・自分の増減の合計・得点の見込み（終了時の能力を含む）の増減・残る選択待ちを出す。
       --or で区切ると最大4通りを比べ、手順ごとに増減と見込みだけを出す（途中で選べない手順はその旨と何個目かを出す）。
       乱数を消費する・非公開の情報が公開される選択（山札から引く・特別な市民カードの補充など）の手前と、選択待ちが他の席に移った後は下見しない。
-  wait --seat <番号> [--round <ラウンド>] [--timeout <秒>] [--only <欄,...>] [--full]
-      席の番が来るまで待ち（既定300秒）、前回のその席の選択の後に起きたこと（他の席は手番ごとに1行）と局面を出す。
+  wait --seat <番号> [--round <ラウンド>] [--timeout <秒>] [--state] [--only <欄,...>] [--full]
+      席の番が来るまで待ち（既定100秒）、前回のその席の選択の後に起きたこと（他の席は手番ごとに1行）・狙いの知らせ・
+      襲撃（ラウンドの最初の番だけ）・置かれたスペース・自分の要約1行・選択肢と注意を出す。選べない理由は前回から変わったときだけ。
+      --state は従来の局面全体（show の既定の形）を出す。
       --round を付けると、局面がそのラウンドより先へ進んでいれば番を待たずに「ラウンド N は終わった」と出して終える
       （ドラフトと準備は第1ラウンドに含める）。時間切れなら「まだ番ではない」と出して終わる。ゲームが終われば最終得点を出す。
   ref [--seat <番号>] [--only <欄,...>] [--card <番号,...>]
       対局中に変わらない文言をまとめて出す。欄：actions（アクションボード）・expedition（遠征の報酬表と払うトークン）・characters（キャラクター）・bonus（ボーナスタイル）・
         raid（襲撃カード）・buildings（建物）・free（フリーアクション）・public（公開中の特別な市民カード・計画都市と自分のプレイ済みのカード）
       --card は文明カード（3桁）・特別な市民カード（2桁）・計画都市（PC…）の内容。
-  resume --seat <番号>
-      作り直した打ち手が最初に呼ぶ。ref・局面・手札の効果文・その席のこれまでの手番ごとのまとめ・このラウンドの手番順・
-      いま終わったときの得点の見込み（終了時の能力を含む）を1回で出す。
+  resume --seat <番号> [--ref]
+      作り直した打ち手が最初に呼ぶ。第2ラウンド以降は、局面・手札の効果文・自分のキャラクターの能力・自分と場の特別な市民カードと
+      計画都市・手番順と狙い・いま終わったときの得点の見込み（終了時の能力を含む）を出す。第1ラウンドと --ref では、
+      ref の全文とその席のこれまでの手番ごとのまとめも出す。
   plan --seat <番号> [--set <狙い,...> | --clear]
       狙いを登録する（--set は上書き、最大8個）・一覧を出す・消す。置き場は記録と同じディレクトリの plan-P<席>.json（記録には入れない）。
       狙いの書き方：act:<アクション>:<段階>・sc:<特別な市民カードの番号>・bonus:<ボーナスタイルの番号>・plan:<計画都市の番号>。
@@ -109,9 +122,9 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
       部屋に入り、席の資格情報を .play/online/<コード>-<席>.json に保存する（--creds で場所を替える）。
   online create --players <3|4> --name <名前> [--snake] [--url ...]   部屋を作り、ルームコードと資格情報を出す。
   online show --creds <パス> [--only <欄,...>] [--board] [--json] [--full]   自分の席の視点の局面を出す。
-  online wait --creds <パス> [--round <ラウンド>] [--timeout <秒>] [--only ...] [--full]
-      自分の番が来るまで待ち（既定300秒）、前回の出力の後に起きたことと局面を出す。対局の開始前は全員の入室を待つ。
-  online move <選択肢> [<選択肢> ...] --creds <パス> [--only ...] [--full]
+  online wait --creds <パス> [--round <ラウンド>] [--timeout <秒>] [--state] [--only ...] [--full]
+      自分の番が来るまで待ち（既定100秒）、前回の出力の後に起きたことと、wait と同じ短い形を出す。対局の開始前は全員の入室を待つ。
+  online move <選択肢> [<選択肢> ...] --creds <パス> [--then-wait] [--only ...] [--full]
       選択肢 ID か、いまの選択肢の番号を順に送る。1手ずつ送るため、途中で失敗するとそれより前の手は送られたままになる。
   窓口の既定は ${DEFAULT_ONLINE_URL}（環境変数 PLAY_ONLINE_URL でも替えられる）。
 
@@ -119,6 +132,7 @@ const HELP = `対話プレイ用のコマンド（1回の呼び出しで完結�
   npm run -s play -- new --players 3 --seed 1
   npm run -s play -- resume --seat 0
   npm run -s play -- wait --seat 0 --round 2
+  npm run -s play -- move act:build:normal temp:0 build:house:E3 end --seat 0 --then-wait --round 2
   npm run -s play -- move act:pioneer:normal count:1 tile:E2:plains --seat 0
   npm run -s play -- move --dry-run act:build:normal temp:0 build:house:E3 --or act:welfare:normal temp:0 --seat 0
   npm run -s play -- plan --seat 0 --set act:build:top,sc:05,bonus:6
@@ -251,8 +265,49 @@ const notices = (recordPath: string, state: GameState, seat: number, withOrder: 
   return [...(showOrder && order !== null ? [order] : []), ...notice.lines];
 };
 
+/**
+ * wait の短い形の本体（指示書案 2026-11-13 2-1）。襲撃の行はラウンドの最初の番だけ、選べない理由は前回から変わったときだけ出す。
+ * 出した内容（襲撃の行のラウンド・選べない理由の署名）は狙いと同じファイルに残す。
+ */
+const waitBody = (recordPath: string, state: GameState, seat: number, events: readonly string[]): string => {
+  const path = planPath(recordPath, seat);
+  const plan = readPlan(path);
+  const raid = state.round >= 1 && plan.raidShown !== state.round;
+  const folded = unavailableFolded(state, plan.unavailable);
+  writePlan(path, { ...plan, raidShown: state.round, unavailable: folded.signature });
+  return waitOutput(state, seat, events, { raid, unavailable: folded.lines }).join('\n');
+};
+
+/** 席の番まで待つ（wait と move --then-wait が使う）。番が来たら turnReport、ラウンドが終わった・時間切れならその文。 */
+const waitFor = (path: string, seat: number, args: Args, prefix: readonly string[] = []): string => {
+  const limit = Date.now() + (int(args, 'timeout') ?? WAIT_TIMEOUT) * 1000;
+  const round = int(args, 'round');
+  const head = prefix.length > 0 ? `${prefix.join('\n')}\n` : '';
+  for (;;) {
+    let record: PlayRecord | null = null;
+    try {
+      record = readRecord(path);
+    } catch (e) {
+      if (!(e instanceof PlayError)) throw e;
+    }
+    if (record !== null) {
+      checkPlayer(record, seat, 'seat');
+      const state = stateOf(record);
+      const deciding = decider(state);
+      if (isGameOver(state)) return `${head}ゲーム終了\n\n${renderScore(state)}`;
+      // 打ち手の作り直し（指示書 2-6）：指定のラウンドが終わっていれば、番を待たずに終える。
+      if (round !== undefined && effectiveRound(state) > round) return `${head}ラウンド ${round} は終わった（いまは第${effectiveRound(state)}ラウンド）。ノートを書いて終えること`;
+      if (deciding === seat) return turnReport(record, seat, args, path, prefix);
+      if (Date.now() >= limit) return `${head}まだ P${seat} の番ではない（選択待ち P${deciding ?? '-'}）。もう一度 wait を呼ぶこと`;
+    } else if (Date.now() >= limit) {
+      throw new PlayError(`記録を読めない：${path}`);
+    }
+    sleep(1000);
+  }
+};
+
 /** 席 seat の番が来たときの出力：前回のその席の選択の後に起きたことと、その席の視点の局面。 */
-const turnReport = (record: PlayRecord, seat: number, args: Args, recordPath: string): string => {
+const turnReport = (record: PlayRecord, seat: number, args: Args, recordPath: string, prefix: readonly string[] = []): string => {
   const steps = logSteps(record);
   let last = -1;
   steps.forEach((s, i) => {
@@ -263,7 +318,10 @@ const turnReport = (record: PlayRecord, seat: number, args: Args, recordPath: st
   if (!args.flags.has('full')) {
     // 既定：他の席の分は手番ごとに1行にまとめる（指示書 2-5）。
     const events = [...turnLines(state, since, seat), ...notices(recordPath, state, seat, 'roundFirst')];
-    return showState(state, { ...compactOpts(record, args), as: seat }, args, events);
+    const head = prefix.length > 0 ? `${prefix.join('\n')}\n` : '';
+    // --state か --only か --json：従来の局面全体（指示書案 2026-11-13 2-1）。
+    if (args.flags.has('state') || args.flags.has('only') || args.flags.has('json')) return `${head}${showState(state, { ...compactOpts(record, args), as: seat }, args, events)}`;
+    return `${head}${waitBody(recordPath, state, seat, events)}`;
   }
   const shown = since.slice(-40);
   const head =
@@ -319,10 +377,36 @@ const markSeen = (path: string, creds: OnlineCredentials, view: OnlineView): voi
 };
 
 /** 前回の出力の後に起きたことと局面を出し、見た出来事の数を資格情報に残す。 */
-const onlineReport = (path: string, creds: OnlineCredentials, view: OnlineView, args: Args): string => {
-  const events = onlineEvents(creds, view, args);
+const onlineReport = (path: string, creds: OnlineCredentials, view: OnlineView, args: Args, prefix: readonly string[] = []): string => {
+  const events = [...prefix, ...onlineEvents(creds, view, args)];
   markSeen(path, creds, view);
+  const state = view.state;
+  // 番が来たときの既定は wait の短い形（指示書案 2026-11-13 2-1）。前回の内容を持たないため、襲撃の行と選べない理由は毎回出す。
+  if (state !== null && !isGameOver(state) && myTurn(state, view.seat) && !['full', 'state', 'only', 'json'].some((f) => args.flags.has(f))) {
+    return waitOutput(state, view.seat, events, { raid: true, unavailable: unavailableFolded(state, undefined).lines }).join('\n');
+  }
   return onlineShow(view, args, events);
+};
+
+/** 自分の番まで待つ（online wait と online move --then-wait）。 */
+const onlineWaitFor = async (path: string, creds: OnlineCredentials, args: Args, prefix: readonly string[] = []): Promise<string> => {
+  const limit = Date.now() + (int(args, 'timeout') ?? WAIT_TIMEOUT) * 1000;
+  const round = int(args, 'round');
+  const head = prefix.length > 0 ? `${prefix.join('\n')}\n` : '';
+  for (;;) {
+    const view = await viewRoom(creds);
+    const state = view.state;
+    if (state !== null && (isGameOver(state) || myTurn(state, creds.seat))) return onlineReport(path, creds, view, args, prefix);
+    if (state !== null && round !== undefined && effectiveRound(state) > round) {
+      return `${head}ラウンド ${round} は終わった（いまは第${effectiveRound(state)}ラウンド）。ノートを書いて終えること`;
+    }
+    if (Date.now() >= limit) {
+      return state === null
+        ? `${head}まだ始まっていない（入室 ${view.summary.names.length}／${view.summary.playerCount}人）。もう一度 wait を呼ぶこと`
+        : `${head}まだ P${creds.seat} の番ではない（選択待ち P${decider(state) ?? '-'}）。もう一度 wait を呼ぶこと`;
+    }
+    await sleepAsync(3000);
+  }
 };
 
 const sleepAsync = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -361,23 +445,7 @@ const online = async (args: Args, rest: readonly string[]): Promise<string> => {
     }
     case 'wait': {
       const path = credsPath();
-      const creds = readCredentials(path);
-      const limit = Date.now() + (int(args, 'timeout') ?? 300) * 1000;
-      const round = int(args, 'round');
-      for (;;) {
-        const view = await viewRoom(creds);
-        const state = view.state;
-        if (state !== null && (isGameOver(state) || myTurn(state, creds.seat))) return onlineReport(path, creds, view, args);
-        if (state !== null && round !== undefined && effectiveRound(state) > round) {
-          return `ラウンド ${round} は終わった（いまは第${effectiveRound(state)}ラウンド）。ノートを書いて終えること`;
-        }
-        if (Date.now() >= limit) {
-          return state === null
-            ? `まだ始まっていない（入室 ${view.summary.names.length}／${view.summary.playerCount}人）。もう一度 wait を呼ぶこと`
-            : `まだ P${creds.seat} の番ではない（選択待ち P${decider(state) ?? '-'}）。もう一度 wait を呼ぶこと`;
-        }
-        await sleepAsync(3000);
-      }
+      return onlineWaitFor(path, readCredentials(path), args);
     }
     case 'move': {
       const path = credsPath();
@@ -389,6 +457,10 @@ const online = async (args: Args, rest: readonly string[]): Promise<string> => {
       markSeen(path, creds, view);
       const only = str(args, 'only');
       if (only !== undefined) return onlineShow(view, args, events);
+      // --then-wait（指示書案 2026-11-13 2-3）：自分の番でなくなったら、そのまま番を待つ。
+      if (args.flags.has('then-wait') && !isGameOver(view.state) && !myTurn(view.state, view.seat)) {
+        return onlineWaitFor(path, readCredentials(path), args, [`送った選択：${sent.join(' ')}`, ...events]);
+      }
       return [`送った選択：${sent.join(' ')}`, ...events, ...tailLines(view.state, view.seat, args.flags.has('board') ? { board: true } : {})].join('\n');
     }
     default:
@@ -448,8 +520,13 @@ const run = (argv: readonly string[]): string | Promise<string> => {
         return compareOutput(state, sequences, who, record.moves.length);
       }
       if (rest.includes(OR)) throw new PlayError('--or は --dry-run と一緒に使う');
+      if (args.flags.has('then-wait') && seat === undefined) throw new PlayError('--then-wait は --seat と一緒に使う');
       const result = applyMoves(record, rest, undefined, seat);
       writeRecord(path, result.record);
+      // --then-wait（指示書案 2026-11-13 2-3）：選択待ちが他の席に移ったら、そのまま番を待って wait の短い形で出す。
+      if (args.flags.has('then-wait') && seat !== undefined && !args.flags.has('full') && !isGameOver(result.state) && decider(result.state) !== seat) {
+        return waitFor(path, seat, args, ['== 適用した選択', ...stepLines(result.state, result.steps, seat)]);
+      }
       // 席を指定したときは、選択待ちが他の席に移っても視点をその席に保つ（他の席の手札を出さない）。
       const view = seat === undefined || args.flags.has('as') ? args : { ...args, flags: new Map([...args.flags, ['as', String(seat)]]) };
       if (args.flags.has('full')) return `${renderSteps(result.state, result.steps)}\n\n${showFull(result.record, view)}`;
@@ -461,29 +538,7 @@ const run = (argv: readonly string[]): string | Promise<string> => {
     case 'wait': {
       const seat = int(args, 'seat');
       if (seat === undefined) throw new PlayError('--seat を指定すること');
-      const limit = Date.now() + (int(args, 'timeout') ?? 300) * 1000;
-      const round = int(args, 'round');
-      for (;;) {
-        let record: PlayRecord | null = null;
-        try {
-          record = readRecord(path);
-        } catch (e) {
-          if (!(e instanceof PlayError)) throw e;
-        }
-        if (record !== null) {
-          checkPlayer(record, seat, 'seat');
-          const state = stateOf(record);
-          const deciding = decider(state);
-          if (isGameOver(state)) return `ゲーム終了\n\n${renderScore(state)}`;
-          // 打ち手の作り直し（指示書 2-6）：指定のラウンドが終わっていれば、番を待たずに終える。
-          if (round !== undefined && effectiveRound(state) > round) return `ラウンド ${round} は終わった（いまは第${effectiveRound(state)}ラウンド）。ノートを書いて終えること`;
-          if (deciding === seat) return turnReport(record, seat, args, path);
-          if (Date.now() >= limit) return `まだ P${seat} の番ではない（選択待ち P${deciding ?? '-'}）。もう一度 wait を呼ぶこと`;
-        } else if (Date.now() >= limit) {
-          throw new PlayError(`記録を読めない：${path}`);
-        }
-        sleep(1000);
-      }
+      return waitFor(path, seat, args);
     }
     case 'undo': {
       const record = load(path);
@@ -512,6 +567,11 @@ const run = (argv: readonly string[]): string | Promise<string> => {
       checkPlayer(record, seat, 'seat');
       const steps = logSteps(record);
       const state = stateOf(record);
+      // 第2ラウンド以降の既定は短い形（指示書案 2026-11-13 2-2）。第1ラウンドと --ref は従来の全文。
+      if (effectiveRound(state) >= 2 && !args.flags.has('ref')) {
+        const plan = readPlan(planPath(path, seat));
+        return resumeBrief(state, seat, [...notices(path, state, seat, 'always'), ...planList(state, readPlan(planPath(path, seat)), seat).slice(plan.targets.length === 0 ? 1 : 0)]);
+      }
       return resumeOutput(state, steps, seat, undefined, notices(path, state, seat, 'always'));
     }
     case 'plan': {

@@ -356,7 +356,7 @@ const promptExtra = (m: ShowModel): string => {
 };
 
 /** 選択肢の欄。full なら1選択肢1行でラベルの全文、そうでなければ畳む。 */
-const optionSection = (state: GameState, m: ShowModel, full: boolean, d: GameData): string[] => {
+const optionSection = (state: GameState, m: ShowModel, full: boolean, d: GameData, unavailable: readonly string[] = unavailableLines(state, d)): string[] => {
   const p = m.prompt;
   if (isGameOver(state)) return ['== 選択肢: なし（ゲーム終了。score で得点を見る）'];
   if (p.options === null) return [`選択待ち：${p.player}（${p.heading}）`];
@@ -373,7 +373,7 @@ const optionSection = (state: GameState, m: ShowModel, full: boolean, d: GameDat
     const cost = notes?.costs[o.id];
     return cost === undefined ? o : { ...o, label: `${o.label}（確定時の軍事力トークン計${cost}）` };
   });
-  return [head, ...foldedLines(foldOptions(options, d, cellInfo)), ...unavailableLines(state, d), ...p.warnings];
+  return [head, ...foldedLines(foldOptions(options, d, cellInfo)), ...unavailable, ...p.warnings];
 };
 
 /** 理由ごとにまとめた「選べないもの」の行（ユーザー決定 2026-11-11）。 */
@@ -827,6 +827,75 @@ export const resumeOutput = (state: GameState, steps: readonly Step[], seat: num
     '== 得点',
     scoreLine(state, seat, d),
   ].join('\n');
+
+// ---------------------------------------------------------------------------
+// wait の短い形（指示書案 2026-11-13 2-1、ゲーム10〜12 の効率化の方法 A）
+// ---------------------------------------------------------------------------
+
+/** 「選べない〜」の行の項目の数（理由ごとの行の、・で区切った名前の数）。 */
+const unavailableCount = (lines: readonly string[]): number =>
+  lines.filter((l) => l.startsWith('  ')).reduce((n, l) => n + (l.trim().split('：')[0] ?? '').split('・').length, 0);
+
+/** 選べないものの行と、前回と比べるための署名。前回と同じなら1行にまとめる。 */
+export const unavailableFolded = (state: GameState, previous: string | undefined, d: GameData = GAME_DATA): { lines: string[]; signature: string } => {
+  const lines = unavailableLines(state, d);
+  const signature = lines.join('\n');
+  if (lines.length === 0 || previous !== signature) return { lines, signature };
+  return { lines: [`選べない ${unavailableCount(lines)} 件（前回の wait と同じ。理由は show --only options）`], signature };
+};
+
+/** 襲撃の行（ラウンドの最初の番だけ出す）：公開中の襲撃カードと、視点の席が防衛・撃退に払うトークン。 */
+export const raidLine = (state: GameState, seat: number, d: GameData = GAME_DATA): string | null => {
+  const card = queries.currentRaidCard(state, d);
+  const p = state.players[seat];
+  if (card === null || p === undefined) return null;
+  const need = queries.raidNeed(state, p);
+  return `襲撃: カード${card.id} 防衛ライン${state.defenseLine}・撃退ライン${state.repelLine}（${raidOutcomeText(d, card.id)}）｜自分 Lv${p.militaryLevel} 防衛${need.defense}・撃退${need.repel}／所持${p.militaryTokens}`;
+};
+
+/**
+ * wait の既定の出力（番が来たとき）：出来事（狙いの知らせを含む）・襲撃（ラウンドの最初の番だけ）・置かれたスペース・
+ * 自分の要約1行・選択肢と注意。局面の残りの欄は出さない（--state で従来の局面全体）。
+ */
+export const waitOutput = (
+  state: GameState,
+  seat: number,
+  events: readonly string[],
+  opts: { readonly raid: boolean; readonly unavailable: readonly string[] },
+  d: GameData = GAME_DATA,
+): string[] => {
+  const m = showModel(state, { as: seat }, d);
+  const raid = opts.raid ? raidLine(state, seat, d) : null;
+  return [
+    ...(events.length > 0 ? ['== 出来事', ...events] : []),
+    ...(raid === null ? [] : [raid]),
+    ...actionLines(m),
+    selfSummary(state, seat),
+    ...(isGameOver(state) ? ['ゲーム終了（score で得点を見る）'] : decider(state) === seat ? optionSection(state, m, false, d, opts.unavailable) : [`選択待ち：${P(decider(state))}`]),
+  ];
+};
+
+/**
+ * resume の短い形（指示書案 2026-11-13 2-2、効率化の方法 B）。第2ラウンド以降の既定。
+ * 局面（show の既定の形）・手札・自分のキャラクターの能力・自分と場の特別な市民カードと計画都市・手番順と狙い・見込み。
+ */
+export const resumeBrief = (state: GameState, seat: number, extra: readonly string[], d: GameData = GAME_DATA): string => {
+  const self = state.players[seat];
+  const charId = self?.characterId ?? null;
+  const character = charId === null ? null : d.characters.find((c) => c.id === charId);
+  const publicLines = refLines(state, seat, ['public'], [], d).filter((l) => !l.startsWith('プレイ済み（自分）'));
+  const own = publicLines.filter((l) => !/（P\d+）|P\d+ の専用/.test(l) || l.includes(`（P${seat}）`) || l.includes(`P${seat} の専用`));
+  return [
+    ...compactShow(state, { as: seat }, d),
+    ...compactShow(state, { as: seat, only: ['hand'] }, d),
+    `== 自分のキャラクター: ${charId === null ? 'なし' : `${queries.characterName(d, charId)}: ${describeScript(character?.script ?? []).join('／')}`}`,
+    ...own,
+    ...extra,
+    '== 得点',
+    scoreLine(state, seat, d),
+    '（アクションボード・他のキャラクター・建物・襲撃カード・遠征の報酬表は ref、これまでの手番は log --seat、従来の全文は resume --ref）',
+  ].join('\n');
+};
 
 /** 局面のラウンド（ドラフトと準備は第1ラウンドに含める、指示書 2-6）。 */
 export const effectiveRound = (state: GameState): number => Math.max(1, state.round);

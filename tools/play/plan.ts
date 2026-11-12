@@ -22,6 +22,10 @@ export type PlanFile = {
   readonly round: number;
   /** 手番順を出したラウンド（ラウンドの最初の wait に1回だけ出す）。 */
   readonly orderShown: number;
+  /** 襲撃の行を出したラウンド（ラウンドの最初の wait に1回だけ出す、指示書案 2026-11-13 2-1）。 */
+  readonly raidShown?: number;
+  /** 前回の wait に出した「選べない〜」の行の署名（変わらなければ1行にまとめる）。 */
+  readonly unavailable?: string;
 };
 
 const EMPTY: PlanFile = { targets: [], last: {}, round: 0, orderShown: 0 };
@@ -37,6 +41,8 @@ export const readPlan = (path: string): PlanFile => {
       last: typeof v.last === 'object' && v.last !== null ? v.last : {},
       round: typeof v.round === 'number' ? v.round : 0,
       orderShown: typeof v.orderShown === 'number' ? v.orderShown : 0,
+      ...(typeof v.raidShown === 'number' ? { raidShown: v.raidShown } : {}),
+      ...(typeof v.unavailable === 'string' ? { unavailable: v.unavailable } : {}),
     };
   } catch {
     return EMPTY;

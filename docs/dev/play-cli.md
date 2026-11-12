@@ -31,3 +31,12 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
 - 落とし穴の注意：`src/game/pitfalls.ts` の `PITFALL_RULES`（自然公園を崩す・撃退を選べる・役所の変換が出ない・残したままのパス・選ばずに済ませられない建設）。型ごとに対象の選択待ちと比べる値を持ち、選択肢を写しに適用して `queries` の値を前後で比べる。`hiddenFuture` に当たる選択肢は適用しない（最後の襲撃の宣言は、適用せずに公開中の襲撃カードの文を出す）。建設は確定（`done`）まで進めた写しで比べる。行は `ShowModel.prompt.warnings` に入れ、選択肢の欄の後（「選べない〜」の後）に5行まで出す（`--full` も同じ位置）。オンライン版も伏せた写しで同じ処理を通す。
 - 狙い：`plan --seat N [--set <狙い,...> | --clear]`（`tools/play/plan.ts`）。置き場は記録と同じディレクトリの `plan-P<席>.json`（記録には入れない）。状態は `queries.spaceUsers`・`specialCitizenHolder`・`bonusTileHolder`・`plannedCityClaimers`・`plannedCityRemaining` だけから求める。`wait`・`move`・`resume` の出来事の後に、前回の出力から変わった狙いを3行まで出す。自分の手で変わった状態（自分が使った・獲得した）と、ラウンドが替わって「空いている」に戻ったスペースは知らせない（記録だけ更新する）。`resume` とラウンドの最初の `wait` には手番順と自分より先に打つ席を1行で出す（出したラウンドは同じファイルの `orderShown`）。オンライン版の `online` には `plan` を付けていない（資格情報ごとの置き場を決めていないため）。
 - 序盤の定石：`docs/playtest/openings/<キャラクターの ID>.md`（1KB 以内）と `draft.md`。上限は `tests/play-strength.test.ts` が確かめる。
+
+## 待ちと引き継ぎの縮小（指示書案 2026-11-13、`docs/dev/drafts/`。ユーザー決定 2026-11-12「この下書きの通りに進めて」）
+
+- `wait` の既定（番が来たとき）は `compact.ts` の `waitOutput`：出来事（狙いの知らせを含む）・襲撃の行（ラウンドの最初の番だけ）・置かれたスペース・自分の要約1行・選択肢と注意。選べない理由は `unavailableFolded` で、前回の `wait` と同じなら「選べない N 件」の1行にする。襲撃の行を出したラウンドと選べない理由の署名は `plan-P<席>.json`（`raidShown`・`unavailable`）に持つ。`--state`・`--only`・`--json` は従来の局面全体。オンライン版は前回の内容を持たないため、襲撃の行と選べない理由を毎回出す。
+- `resume` は第2ラウンド以降の既定を `resumeBrief`（局面・手札・自分のキャラクターの能力・自分と場の特別な市民カードと計画都市・手番順と狙い・見込み）にする。第1ラウンドと `--ref` は従来の全文（`resumeOutput`）。
+- `move ... --seat N --then-wait [--round R] [--timeout 秒]`：適用後に選択待ちが他の席へ移ったら、`waitFor`（`wait` と共用）で番を待ち、「== 適用した選択」の後に `wait` の形を出す。`end`・`pass` は補わない。`online move --then-wait` も同じ。
+- `wait` と `--then-wait` の既定の時間切れは 100 秒（`WAIT_TIMEOUT`）。打ち手の道具の上限（約120秒）より短くする。
+- 検査は `tests/play-wait.test.ts`（`--then-wait` は `dist-play/cli.js` があるときだけ CLI を通して確かめる）。
+
