@@ -5,7 +5,7 @@ import { DATA_VERSION, GAME_DATA } from '../data/index.ts';
 import { decider, isGameOver } from '../game/engine.ts';
 import { downloadReplay } from './replay-file.ts';
 import { explainUndo } from '../game/explain.ts';
-import { forgetSession, loadSessions, saveSession, type RoomMessage, type Session, type Transport } from '../online/client.ts';
+import { forgetSession, loadSessions, saveSession, spectatorSession, type RoomMessage, type Session, type Transport } from '../online/client.ts';
 import { Game, type GameController, type Settings } from './Game.tsx';
 
 /** 部屋を作る・入る・続きから（ルームコード＋名前、ユーザー決定 2026-11-03）。 */
@@ -67,7 +67,17 @@ export const OnlineEntry = ({ transport, onEnter }: { transport: Transport; onEn
         >
           入る
         </button>
+        <button
+          type="button"
+          className="btn"
+          data-ui="online-spectate"
+          disabled={code.trim() === ''}
+          onClick={() => onEnter(spectatorSession(code))}
+        >
+          観戦する
+        </button>
       </div>
+      <p className="muted small">観戦は席に座らずに対局を見る。全員の手札は伏せたまま（公開情報だけ）で、選択はできない。</p>
       {sessions.length > 0 ? (
         <div className="start-row">
           <span>続きから</span>
@@ -159,9 +169,13 @@ export const OnlineGame = ({
         ) : (
           <p className="muted">{connected ? 'サーバーにつながっている' : 'サーバーに接続しています…'}</p>
         )}
-        <p>
-          ルームコード <strong data-ui="room-code">{session.code}</strong> を他のプレイヤーに伝え、全員がそろうと始まる。
-        </p>
+        {session.spectator === true ? (
+          <p>観戦中。全員がそろうと対局が始まり、ここに映る。</p>
+        ) : (
+          <p>
+            ルームコード <strong data-ui="room-code">{session.code}</strong> を他のプレイヤーに伝え、全員がそろうと始まる。
+          </p>
+        )}
         {message?.summary.variants?.snakeDraft === true ? <p className="muted">ヴァリアント：スネークドラフト</p> : null}
         {message ? (
           <ol>
@@ -184,6 +198,33 @@ export const OnlineGame = ({
       .catch((e: unknown) => setNotice(String(e).replace(/^Error: /, '')))
       .finally(() => setBusy(false));
   };
+
+  if (session.spectator === true) {
+    // 観戦：選択も取り消しもできず、手札はどの席のものも描かない。視点は手番の人を追う。
+    const watch: GameController = {
+      state,
+      seat: null,
+      choose: () => undefined,
+      undo: () => undefined,
+      undoReason: '観戦中は操作できない',
+      readOnly: true,
+      hideHands: true,
+      leaveLabel: '観戦をやめる',
+      message: fatal ?? (!connected ? 'サーバーとの接続が切れた。繋ぎ直しています…' : null),
+    };
+    const bar = (
+      <div className="replay-bar" data-ui="spectate-bar">
+        <div className="replay-controls">
+          <strong>観戦中（部屋 {session.code}）</strong>
+          <span className="muted small">全員の手札は伏せたまま。視点は手番の人を追う（タブで切り替えられる）。</span>
+          <button type="button" className="btn" data-ui="spectate-leave" onClick={onLeave}>
+            観戦をやめる
+          </button>
+        </div>
+      </div>
+    );
+    return <Game ctl={watch} settings={{ ...settings, follow: true }} onRestart={onLeave} toolbar={bar} />;
+  }
 
   const mine = decider(state) === session.seat;
   const ctl: GameController = {

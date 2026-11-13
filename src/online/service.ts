@@ -104,6 +104,9 @@ const save = async (store: RoomStore, notify: Notify, room: Room, version: numbe
   await notify(room.record.code, next);
 };
 
+/** 観戦者の席の番号（どの席でもない）。viewFor はこの席以外の手札をすべて伏せる。 */
+export const SPECTATOR_SEAT = -1;
+
 const viewOf = (room: Room, seat: number, version: number): RoomView => ({
   summary: summaryOf(room),
   seat,
@@ -121,6 +124,7 @@ export type ServiceDeps = { readonly store: RoomStore; readonly notify: Notify; 
  * - move {code, key, move, logLength} → {ok}
  * - undo {code, key, toTurnStart?} → {ok}（toTurnStart が真なら手番の最初まで戻す）
  * - replay {code, key} → ReplayRecord（終局後だけ。記録の保存、ユーザー決定 2026-11-10）
+ * - spectate {code} → RoomView（観戦。鍵は要らず、全員の手札を伏せた写しを返す。seat は -1、ユーザー決定 2026-11-13）
  */
 export const handleAction = async (body: Readonly<Record<string, unknown>>, deps: ServiceDeps): Promise<unknown> => {
   const { store, notify } = deps;
@@ -157,6 +161,9 @@ export const handleAction = async (body: Readonly<Record<string, unknown>>, deps
     case 'replay':
       await seatOf(room, body['key']);
       return replayOfRoom(room);
+    case 'spectate':
+      // 観戦は公開情報だけ（19-6-1）。どの席でもない -1 で伏せるため、全員の手札が伏せられる。
+      return viewOf(room, SPECTATOR_SEAT, version);
     default:
       throw new RoomError(400, `知らない操作である：${action}`);
   }
