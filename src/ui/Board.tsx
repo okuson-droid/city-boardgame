@@ -2,10 +2,11 @@
 
 import { CELLS, type CellId } from '../game/board.ts';
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
-import type { Terrain } from '../data/types.ts';
+import type { Grant, Terrain } from '../data/types.ts';
 import type { PlayerState } from '../game/types.ts';
 import { describeBuilding, grantText } from '../game/queries.ts';
 import { ICON_ART } from './icon-art.ts';
+import { artOf } from './Icon.tsx';
 
 const R = 26;
 const W = Math.sqrt(3) * R;
@@ -33,11 +34,19 @@ const labelOf = (section: 'buildings' | 'terrains' | 'resources', key: string): 
   (ICON_KEYS[section] as Readonly<Record<string, { label: string }>>)[key]?.label ?? key;
 
 /** マスボーナスの図案（docs/styleguide-icons.md 4-2）。 */
-const BONUS_ART: Record<string, string> = {
-  gold: 'res.gold',
-  materials: 'res.materials',
-  drawCivCards: 'res.civCard',
-  militaryTokens: 'res.militaryTokens',
+/**
+ * マスボーナスの図案。得るものの種類からアイコンの対応表（icon_keys.json）を引き、画面の他の場所と同じ図案を使う。
+ * 以前は4種類（金・資材・文明カード・軍事力トークン）だけを持ち、調整案（2026-11-08）で増えた特別な市民カード・得点・臨時ワーカーの
+ * マスが数字だけになっていた（2026-11-13）。
+ */
+export const bonusArt = (g: { readonly kind: Grant['kind'] | string }): string => {
+  const icon =
+    g.kind === 'landTiles'
+      ? 'cmd.placeTiles'
+      : g.kind === 'buildRight' || g.kind === 'freeBuildOnTerrain'
+        ? 'cmd.build'
+        : ((ICON_KEYS.resources as Readonly<Record<string, { icon: string }>>)[g.kind]?.icon ?? '');
+  return artOf(icon) ?? '';
 };
 
 export type CellState = 'selectable' | 'picked' | 'none';
@@ -113,7 +122,7 @@ export const Board = ({
                       width={14}
                       height={14}
                       viewBox="0 0 24 24"
-                      dangerouslySetInnerHTML={{ __html: ICON_ART[BONUS_ART[square.bonus.kind] ?? ''] ?? '' }}
+                      dangerouslySetInnerHTML={{ __html: bonusArt(square.bonus) }}
                     />
                     <text x={cx + 9} y={cy - R * 0.32} className="cell-bonus">
                       {square.bonus.amount}
@@ -194,7 +203,7 @@ export const BoardMap = ({ boardId }: { boardId: string }) => {
             {bonus ? (
               <g>
                 <circle cx={cx} cy={cy - 2} r={R * 0.5} fill="#fff" fillOpacity={0.85} stroke="#666" strokeWidth={0.8} />
-                <svg x={cx - 9} y={cy - 11} width={18} height={18} viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: ICON_ART[BONUS_ART[bonus.kind] ?? ''] ?? '' }} />
+                <svg x={cx - 9} y={cy - 11} width={18} height={18} viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: bonusArt(bonus) }} />
                 <text x={cx + 10} y={cy + 6} className="cell-bonus">
                   {bonus.amount}
                 </text>
