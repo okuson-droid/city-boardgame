@@ -133,6 +133,14 @@
                   "res": "tempWorkers",
                   "amount": 1
                 }
+              },
+              {
+                "level": 12,
+                "command": {
+                  "op": "gain",
+                  "res": "points",
+                  "amount": 3
+                }
               }
             ]
           }
@@ -167,7 +175,7 @@
             {
               "op": "gain",
               "res": "goldProduction",
-              "amount": 8
+              "amount": 10
             }
           ]
         },
@@ -175,14 +183,14 @@
           "ability": "freeAction",
           "pay": {
             "res": "gold",
-            "amount": 10
+            "amount": 2
           },
           "require": null,
-          "oncePerRound": true,
+          "oncePerRound": false,
           "do": [
             {
               "op": "gain",
-              "res": "tempWorkers",
+              "res": "militaryTokens",
               "amount": 1
             }
           ]
@@ -191,10 +199,10 @@
           "ability": "freeAction",
           "pay": {
             "res": "gold",
-            "amount": 5
+            "amount": 8
           },
           "require": null,
-          "oncePerRound": true,
+          "oncePerRound": false,
           "do": [
             {
               "op": "gain",
@@ -207,15 +215,27 @@
           "ability": "freeAction",
           "pay": {
             "res": "gold",
-            "amount": 5
+            "amount": 8
           },
           "require": null,
-          "oncePerRound": true,
+          "oncePerRound": false,
           "do": [
             {
               "op": "placeTiles",
               "count": 1,
               "tile": "match"
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "built",
+          "filter": {},
+          "do": [
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 2
             }
           ]
         }
@@ -362,12 +382,12 @@
           },
           "do": [
             {
-              "op": "playCard",
-              "count": 1,
-              "free": false,
-              "upTo": true
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": 1
             }
-          ]
+          ],
+          "every": 3
         }
       ]
     },
@@ -611,6 +631,26 @@
               "amount": 1
             }
           ]
+        },
+        {
+          "ability": "on",
+          "event": "trackRaised",
+          "filter": {
+            "cond": {
+              "left": "infraLevel",
+              "op": ">=",
+              "right": 12
+            },
+            "track": "infra"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "specialCitizen",
+              "amount": 1
+            }
+          ],
+          "once": true
         }
       ]
     },
@@ -673,7 +713,7 @@
               "amount": {
                 "count": "spiritAdjacency",
                 "per": 1,
-                "times": 1
+                "times": 2
               },
               "axis": "other"
             }
@@ -732,7 +772,7 @@
         },
         {
           "ability": "actionSpace",
-          "workers": 2,
+          "workers": 1,
           "do": [
             {
               "op": "if",
@@ -744,7 +784,7 @@
               "then": [
                 {
                   "op": "build",
-                  "max": 2,
+                  "max": 1,
                   "upTo": false,
                   "buildings": null,
                   "terrain": null,

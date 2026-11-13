@@ -88,11 +88,7 @@
       ],
       "revisedEffects": [
         {
-          "timing": "常時",
-          "text": "文明カードをプレイする度に2点を得る"
-        },
-        {
-          "timing": "獲得時",
+          "timing": "ゲーム終了時",
           "text": "プレイ済みの文明カード1枚につき1点を得る"
         }
       ],
@@ -100,20 +96,7 @@
       "provisional": false,
       "script": [
         {
-          "ability": "on",
-          "event": "cardPlayed",
-          "filter": {},
-          "do": [
-            {
-              "op": "gain",
-              "res": "points",
-              "amount": 1,
-              "axis": "welfare"
-            }
-          ]
-        },
-        {
-          "ability": "onAcquire",
+          "ability": "gameEnd",
           "do": [
             {
               "op": "gain",
@@ -122,8 +105,7 @@
                 "count": "playedCivCards",
                 "per": 1,
                 "times": 1
-              },
-              "axis": "welfare"
+              }
             }
           ]
         }
@@ -140,18 +122,35 @@
       ],
       "revisedEffects": [
         {
-          "timing": "1ラウンドにつき1回のフリーアクション",
-          "text": "軍事レベルかインフラレベルのどちらか一方を1上げる"
+          "timing": "獲得時",
+          "text": "軍事レベルとインフラレベルのどちらか一方を1上げる"
+        },
+        {
+          "timing": "1ワーカーのアクションスペース",
+          "text": "軍事レベルかインフラレベルのどちらか一方を2上げる"
         }
       ],
       "open_issues": [],
       "provisional": false,
       "script": [
         {
-          "ability": "freeAction",
-          "pay": null,
-          "require": null,
-          "oncePerRound": true,
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": 1
+            },
+            {
+              "op": "raise",
+              "track": "infra",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "ability": "actionSpace",
+          "workers": 1,
           "do": [
             {
               "op": "chooseOne",
@@ -160,14 +159,14 @@
                   {
                     "op": "raise",
                     "track": "military",
-                    "amount": 1
+                    "amount": 2
                   }
                 ],
                 [
                   {
                     "op": "raise",
                     "track": "infra",
-                    "amount": 1
+                    "amount": 2
                   }
                 ]
               ]
@@ -197,7 +196,7 @@
               "amount": {
                 "count": "maxedBuildingTypes",
                 "per": 1,
-                "times": 4
+                "times": 3
               },
               "axis": "welfare"
             }
@@ -539,7 +538,7 @@
       "revisedEffects": [
         {
           "timing": "獲得時",
-          "text": "任意の土地タイル3枚を無料で配置する(マスと一致しなくてもよい)"
+          "text": "任意の土地タイル1枚を無料で配置する(マスと一致しなくてもよい)"
         },
         {
           "timing": "1ワーカーのアクションスペース",
@@ -671,6 +670,11 @@
               "op": "gain",
               "res": "tempWorkers",
               "amount": 1
+            },
+            {
+              "op": "gain",
+              "res": "goldProduction",
+              "amount": 3
             }
           ]
         }
@@ -701,6 +705,15 @@
                 "count": "tempWorkers",
                 "per": 1,
                 "times": 1
+              }
+            },
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "tempWorkers",
+                "per": 1,
+                "times": 2
               }
             }
           ]
@@ -750,7 +763,7 @@
       "revisedEffects": [
         {
           "timing": "獲得時",
-          "text": "即座に金の生産を6、資材の生産を3上げる"
+          "text": "即座に金の生産を8、資材の生産を3上げる"
         }
       ],
       "open_issues": [],
@@ -762,7 +775,7 @@
             {
               "op": "gain",
               "res": "goldProduction",
-              "amount": 6
+              "amount": 8
             },
             {
               "op": "gain",

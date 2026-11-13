@@ -18,7 +18,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建物1軒を無料で建設する。",
       "clarifications": [],
       "script": [
@@ -55,7 +55,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "土地タイル2枚を置く。",
       "clarifications": [
         {
@@ -94,7 +94,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "金を支払わずに建物を3軒まで建設する。",
       "clarifications": [
         {
@@ -137,7 +137,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "5資材を得る。",
       "clarifications": [],
       "script": [
@@ -209,7 +209,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "地形を無視して山岳土地タイルを置く。",
       "clarifications": [
         {
@@ -248,7 +248,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "地形を無視して水場土地タイルを置く。",
       "clarifications": [
         {
@@ -287,7 +287,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "地形を無視して森林土地タイルを置く。",
       "clarifications": [
         {
@@ -326,7 +326,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "地形を無視して平原土地タイルを置く。",
       "clarifications": [
         {
@@ -431,7 +431,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "市民カード1枚を獲得する。",
       "clarifications": [
         {
@@ -470,7 +470,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "臨時ワーカーを2つ得る。",
       "clarifications": [
         {
@@ -509,7 +509,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "軍事トークンを5つ得る。",
       "clarifications": [
         {
@@ -587,7 +587,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "文明カードを2枚引く。",
       "clarifications": [],
       "script": [
@@ -620,7 +620,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "軍事トークンを2つ得る。遠征報酬を4つ獲得する。",
       "clarifications": [
         {
@@ -668,7 +668,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時：音楽タグ、文学タグ、美術タグのいずれかを持つ文明カードをプレイする度に、文明カードを1枚引く。",
       "clarifications": [
         {
@@ -716,7 +716,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している文学タグ1つにつき1点を得る。通常ワーカー1つにつき1金を得る。",
       "clarifications": [
         {
@@ -779,7 +779,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している文学タグ1つにつき1点を得る。建物のない土地タイル1枚につき1金を得る。",
       "clarifications": [
         {
@@ -837,7 +837,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している文学タグ1つにつき1点を得る。インフラレベル1につき1金を得る。",
       "clarifications": [
         {
@@ -895,7 +895,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している文学タグ1つにつき1点を得る。軍事力トークン1つにつき1金を得る。",
       "clarifications": [
         {
@@ -953,7 +953,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している文学タグ1つにつき1点を得る。資材の生産1につき1金を得る。",
       "clarifications": [
         {
@@ -1016,7 +1016,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している文学タグ1つにつき1点を得る。建物1軒につき1金を得る。",
       "clarifications": [
         {
@@ -1074,7 +1074,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している文学タグ1つにつき1点を得る。金の生産3につき1金を得る。",
       "clarifications": [
         {
@@ -1137,7 +1137,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している文学タグ1つにつき1点を得る。襲撃の撃退ライン1につき1金を得る。",
       "clarifications": [
         {
@@ -1200,7 +1200,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している美術タグ1つにつき1点を得る。軍事レベルが3以上なら、3資材を得る。6以上なら、もう2資材を得る。",
       "clarifications": [
         {
@@ -1279,7 +1279,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している美術タグ1つにつき1点を得る。インフラレベルが3以上なら、3資材を得る。6以上なら、もう2資材を得る。",
       "clarifications": [
         {
@@ -1358,7 +1358,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している美術タグ1つにつき1点を得る。金の生産が25以上なら、3資材を得る。30以上なら、もう2資材を得る。",
       "clarifications": [
         {
@@ -1442,7 +1442,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している美術タグ1つにつき1点を得る。土地タイルが7枚以上なら、3資材を得る。14枚以上なら、もう2資材を得る。",
       "clarifications": [
         {
@@ -1521,7 +1521,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している美術タグ1つにつき1点を得る。建物が5軒以上なら、3資材を得る。8軒以上なら、もう2資材を得る。",
       "clarifications": [
         {
@@ -1600,7 +1600,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している美術タグ1つにつき1点を得る。住宅が4軒以上なら、3資材を得る。通常ワーカーが8人以上なら、もう2資材を得る。",
       "clarifications": [
         {
@@ -1684,7 +1684,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している美術タグ1つにつき1点を得る。資材の生産が5以上なら、3資材を得る。8以上なら、もう2資材を得る。",
       "clarifications": [
         {
@@ -1768,7 +1768,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している美術タグ1つにつき1点を得る。軍事力が撃退ラインより低いなら、3資材を得る。防衛ラインより低いなら、もう2資材を得る。",
       "clarifications": [
         {
@@ -1857,7 +1857,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している音楽タグ1つにつき1点を得る。軍事レベルが3以上なら、文明カードを1枚引く。6以上なら、もう1枚引く。",
       "clarifications": [
         {
@@ -1936,7 +1936,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している音楽タグ1つにつき1点を得る。インフラレベルが3以上なら、文明カードを1枚引く。6以上なら、もう1枚引く。",
       "clarifications": [
         {
@@ -2015,7 +2015,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している音楽タグ1つにつき1点を得る。金の生産が25以上なら、文明カードを1枚引く。30以上なら、もう1枚引く。",
       "clarifications": [
         {
@@ -2099,7 +2099,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している音楽タグ1つにつき1点を得る。土地タイルが7枚以上なら、文明カードを1枚引く。14枚以上なら、もう1枚引く。",
       "clarifications": [
         {
@@ -2178,7 +2178,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している音楽タグ1つにつき1点を得る。建物が5軒以上なら、文明カードを1枚引く。8軒以上なら、もう1枚引く。",
       "clarifications": [
         {
@@ -2257,7 +2257,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している音楽タグ1つにつき1点を得る。住宅が4軒以上なら、文明カードを1枚引く。通常ワーカーが8人以上なら、もう1枚引く。",
       "clarifications": [
         {
@@ -2341,7 +2341,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している音楽タグ1つにつき1点を得る。資材の生産が5以上なら、文明カードを1枚引く。8以上なら、もう1枚引く。",
       "clarifications": [
         {
@@ -2425,7 +2425,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している音楽タグ1つにつき1点を得る。軍事力が撃退ラインより低いなら、文明カードを1枚引く。防衛ラインより低いなら、もう1枚引く。",
       "clarifications": [
         {
@@ -2513,7 +2513,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時：研究アクション実行後、文明カード1枚をプレイできる。",
       "clarifications": [
         {
@@ -2600,7 +2600,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建設済みの大学1軒につき、3資材を得る。",
       "clarifications": [],
       "script": [
@@ -2637,7 +2637,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建設済みの大学1軒につき、8金を得る。",
       "clarifications": [],
       "script": [
@@ -2674,7 +2674,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建設済みの大学1軒につき、インフラレベルを1上げる。",
       "clarifications": [],
       "script": [
@@ -2754,7 +2754,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建設済みの大学1軒につき、軍事レベルを1上げる。",
       "clarifications": [],
       "script": [
@@ -2791,7 +2791,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建設済みの大学1軒につき、文明カードを2枚引く。",
       "clarifications": [],
       "script": [
@@ -2828,7 +2828,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建設済みの建物3軒につき1点を得る。",
       "clarifications": [
         {
@@ -2871,7 +2871,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "資材を支払わずに建物を2軒まで建設する。",
       "clarifications": [],
       "script": [
@@ -2908,7 +2908,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "砦が2軒以上あるなら、軍事レベルを1上げる。役所が2軒以上あるなら、インフラレベルを1上げる。",
       "clarifications": [],
       "script": [
@@ -2966,7 +2966,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "文明カード1枚を無料でプレイする。",
       "clarifications": [
         {
@@ -3005,7 +3005,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "文明カードを1枚引く。文明カード1枚をプレイできる。",
       "clarifications": [
         {
@@ -3050,7 +3050,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "文明カードを3枚引く。",
       "clarifications": [],
       "script": [
@@ -3083,7 +3083,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "文明カードを3枚までプレイする。",
       "clarifications": [
         {
@@ -3123,7 +3123,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建物がない土地タイル1種類につき2資材を得る。",
       "clarifications": [
         {
@@ -3166,7 +3166,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建物がない土地タイル1種類につき6金を得る。",
       "clarifications": [
         {
@@ -3305,7 +3305,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "地形を無視して山岳タイルを2枚置く。",
       "clarifications": [
         {
@@ -3344,7 +3344,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "地形を無視して森林タイルを2枚置く。",
       "clarifications": [
         {
@@ -3383,7 +3383,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "地形を無視して平原タイルを2枚置く。",
       "clarifications": [
         {
@@ -3422,7 +3422,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "地形を無視して水場タイルを2枚置く。",
       "clarifications": [
         {
@@ -3461,7 +3461,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "土地タイル3枚を置く。",
       "clarifications": [
         {
@@ -3557,7 +3557,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "軍事レベルを1上げる。現在の軍事レベル1につき1点を得る。",
       "clarifications": [
         {
@@ -3605,7 +3605,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建設済みの砦1軒につき2点を得る。",
       "clarifications": [
         {
@@ -3648,7 +3648,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "通常ワーカー1つにつき、軍事トークン1を得る。",
       "clarifications": [
         {
@@ -3739,7 +3739,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "砦1軒を無料で建設する。軍事レベルを1上げる。",
       "clarifications": [],
       "script": [
@@ -3892,7 +3892,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "15金を得る。文明カード1枚をプレイしてもよい。",
       "clarifications": [
         {
@@ -4240,7 +4240,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建設済みの建物1種類につき1資材を得る。",
       "clarifications": [
         {
@@ -4283,7 +4283,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建設済みの建物1種類につき4金を得る。",
       "clarifications": [
         {
@@ -4550,7 +4550,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "建設済みの役所1軒につきインフラレベルを1上げる。",
       "clarifications": [],
       "script": [
@@ -4587,7 +4587,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "住宅2軒につき、インフラレベルを1上げる。",
       "clarifications": [],
       "script": [
@@ -4624,7 +4624,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "住宅を4軒まで無料で建設する。",
       "clarifications": [],
       "script": [
@@ -4663,7 +4663,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "通常ワーカー1つにつき1資材を得る。",
       "clarifications": [
         {
@@ -4706,7 +4706,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "役所1軒を無料で建設する。インフラレベルを1上げる。",
       "clarifications": [],
       "script": [
@@ -4750,7 +4750,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "環境タグがあるなら10金を得る。環境タグが3つ以上あるなら、更に10金を得る。",
       "clarifications": [
         {
@@ -4814,7 +4814,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "軍事タグがあるなら10金を得る。軍事タグが3つ以上あるなら、更に10金を得る。",
       "clarifications": [
         {
@@ -4878,7 +4878,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "所持している学術タグ1つにつき2金を得る。",
       "clarifications": [
         {
@@ -4921,7 +4921,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "生活タグがあるなら10金を得る。生活タグが3つ以上あるなら、更に10金を得る。",
       "clarifications": [
         {
@@ -4985,7 +4985,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "異なる種類の土地タイルを4枚まで置く",
       "clarifications": [
         {
@@ -5071,7 +5071,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時：軍事トークンを支払う時、代わりにトークン1につき2金を支払ってもよい。",
       "clarifications": [
         {
@@ -5112,7 +5112,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時：自分の襲撃の処理をスキップしてもよい。",
       "clarifications": [
         {
@@ -5197,7 +5197,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時：普及アクション実行後、文明カードを1枚引く。",
       "clarifications": [
         {
@@ -5240,7 +5240,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ済みの文明カード1枚につき2金を得る。",
       "clarifications": [
         {
@@ -5283,7 +5283,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ済みの文明カード3枚につき1点を得る。",
       "clarifications": [
         {
@@ -5379,7 +5379,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "文明カードを3枚まで捨て、捨てた数だけ軍事レベルを上げる。",
       "clarifications": [
         {
@@ -5667,7 +5667,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "山岳タイル1枚を置く。住宅1軒を無料で建設できる。",
       "clarifications": [
         {
@@ -5728,7 +5728,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "住宅1軒を無料で建設する。建設済みの住宅1軒につき1点を得る。",
       "clarifications": [
         {
@@ -5792,7 +5792,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "住宅2軒をこのカードの上に無料で建設する。",
       "clarifications": [
         {
@@ -5831,7 +5831,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "森林タイル1枚を置く。住宅1軒を無料で建設できる。",
       "clarifications": [
         {
@@ -5892,7 +5892,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "平原タイル1枚を置く。住宅1軒を無料で建設できる。",
       "clarifications": [
         {
@@ -5953,7 +5953,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "水場タイル1枚を置く。住宅1軒を無料で建設できる。",
       "clarifications": [
         {
