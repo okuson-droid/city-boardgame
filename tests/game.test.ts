@@ -1029,6 +1029,53 @@ describe('襲撃（7-3〜7-6、19-3）', () => {
     expect(playerOf(t, loser).pendingLosses).toEqual([]);
   });
 
+  it('最終ラウンドの撃退成功は、襲撃カードの効果の代わりに決まった点を得る（ユーザー決定 2026-11-13）', () => {
+    // rules.md v0.8 7-4-5・7-6-1 からの変更（ユーザー決定 2026-11-13）。固定したテストのデータには設定がないため、設定を足したデータで検査する。
+    const d = { ...GAME_DATA, params: { ...GAME_DATA.params, raid: { ...GAME_DATA.params.raid, finalRoundRepelPoints: 5 } } };
+    // 最終ラウンド：カードの資源の効果（土地タイルなど）を得ず、5点だけを得る。
+    let s = toRaid(firstTurn());
+    s = edit(s, (state, p) => {
+      state.round = d.params.rounds;
+      p.militaryLevel = 12;
+    });
+    const index = me(s).index;
+    const before = structuredClone(me(s));
+    s = applyMove(s, 'raid:none', d);
+    const p = playerOf(s, index);
+    expect(s.events.filter((e) => e.type === 'raid').at(-1)).toMatchObject({ result: 'repelled' });
+    expect(p.score - before.score).toBe(5);
+    expect([p.gold, p.materials]).toEqual([before.gold, before.materials]);
+    expect(top(s)).not.toMatchObject({ t: 'placeTiles', player: index });
+    // 最終ラウンドでなければ、同じデータでも従来どおりカードの効果を得る（カード1の撃退成功：土地タイル1枚）。
+    let t = toRaid(firstTurn());
+    t = edit(t, (_, q) => {
+      q.militaryLevel = 12;
+    });
+    const other = me(t).index;
+    const score = me(t).score;
+    t = applyMove(t, 'raid:none', d);
+    expect(playerOf(t, other).score).toBe(score);
+    expect(top(t)).toMatchObject({ t: 'placeTiles', player: other, mode: 'effect' });
+  });
+
+  it('精霊チップは、指定したラウンドの終了時にそれぞれ回収する（ユーザー決定 2026-11-13：第2・第4ラウンド）', () => {
+    // rules.md v0.8 19-5-7 からの変更（ユーザー決定 2026-11-13）
+    const d = { ...GAME_DATA, params: { ...GAME_DATA.params, characters: { ...GAME_DATA.params.characters, spiritChipReturnRounds: [2, 4] } } };
+    /** 第 round ラウンドを終えるまで進め、そのあとのチップを返す。 */
+    const chipsAfterRound = (round: number): number => {
+      let s = edit(toRaid(firstTurn()), (state) => {
+        state.round = round;
+        for (const p of state.players) p.spiritChips = { forest: 'E1' };
+      });
+      while (s.round === round && !isGameOver(s)) s = applyMove(s, ids(s)[0] ?? '', d);
+      return Object.keys(s.players[0]?.spiritChips ?? {}).length;
+    };
+    expect(chipsAfterRound(1)).toBe(1);
+    expect(chipsAfterRound(2)).toBe(0);
+    expect(chipsAfterRound(3)).toBe(1);
+    expect(chipsAfterRound(4)).toBe(0);
+  });
+
   it('防衛ライン以上・撃退ライン未満は防衛成功で、得点の変化はない', () => {
     // rules.md v0.8 7-4-5、7-5-1
     let s = toRaid(firstTurn());

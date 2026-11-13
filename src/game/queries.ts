@@ -34,7 +34,15 @@ export const specialCitizenName = (id: string, d: GameData = GAME_DATA): string 
   return name !== '' ? name : `市民${id}`;
 };
 
-export const describeRaidOutcomes = (card: RaidCard, d: GameData = GAME_DATA): { defenseFailed: string; defended: string; repelled: string } => {
+/**
+ * 襲撃カードの結果ごとの文。round を渡すと、そのラウンドに当てはまる扱い（最終ラウンドの撃退成功の置き換え、ユーザー決定 2026-11-13）を反映する。
+ * round を渡さないとき（カードの一覧など）は、最終ラウンドの撃退成功の置き換えを注記として添える。
+ */
+export const describeRaidOutcomes = (
+  card: RaidCard,
+  d: GameData = GAME_DATA,
+  round?: number,
+): { defenseFailed: string; defended: string; repelled: string } => {
   const raid = d.params.raid;
   const line = (result: 'defenseFailed' | 'defended' | 'repelled', effects: readonly RaidEffect[]): string => {
     const allowed = raid.cardEffectKinds[result];
@@ -50,7 +58,16 @@ export const describeRaidOutcomes = (card: RaidCard, d: GameData = GAME_DATA): {
     const all = [...base, ...fromCard];
     return all.length === 0 ? 'なし' : all.join('・');
   };
-  return { defenseFailed: line('defenseFailed', card.defenseFailEffects), defended: line('defended', []), repelled: line('repelled', card.repelEffects) };
+  const finalPoints = raid.finalRoundRepelPoints;
+  const repelled =
+    finalPoints === undefined
+      ? line('repelled', card.repelEffects)
+      : round === d.params.rounds
+        ? `${finalPoints}点を得る（最終ラウンド。カードの効果の代わり）`
+        : round === undefined
+          ? `${line('repelled', card.repelEffects)}（最終ラウンドはカードの効果の代わりに${finalPoints}点）`
+          : line('repelled', card.repelEffects);
+  return { defenseFailed: line('defenseFailed', card.defenseFailEffects), defended: line('defended', []), repelled };
 };
 
 /** いまの選択で文明カードにかかる追加の割引（普及の最上位の1枚ごとの割引、ユーザー決定 2026-11-07）。 */

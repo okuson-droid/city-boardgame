@@ -104,10 +104,10 @@ const nonZero = (entries: Readonly<Record<string, string | number>>): string =>
 const cardShort = (c: PlayerView['hand'] extends readonly (infer T)[] | null ? T : never): string =>
   `${c.id}「${c.name}」金${c.cost} [${c.tags.join('・')}] ${c.points}点`;
 
-const raidOutcomeText = (d: GameData, id: number): string => {
+const raidOutcomeText = (d: GameData, id: number, round?: number): string => {
   const card = d.raidCards.find((c) => c.id === id);
   if (card === undefined) return '';
-  const o = queries.describeRaidOutcomes(card, d);
+  const o = queries.describeRaidOutcomes(card, d, round);
   return `防衛ライン+${card.defense_increase}・撃退ライン+${card.repel_increase}。防衛失敗 ${o.defenseFailed}／防衛成功 ${o.defended}／撃退成功 ${o.repelled}`;
 };
 
@@ -585,7 +585,7 @@ export const eventLines = (state: GameState, events: readonly GameEvent[], actor
         break;
       }
       case 'round':
-        lines.push(`── 第${e.round}ラウンド開始（襲撃カード${e.raidCard}：${raidOutcomeText(d, e.raidCard)}）`);
+        lines.push(`── 第${e.round}ラウンド開始（襲撃カード${e.raidCard}：${raidOutcomeText(d, e.raidCard, e.round)}）`);
         break;
       case 'raid':
       case 'gameOver':
@@ -875,7 +875,7 @@ export const raidLine = (state: GameState, seat: number, d: GameData = GAME_DATA
   const p = state.players[seat];
   if (card === null || p === undefined) return null;
   const need = queries.raidNeed(state, p);
-  return `襲撃: カード${card.id} 防衛ライン${state.defenseLine}・撃退ライン${state.repelLine}（${raidOutcomeText(d, card.id)}）｜自分 Lv${p.militaryLevel} 防衛${need.defense}・撃退${need.repel}／所持${p.militaryTokens}`;
+  return `襲撃: カード${card.id} 防衛ライン${state.defenseLine}・撃退ライン${state.repelLine}（${raidOutcomeText(d, card.id, state.round)}）｜自分 Lv${p.militaryLevel} 防衛${need.defense}・撃退${need.repel}／所持${p.militaryTokens}`;
 };
 
 /**
