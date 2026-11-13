@@ -55,7 +55,7 @@ rules.md と食い違う実装上の決定はここにある。合法手・得�
 - 2026-11-13 の調整（ユーザー決定。チューナーでは変えられない仕組みを含むため、コードとデータで行った）：
   - 最終ラウンドの撃退成功：襲撃カードの内容にかかわらず、カードの効果の代わりに5点を得る（軍事・防衛、`raid.finalRoundRepelPoints`。省略は不採用）。英雄の「撃退成功した時2点」などの能力はそのまま働く。表示は `describeRaidOutcomes(card, d, round)` がそのラウンドの扱いを出し、ラウンドを渡さない一覧では注記として添える。
   - 商店の建設時の金の生産力の上昇を 2 → 4 にした（`buildings.effects.shop.goldProductionOnBuild`）。
-  - 精霊使いの精霊チップの回収をゲーム中2回（第2・第4ラウンドの終了時、襲撃の後）にした（`characters.spiritChipReturnRounds`、ラウンドの列。以前は `spiritChipReturnRound` の1つで第3ラウンド、rules.md v0.8 19-5-7）。キャラクターの `changes` に記した。ルール解説のスライドは第3ラウンドのままである。
+  - 精霊使いの精霊チップの回収をゲーム中2回（第2・第4ラウンドの終了時、襲撃の後）にした（`characters.spiritChipReturnRounds`、ラウンドの列。以前は `spiritChipReturnRound` の1つで第3ラウンド、rules.md v0.8 19-5-7）。キャラクターの `changes` に記した。
   - 固定したテストのデータ（`tests/fixtures/data/params.json`）は形だけ合わせ、値は以前のまま（回収は第3ラウンドだけ・最終ラウンドの置き換えなし）にした。新しい扱いはデータを差し替えて検査する（tests/game.test.ts）。
 - 計画都市・自然公園の仕組みのテストは、テスト用のカード（`TEST_PLANNED`・`TEST_PARK`、tests/effects.test.ts）で行う。使うカードがなくなった補正（`goldPointsMultiplier`・`natureParkPoints`・`noRaidPointLoss`）は、カードに補正を持たせたデータで確かめる（2026-11-10）。
 - 3-2 の報告に対する承認（2026-11-03）：
