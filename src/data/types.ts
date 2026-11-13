@@ -271,6 +271,11 @@ export type Params = ProvisionalMark & {
       readonly defended: readonly RaidEffectKind[];
       readonly repelled: readonly RaidEffectKind[];
     };
+    /**
+     * 最終ラウンドの撃退成功の報酬（ユーザー決定 2026-11-13）。あれば、最終ラウンドの撃退成功では襲撃カードの効果の代わりにこの点を得る。
+     * 省略は不採用（襲撃カードの効果を cardEffectKinds のとおり適用する）。
+     */
+    readonly finalRoundRepelPoints?: number;
   };
   readonly freeActions: {
     readonly conversions: readonly { readonly id: string; readonly pay: Payment; readonly gain: Grant }[];
@@ -283,7 +288,8 @@ export type Params = ProvisionalMark & {
   };
   readonly characters: {
     /** 精霊チップを回収するラウンド。そのラウンドの襲撃の後に回収する（19-5-7）。 */
-    readonly spiritChipReturnRound: number;
+    /** 精霊チップを回収するラウンド（その終了時、襲撃の後）。複数あればそれぞれで回収する（ユーザー決定 2026-11-13、以前は第3ラウンドだけ）。 */
+    readonly spiritChipReturnRounds: readonly number[];
   };
   readonly scoring: {
     readonly base: {

@@ -829,6 +829,8 @@
     }
   },
   "characters": {
-    "spiritChipReturnRound": 3
+    "spiritChipReturnRounds": [
+      3
+    ]
   }
 }

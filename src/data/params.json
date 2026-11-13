@@ -146,7 +146,7 @@
     ],
     "effects": {
       "shop": {
-        "goldProductionOnBuild": 2,
+        "goldProductionOnBuild": 4,
         "goldProductionAfterImportByCount": [
           0,
           1,
@@ -698,7 +698,8 @@
         "materials",
         "landTiles"
       ]
-    }
+    },
+    "finalRoundRepelPoints": 5
   },
   "freeActions": {
     "conversions": [
@@ -829,6 +830,9 @@
     }
   },
   "characters": {
-    "spiritChipReturnRound": 2
+    "spiritChipReturnRounds": [
+      2,
+      4
+    ]
   }
 }
