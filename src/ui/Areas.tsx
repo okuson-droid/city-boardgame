@@ -22,8 +22,8 @@ const entry = (section: keyof typeof ICON_KEYS, key: string): { icon: string; la
   (ICON_KEYS[section] as Readonly<Record<string, { icon: string; label: string }>>)[key] ?? { icon: `${section}.${key}`, label: key };
 
 /** 襲撃カードの補足：結果ごとに実際に起きること（ユーザー決定 2026-11-07）。 */
-const raidTip = (card: RaidCard): string => {
-  const o = describeRaidOutcomes(card);
+const raidTip = (card: RaidCard, round: number): string => {
+  const o = describeRaidOutcomes(card, undefined, round);
   return `防衛失敗：${o.defenseFailed}／防衛成功：${o.defended}／撃退成功：${o.repelled}`;
 };
 
@@ -91,7 +91,7 @@ export const SharedArea = ({
       <section className="panel-box">
         <h3>襲撃</h3>
         {shown && raidCard ? (
-          <Tip text={raidTip(raidCard)}>
+          <Tip text={raidTip(raidCard, round)}>
             <div className="raid-card">
               <span>カード{raidCard.id}</span>
               <IconRow tokens={[tok('metrics', 'defenseLine', state.defenseLine), tok('metrics', 'repelLine', state.repelLine)]} size="sm" />

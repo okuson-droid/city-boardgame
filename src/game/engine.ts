@@ -385,8 +385,8 @@ const roundEnd = (state: GameState, d: GameData): void => {
     player.regularNewThisRound = 0;
     player.passed = false;
     player.usedThisRound = [];
-    // 精霊チップは3ラウンド目の襲撃の後に回収し、再び使えるようにする（19-5-7）。
-    if (state.round === d.params.characters.spiritChipReturnRound) {
+    // 精霊チップは指定のラウンドの襲撃の後に回収し、再び使えるようにする（19-5-7。ユーザー決定 2026-11-13 で第2・第4ラウンドの2回に変更）。
+    if (d.params.characters.spiritChipReturnRounds.includes(state.round)) {
       player.spiritChips = {};
     }
   }
@@ -732,6 +732,12 @@ const applyRaid = (state: GameState, d: GameData, task: TaskOf<'raidDeclare'>, i
   };
   // 襲撃カードの効果は、結果ごとに定めた種類だけを適用する（ユーザー決定 2026-11-07：防衛失敗はカードの効果を無視し、
   // 撃退成功は資源の効果だけを得る）。カードの「点」を適用しない結果では、カード5も基本得点で数える。
+  // 最終ラウンドの撃退成功は、襲撃カードの内容にかかわらず決まった点に置き換える（ユーザー決定 2026-11-13）。
+  const finalRepel = result === 'repelled' && round === d.params.rounds ? d.params.raid.finalRoundRepelPoints : undefined;
+  if (finalRepel !== undefined) {
+    raidScore(finalRepel);
+    return;
+  }
   const allowed = d.params.raid.cardEffectKinds[result];
   if (!card.replacesBasePoints || !allowed.includes('points')) {
     raidScore(d.params.raid.basePointsPerRound[result] * round);

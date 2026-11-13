@@ -2650,7 +2650,7 @@
               "amount": {
                 "count": "buildingsOfType:university",
                 "per": 1,
-                "times": 8
+                "times": 7
               }
             }
           ]
@@ -2804,7 +2804,7 @@
               "amount": {
                 "count": "buildingsOfType:university",
                 "per": 1,
-                "times": 2
+                "times": 1
               }
             }
           ]
@@ -3185,7 +3185,7 @@
               "amount": {
                 "count": "freeLandTerrains",
                 "per": 1,
-                "times": 6
+                "times": 4
               }
             }
           ]
@@ -3908,7 +3908,7 @@
             {
               "op": "gain",
               "res": "gold",
-              "amount": 15
+              "amount": 10
             },
             {
               "op": "playCard",
@@ -4302,7 +4302,7 @@
               "amount": {
                 "count": "buildingTypes",
                 "per": 1,
-                "times": 4
+                "times": 3
               }
             }
           ]
@@ -4774,7 +4774,7 @@
                 {
                   "op": "gain",
                   "res": "gold",
-                  "amount": 10
+                  "amount": 7
                 }
               ]
             },
@@ -4789,7 +4789,7 @@
                 {
                   "op": "gain",
                   "res": "gold",
-                  "amount": 10
+                  "amount": 7
                 }
               ]
             }
@@ -4838,7 +4838,7 @@
                 {
                   "op": "gain",
                   "res": "gold",
-                  "amount": 10
+                  "amount": 7
                 }
               ]
             },
@@ -4853,7 +4853,7 @@
                 {
                   "op": "gain",
                   "res": "gold",
-                  "amount": 10
+                  "amount": 7
                 }
               ]
             }
@@ -4897,7 +4897,7 @@
               "amount": {
                 "count": "tagsOf:academic",
                 "per": 1,
-                "times": 2
+                "times": 1
               }
             }
           ]
@@ -4945,7 +4945,7 @@
                 {
                   "op": "gain",
                   "res": "gold",
-                  "amount": 10
+                  "amount": 7
                 }
               ]
             },
@@ -4960,7 +4960,7 @@
                 {
                   "op": "gain",
                   "res": "gold",
-                  "amount": 10
+                  "amount": 7
                 }
               ]
             }
@@ -5259,7 +5259,7 @@
               "amount": {
                 "count": "playedCivCards",
                 "per": 1,
-                "times": 2
+                "times": 1
               }
             }
           ]

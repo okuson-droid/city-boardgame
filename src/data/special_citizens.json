@@ -107,7 +107,7 @@
             {
               "op": "gain",
               "res": "points",
-              "amount": 2,
+              "amount": 1,
               "axis": "welfare"
             }
           ]
@@ -558,7 +558,7 @@
           "do": [
             {
               "op": "placeTiles",
-              "count": 3,
+              "count": 1,
               "tile": "any"
             }
           ]

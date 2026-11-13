@@ -505,6 +505,10 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
           readArray(field(o, key, q), `${q}.${key}`, (v, kq) => readOneOf(RAID_EFFECT_KINDS, v, kq));
         return { defenseFailed: kinds('defenseFailed'), defended: kinds('defended'), repelled: kinds('repelled') };
       })(),
+      // 最終ラウンドの撃退成功の報酬（ユーザー決定 2026-11-13）。省略は不採用。
+      ...(raidObj['finalRoundRepelPoints'] === undefined
+        ? {}
+        : { finalRoundRepelPoints: readInt(raidObj['finalRoundRepelPoints'], `${p('raid')}.finalRoundRepelPoints`) }),
     },
     freeActions: {
       conversions: readArray(field(freeObj, 'conversions', p('freeActions')), `${p('freeActions')}.conversions`, (v, q) => {
@@ -523,9 +527,10 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
       ),
     },
     characters: {
-      spiritChipReturnRound: readPositiveInt(
-        field(readObject(at('characters'), p('characters')), 'spiritChipReturnRound', p('characters')),
-        `${p('characters')}.spiritChipReturnRound`,
+      spiritChipReturnRounds: readArray(
+        field(readObject(at('characters'), p('characters')), 'spiritChipReturnRounds', p('characters')),
+        `${p('characters')}.spiritChipReturnRounds`,
+        (x, q) => readPositiveInt(x, q),
       ),
     },
     bonusTiles: {

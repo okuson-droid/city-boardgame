@@ -141,7 +141,7 @@ const raidRepel: Rule = {
     }
     // 最後の宣言はラウンドの終わり（次の襲撃カードの公開）まで進むため適用しない。公開中の襲撃カードの文で示す。
     const card = currentRaidCard(ctx.state, ctx.d);
-    const o = card === null ? null : describeRaidOutcomes(card, ctx.d);
+    const o = card === null ? null : describeRaidOutcomes(card, ctx.d, ctx.state.round);
     return [{ kind: 'raidRepel', options: [], text: o === null ? head : `${head}。撃退成功 ${o.repelled}／防衛成功 ${o.defended}／防衛失敗 ${o.defenseFailed}` }];
   },
 };

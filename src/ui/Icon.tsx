@@ -45,7 +45,8 @@ const GLYPHS: Record<string, string> = {
   'evt.raid': '襲',
 };
 
-const artOf = (icon: string): string | undefined => {
+/** アイコンの識別子の図案（別名と合成を含む）。個人ボードのマスボーナスも同じ図案を使う。 */
+export const artOf = (icon: string): string | undefined => {
   if (icon.startsWith('act.')) return ACTION_ART[icon.slice('act.'.length)];
   // 出来事のきっかけは、対応する要素の図案で表す（4-3-2）。
   const alias: Record<string, string> = {

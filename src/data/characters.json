@@ -362,24 +362,10 @@
           },
           "do": [
             {
-              "op": "chooseOne",
-              "options": [
-                [
-                  {
-                    "op": "gain",
-                    "res": "drawCivCards",
-                    "amount": 1
-                  }
-                ],
-                [
-                  {
-                    "op": "playCard",
-                    "count": 1,
-                    "free": false,
-                    "upTo": true
-                  }
-                ]
-              ]
+              "op": "playCard",
+              "count": 1,
+              "free": false,
+              "upTo": true
             }
           ]
         }
@@ -657,6 +643,9 @@
         "2-23"
       ],
       "provisional": false,
+      "changes": [
+        "精霊チップの回収をゲーム中2回（第2ラウンドと第4ラウンドの終了時）にする（ユーザー決定 2026-11-13。原本は第3ラウンドの襲撃の後の1回）。"
+      ],
       "script": [
         {
           "ability": "freeAction",

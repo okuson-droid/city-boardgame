@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { CELLS, type CellId } from '../../src/game/board.ts';
 import { GRANT_KINDS, TERRAINS, type Terrain } from '../../src/data/index.ts';
-import { TERRAIN_COLORS } from '../../src/ui/Board.tsx';
+import { bonusArt, TERRAIN_COLORS } from '../../src/ui/Board.tsx';
 import type { OnSet } from './JsonEditor.tsx';
 import { valueLabel } from './labels.ts';
 import { deepEqual } from './proposal.ts';
@@ -50,10 +50,13 @@ export const BoardEditor = ({
                 strokeWidth={selected === cell.id || changed ? 3 : 1}
               />
               {sq?.bonus ? (
-                <text x={cx} y={cy - 4} className="edit-bonus">
-                  {sq.bonus.kind.slice(0, 4)}
-                  {sq.bonus.amount}
-                </text>
+                <g>
+                  <title>{`${valueLabel(sq.bonus.kind)}${sq.bonus.amount}`}</title>
+                  <svg x={cx - 15} y={cy - 19} width={16} height={16} viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: bonusArt(sq.bonus) }} />
+                  <text x={cx + 7} y={cy - 6} className="edit-bonus">
+                    {sq.bonus.amount}
+                  </text>
+                </g>
               ) : null}
               <text x={cx} y={cy + 12} className="edit-id">
                 {cell.id}

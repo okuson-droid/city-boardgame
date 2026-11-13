@@ -318,7 +318,7 @@ export const showModel = (state: GameState, opts: ShowOptions = {}, d: GameData 
       increase: raidCard === null ? null : `防衛ライン+${raidCard.defense_increase}・撃退ライン+${raidCard.repel_increase}`,
       defenseLine: state.defenseLine,
       repelLine: state.repelLine,
-      outcomes: raidCard === null ? null : queries.describeRaidOutcomes(raidCard, d),
+      outcomes: raidCard === null ? null : queries.describeRaidOutcomes(raidCard, d, state.round),
       players: state.players.map((p) => {
         const need = queries.raidNeed(state, p);
         return `${who(state, p.index)} 軍事Lv${p.militaryLevel}（宣言に払うトークン 防衛${need.defense}・撃退${need.repel}、所持${p.militaryTokens}）`;
