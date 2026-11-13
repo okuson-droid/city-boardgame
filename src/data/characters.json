@@ -362,24 +362,10 @@
           },
           "do": [
             {
-              "op": "chooseOne",
-              "options": [
-                [
-                  {
-                    "op": "gain",
-                    "res": "drawCivCards",
-                    "amount": 1
-                  }
-                ],
-                [
-                  {
-                    "op": "playCard",
-                    "count": 1,
-                    "free": false,
-                    "upTo": true
-                  }
-                ]
-              ]
+              "op": "playCard",
+              "count": 1,
+              "free": false,
+              "upTo": true
             }
           ]
         }
