@@ -180,3 +180,42 @@ describe('単独で出すときのアイコンの名前（ユーザー決定 202
     expect(ICON_KEYS.metrics.buildingsOfType?.label).toBe('の数');
   });
 });
+
+describe('取り消せない選択の前の確かめ（ユーザー決定 2026-11-12）', () => {
+  it('ドラフト・パス・カードを引く選択では文を返し、取り消せる選択では返さない', async () => {
+    // rules.md v0.8 15-1（巻き戻し）、19-6-3（チェックポイント）
+    const { irreversibleNotice } = await import('../src/ui/confirm.ts');
+    const { createGame, getOptions, applyMove } = await import('../src/game/engine.ts');
+    const { hiddenFuture } = await import('../src/game/history.ts');
+    let state = createGame({ playerCount: 3 }, 21);
+    const draft = getOptions(state)[0];
+    if (draft === undefined) throw new Error('選択肢がない');
+    expect(irreversibleNotice(state, draft.id)).toMatch(/^ドラフトで/);
+    let seenPass = false;
+    let seenHidden = false;
+    let seenPlain = false;
+    for (let i = 0; i < 400 && !(seenPass && seenHidden && seenPlain); i += 1) {
+      const options = getOptions(state);
+      if (options.length === 0) break;
+      for (const o of options) {
+        const text = irreversibleNotice(state, o.id);
+        const top = state.stack[state.stack.length - 1];
+        const next = applyMove(state, o.id);
+        if (o.id === 'pass') {
+          expect(text).toMatch(/^パスします/);
+          seenPass = true;
+        } else if (top?.t !== 'draftPick' && hiddenFuture(state, next) !== null) {
+          expect(text).toMatch(/取り消せません/);
+          seenHidden = true;
+        } else if (top?.t !== 'draftPick') {
+          expect(text).toBeNull();
+          seenPlain = true;
+        }
+      }
+      const pick = options[i % options.length];
+      if (pick === undefined) break;
+      state = applyMove(state, pick.id);
+    }
+    expect([seenPass, seenHidden, seenPlain]).toEqual([true, true, true]);
+  });
+});

@@ -113,7 +113,7 @@ const main = async (): Promise<number> => {
         problems.errors.push(`P${i}：${m.text()}`);
       }
     });
-    await page.goto(`${BASE}/#speed=none`);
+    await page.goto(`${BASE}/#speed=none&confirm=off`);
     await page.waitForSelector('[data-ui="online-name"]');
     await page.fill('[data-ui="online-name"]', `P${i}`);
     pages.push(page);

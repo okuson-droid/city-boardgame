@@ -24,7 +24,7 @@ import {
 } from '../../src/game/index.ts';
 import { conversionLabel } from '../../src/game/labels.ts';
 import { PlayError, type Reveal, type Step } from './record.ts';
-import { renderBoard, renderModel, scoreModel, showModel, type PlayerView, type ShowModel, type Viewer } from './render.ts';
+import { projectionLine, renderBoard, renderModel, scoreModel, showModel, type PlayerView, type ShowModel, type Viewer } from './render.ts';
 
 // ---------------------------------------------------------------------------
 // 欄（--only）
@@ -56,7 +56,7 @@ export const parseSections = (spec: string): Section[] => {
   return SECTIONS.filter((s) => names.includes(s));
 };
 
-export const REF_SECTIONS = ['actions', 'expedition', 'characters', 'bonus', 'raid', 'buildings', 'free', 'public'] as const;
+export const REF_SECTIONS = ['actions', 'expedition', 'characters', 'bonus', 'raid', 'buildings', 'free', 'public', 'ids'] as const;
 export type RefSection = (typeof REF_SECTIONS)[number];
 
 const REF_LABELS: Readonly<Record<RefSection, string>> = {
@@ -68,6 +68,7 @@ const REF_LABELS: Readonly<Record<RefSection, string>> = {
   buildings: '建物',
   free: 'フリーアクション',
   public: '公開中のカード',
+  ids: '選択肢 ID の型',
 };
 
 export const parseRefSections = (spec: string): RefSection[] => {
@@ -356,7 +357,7 @@ const promptExtra = (m: ShowModel): string => {
 };
 
 /** 選択肢の欄。full なら1選択肢1行でラベルの全文、そうでなければ畳む。 */
-const optionSection = (state: GameState, m: ShowModel, full: boolean, d: GameData): string[] => {
+const optionSection = (state: GameState, m: ShowModel, full: boolean, d: GameData, unavailable: readonly string[] = unavailableLines(state, d)): string[] => {
   const p = m.prompt;
   if (isGameOver(state)) return ['== 選択肢: なし（ゲーム終了。score で得点を見る）'];
   if (p.options === null) return [`選択待ち：${p.player}（${p.heading}）`];
@@ -373,7 +374,7 @@ const optionSection = (state: GameState, m: ShowModel, full: boolean, d: GameDat
     const cost = notes?.costs[o.id];
     return cost === undefined ? o : { ...o, label: `${o.label}（確定時の軍事力トークン計${cost}）` };
   });
-  return [head, ...foldedLines(foldOptions(options, d, cellInfo)), ...unavailableLines(state, d)];
+  return [head, ...foldedLines(foldOptions(options, d, cellInfo)), ...unavailable, ...p.warnings];
 };
 
 /** 理由ごとにまとめた「選べないもの」の行（ユーザー決定 2026-11-11）。 */
@@ -434,7 +435,8 @@ const detailedSection = (state: GameState, m: ShowModel, s: Section, d: GameData
 
 /** 既定の show（短い形）。only があれば、指定した欄だけを詳しい形で出す。 */
 export const compactShow = (state: GameState, opts: CompactOptions = {}, d: GameData = GAME_DATA, events: readonly string[] = []): string[] => {
-  const m = showModel(state, opts.as === undefined ? {} : { as: opts.as }, d);
+  // --board を付けたときは、ドラフトの残りの個人ボードの地図も共有の場の欄に出す（2026-11-12 のゲーム9の要望）。
+  const m = showModel(state, { ...(opts.as === undefined ? {} : { as: opts.as }), ...(opts.board === true && opts.only !== undefined ? { board: true } : {}) }, d);
   if (opts.only !== undefined) {
     return opts.only.flatMap((s) => (s === 'events' ? (events.length > 0 ? ['== 出来事', ...events] : ['== 出来事: なし']) : detailedSection(state, m, s, d)));
   }
@@ -675,6 +677,27 @@ export const eventTurnLines = (state: GameState, events: readonly GameEvent[], v
 // 参照（ref、指示書 2-2）
 // ---------------------------------------------------------------------------
 
+/**
+ * 選択肢 ID の型の早見（ref --only ids、ゲーム13の効率化の方法 D）。名前はデータの一覧から作り、手で書かない。
+ * 選択肢が1つしかない段は自動で飛ぶため、その段の ID は並べなくてよい。
+ */
+export const idLines = (d: GameData = GAME_DATA): string[] => [
+  '== 選択肢 ID の型（1手番は行動から end まで1回の move に並べてよい。選択肢が1つしかない段は自動で飛ぶので書かない）',
+  `行動: act:<アクション>:<段階>（アクション ${ACTIONS.join('・')}／段階 ${TIERS.join('・')}）、手番を終える end、パス pass（続けて bonus:<番号>。最終ラウンドは無い）`,
+  'ワーカーの内訳: temp:<臨時ワーカーの人数>（使える臨時ワーカーがいて内訳を選べるときだけ出る段）',
+  '数を選ぶ段: count:<数>（開拓の枚数・輸入と輸出の回数・教練と福祉の組・移住の人数・教練で軍事レベルを上げる数・傭兵団の金に替える数）',
+  `建設: build:<建物>:<マス>（建物 ${BUILDINGS.join('・')}）、決めたら done（上限まで選ぶと自動で確定する）`,
+  `土地タイル: tile:<マス>:<地形>（地形 ${TERRAINS.join('・')}）`,
+  '文明カード: card:<番号3桁>（プレイ・捨てる）、普及・研究の途中で終える done',
+  '遠征の報酬: reward:<添字>（報酬表の上からの番号で 0 始まり。レベルではない。ラベルに「レベルNの報酬」と出る。同じ報酬を複数選べる段では繰り返す）、決めたら done',
+  '特別な市民カード: sc:<番号2桁>、その専用スペース space:sc:<番号>#<添字>、写す効果 copy:<アクション>:<段階>',
+  '計画都市の宣言: plan:<番号>、効果の順番: order:<添字>、効果の選択: choose:<添字>、役所の変換: convert:0|1',
+  '襲撃の宣言: raid:none・raid:defense・raid:repel',
+  `フリーアクション: free:<変換>（${d.params.freeActions.conversions.map((c) => c.id).join('・')}）、手札を捨てる変換は free:<変換>:<カード番号>`,
+  'キャラクターと能力: hero:<マス>（英雄の初期配置）、spirit:<地形>:<マス>（精霊チップ）、ability:<出どころ>#<添字>（能力のフリーアクション）',
+  'マスは英字と数字（例 E3）。ID が分からないときは play show --only options。指定が選べないときは、その段の選択肢がエラーの2行目に出る。',
+];
+
 export const refLines = (
   state: GameState,
   viewer: Viewer,
@@ -753,6 +776,9 @@ export const refLines = (
         lines.push('== フリーアクション（自分の手番中、アクションの前後に何度でも）');
         for (const c of d.params.freeActions.conversions) lines.push(conversionLabel(c).replace(/^フリーアクション：/, ''));
         break;
+      case 'ids':
+        lines.push(...idLines(d));
+        break;
       case 'public': {
         lines.push('== 公開中のカード');
         for (const id of state.scRevealed) lines.push(`特別な市民カード${id}（場）: ${queries.specialCitizenText(d, id)}`);
@@ -776,9 +802,17 @@ export const refLines = (
 // ---------------------------------------------------------------------------
 
 /** move の既定の出力：出来事・自分の要約・次の選択肢（指示書 2-1）。 */
-export const moveOutput = (state: GameState, steps: readonly Step[], seat: number | undefined, opts: CompactOptions = {}, d: GameData = GAME_DATA): string => {
+export const moveOutput = (
+  state: GameState,
+  steps: readonly Step[],
+  seat: number | undefined,
+  opts: CompactOptions = {},
+  d: GameData = GAME_DATA,
+  notices: readonly string[] = [],
+): string => {
   const viewer: Viewer = opts.as ?? seat ?? steps[0]?.player ?? decider(state) ?? 0;
-  const events = stepLines(state, steps, viewer, d);
+  // 狙いの知らせ（plan、指示書 2026-11-12 2-4）は出来事の後に置く。
+  const events = [...stepLines(state, steps, viewer, d), ...notices];
   if (opts.only !== undefined) return compactShow(state, { ...opts, as: viewer }, d, events).join('\n');
   return [...events, ...tailLines(state, viewer, opts, d)].join('\n');
 };
@@ -803,25 +837,90 @@ export const ownTurnLines = (state: GameState, steps: readonly Step[], seat: num
     .filter((t) => t.player === seat)
     .map((t) => `R${t.round} ${turnSummary(state, seat, steps.filter((s) => s.index >= t.from && s.index <= t.to).flatMap((s) => s.events), d)}`);
 
-/** いま終わったときの得点の見込み（その席の分）。 */
-export const scoreLine = (state: GameState, seat: number, d: GameData = GAME_DATA): string => {
-  const m = scoreModel(state, d);
-  const p = m.players.find((x) => x.player.startsWith(`P${seat}`));
-  if (p === undefined) return '';
-  return `${m.over ? '最終得点' : 'いま終わったときの見込み（終了時の能力を除く）'}: ${p.rank}位 合計${p.total}（得点トラック${p.track}・基礎${p.base} ${Object.entries(p.axes).map(([k, n]) => `${k}${n}`).join(' ')}）｜全員 ${m.players.map((x) => `${x.player.split('（')[0]} ${x.total}`).join(' ')}`;
-};
+/** いま終わったときの得点の見込み（その席の分）。本体は render.ts の projectionLine（--full の自分の欄と共用）。 */
+export const scoreLine = (state: GameState, seat: number, d: GameData = GAME_DATA): string => projectionLine(scoreModel(state, d), seat);
 
 /** resume の出力（指示書 2-6）。作り直した打ち手が最初に1回だけ呼ぶ。 */
-export const resumeOutput = (state: GameState, steps: readonly Step[], seat: number, d: GameData = GAME_DATA): string =>
+export const resumeOutput = (state: GameState, steps: readonly Step[], seat: number, d: GameData = GAME_DATA, notices: readonly string[] = []): string =>
   [
     ...refLines(state, seat, REF_SECTIONS, [], d),
     ...compactShow(state, { as: seat }, d),
     ...compactShow(state, { as: seat, only: ['hand'] }, d),
     `== P${seat} のこれまでの手番`,
     ...(ownTurnLines(state, steps, seat, d).length > 0 ? ownTurnLines(state, steps, seat, d) : ['なし']),
+    ...notices,
     '== 得点',
     scoreLine(state, seat, d),
   ].join('\n');
+
+// ---------------------------------------------------------------------------
+// wait の短い形（指示書 2026-11-13 2-1、ゲーム10〜12 の効率化の方法 A）
+// ---------------------------------------------------------------------------
+
+/** 「選べない〜」の行の項目の数（理由ごとの行の、・で区切った名前の数）。 */
+const unavailableCount = (lines: readonly string[]): number =>
+  lines.filter((l) => l.startsWith('  ')).reduce((n, l) => n + (l.trim().split('：')[0] ?? '').split('・').length, 0);
+
+/** 選べないものの行と、前回と比べるための署名。前回と同じなら1行にまとめる。 */
+export const unavailableFolded = (state: GameState, previous: string | undefined, d: GameData = GAME_DATA): { lines: string[]; signature: string } => {
+  const lines = unavailableLines(state, d);
+  const signature = lines.join('\n');
+  if (lines.length === 0 || previous !== signature) return { lines, signature };
+  return { lines: [`選べない ${unavailableCount(lines)} 件（前回の wait と同じ。理由は show --only options）`], signature };
+};
+
+/** 襲撃の行（ラウンドの最初の番だけ出す）：公開中の襲撃カードと、視点の席が防衛・撃退に払うトークン。 */
+export const raidLine = (state: GameState, seat: number, d: GameData = GAME_DATA): string | null => {
+  const card = queries.currentRaidCard(state, d);
+  const p = state.players[seat];
+  if (card === null || p === undefined) return null;
+  const need = queries.raidNeed(state, p);
+  return `襲撃: カード${card.id} 防衛ライン${state.defenseLine}・撃退ライン${state.repelLine}（${raidOutcomeText(d, card.id)}）｜自分 Lv${p.militaryLevel} 防衛${need.defense}・撃退${need.repel}／所持${p.militaryTokens}`;
+};
+
+/**
+ * wait の既定の出力（番が来たとき）：出来事（狙いの知らせを含む）・襲撃（ラウンドの最初の番だけ）・置かれたスペース・
+ * 自分の要約1行・選択肢と注意。局面の残りの欄は出さない（--state で従来の局面全体）。
+ */
+export const waitOutput = (
+  state: GameState,
+  seat: number,
+  events: readonly string[],
+  opts: { readonly raid: boolean; readonly unavailable: readonly string[] },
+  d: GameData = GAME_DATA,
+): string[] => {
+  const m = showModel(state, { as: seat }, d);
+  const raid = opts.raid ? raidLine(state, seat, d) : null;
+  return [
+    ...(events.length > 0 ? ['== 出来事', ...events] : []),
+    ...(raid === null ? [] : [raid]),
+    ...actionLines(m),
+    selfSummary(state, seat),
+    ...(isGameOver(state) ? ['ゲーム終了（score で得点を見る）'] : decider(state) === seat ? optionSection(state, m, false, d, opts.unavailable) : [`選択待ち：${P(decider(state))}`]),
+  ];
+};
+
+/**
+ * resume の短い形（指示書 2026-11-13 2-2、効率化の方法 B）。第2ラウンド以降の既定。
+ * 局面（show の既定の形）・手札・自分のキャラクターの能力・自分と場の特別な市民カードと計画都市・手番順と狙い・見込み。
+ */
+export const resumeBrief = (state: GameState, seat: number, extra: readonly string[], d: GameData = GAME_DATA): string => {
+  const self = state.players[seat];
+  const charId = self?.characterId ?? null;
+  const character = charId === null ? null : d.characters.find((c) => c.id === charId);
+  const publicLines = refLines(state, seat, ['public'], [], d).filter((l) => !l.startsWith('プレイ済み（自分）'));
+  const own = publicLines.filter((l) => !/（P\d+）|P\d+ の専用/.test(l) || l.includes(`（P${seat}）`) || l.includes(`P${seat} の専用`));
+  return [
+    ...compactShow(state, { as: seat }, d),
+    ...compactShow(state, { as: seat, only: ['hand'] }, d),
+    `== 自分のキャラクター: ${charId === null ? 'なし' : `${queries.characterName(d, charId)}: ${describeScript(character?.script ?? []).join('／')}`}`,
+    ...own,
+    ...extra,
+    '== 得点',
+    scoreLine(state, seat, d),
+    '（アクションボード・他のキャラクター・建物・襲撃カード・遠征の報酬表は ref、選択肢 ID の型は ref --only ids、これまでの手番は log --seat、従来の全文は resume --ref）',
+  ].join('\n');
+};
 
 /** 局面のラウンド（ドラフトと準備は第1ラウンドに含める、指示書 2-6）。 */
 export const effectiveRound = (state: GameState): number => Math.max(1, state.round);

@@ -23,3 +23,25 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
 - `show` の既定の出力は個人ボードを除いて150行以内を目安とする（tests/play-cli.test.ts が確かめる）。
 - 配布用ビルドとオンラインのビルドには含めない。
 - オンライン版の部屋で打つ（ユーザー決定 2026-11-10、人と AI の対戦）：`online join|create|show|wait|move`。人がブラウザのオンライン版で作った部屋に、打ち手が席として入る。窓口は Supabase の Edge Function だけ（既定は公開ページの Project URL、`--url`・`PLAY_ONLINE_URL` で替える）。局面は窓口の `view` が返す伏せた写しだけを使い、選択肢はそれに `getOptions` を掛けて作る。席の鍵と、前回どこまで出来事を見たか（`seenEvents`）は資格情報ファイル（既定 `.play/online/<コード>-<席>.json`）に置く。部屋のデータの版が手元と違えば止める。窓口は1手ずつ受けるため、`move` に並べた途中で失敗するとそれより前の手は送られたままになる。
+
+## 打ち手を強くする出力（指示書 2026-11-12、decisions.md 3-6）
+
+- 得点の見込み：`src/game/projection.ts` の `projectedScores` が、局面の写しに終了の手順（`engine.ts` の `endedCopy`：残ったタスクを捨て、`gameEnd` のタスクをエンジンの既存の処理で進める＝最終の収入とゲーム終了時の能力）を掛け、`finalScores` で数える。元の局面（乱数の状態を含む）は変えない。終了時の能力が選択を伴うタスクを積んだら処理せずに止め、その出どころを `omitted` に返す（いまのデータには無い）。`score`・`resume`・`show --only self`・`--full` の自分の欄の見込みはこの値で、見出しは「いま終わったときの見込み（終了時の能力を含む）」。
+- 手の下見：`move --dry-run <選択肢...> [--or <選択肢...>]`（`tools/play/preview.ts`）。記録を変えない。1通りは出来事・自分の増減の合計（`deltas.ts` の `snapshot` の差）・見込みの増減（評価軸ごと）・残る選択待ちの見出し、`--or` は最大4通りを増減と見込みだけで並べる。先を見せない規則：`history.ts` の `hiddenFuture`（乱数の消費か `revealCount` の変化。`isCheckpoint` の最初の2条件と同じ）に当たる選択の手前で止め、選択待ちが他の席に移ったら止める。`isCheckpoint` そのものは選択権の移動・手番の終了なども含み広すぎるため、先の情報の判定だけを分けた。
+- 落とし穴の注意：`src/game/pitfalls.ts` の `PITFALL_RULES`（自然公園を崩す・撃退を選べる・役所の変換が出ない・残したままのパス・選ばずに済ませられない建設）。型ごとに対象の選択待ちと比べる値を持ち、選択肢を写しに適用して `queries` の値を前後で比べる。`hiddenFuture` に当たる選択肢は適用しない（最後の襲撃の宣言は、適用せずに公開中の襲撃カードの文を出す）。建設は確定（`done`）まで進めた写しで比べる。行は `ShowModel.prompt.warnings` に入れ、選択肢の欄の後（「選べない〜」の後）に5行まで出す（`--full` も同じ位置）。オンライン版も伏せた写しで同じ処理を通す。
+- 狙い：`plan --seat N [--set <狙い,...> | --clear]`（`tools/play/plan.ts`）。置き場は記録と同じディレクトリの `plan-P<席>.json`（記録には入れない）。状態は `queries.spaceUsers`・`specialCitizenHolder`・`bonusTileHolder`・`plannedCityClaimers`・`plannedCityRemaining` だけから求める。`wait`・`move`・`resume` の出来事の後に、前回の出力から変わった狙いを3行まで出す。自分の手で変わった状態（自分が使った・獲得した）と、ラウンドが替わって「空いている」に戻ったスペースは知らせない（記録だけ更新する）。`resume` とラウンドの最初の `wait` には手番順と自分より先に打つ席を1行で出す（出したラウンドは同じファイルの `orderShown`）。オンライン版の `online` には `plan` を付けていない（資格情報ごとの置き場を決めていないため）。
+- 序盤の定石：`docs/playtest/openings/<キャラクターの ID>.md`（1KB 以内）と `draft.md`。上限は `tests/play-strength.test.ts` が確かめる。
+
+## 待ちと引き継ぎの縮小（指示書 2026-11-13、decisions.md 3-7。ユーザー決定 2026-11-12「この下書きの通りに進めて」）
+
+- `wait` の既定（番が来たとき）は `compact.ts` の `waitOutput`：出来事（狙いの知らせを含む）・襲撃の行（ラウンドの最初の番だけ）・置かれたスペース・自分の要約1行・選択肢と注意。選べない理由は `unavailableFolded` で、前回の `wait` と同じなら「選べない N 件」の1行にする。襲撃の行を出したラウンドと選べない理由の署名は `plan-P<席>.json`（`raidShown`・`unavailable`）に持つ。`--state`・`--only`・`--json` は従来の局面全体。オンライン版は前回の内容を持たないため、襲撃の行と選べない理由を毎回出す。
+- `resume` は第2ラウンド以降の既定を `resumeBrief`（局面・手札・自分のキャラクターの能力・自分と場の特別な市民カードと計画都市・手番順と狙い・見込み）にする。第1ラウンドと `--ref` は従来の全文（`resumeOutput`）。
+- `move ... --seat N --then-wait [--round R] [--timeout 秒]`：適用後に選択待ちが他の席へ移ったら、`waitFor`（`wait` と共用）で番を待ち、「== 適用した選択」の後に `wait` の形を出す。`end`・`pass` は補わない。`online move --then-wait` も同じ。
+- `wait` と `--then-wait` の既定の時間切れは 100 秒（`WAIT_TIMEOUT`）。打ち手の道具の上限（約120秒）より短くする。
+- 検査は `tests/play-wait.test.ts`（`--then-wait` は `dist-play/cli.js` があるときだけ CLI を通して確かめる）。
+
+## 選べない指定のときの選択肢と、ID の型の早見（ゲーム13の効率化の方法 C・D、ユーザー決定 2026-11-12）
+
+- `move`・`move --dry-run`・`online move` で指定が選べなかったとき、失敗の文の2行目にその段の選択肢の ID を1行で添える（`record.ts` の `stageOptionsLine`。最後の区切りだけが違う ID は `build:house:{E3,F1}` とまとめる）。`fail` は標準出力に全文、標準エラーに1行目を出す。
+- `ref --only ids` は選択肢 ID の型の早見（`compact.ts` の `idLines`）。建物・地形・アクション・段階・フリーアクションの名前はデータの一覧から作る。`player-brief.md` は最初に1回見るよう案内する。
+- オンライン版の追加（2026-11-12、人との対局で）：`online move --dry-run`（伏せた写しに適用し何も送らない）、`online ref`、`online replay --file`（終局後に記録を保存）。伏せた写しでは、伏せた情報に触れる下見はそこで止め、注意と見込みは失敗したら省く。`online wait` はラウンドの終わりを番より先に見る。

@@ -11,6 +11,7 @@ import {
   decider,
   getOptions,
   parseReplay,
+  queries,
   REPLAY_FORMAT,
   ReplayError,
   type GameConfig,
@@ -149,6 +150,28 @@ export const resolveSpec = (state: GameState, spec: string, d: GameData = GAME_D
   return spec;
 };
 
+/**
+ * その段の選択肢の ID を1行にまとめる（指定が選べなかったときに添える、ゲーム13の効率化の方法 C）。
+ * 最後の区切りだけが違う ID は「build:house:{E3,F1}」のようにまとめる。長すぎるときは途中で切り、show --only options を案内する。
+ */
+export const stageOptionsLine = (state: GameState, d: GameData = GAME_DATA, max = 900): string => {
+  const options = getOptions(state, d);
+  if (options.length === 0) return '';
+  const groups = new Map<string, string[]>();
+  for (const o of options) {
+    const parts = o.id.split(':');
+    const key = parts.length > 1 ? parts.slice(0, -1).join(':') : o.id;
+    const tail = parts.length > 1 ? (parts[parts.length - 1] ?? '') : '';
+    groups.set(key, [...(groups.get(key) ?? []), tail]);
+  }
+  const items = [...groups].map(([key, tails]) =>
+    tails.length === 1 && tails[0] === '' ? key : tails.length === 1 ? `${key}:${tails[0]}` : `${key}:{${tails.join(',')}}`,
+  );
+  let text = items.join(' ');
+  if (text.length > max) text = `${text.slice(0, max)}…（続きは show --only options）`;
+  return `この段（${queries.sceneOf(state).heading}）の選択肢：${text}`;
+};
+
 export type MoveResult = { readonly record: PlayRecord; readonly state: GameState; readonly steps: readonly Step[] };
 
 /**
@@ -184,7 +207,8 @@ export const applyMovesFrom = (
     } catch (e) {
       const acted = state.stack[state.stack.length - 1];
       const hint = acted?.t === 'turn' && acted.acted && spec.startsWith('act:') ? '（この手番のアクションは済んでいる。end で手番を終える）' : '';
-      throw new PlayError(`${e instanceof Error ? e.message : String(e)}${hint}${where}`);
+      const stage = stageOptionsLine(state, d);
+      throw new PlayError(`${e instanceof Error ? e.message : String(e)}${hint}${where}${stage === '' ? '' : `\n${stage}`}`);
     }
     const next = applyMove(state, id, d);
     moves.push(id);
