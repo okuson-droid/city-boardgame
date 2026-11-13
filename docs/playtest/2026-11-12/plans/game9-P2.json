@@ -1,0 +1,12 @@
+{
+  "targets": [
+    "act:build:top",
+    "act:spread:top"
+  ],
+  "last": {
+    "act:build:top": "P0 が置いた（占有型でこのラウンドは使えない）",
+    "act:spread:top": "自分が使った"
+  },
+  "round": 5,
+  "orderShown": 5
+}

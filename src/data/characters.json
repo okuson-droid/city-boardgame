@@ -684,7 +684,7 @@
               "amount": {
                 "count": "spiritAdjacency",
                 "per": 1,
-                "times": 2
+                "times": 1
               },
               "axis": "other"
             }

@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { CellId } from '../game/board.ts';
 import { applyMove, decider, isGameOver } from '../game/engine.ts';
+import { irreversibleNotice } from './confirm.ts';
 import { explain, explainUndo } from '../game/explain.ts';
 import { undoLast, undoToTurnStart } from '../game/history.ts';
 import { replayRecordOf } from '../game/replay.ts';
@@ -26,7 +27,12 @@ import { playTurnChime, useSoundEnabled } from './sound.ts';
 import { RulesButton } from './RulesDeck.tsx';
 import { Tip } from './Tip.tsx';
 
-export type Settings = { speed: 'standard' | 'fast' | 'none'; follow: boolean };
+export type Settings = {
+  speed: 'standard' | 'fast' | 'none';
+  follow: boolean;
+  /** 取り消せない選択（ドラフト・パス・カードを引くなど）の前に確かめる（ユーザー決定 2026-11-12）。#confirm=off で切る（受け入れ検査）。 */
+  confirm: boolean;
+};
 
 export type GameController = {
   readonly state: GameState;
@@ -44,6 +50,8 @@ export type GameController = {
   readonly saveReplay?: () => void;
   /** 記録の再生中：選択肢を出さず、取り消しと手番の音を使わない。 */
   readonly readOnly?: boolean;
+  /** 取り消せない選択の前に確かめるか（ローカル版・オンライン版。チュートリアルは案内に従うため使わない）。 */
+  readonly confirmIrreversible?: boolean;
   /** 記録の再生中：どのタブでも手札の内容を見せる（終わった対局の記録のため、19-6-1 の対象外）。 */
   readonly revealAll?: boolean;
 };
@@ -67,6 +75,7 @@ export const LocalGame = ({ initial, settings, onRestart }: { initial: GameState
     undoReason: explainUndo(state),
     // 1台で交代して遊ぶため、手札はもともと全員に見えている。いつでも保存できる。
     saveReplay,
+    confirmIrreversible: true,
   };
   return <Game ctl={ctl} settings={settings} onRestart={onRestart} />;
 };
@@ -169,12 +178,17 @@ export const Game = ({
 
   const choose = useCallback(
     (optionId: string) => {
+      // 取り消せない選択の前に確かめる（ユーザー決定 2026-11-12）。断ったら何もしない。
+      if (ctl.confirmIrreversible === true && settings.confirm) {
+        const text = irreversibleNotice(ctl.state, optionId);
+        if (text !== null && !window.confirm(text)) return;
+      }
       setChooser(null);
       setBuildType(null);
       setFreeOpen(false);
       ctl.choose(optionId);
     },
-    [ctl],
+    [ctl, settings.confirm],
   );
 
   const undoReason = ctl.undoReason;

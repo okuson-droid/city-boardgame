@@ -202,8 +202,8 @@
     "F5": {
       "terrain": "plains",
       "bonus": {
-        "kind": "gold",
-        "amount": 3
+        "kind": "materials",
+        "amount": 1
       }
     },
     "F6": {

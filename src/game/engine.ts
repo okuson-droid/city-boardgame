@@ -1070,3 +1070,20 @@ export const applyMove = (state: GameState, optionId: string, d: GameData = GAME
 };
 
 export const isGameOver = (state: GameState): boolean => state.phase === 'over';
+
+/**
+ * いま終局したと仮定した局面の写しを返す（指示書 2026-11-12 対話プレイ強化 2-1）。元の局面は変えない。
+ * 残っているタスク（手番の途中の選択など）を捨て、終了の手順（17-0-1：最終の収入と、ゲーム終了時の能力）を
+ * gameEnd のタスクとしてエンジンの既存の処理で進める。終了時の能力が選択を伴うタスクを積んだ場合は、それを処理せずに止め、
+ * そのタスクの種類と出どころを pending に返す（得点の見込みには含まれない）。終局した局面はそのまま返す。
+ */
+export const endedCopy = (state: GameState, d: GameData = GAME_DATA): { state: GameState; pending: string[] } => {
+  if (state.phase === 'over') return { state, pending: [] };
+  const next = structuredClone(state);
+  next.stack = [{ t: 'gameEnd' }];
+  advance(next, d);
+  const pending = next.stack.map((t) => ('source' in t ? `${t.t}:${String(t.source)}` : t.t));
+  next.stack = [];
+  return { state: next, pending };
+};
+

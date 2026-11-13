@@ -1,0 +1,14 @@
+{
+  "targets": [
+    "act:pioneer:top",
+    "sc:12",
+    "act:migration:top"
+  ],
+  "last": {
+    "act:pioneer:top": "自分が使った",
+    "sc:12": "自分が獲得した",
+    "act:migration:top": "自分が使った"
+  },
+  "round": 5,
+  "orderShown": 5
+}
