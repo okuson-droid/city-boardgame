@@ -145,3 +145,23 @@ describe('画面の Supabase の設定', () => {
     expect(projectOrigin('https://abc.supabase.co')).toBe('https://abc.supabase.co');
   });
 });
+
+describe('観戦（ユーザー決定 2026-11-13）', () => {
+  it('鍵なしで部屋を見られ、全員の手札・山札・乱数を伏せた写しを返す。操作はできない', async () => {
+    // rules.md v0.8 19-6-1（観戦者にも公開情報だけを見せる）
+    const env = await fullRoom();
+    const view = (await env.act({ action: 'spectate', code: env.code.toLowerCase() })) as RoomView;
+    expect(view.seat).toBe(-1);
+    expect(view.state?.rng).toEqual({ seed: 0, state: 0 });
+    expect(view.state?.civDeck.every((c) => c === '?')).toBe(true);
+    for (const p of view.state?.players ?? []) expect(p.hand.every((c) => c === '?')).toBe(true);
+    // 公開の情報（局面の進み）は席の写しと同じである。
+    const seat = await viewOf(env, 0);
+    expect(view.state?.log.length).toBe(seat.state?.log.length);
+    expect(view.version).toBe(seat.version);
+    // 観戦の操作で選択や取り消しはできない（鍵が要る）。
+    const option = seat.state === null ? undefined : getOptions(seat.state)[0];
+    await expect(env.act({ action: 'move', code: env.code, key: '', move: option?.id ?? '', logLength: 0 })).rejects.toThrow();
+    await expect(env.act({ action: 'spectate', code: 'ZZZZZZ' })).rejects.toThrow('見つからない');
+  });
+});

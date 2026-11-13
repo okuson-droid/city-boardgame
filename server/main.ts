@@ -194,8 +194,9 @@ const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> 
   const action = parts[3];
 
   // GET /api/rooms/:code/stream?key=...：知らせを受け取る
+  // ?spectate=1 は観戦（鍵は要らず、全員の手札を伏せる。ユーザー決定 2026-11-13）。
   if (req.method === 'GET' && action === 'stream') {
-    openStream(req, res, room, seatOf(room, url.searchParams.get('key')));
+    openStream(req, res, room, url.searchParams.get('spectate') === '1' ? -1 : seatOf(room, url.searchParams.get('key')));
     return;
   }
   if (req.method !== 'POST') {
