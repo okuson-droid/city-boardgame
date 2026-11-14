@@ -661,10 +661,13 @@
       "id": "018",
       "name": "知識の泉",
       "cost": {
-        "gold": 10
+        "gold": 15
       },
       "tags": [
-        "academic"
+        "academic",
+        "literature",
+        "art",
+        "music"
       ],
       "playCondition": null,
       "effectCondition": null,
@@ -679,19 +682,11 @@
       ],
       "script": [
         {
-          "ability": "on",
-          "event": "cardPlayed",
-          "filter": {
-            "tags": [
-              "music",
-              "literature",
-              "art"
-            ]
-          },
+          "ability": "onPlay",
           "do": [
             {
               "op": "gain",
-              "res": "drawCivCards",
+              "res": "goldProduction",
               "amount": 1
             }
           ]
@@ -2506,7 +2501,7 @@
       "id": "043",
       "name": "開発サイクル",
       "cost": {
-        "gold": 13
+        "gold": 9
       },
       "tags": [
         "academic"
@@ -2524,17 +2519,18 @@
       ],
       "script": [
         {
-          "ability": "on",
-          "event": "actionExecuted",
-          "filter": {
-            "action": "research"
-          },
+          "ability": "actionSpace",
+          "workers": 1,
           "do": [
+            {
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": 1
+            },
             {
               "op": "playCard",
               "count": 1,
-              "free": false,
-              "upTo": true
+              "free": false
             }
           ]
         }
@@ -5190,7 +5186,7 @@
       "id": "105",
       "name": "発明王",
       "cost": {
-        "gold": 12
+        "gold": 7
       },
       "tags": [
         "academic"
@@ -5208,12 +5204,14 @@
       ],
       "script": [
         {
-          "ability": "on",
-          "event": "actionFinished",
-          "filter": {
-            "action": "spread"
-          },
+          "ability": "actionSpace",
+          "workers": 1,
           "do": [
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": false
+            },
             {
               "op": "gain",
               "res": "drawCivCards",
