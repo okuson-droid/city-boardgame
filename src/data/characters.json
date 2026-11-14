@@ -175,25 +175,17 @@
             {
               "op": "gain",
               "res": "goldProduction",
-              "amount": 10
+              "amount": 5
             }
           ]
         },
         {
-          "ability": "freeAction",
-          "pay": {
-            "res": "gold",
-            "amount": 2
-          },
-          "require": null,
-          "oncePerRound": false,
-          "do": [
-            {
-              "op": "gain",
-              "res": "militaryTokens",
-              "amount": 1
-            }
-          ]
+          "ability": "modifier",
+          "modifier": {
+            "kind": "buildCost",
+            "building": "shop",
+            "materials": -1
+          }
         },
         {
           "ability": "freeAction",
@@ -205,25 +197,26 @@
           "oncePerRound": false,
           "do": [
             {
-              "op": "gain",
-              "res": "materials",
-              "amount": 2
-            }
-          ]
-        },
-        {
-          "ability": "freeAction",
-          "pay": {
-            "res": "gold",
-            "amount": 8
-          },
-          "require": null,
-          "oncePerRound": false,
-          "do": [
-            {
-              "op": "placeTiles",
-              "count": 1,
-              "tile": "match"
+              "op": "chooseOne",
+              "options": [
+                [
+                  {
+                    "op": "gain",
+                    "res": "materials",
+                    "amount": 2
+                  },
+                  {
+                    "op": "placeTiles",
+                    "count": 1,
+                    "tile": "match"
+                  },
+                  {
+                    "op": "gain",
+                    "res": "militaryTokens",
+                    "amount": 5
+                  }
+                ]
+              ]
             }
           ]
         },
@@ -271,24 +264,18 @@
           "do": [
             {
               "op": "gain",
-              "res": "materialProduction",
-              "amount": 1
+              "res": "materials",
+              "amount": 3
             }
           ]
         },
         {
-          "ability": "on",
-          "event": "tilePlaced",
-          "filter": {
-            "terrain": "mountain"
-          },
-          "do": [
-            {
-              "op": "gain",
-              "res": "materials",
-              "amount": 1
-            }
-          ]
+          "ability": "modifier",
+          "modifier": {
+            "kind": "buildCost",
+            "building": "workshop",
+            "materials": -1
+          }
         },
         {
           "ability": "on",
@@ -300,24 +287,35 @@
             {
               "op": "gain",
               "res": "materialProduction",
+              "amount": 2
+            },
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 4
+            }
+          ],
+          "every": 3
+        },
+        {
+          "ability": "on",
+          "event": "built",
+          "filter": {
+            "building": "house"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 1
+            },
+            {
+              "op": "gain",
+              "res": "materialProduction",
               "amount": 1
             }
           ],
           "every": 2
-        },
-        {
-          "ability": "gameEnd",
-          "do": [
-            {
-              "op": "gain",
-              "res": "materialProduction",
-              "amount": {
-                "count": "buildings",
-                "per": 1,
-                "times": 1
-              }
-            }
-          ]
         }
       ]
     },
@@ -356,38 +354,12 @@
           ]
         },
         {
-          "ability": "on",
-          "event": "cardPlayed",
-          "filter": {},
-          "every": 3,
-          "do": [
-            {
-              "op": "chooseOne",
-              "options": [
-                [
-                  {
-                    "op": "raise",
-                    "track": "infra",
-                    "amount": 1
-                  }
-                ],
-                [
-                  {
-                    "op": "placeTiles",
-                    "count": 1,
-                    "tile": "match"
-                  }
-                ],
-                [
-                  {
-                    "op": "gain",
-                    "res": "tempWorkers",
-                    "amount": 1
-                  }
-                ]
-              ]
-            }
-          ]
+          "ability": "modifier",
+          "modifier": {
+            "kind": "buildCost",
+            "building": "university",
+            "materials": -1
+          }
         },
         {
           "ability": "on",
@@ -397,9 +369,26 @@
           },
           "do": [
             {
-              "op": "gain",
-              "res": "drawCivCards",
-              "amount": 1
+              "op": "chooseOne",
+              "options": [
+                [
+                  {
+                    "op": "gain",
+                    "res": "tempWorkers",
+                    "amount": 1
+                  },
+                  {
+                    "op": "gain",
+                    "res": "drawCivCards",
+                    "amount": 1
+                  },
+                  {
+                    "op": "placeTiles",
+                    "count": 2,
+                    "tile": "match"
+                  }
+                ]
+              ]
             }
           ],
           "every": 3
@@ -470,7 +459,8 @@
               "res": "tempWorkers",
               "amount": 1
             }
-          ]
+          ],
+          "every": 2
         }
       ]
     },
