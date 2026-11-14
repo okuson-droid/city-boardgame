@@ -686,7 +686,7 @@
   "raid": {
     "firstRoundCard": 1,
     "basePointsPerRound": {
-      "defenseFailed": -2,
+      "defenseFailed": -1,
       "defended": 0,
       "repelled": 0
     },

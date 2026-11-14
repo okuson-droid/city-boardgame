@@ -286,9 +286,24 @@
             {
               "op": "gain",
               "res": "materials",
-              "amount": 2
+              "amount": 1
             }
           ]
+        },
+        {
+          "ability": "on",
+          "event": "built",
+          "filter": {
+            "exceptBuilding": "house"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "materialProduction",
+              "amount": 1
+            }
+          ],
+          "every": 2
         },
         {
           "ability": "gameEnd",
