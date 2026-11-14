@@ -306,12 +306,12 @@
           "do": [
             {
               "op": "gain",
-              "res": "materials",
+              "res": "materialProduction",
               "amount": 1
             },
             {
               "op": "gain",
-              "res": "materialProduction",
+              "res": "materials",
               "amount": 1
             }
           ],
