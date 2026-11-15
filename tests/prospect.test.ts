@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { GAME_DATA } from '../src/data/index.ts';
 import { plannedCityProspect, prospectSummary } from '../src/game/prospect.ts';
+import { workerSummary } from '../src/game/queries.ts';
 import type { PlannedCityCard } from '../src/data/index.ts';
 import type { CellId } from '../src/game/board.ts';
 import type { PlayerState } from '../src/game/types.ts';
@@ -116,5 +117,24 @@ describe('計画都市の達成の見込み', () => {
       expect(placement.mismatches).toBe(placement.slots.filter((s) => s.mismatch).length);
     }
     expect(r.placements[0]?.mismatches).toBe(0);
+  });
+});
+
+describe('通常ワーカーをいま何人増やせるか（ユーザー決定 2026-11-15）', () => {
+  it('上限から持っている数を引き、上限を1人増やすのに要る住宅の数を出す', () => {
+    // rules.md v0.8 3-3-1-2（通常ワーカーの上限は5＋住宅÷2、最大10）
+    const w = d.params.workers;
+    const p = player((q) => {
+      q.regularWorkers = w.regularBase - 1;
+      q.land = { E1: 'plains' };
+      q.buildings = { E1: 'house' };
+    });
+    const s = workerSummary(p, d);
+    expect(s.regularCap).toBe(w.regularBase);
+    expect(s.regularOwned).toBe(w.regularBase - 1);
+    expect(s.regularRoom).toBe(1);
+    expect(s.housesToNextCap).toBe(w.housesPerExtraRegular - 1);
+    p.regularWorkers = w.regularBase + 3;
+    expect(workerSummary(p, d).regularRoom).toBe(0);
   });
 });

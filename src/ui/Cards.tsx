@@ -8,6 +8,7 @@ import { civCardCost, grantText } from '../game/queries.ts';
 import type { PlayerState } from '../game/types.ts';
 import { IconRow } from './Icon.tsx';
 import { ShapeView } from './Board.tsx';
+import { rotateAxial } from '../game/board.ts';
 import { ANY_BUILDING_ART, ICON_ART, tagColor } from './icon-art.ts';
 import { Tip } from './Tip.tsx';
 import { useState, type ReactNode } from 'react';
@@ -134,10 +135,10 @@ export const BonusTileView = ({ tile }: { tile: BonusTile }) => (
   </Tip>
 );
 
-const plannedCells = (card: PlannedCityCard) =>
+/** 計画都市の形のマス。rotation は右回りに60度ずつ回す回数（rotateAxial の向き）。 */
+const plannedCells = (card: PlannedCityCard, rotation = 0) =>
   card.slots.map((s) => ({
-    q: s.q,
-    r: s.r,
+    ...rotateAxial(s, rotation),
     terrain: s.terrain,
     text: '',
     // 建物の種類を指定しないマスも建物が要るため、「任意の建物」の図案を描く（rules.md 13-2-2）。
@@ -165,14 +166,30 @@ const plannedBenefitText = (card: PlannedCityCard): string => `達成の報酬�
  * カードの拡大表示の枠（ユーザー決定 2026-11-06：計画都市・自然公園の形が小さくて見づらいため）。
  * カードは選べる所作（data-target）の中にあるため、画面の最上位に描き（createPortal）、クリックは外へ伝えない。
  */
-const ZoomOverlay = ({ title, provisional, onClose, children }: { title: string; provisional: boolean; onClose: () => void; children: ReactNode }) =>
+const ZoomOverlay = ({
+  title,
+  provisional,
+  onClose,
+  children,
+  docked = false,
+}: {
+  title: string;
+  provisional: boolean;
+  onClose: () => void;
+  children: ReactNode;
+  /**
+   * 画面の端に寄せ、暗い幕を掛けない（ユーザー決定 2026-11-15）。計画都市は個人ボードと見比べるため、盤面を隠さずに開いたまま操作できるようにする。
+   * 横長の画面では左の列（アクションボード）の上、縮退配置では右端に置く。
+   */
+  docked?: boolean;
+}) =>
   createPortal(
     <div
-      className="overlay pc-zoom-overlay"
+      className={`overlay pc-zoom-overlay${docked ? ' docked' : ''}`}
       data-ui="zoom-overlay"
       onClick={(e) => {
         e.stopPropagation();
-        onClose();
+        if (!docked) onClose();
       }}
     >
       <div className="overlay-box pc-zoom" role="dialog" aria-label={`${title}の拡大`} onClick={(e) => e.stopPropagation()}>
@@ -208,6 +225,8 @@ const ZoomButton = ({ name, kind, onOpen }: { name: string; kind: 'pc' | 'np'; o
 
 /** 計画都市の拡大の中身：形・達成の報酬・必要な土地と建物・回転と鏡像の扱い。 */
 const PlannedCityZoom = ({ card, onClose }: { card: PlannedCityCard; onClose: () => void }) => {
+  /** 右回りに60度ずつ回した回数（0〜5）。 */
+  const [rotation, setRotation] = useState(0);
   const needs = new Map<string, number>();
   for (const s of card.slots) {
     const terrain = s.terrain === null ? null : entry('terrains', s.terrain).label;
@@ -224,9 +243,24 @@ const PlannedCityZoom = ({ card, onClose }: { card: PlannedCityCard; onClose: ()
     if (name !== null) needs.set(name, (needs.get(name) ?? 0) + 1);
   }
   return (
-    <ZoomOverlay title={card.name} provisional={card.provisional === true} onClose={onClose}>
+    <ZoomOverlay title={card.name} provisional={card.provisional === true} onClose={onClose} docked>
       <div className="pc-zoom-shape">
-        <ShapeView cells={plannedCells(card)} />
+        <ShapeView cells={plannedCells(card, rotation)} />
+      </div>
+      {/* 回転（60度ずつ、ユーザー決定 2026-11-15）。回転した配置は認め、鏡像は認めない（19-1-6）ため、裏返しのボタンは置かない。 */}
+      <div className="pc-zoom-rotate">
+        <button type="button" className="btn small" data-ui="pc-rotate-left" onClick={() => setRotation((r) => (r + 5) % 6)}>
+          ⟲ 左へ60°
+        </button>
+        <span className="pc-zoom-angle">{rotation === 0 ? 'カードの向き' : `右へ${rotation * 60}°`}</span>
+        <button type="button" className="btn small" data-ui="pc-rotate-right" onClick={() => setRotation((r) => (r + 1) % 6)}>
+          右へ60° ⟳
+        </button>
+        {rotation !== 0 ? (
+          <button type="button" className="btn small" data-ui="pc-rotate-reset" onClick={() => setRotation(0)}>
+            元に戻す
+          </button>
+        ) : null}
       </div>
       <div className="pc-zoom-foot">
         <span className="civ-section-label">達成</span>

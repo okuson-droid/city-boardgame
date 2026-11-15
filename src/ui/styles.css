@@ -805,6 +805,22 @@ h3 {
   font-size: 0.8em;
 }
 
+/* 通常ワーカーをいま何人増やせるか（ユーザー決定 2026-11-15）。 */
+.worker-room {
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid #b9a77a;
+  border-radius: 999px;
+  background: #fbf6e6;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+
+.worker-room.full {
+  border-color: #b5423b;
+  color: #b5423b;
+}
+
 /* 計画都市の達成の見込み（ユーザー決定 2026-11-15）。カードの札と、盤面の上の帯・重ねる印。 */
 .pc-prospect {
   display: block;
@@ -2343,6 +2359,62 @@ h3 {
 
 .pc-zoom-overlay {
   z-index: 90;
+}
+
+/*
+ * 計画都市の拡大は端に寄せ、幕を掛けない（ユーザー決定 2026-11-15）。個人ボードと見比べながら回転できるようにする。
+ * 横長の画面では左の列（アクションボード）の上に重ね、縮退配置では右端に置く。
+ */
+.pc-zoom-overlay.docked {
+  inset: auto;
+  top: 56px;
+  left: 8px;
+  background: none;
+  pointer-events: none;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.pc-zoom-overlay.docked .pc-zoom {
+  pointer-events: auto;
+  width: min(460px, 32vw);
+  max-height: calc(100vh - 72px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+.pc-zoom-overlay.docked .pc-zoom-shape .shape {
+  height: min(32vh, 240px);
+}
+
+@media (max-width: 1099px), (max-height: 599px) {
+  .pc-zoom-overlay.docked {
+    top: 8px;
+    left: auto;
+    right: 8px;
+  }
+
+  .pc-zoom-overlay.docked .pc-zoom {
+    width: min(340px, 42vw);
+    max-height: calc(100vh - 16px);
+  }
+
+  .pc-zoom-overlay.docked .pc-zoom-shape .shape {
+    height: min(30vh, 160px);
+  }
+}
+
+.pc-zoom-rotate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pc-zoom-angle {
+  min-width: 6em;
+  text-align: center;
+  font-weight: 700;
 }
 
 .pc-zoom {
