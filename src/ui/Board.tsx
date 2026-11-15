@@ -7,6 +7,7 @@ import type { PlayerState } from '../game/types.ts';
 import { describeBuilding, grantText, type ProspectPlacement } from '../game/queries.ts';
 import { ANY_BUILDING_ART, ICON_ART } from './icon-art.ts';
 import { artOf } from './Icon.tsx';
+import { cellTagArt, cellTagColor, cellTagLabel, type CellTag } from './cell-tags.ts';
 
 const R = 26;
 const W = Math.sqrt(3) * R;
@@ -60,6 +61,7 @@ export const Board = ({
   explainCell,
   onCell,
   overlay = null,
+  tags = {},
 }: {
   player: PlayerState;
   cellState: (cell: CellId) => CellState;
@@ -71,6 +73,8 @@ export const Board = ({
   onCell: (cell: CellId) => void;
   /** 盤面に重ねる計画都市の配置（ユーザー決定 2026-11-15）。 */
   overlay?: ProspectPlacement | null;
+  /** マスのタグ（自分用の印、ユーザー決定 2026-11-15）。 */
+  tags?: Readonly<Partial<Record<CellId, readonly CellTag[]>>>;
 }) => {
   const board = GAME_DATA.boards.find((b) => b.id === player.boardId);
   if (board === undefined) return <div className="board-empty">個人ボード未選択</div>;
@@ -97,7 +101,9 @@ export const Board = ({
             }`,
             ...(building !== undefined ? [describeBuilding(building)] : []),
             ...(reason !== null ? [reason] : []),
+            ...((tags[cell.id] ?? []).length > 0 ? [`タグ：${(tags[cell.id] ?? []).map(cellTagLabel).join('・')}`] : []),
           ].join('\n');
+          const cellTags = tags[cell.id] ?? [];
           return (
             <g
                 key={cell.id}
@@ -145,6 +151,36 @@ export const Board = ({
                     />
                   </g>
                 ) : null}
+                {cellTags.length > 0 ? (
+                  // タグ：内側に最初のタグの色の点線、左右に2つまでの図案（3つ目からは「+」）。
+                  <g className="cell-tags" pointerEvents="none">
+                    <polygon
+                      points={hexPoints(cx, cy, R - 5)}
+                      fill="none"
+                      stroke={cellTagColor(cellTags[0] as CellTag)}
+                      strokeWidth={2}
+                      strokeDasharray="4 2"
+                    />
+                    {cellTags.slice(0, 2).map((tag, i) => (
+                      <g key={tag}>
+                        <circle cx={cx + (i === 0 ? -R * 0.62 : R * 0.62)} cy={cy} r={6.5} fill="#fff" stroke={cellTagColor(tag)} strokeWidth={1.4} />
+                        <svg
+                          x={cx + (i === 0 ? -R * 0.62 : R * 0.62) - 5}
+                          y={cy - 5}
+                          width={10}
+                          height={10}
+                          viewBox="0 0 24 24"
+                          dangerouslySetInnerHTML={{ __html: cellTagArt(tag) }}
+                        />
+                      </g>
+                    ))}
+                    {cellTags.length > 2 ? (
+                      <text x={cx + R * 0.62} y={cy + R * 0.45} className="cell-tag-more">
+                        +{cellTags.length - 2}
+                      </text>
+                    ) : null}
+                  </g>
+                ) : null}
                 {chips.has(cell.id) ? (
                   <svg
                     x={cx - R * 0.85}
@@ -174,7 +210,7 @@ export const Board = ({
 };
 
 /**
- * 計画都市の配置の印（ユーザー決定 2026-11-15）。形のマスを金の太い縁で囲み、済みのマスに緑の✓、
+ * 計画都市・自然公園のセットの配置の印（ユーザー決定 2026-11-15）。形のマスを金の太い縁で囲み、済みのマスに緑の✓、
  * 土地が要るマスに点線の六角形（要る種類の色）、建てる建物を薄いアイコンで描く。クリックは下のマスへ通す。
  */
 const PlannedOverlay = ({ placement }: { placement: ProspectPlacement }) => (
@@ -198,15 +234,16 @@ const PlannedOverlay = ({ placement }: { placement: ProspectPlacement }) => (
             />
           ) : null}
           {slot.status === 'done' ? (
-            <g>
-              <circle cx={cx + R * 0.55} cy={cy - R * 0.5} r={7} fill="#2e8b4e" stroke="#fff" strokeWidth={1.2} />
-              <text x={cx + R * 0.55} y={cy - R * 0.5 + 3.5} className="pc-check">
+            // 計画都市は中央に建物があるため右上に、自然公園は中央に✓を置く。
+            <g transform={placement.kind === 'planned' ? `translate(${R * 0.55} ${-R * 0.5})` : undefined}>
+              <circle cx={cx} cy={cy} r={7} fill="#2e8b4e" stroke="#fff" strokeWidth={1.2} />
+              <text x={cx} y={cy + 3.5} className="pc-check">
                 ✓
               </text>
             </g>
-          ) : (
+          ) : placement.kind === 'planned' ? (
             <svg x={cx - 10} y={cy - 10} width={20} height={20} viewBox="0 0 24 24" opacity={0.6} dangerouslySetInnerHTML={{ __html: art }} />
-          )}
+          ) : null}
           {slot.mismatch ? (
             <text x={cx - R * 0.55} y={cy - R * 0.3} className="pc-mismatch">
               !

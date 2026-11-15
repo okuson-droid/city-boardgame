@@ -26,7 +26,9 @@ import { QuickRefButton } from './QuickRef.tsx';
 import { playTurnChime, useSoundEnabled } from './sound.ts';
 import { RulesButton } from './RulesDeck.tsx';
 import { Tip } from './Tip.tsx';
-import { ProspectBar, prospectOf, type ProspectPreview } from './PlannedProspect.tsx';
+import { ProspectBar, previewPlacementOf, type ProspectPreview } from './PlannedProspect.tsx';
+import { useCellTags } from './cell-tags.ts';
+import { CellTagBar, type TagTool } from './CellTagBar.tsx';
 
 export type Settings = {
   speed: 'standard' | 'fast' | 'none';
@@ -59,6 +61,8 @@ export type GameController = {
   readonly confirmIrreversible?: boolean;
   /** 記録の再生中：どのタブでも手札の内容を見せる（終わった対局の記録のため、19-6-1 の対象外）。 */
   readonly revealAll?: boolean;
+  /** マスのタグを保存する鍵（対局ごと、ユーザー決定 2026-11-15）。無ければその画面の間だけ持つ。 */
+  readonly tagKey?: string;
 };
 
 /** ローカル版：状態を手元で持ち、選択をその場で適用する。 */
@@ -81,6 +85,7 @@ export const LocalGame = ({ initial, settings, onRestart }: { initial: GameState
     // 1台で交代して遊ぶため、手札はもともと全員に見えている。いつでも保存できる。
     saveReplay,
     confirmIrreversible: true,
+    tagKey: `local:${initial.seed}`,
   };
   return <Game ctl={ctl} settings={settings} onRestart={onRestart} />;
 };
@@ -122,6 +127,10 @@ export const Game = ({
   const [focus, setFocus] = useState<CellId | null>(null);
   /** 盤面に置き場所を示している計画都市（ユーザー決定 2026-11-15）。 */
   const [preview, setPreview] = useState<ProspectPreview | null>(null);
+  /** マスのタグ（自分用の印、ユーザー決定 2026-11-15）。帯が開いている間、マスを押すとタグを付け外しする。 */
+  const cellTags = useCellTags(ctl.tagKey);
+  const [tagOpen, setTagOpen] = useState(false);
+  const [tagTool, setTagTool] = useState<TagTool | null>(null);
   const [soundOn, setSoundOn] = useSoundEnabled();
   /** ドラフトの専用画面を畳んで盤面を見ているか。選ぶ人が変わると開き直す。 */
   const [draftFolded, setDraftFolded] = useState(false);
@@ -206,12 +215,9 @@ export const Game = ({
 
   const viewed = state.players[view] ?? state.players[0];
   if (viewed === undefined) return null;
-  // 示している計画都市の配置。表示中のプレイヤーの盤面で数え直す（タブを替えればその人の盤面の見込みになる）。
-  const previewProspect = preview !== null ? prospectOf(viewed, preview.id) : null;
-  const previewPlacement =
-    previewProspect !== null && previewProspect.placements.length > 0
-      ? (previewProspect.placements[(preview?.index ?? 0) % previewProspect.placements.length] ?? null)
-      : null;
+  // 示している計画都市・自然公園のセットの配置。表示中のプレイヤーの盤面で数え直す（タブを替えればその人の盤面の見込みになる）。
+  const previewPlacement = previewPlacementOf(viewed, preview);
+  const viewedTags = cellTags.tags[viewed.index] ?? {};
   const isOwnerView = handOwner !== null && handOwner === view;
   // 直前の選択で置かれた土地・建物を強調する（ui_design.md 4-1 手順3）。
   const freshCells = new Set(
@@ -231,12 +237,19 @@ export const Game = ({
   };
 
   const cellState = (cell: CellId): CellState => {
+    // タグを付けている間は、マスを押してもゲームを進めないため、選べるマスとして光らせない。
+    if (tagOpen) return 'none';
     if (cellChoices(cell).length > 0) return 'selectable';
     if (isOwnerView && picks.includes(cell)) return 'picked';
     return 'none';
   };
 
   const onCell = (cell: CellId): void => {
+    if (tagOpen) {
+      if (tagTool === 'erase') cellTags.clear(viewed.index, cell);
+      else if (tagTool !== null) cellTags.toggle(viewed.index, cell, tagTool);
+      return;
+    }
     const choices = cellChoices(cell);
     const [only] = choices;
     if (choices.length === 1 && only !== undefined) choose(only.option.id);
@@ -377,17 +390,34 @@ export const Game = ({
             <p className="muted draft-folded-note">ドラフト中である。上の「ドラフトを開く」で選ぶ画面に戻る。</p>
           ) : (
             <>
+              <CellTagBar
+                open={tagOpen}
+                tool={tagTool}
+                count={Object.keys(viewedTags).length}
+                onOpen={setTagOpen}
+                onTool={setTagTool}
+                onClearAll={() => cellTags.clear(viewed.index)}
+              />
               {preview !== null ? (
                 <ProspectBar
                   player={viewed}
                   preview={preview}
-                  onNext={() => setPreview({ id: preview.id, index: preview.index + 1 })}
+                  onNext={() => setPreview({ ...preview, index: preview.index + 1 })}
                   onClose={() => setPreview(null)}
+                  onTag={(placement) => {
+                    // 配置をタグに写す：計画都市はマスに「計画都市」と指定の建物、自然公園は「自然公園」を付ける。
+                    const tag = placement.kind === 'park' ? 'park' : 'planned';
+                    cellTags.addMany(viewed.index, placement.slots.map((x) => x.cell), tag);
+                    for (const slot of placement.slots) {
+                      if (slot.building !== null) cellTags.addMany(viewed.index, [slot.cell], slot.building);
+                    }
+                  }}
                 />
               ) : null}
               <Board
                 player={viewed}
                 overlay={previewPlacement}
+                tags={viewedTags}
                 cellState={cellState}
                 pickOrder={(cell) => (isOwnerView && picks.includes(cell) ? picks.indexOf(cell) + 1 : null)}
                 highlight={focus}
@@ -403,7 +433,18 @@ export const Game = ({
         </section>
         <div className="personal-side">
           <section className="col-info">
-            <PersonalInfo player={viewed} isOwner={isOwnerView} model={model} onChoose={choose} lastEvents={lastEvents} speed={settings.speed} />
+            <PersonalInfo
+              player={viewed}
+              isOwner={isOwnerView}
+              model={model}
+              onChoose={choose}
+              lastEvents={lastEvents}
+              speed={settings.speed}
+              parkPreview={preview?.kind === 'np' ? preview.set : null}
+              onParkPreview={(set) =>
+                setPreview(preview?.kind === 'np' && preview.set === set ? null : { kind: 'np', id: viewed.natureParkCard ?? '', set, index: 0 })
+              }
+            />
           </section>
           <section className="bottom">
             <HandArea
@@ -412,8 +453,8 @@ export const Game = ({
               isOwner={isOwnerView}
               model={model}
               onChoose={choose}
-              preview={preview?.id ?? null}
-              onPreview={(id) => setPreview(preview?.id === id ? null : { id, index: 0 })}
+              preview={preview?.kind === 'pc' ? preview.id : null}
+              onPreview={(id) => setPreview(preview?.kind === 'pc' && preview.id === id ? null : { kind: 'pc', id, index: 0 })}
             />
           </section>
         </div>

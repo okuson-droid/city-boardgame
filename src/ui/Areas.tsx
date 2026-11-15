@@ -16,7 +16,7 @@ import { Icon, IconRow } from './Icon.tsx';
 import { colorOf, WAITING_REASON, type UiModel } from './model.ts';
 import { TrackBar, trackChanges, type Speed } from './Motion.tsx';
 import { Tip } from './Tip.tsx';
-import { ProspectBadge } from './PlannedProspect.tsx';
+import { ParkProspect, ProspectBadge } from './PlannedProspect.tsx';
 import type { CellId } from '../game/board.ts';
 
 const entry = (section: keyof typeof ICON_KEYS, key: string): { icon: string; label: string } =>
@@ -224,6 +224,8 @@ export const PersonalInfo = ({
   onChoose,
   lastEvents = [],
   speed = 'none',
+  parkPreview = null,
+  onParkPreview,
 }: {
   player: PlayerState;
   isOwner: boolean;
@@ -231,6 +233,9 @@ export const PersonalInfo = ({
   onChoose: Choose;
   lastEvents?: readonly GameEvent[];
   speed?: Speed;
+  /** 盤面に置き場所を示している自然公園のセットの番号（ユーザー決定 2026-11-15）。 */
+  parkPreview?: number | null;
+  onParkPreview?: (set: number) => void;
 }) => {
   const w = workerSummary(player);
   const tracks = trackChanges(lastEvents, player.index);
@@ -256,8 +261,11 @@ export const PersonalInfo = ({
           </AbilityCard>
         ) : null}
         {park ? (
-          <div className="card np">
-            <NatureParkView card={park} />
+          <div className="np-wrap">
+            <div className="card np">
+              <NatureParkView card={park} />
+            </div>
+            {onParkPreview !== undefined ? <ParkProspect player={player} active={parkPreview} onPreview={onParkPreview} /> : null}
           </div>
         ) : null}
       </div>

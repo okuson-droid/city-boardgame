@@ -1,9 +1,9 @@
 // 計画都市の達成の見込み（ユーザー決定 2026-11-15、src/game/prospect.ts）。
 import { describe, expect, it } from 'vitest';
 import { GAME_DATA } from '../src/data/index.ts';
-import { plannedCityProspect, prospectSummary } from '../src/game/prospect.ts';
+import { natureParkProspect, parkSetSummary, plannedCityProspect, prospectSummary } from '../src/game/prospect.ts';
 import { workerSummary } from '../src/game/queries.ts';
-import type { PlannedCityCard } from '../src/data/index.ts';
+import type { GameData, NatureParkCard, PlannedCityCard } from '../src/data/index.ts';
 import type { CellId } from '../src/game/board.ts';
 import type { PlayerState } from '../src/game/types.ts';
 import { firstTurn, me, withoutCharacters } from './helpers/game.ts';
@@ -136,5 +136,51 @@ describe('通常ワーカーをいま何人増やせるか（ユーザー決定 
     expect(s.housesToNextCap).toBe(w.housesPerExtraRegular - 1);
     p.regularWorkers = w.regularBase + 3;
     expect(workerSummary(p, d).regularRoom).toBe(0);
+  });
+});
+
+/** 2枚（森林・水場）と3枚（森林・山岳・森林の直線）のセットを持つテスト用の自然公園。 */
+const park: NatureParkCard = {
+  id: 'NPT',
+  name: 'テスト用の自然公園',
+  sets: [
+    { cells: [{ q: 0, r: 0, terrain: 'forest' }, { q: 1, r: 0, terrain: 'water' }] },
+    { cells: [{ q: 0, r: 0, terrain: 'forest' }, { q: 1, r: 0, terrain: 'mountain' }, { q: 2, r: 0, terrain: 'forest' }] },
+  ],
+  provisional: true,
+};
+const parkData: GameData = { ...d, natureParkCards: [...d.natureParkCards, park] };
+
+describe('自然公園の達成の見込み（ユーザー決定 2026-11-15）', () => {
+  it('建物のない土地に形があればそのセットは形があるとし、いまの得点を出す', () => {
+    // rules.md v0.8 14-2、14-3-1、14-3-4
+    const p = player((q) => {
+      q.natureParkCard = 'NPT';
+      q.land = { E1: 'forest', E2: 'water' };
+    });
+    const r = natureParkProspect(parkData, p, park);
+    expect(r.sets[0]?.achieved).toBe(true);
+    expect(parkSetSummary(r.sets[0]!)).toBe('形がある');
+    expect(r.score).toBe(d.params.scoring.natureParkPointsBySetSize['2']);
+    expect(r.maxScore).toBe((d.params.scoring.natureParkPointsBySetSize['2'] ?? 0) + (d.params.scoring.natureParkPointsBySetSize['3'] ?? 0));
+  });
+
+  it('建物の建ったマスは使えず、足りない土地の数を「あと」で出す', () => {
+    // rules.md v0.8 14-3-1（建物の建っていない土地だけが対象）
+    const p = player((q) => {
+      q.natureParkCard = 'NPT';
+      q.land = { E1: 'forest', E2: 'water' };
+      q.buildings = { E2: 'house' };
+    });
+    const r = natureParkProspect(parkData, p, park, 1000);
+    expect(r.sets[0]?.achieved).toBe(false);
+    for (const placement of r.sets[0]?.placements ?? []) {
+      expect(placement.slots.some((s) => s.cell === 'E2')).toBe(false);
+      expect(placement.kind).toBe('park');
+      expect(placement.buildings).toBe(0);
+    }
+    expect(r.sets[0]?.placements[0]?.steps).toBe(1);
+    expect(parkSetSummary(r.sets[0]!)).toBe('あと1（土地1）');
+    expect(r.score).toBe(0);
   });
 });

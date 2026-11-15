@@ -204,6 +204,7 @@ export const OnlineGame = ({
     const watch: GameController = {
       state,
       seat: null,
+      tagKey: `watch:${session.code}`,
       choose: () => undefined,
       undo: () => undefined,
       undoReason: '観戦中は操作できない',
@@ -230,6 +231,7 @@ export const OnlineGame = ({
   const ctl: GameController = {
     state,
     seat: session.seat,
+    tagKey: `room:${session.code}`,
     choose: (id) => run(() => transport.move(session, id, state.log.length)),
     undo: () => run(() => transport.undo(session)),
     undoTurn: () => run(() => transport.undo(session, true)),
