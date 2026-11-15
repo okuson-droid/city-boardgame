@@ -6,8 +6,8 @@
 import { CELL_IDS, cellAtAxial, getCell, neighborsOf, rotateAxial, type CellId } from './board.ts';
 import { hasModifier, mismatchExtraMaterials } from './abilities.ts';
 import { boardOf, remainingBuildingStock } from './core.ts';
-import { plannedCityMatches } from './planned.ts';
-import type { Building, GameData, PlannedCityCard, PlannedCitySlot, Terrain } from '../data/types.ts';
+import { natureParkScore, natureParkTable, plannedCityMatches } from './planned.ts';
+import type { Building, GameData, NatureParkCard, PlannedCityCard, PlannedCitySlot, Terrain } from '../data/types.ts';
 import type { PlayerState } from './types.ts';
 
 const ROTATIONS = [0, 1, 2, 3, 4, 5];
@@ -33,6 +33,8 @@ export type ProspectSlot = {
 };
 
 export type ProspectPlacement = {
+  /** 計画都市（建物が要る）か、自然公園のセット（建物のない土地が要る）か。 */
+  readonly kind: 'planned' | 'park';
   readonly slots: readonly ProspectSlot[];
   /** 置く土地タイルの数（形の中）。 */
   readonly tiles: number;
@@ -81,12 +83,12 @@ const landDistances = (player: PlayerState): Map<CellId, number> => {
 };
 
 /** 形を回転・平行移動して盤面に写す。盤外に出れば undefined。 */
-const placeSlots = (slots: readonly PlannedCitySlot[], rotation: number, anchor: CellId): { cell: CellId; slot: PlannedCitySlot }[] | undefined => {
+const placeSlots = <T extends { q: number; r: number }>(slots: readonly T[], rotation: number, anchor: CellId): { cell: CellId; slot: T }[] | undefined => {
   const first = slots[0];
   if (first === undefined) return undefined;
   const origin = rotateAxial(first, rotation);
   const at = getCell(anchor).axial;
-  const result: { cell: CellId; slot: PlannedCitySlot }[] = [];
+  const result: { cell: CellId; slot: T }[] = [];
   for (const slot of slots) {
     const r = rotateAxial(slot, rotation);
     const cell = cellAtAxial({ q: r.q - origin.q + at.q, r: r.r - origin.r + at.r });
@@ -139,7 +141,7 @@ const evaluate = (
   if (!Number.isFinite(bridge)) return undefined;
   const tiles = needLand.length;
   const buildings = slots.filter((s) => s.status !== 'done').length;
-  return { slots, tiles, buildings, mismatches: needLand.filter((s) => s.mismatch).length, bridge, steps: tiles + buildings + bridge };
+  return { kind: 'planned', slots, tiles, buildings, mismatches: needLand.filter((s) => s.mismatch).length, bridge, steps: tiles + buildings + bridge };
 };
 
 /**
@@ -185,4 +187,112 @@ export const prospectSummary = (p: PlannedCityProspect): string => {
     ...(best.buildings > 0 ? [`建物${best.buildings}`] : []),
   ];
   return `あと${best.steps}（${parts.join('・')}）`;
+};
+
+// ---------------------------------------------------------------------------
+// 自然公園（ユーザー決定 2026-11-15）
+// ---------------------------------------------------------------------------
+
+export type ParkSetProspect = {
+  /** カードの中のセットの番号（0始まり）。 */
+  readonly index: number;
+  readonly size: number;
+  /** そのセットの得点（特別市民08 などの置き換えを含む）。 */
+  readonly points: number;
+  /** そのセットだけを見て、いまの盤面に形がある（他のセットとタイルを共有しない割り当ての判定は score で行う）。 */
+  readonly achieved: boolean;
+  readonly placementCount: number;
+  readonly placements: readonly ProspectPlacement[];
+};
+
+export type NatureParkProspect = {
+  readonly card: string;
+  /** いま終わったときの自然公園の得点（タイルを共有しない最大の割り当て、14-3-4、19-4-8）。 */
+  readonly score: number;
+  /** 3セットすべての得点の合計。 */
+  readonly maxScore: number;
+  readonly sets: readonly ParkSetProspect[];
+  readonly mismatchExtraMaterials: number;
+};
+
+/**
+ * 自然公園のセット1つの配置を評価する。建物の建ったマスと違う種類の土地を置いたマスは使えない（14-3-1〜14-3-3）。
+ * 精霊チップの土地は通常の土地として数える（19-5-7）。
+ */
+const evaluatePark = (
+  d: GameData,
+  player: PlayerState,
+  placed: readonly { cell: CellId; slot: { terrain: Terrain } }[],
+  distances: ReadonlyMap<CellId, number>,
+): ProspectPlacement | undefined => {
+  const board = boardOf(d, player);
+  const slots: ProspectSlot[] = [];
+  for (const { cell, slot } of placed) {
+    if (player.buildings[cell] !== undefined) return undefined;
+    const land = player.land[cell];
+    if (land !== undefined) {
+      if (land !== slot.terrain) return undefined;
+      slots.push({ cell, status: 'done', terrain: slot.terrain, building: null, mismatch: false });
+      continue;
+    }
+    slots.push({ cell, status: 'needLand', terrain: slot.terrain, building: null, mismatch: board.squares[cell]?.terrain !== slot.terrain });
+  }
+  const needLand = slots.filter((s) => s.status === 'needLand');
+  const bridge =
+    needLand.length === slots.length && distances.size > 0
+      ? Math.max(0, Math.min(...needLand.map((s) => distances.get(s.cell) ?? Infinity)) - 1)
+      : 0;
+  if (!Number.isFinite(bridge)) return undefined;
+  return { kind: 'park', slots, tiles: needLand.length, buildings: 0, mismatches: needLand.filter((s) => s.mismatch).length, bridge, steps: needLand.length + bridge };
+};
+
+/**
+ * 自然公園カードの達成の見込み（ユーザー決定 2026-11-15）。セットごとに、盤面の全マス×6回転の配置を足りない土地が少ない順に返す。
+ * セットどうしでタイルを共有できない点は、得点（score）では考えるが、セットごとの候補では考えない。
+ */
+export const natureParkProspect = (d: GameData, player: PlayerState, card: NatureParkCard, limit = 5): NatureParkProspect => {
+  const distances = landDistances(player);
+  const table = natureParkTable(d, player);
+  const sets = card.sets.map((set, index): ParkSetProspect => {
+    const seen = new Set<string>();
+    const found: ProspectPlacement[] = [];
+    for (const rotation of ROTATIONS) {
+      for (const anchor of CELL_IDS) {
+        const placed = placeSlots(set.cells, rotation, anchor);
+        if (placed === undefined) continue;
+        const key = placed
+          .map(({ cell, slot }) => `${cell}:${slot.terrain}`)
+          .sort()
+          .join(',');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const placement = evaluatePark(d, player, placed, distances);
+        if (placement !== undefined) found.push(placement);
+      }
+    }
+    found.sort((a, b) => a.steps - b.steps || a.mismatches - b.mismatches);
+    return {
+      index,
+      size: set.cells.length,
+      points: table[String(set.cells.length)] ?? 0,
+      achieved: found[0]?.steps === 0,
+      placementCount: found.length,
+      placements: found.slice(0, limit),
+    };
+  });
+  return {
+    card: card.id,
+    score: natureParkScore(d, player),
+    maxScore: sets.reduce((sum, s) => sum + s.points, 0),
+    sets,
+    mismatchExtraMaterials: mismatchExtraMaterials(d, player),
+  };
+};
+
+/** セットの見込みの短い文（例：「あと2（土地2）」）。 */
+export const parkSetSummary = (p: ParkSetProspect): string => {
+  const best = p.placements[0];
+  if (best === undefined) return 'この盤面では作れない';
+  if (best.steps === 0) return '形がある';
+  return `あと${best.steps}（土地${best.steps}）`;
 };

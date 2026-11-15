@@ -174,7 +174,7 @@ export const Board = ({
 };
 
 /**
- * 計画都市の配置の印（ユーザー決定 2026-11-15）。形のマスを金の太い縁で囲み、済みのマスに緑の✓、
+ * 計画都市・自然公園のセットの配置の印（ユーザー決定 2026-11-15）。形のマスを金の太い縁で囲み、済みのマスに緑の✓、
  * 土地が要るマスに点線の六角形（要る種類の色）、建てる建物を薄いアイコンで描く。クリックは下のマスへ通す。
  */
 const PlannedOverlay = ({ placement }: { placement: ProspectPlacement }) => (
@@ -198,15 +198,16 @@ const PlannedOverlay = ({ placement }: { placement: ProspectPlacement }) => (
             />
           ) : null}
           {slot.status === 'done' ? (
-            <g>
-              <circle cx={cx + R * 0.55} cy={cy - R * 0.5} r={7} fill="#2e8b4e" stroke="#fff" strokeWidth={1.2} />
-              <text x={cx + R * 0.55} y={cy - R * 0.5 + 3.5} className="pc-check">
+            // 計画都市は中央に建物があるため右上に、自然公園は中央に✓を置く。
+            <g transform={placement.kind === 'planned' ? `translate(${R * 0.55} ${-R * 0.5})` : undefined}>
+              <circle cx={cx} cy={cy} r={7} fill="#2e8b4e" stroke="#fff" strokeWidth={1.2} />
+              <text x={cx} y={cy + 3.5} className="pc-check">
                 ✓
               </text>
             </g>
-          ) : (
+          ) : placement.kind === 'planned' ? (
             <svg x={cx - 10} y={cy - 10} width={20} height={20} viewBox="0 0 24 24" opacity={0.6} dangerouslySetInnerHTML={{ __html: art }} />
-          )}
+          ) : null}
           {slot.mismatch ? (
             <text x={cx - R * 0.55} y={cy - R * 0.3} className="pc-mismatch">
               !

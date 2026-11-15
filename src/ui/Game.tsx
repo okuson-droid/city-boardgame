@@ -26,7 +26,7 @@ import { QuickRefButton } from './QuickRef.tsx';
 import { playTurnChime, useSoundEnabled } from './sound.ts';
 import { RulesButton } from './RulesDeck.tsx';
 import { Tip } from './Tip.tsx';
-import { ProspectBar, prospectOf, type ProspectPreview } from './PlannedProspect.tsx';
+import { ProspectBar, previewPlacementOf, type ProspectPreview } from './PlannedProspect.tsx';
 
 export type Settings = {
   speed: 'standard' | 'fast' | 'none';
@@ -206,12 +206,8 @@ export const Game = ({
 
   const viewed = state.players[view] ?? state.players[0];
   if (viewed === undefined) return null;
-  // 示している計画都市の配置。表示中のプレイヤーの盤面で数え直す（タブを替えればその人の盤面の見込みになる）。
-  const previewProspect = preview !== null ? prospectOf(viewed, preview.id) : null;
-  const previewPlacement =
-    previewProspect !== null && previewProspect.placements.length > 0
-      ? (previewProspect.placements[(preview?.index ?? 0) % previewProspect.placements.length] ?? null)
-      : null;
+  // 示している計画都市・自然公園のセットの配置。表示中のプレイヤーの盤面で数え直す（タブを替えればその人の盤面の見込みになる）。
+  const previewPlacement = previewPlacementOf(viewed, preview);
   const isOwnerView = handOwner !== null && handOwner === view;
   // 直前の選択で置かれた土地・建物を強調する（ui_design.md 4-1 手順3）。
   const freshCells = new Set(
@@ -381,7 +377,7 @@ export const Game = ({
                 <ProspectBar
                   player={viewed}
                   preview={preview}
-                  onNext={() => setPreview({ id: preview.id, index: preview.index + 1 })}
+                  onNext={() => setPreview({ ...preview, index: preview.index + 1 })}
                   onClose={() => setPreview(null)}
                 />
               ) : null}
@@ -403,7 +399,18 @@ export const Game = ({
         </section>
         <div className="personal-side">
           <section className="col-info">
-            <PersonalInfo player={viewed} isOwner={isOwnerView} model={model} onChoose={choose} lastEvents={lastEvents} speed={settings.speed} />
+            <PersonalInfo
+              player={viewed}
+              isOwner={isOwnerView}
+              model={model}
+              onChoose={choose}
+              lastEvents={lastEvents}
+              speed={settings.speed}
+              parkPreview={preview?.kind === 'np' ? preview.set : null}
+              onParkPreview={(set) =>
+                setPreview(preview?.kind === 'np' && preview.set === set ? null : { kind: 'np', id: viewed.natureParkCard ?? '', set, index: 0 })
+              }
+            />
           </section>
           <section className="bottom">
             <HandArea
@@ -412,8 +419,8 @@ export const Game = ({
               isOwner={isOwnerView}
               model={model}
               onChoose={choose}
-              preview={preview?.id ?? null}
-              onPreview={(id) => setPreview(preview?.id === id ? null : { id, index: 0 })}
+              preview={preview?.kind === 'pc' ? preview.id : null}
+              onPreview={(id) => setPreview(preview?.kind === 'pc' && preview.id === id ? null : { kind: 'pc', id, index: 0 })}
             />
           </section>
         </div>

@@ -858,6 +858,28 @@ h3 {
   cursor: default;
 }
 
+.np-wrap {
+  display: flex;
+  flex-direction: column;
+  width: var(--card-w);
+}
+
+.np-prospect {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.np-prospect .pc-prospect {
+  margin-top: 0;
+  text-align: left;
+}
+
+.np-prospect-score {
+  font-size: 0.8em;
+  font-weight: 700;
+}
+
 .pc-preview-bar {
   display: flex;
   flex-wrap: wrap;

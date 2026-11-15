@@ -504,8 +504,12 @@ export const plannedCityRemaining = (state: GameState, id: string, d: GameData =
 
 // 計画都市の達成の見込み（ユーザー決定 2026-11-15）。
 export {
+  natureParkProspect,
+  parkSetSummary,
   plannedCityProspect,
   prospectSummary,
+  type NatureParkProspect,
+  type ParkSetProspect,
   type PlannedCityProspect,
   type ProspectPlacement,
   type ProspectSlot,

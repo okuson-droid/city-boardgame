@@ -93,7 +93,7 @@ const setPlacements = (set: NatureParkSet, player: PlayerState): CellId[][] => {
 };
 
 /** セットの枚数ごとの得点。特別市民08 は表を置き換える。 */
-const natureParkTable = (d: GameData, player: PlayerState): Readonly<Record<string, number>> => {
+export const natureParkTable = (d: GameData, player: PlayerState): Readonly<Record<string, number>> => {
   const override = modifiersOf(d, player).find((m) => m.kind === 'natureParkPoints');
   return override?.kind === 'natureParkPoints' ? override.table : d.params.scoring.natureParkPointsBySetSize;
 };
