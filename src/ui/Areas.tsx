@@ -275,10 +275,22 @@ export const PersonalInfo = ({
         <IconRow tokens={[tok('resources', 'goldProduction', player.goldProduction), tok('resources', 'materialProduction', player.materialProduction)]} />
       </InfoRow>
       <InfoRow label="ワーカー">
-        <Tip text={`配置済み${w.regularPlaced}人・次ラウンドから${w.regularNextRound}人・手番中に得た臨時${w.tempLocked}人`}>
+        <Tip text={`使える通常ワーカー／上限。配置済み${w.regularPlaced}人・次ラウンドから${w.regularNextRound}人・手番中に得た臨時${w.tempLocked}人`}>
           <IconRow
             tokens={[tok('resources', 'regularWorkers', `${w.regularUsable}/${w.regularCap}`), tok('resources', 'tempWorkers', `${w.tempUsable}/${w.tempMax}`)]}
           />
+        </Tip>
+        {/* 通常ワーカーをいま何人増やせるか（ユーザー決定 2026-11-15）。上限を超えて得た分は破棄される（3-3-1-2）。 */}
+        <Tip
+          text={[
+            `通常ワーカーは${w.regularOwned}人、上限は${w.regularCap}人（基本${GAME_DATA.params.workers.regularBase}人＋住宅${GAME_DATA.params.workers.housesPerExtraRegular}軒ごとに1人、最大${GAME_DATA.params.workers.regularMax}人）。`,
+            `いま増やせるのはあと${w.regularRoom}人で、超えた分は破棄される。`,
+            w.housesToNextCap === null ? '上限は最大に届いている。' : `住宅をあと${w.housesToNextCap}軒建てると上限が1人増える。`,
+          ].join('\n')}
+        >
+          <span className={`worker-room${w.regularRoom === 0 ? ' full' : ''}`} data-worker-room={w.regularRoom}>
+            {w.regularRoom > 0 ? `あと${w.regularRoom}人増やせる` : '上限（増やせない）'}
+          </span>
         </Tip>
       </InfoRow>
       <InfoRow label="トラック">

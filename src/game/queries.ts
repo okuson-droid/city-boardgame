@@ -279,6 +279,12 @@ export type WorkerSummary = {
   readonly regularPlaced: number;
   readonly regularNextRound: number;
   readonly regularCap: number;
+  /** 持っている通常ワーカー（次のラウンドから使える人を含む）。 */
+  readonly regularOwned: number;
+  /** いま増やせる通常ワーカーの数（上限−持っている数、ユーザー決定 2026-11-15）。超えた分は破棄される（3-3-1-2）。 */
+  readonly regularRoom: number;
+  /** 上限を1人増やすのにあと要る住宅の数。上限が最大に届いていれば null。 */
+  readonly housesToNextCap: number | null;
   readonly tempUsable: number;
   readonly tempLocked: number;
   readonly tempMax: number;
@@ -289,6 +295,12 @@ export const workerSummary = (player: PlayerState, d: GameData = GAME_DATA): Wor
   regularPlaced: player.regularPlaced,
   regularNextRound: player.regularNewThisRound,
   regularCap: regularWorkerCap(d, player),
+  regularOwned: player.regularWorkers,
+  regularRoom: Math.max(0, regularWorkerCap(d, player) - player.regularWorkers),
+  housesToNextCap:
+    regularWorkerCap(d, player) >= d.params.workers.regularMax
+      ? null
+      : d.params.workers.housesPerExtraRegular - (buildingCount(player, 'house') % d.params.workers.housesPerExtraRegular),
   tempUsable: usableTemp(player),
   tempLocked: player.tempLocked,
   tempMax: d.params.workers.tempMax,
