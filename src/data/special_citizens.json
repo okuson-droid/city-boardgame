@@ -105,7 +105,8 @@
                 "count": "playedCivCards",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "welfare"
             }
           ]
         }
@@ -313,7 +314,8 @@
                 "count": "buildingTypes",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "welfare"
             }
           ]
         }
@@ -478,7 +480,8 @@
                 "count": "buildingsOfType:house",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "welfare"
             }
           ]
         }
@@ -763,7 +766,7 @@
             {
               "op": "gain",
               "res": "militaryTokens",
-              "amount": 4
+              "amount": 7
             }
           ]
         }
@@ -799,6 +802,230 @@
               "op": "gain",
               "res": "materialProduction",
               "amount": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "21",
+      "name": "工場長 コオロギ",
+      "effects": [],
+      "revisedEffects": [],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "goldProduction",
+                "per": 5,
+                "times": 1
+              },
+              "axis": "welfare"
+            },
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "materialProduction",
+                "per": 4,
+                "times": 2
+              },
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "22",
+      "name": "刑事 ハヤブサ",
+      "effects": [],
+      "revisedEffects": [],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "militaryLevel",
+                "per": 3,
+                "times": 2
+              },
+              "axis": "welfare"
+            },
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "infraLevel",
+                "per": 3,
+                "times": 2
+              },
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "23",
+      "name": "議員 ハクチョウ",
+      "effects": [],
+      "revisedEffects": [],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 10,
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "24",
+      "name": "仲介屋 ハチドリ",
+      "effects": [],
+      "revisedEffects": [],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "on",
+          "event": "workerGained",
+          "filter": {
+            "kind": "temp"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 1,
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "25",
+      "name": "自然保護官 ゲンゴロウ",
+      "effects": [],
+      "revisedEffects": [],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "natureParkPoints",
+            "table": {
+              "2": 5,
+              "3": 10,
+              "4": 15
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "26",
+      "name": "土木作業員 フジツボ",
+      "effects": [],
+      "revisedEffects": [],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 10
+            },
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": 6
+            },
+            {
+              "op": "placeTiles",
+              "count": 2,
+              "tile": "any"
+            },
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "27",
+      "name": "斥候 イナゴ",
+      "effects": [],
+      "revisedEffects": [],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": null,
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "expeditionRewards",
+              "count": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "28",
+      "name": "地上げ屋 ムクドリ",
+      "effects": [],
+      "revisedEffects": [],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "actionSpace",
+          "workers": 1,
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 1,
+              "tile": "any"
+            },
+            {
+              "op": "build",
+              "max": 1,
+              "upTo": true,
+              "buildings": null,
+              "terrain": null,
+              "payGold": true,
+              "payMaterials": true
             }
           ]
         }
