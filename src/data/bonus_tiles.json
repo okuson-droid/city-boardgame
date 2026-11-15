@@ -110,7 +110,7 @@
       ],
       "passScore": {
         "count": "houses",
-        "per": 1,
+        "per": 2,
         "points": 1
       }
     },
@@ -173,7 +173,7 @@
       ],
       "passScore": {
         "count": "playedCivCards",
-        "per": 2,
+        "per": 3,
         "points": 1
       }
     },

@@ -988,10 +988,8 @@
       "provisional": true,
       "script": [
         {
-          "ability": "freeAction",
-          "pay": null,
-          "require": null,
-          "oncePerRound": true,
+          "ability": "actionSpace",
+          "workers": 1,
           "do": [
             {
               "op": "expeditionRewards",
