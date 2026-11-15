@@ -489,3 +489,13 @@ export const plannedCityRemaining = (state: GameState, id: string, d: GameData =
   for (let rank = claimed; rank < max; rank += 1) out.push({ rank: rank + 1, points: table[rank] ?? 0 });
   return out;
 };
+
+// 計画都市の達成の見込み（ユーザー決定 2026-11-15）。
+export {
+  plannedCityProspect,
+  prospectSummary,
+  type PlannedCityProspect,
+  type ProspectPlacement,
+  type ProspectSlot,
+  type ProspectSlotStatus,
+} from './prospect.ts';
