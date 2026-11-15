@@ -693,6 +693,14 @@ export const parseBonusTiles = (value: unknown, path = 'bonus_tiles'): BonusTile
     };
   });
 
+const readCharacterEffect = (e: unknown, ep: string): CharacterEffect => {
+  const eo = readObject(e, ep);
+  return {
+    text: readString(field(eo, 'text', ep), `${ep}.text`),
+    ...readOptionalStringArray(eo, 'items', ep),
+  };
+};
+
 export const parseCharacters = (value: unknown, path = 'characters'): Character[] =>
   readList(value, path, 'characters', (v, q) => {
     const o = readObject(v, q);
@@ -703,13 +711,8 @@ export const parseCharacters = (value: unknown, path = 'characters'): Character[
       label: readString(field(o, 'label', q), `${q}.label`),
       axis: readString(field(o, 'axis', q), `${q}.axis`),
       initial_bonus: readStringArray(field(o, 'initial_bonus', q), `${q}.initial_bonus`),
-      effects: readArray(field(o, 'effects', q), `${q}.effects`, (e, ep): CharacterEffect => {
-        const eo = readObject(e, ep);
-        return {
-          text: readString(field(eo, 'text', ep), `${ep}.text`),
-          ...readOptionalStringArray(eo, 'items', ep),
-        };
-      }),
+      effects: readArray(field(o, 'effects', q), `${q}.effects`, readCharacterEffect),
+      ...('revisedEffects' in o ? { revisedEffects: readArray(o['revisedEffects'], `${q}.revisedEffects`, readCharacterEffect) } : {}),
       open_issues: readStringArray(field(o, 'open_issues', q), `${q}.open_issues`),
       ...readOptionalStringArray(o, 'clarifications', q),
       ...readOptionalStringArray(o, 'changes', q),
