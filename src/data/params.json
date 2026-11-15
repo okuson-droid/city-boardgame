@@ -271,7 +271,7 @@
         "materialDiscount": 0
       },
       "upper": {
-        "maxTiles": 3,
+        "maxTiles": 4,
         "materialDiscount": 1
       },
       "top": {
@@ -286,34 +286,34 @@
         "materialDiscount": 0
       },
       "upper": {
-        "maxBuildings": 3,
+        "maxBuildings": 4,
         "goldDiscount": 1,
         "materialDiscount": 1
       },
       "top": {
         "maxBuildings": 4,
-        "goldDiscount": 2,
+        "goldDiscount": 4,
         "materialDiscount": 2
       }
     },
     "import": {
       "normal": {
-        "payGold": 3,
+        "payGold": 2,
         "gainMaterials": 1,
         "maxTimes": 3,
-        "bonusMaterials": 0
+        "bonusMaterials": 1
       },
       "upper": {
         "payGold": 5,
         "gainMaterials": 3,
         "maxTimes": 2,
-        "bonusMaterials": 1
+        "bonusMaterials": 2
       },
       "top": {
-        "payGold": 5,
-        "gainMaterials": 3,
+        "payGold": 6,
+        "gainMaterials": 4,
         "maxTimes": 2,
-        "bonusMaterials": 3
+        "bonusMaterials": 2
       }
     },
     "export": {
@@ -340,7 +340,7 @@
       "normal": {
         "choices": [
           {
-            "payGold": 3,
+            "payGold": 4,
             "gainTokens": 3
           }
         ],
@@ -349,25 +349,25 @@
       "upper": {
         "choices": [
           {
-            "payGold": 6,
-            "gainTokens": 5
+            "payGold": 8,
+            "gainTokens": 6
           }
         ],
-        "maxRaises": 2
+        "maxRaises": 3
       },
       "top": {
         "choices": [
           {
-            "payGold": 3,
+            "payGold": 2,
             "gainTokens": 3
           },
           {
-            "payGold": 6,
-            "gainTokens": 5
+            "payGold": 4,
+            "gainTokens": 6
           },
           {
-            "payGold": 9,
-            "gainTokens": 8
+            "payGold": 6,
+            "gainTokens": 9
           }
         ],
         "maxRaises": 3
@@ -380,7 +380,7 @@
           "grants": [
             {
               "kind": "gold",
-              "amount": 2
+              "amount": 3
             }
           ]
         },
@@ -389,7 +389,7 @@
           "grants": [
             {
               "kind": "materials",
-              "amount": 1
+              "amount": 2
             }
           ]
         },
@@ -428,7 +428,7 @@
         },
         "upper": {
           "mode": "distinct",
-          "max": 3
+          "max": 4
         },
         "top": {
           "mode": "total",
@@ -450,7 +450,7 @@
       "upper": {
         "choices": [
           {
-            "payMaterials": 4,
+            "payMaterials": 5,
             "infra": 2
           }
         ],
@@ -562,7 +562,7 @@
           {
             "kind": "freeBuildOnTerrain",
             "terrain": "mountain",
-            "amount": 1
+            "amount": 2
           }
         ]
       }
@@ -677,6 +677,10 @@
           {
             "kind": "tempWorkers",
             "amount": 1
+          },
+          {
+            "kind": "drawCivCards",
+            "amount": 2
           }
         ]
       }

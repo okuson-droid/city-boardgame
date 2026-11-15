@@ -365,10 +365,6 @@
         {
           "kind": "specialCitizen",
           "amount": 1
-        },
-        {
-          "kind": "points",
-          "amount": 2
         }
       ],
       "provisional": true
@@ -416,7 +412,7 @@
         },
         {
           "kind": "points",
-          "amount": 2
+          "amount": 3
         }
       ],
       "provisional": true
@@ -460,11 +456,11 @@
       "benefits": [
         {
           "kind": "materials",
-          "amount": 5
+          "amount": 6
         },
         {
           "kind": "points",
-          "amount": 2
+          "amount": 3
         }
       ],
       "provisional": true
@@ -508,11 +504,11 @@
       "benefits": [
         {
           "kind": "gold",
-          "amount": 12
+          "amount": 15
         },
         {
           "kind": "points",
-          "amount": 2
+          "amount": 3
         }
       ],
       "provisional": true
@@ -560,7 +556,7 @@
         },
         {
           "kind": "points",
-          "amount": 2
+          "amount": 3
         }
       ],
       "provisional": true

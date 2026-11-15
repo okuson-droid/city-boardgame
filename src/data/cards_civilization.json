@@ -11,7 +11,7 @@
       "id": "001",
       "name": "建築学",
       "cost": {
-        "gold": 11
+        "gold": 14
       },
       "tags": [
         "academic"
@@ -48,7 +48,7 @@
       "id": "002",
       "name": "小規模開拓",
       "cost": {
-        "gold": 8
+        "gold": 12
       },
       "tags": [
         "environment"
@@ -87,7 +87,7 @@
       "id": "003",
       "name": "公共事業",
       "cost": {
-        "gold": 10
+        "gold": 12
       },
       "tags": [
         "academic"
@@ -163,7 +163,7 @@
       "id": "005",
       "name": "利回り",
       "cost": {
-        "gold": 8
+        "gold": 11
       },
       "tags": [
         "economy"
@@ -424,7 +424,7 @@
       "id": "012",
       "name": "招聘",
       "cost": {
-        "gold": 20
+        "gold": 28
       },
       "tags": [
         "life"
@@ -463,7 +463,7 @@
       "id": "013",
       "name": "流れ者",
       "cost": {
-        "gold": 11
+        "gold": 13
       },
       "tags": [
         "life"
@@ -580,7 +580,7 @@
       "id": "016",
       "name": "速読術",
       "cost": {
-        "gold": 6
+        "gold": 9
       },
       "tags": [
         "academic"
@@ -613,7 +613,7 @@
       "id": "017",
       "name": "臨時遠征",
       "cost": {
-        "gold": 15
+        "gold": 11
       },
       "tags": [
         "military"
@@ -645,7 +645,7 @@
             },
             {
               "op": "expeditionRewards",
-              "count": 4
+              "count": 3
             }
           ]
         }
@@ -1233,7 +1233,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 3
+                  "amount": 2
                 }
               ]
             },
@@ -1248,7 +1248,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 2
+                  "amount": 1
                 }
               ]
             }
@@ -1312,7 +1312,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 3
+                  "amount": 2
                 }
               ]
             },
@@ -1327,7 +1327,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 2
+                  "amount": 1
                 }
               ]
             }
@@ -1390,13 +1390,13 @@
               "cond": {
                 "left": "goldProduction",
                 "op": ">=",
-                "right": 25
+                "right": 20
               },
               "then": [
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 3
+                  "amount": 2
                 }
               ]
             },
@@ -1411,7 +1411,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 2
+                  "amount": 1
                 }
               ]
             }
@@ -1475,7 +1475,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 3
+                  "amount": 2
                 }
               ]
             },
@@ -1490,7 +1490,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 2
+                  "amount": 1
                 }
               ]
             }
@@ -1554,7 +1554,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 3
+                  "amount": 2
                 }
               ]
             },
@@ -1569,7 +1569,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 2
+                  "amount": 1
                 }
               ]
             }
@@ -1638,7 +1638,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 3
+                  "amount": 2
                 }
               ]
             },
@@ -1653,7 +1653,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 2
+                  "amount": 1
                 }
               ]
             }
@@ -1722,7 +1722,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 3
+                  "amount": 2
                 }
               ]
             },
@@ -1737,7 +1737,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 2
+                  "amount": 1
                 }
               ]
             }
@@ -1811,7 +1811,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 3
+                  "amount": 2
                 }
               ]
             },
@@ -1826,7 +1826,7 @@
                 {
                   "op": "gain",
                   "res": "materials",
-                  "amount": 2
+                  "amount": 1
                 }
               ]
             }
@@ -2609,7 +2609,7 @@
               "amount": {
                 "count": "buildingsOfType:university",
                 "per": 1,
-                "times": 3
+                "times": 2
               }
             }
           ]
@@ -2678,13 +2678,34 @@
           "ability": "onPlay",
           "do": [
             {
-              "op": "raise",
-              "track": "infra",
-              "amount": {
-                "count": "buildingsOfType:university",
-                "per": 1,
-                "times": 1
-              }
+              "op": "if",
+              "cond": {
+                "left": "buildingsOfType:university",
+                "op": ">=",
+                "right": 1
+              },
+              "then": [
+                {
+                  "op": "raise",
+                  "track": "infra",
+                  "amount": 1
+                }
+              ]
+            },
+            {
+              "op": "if",
+              "cond": {
+                "left": "buildingsOfType:university",
+                "op": ">=",
+                "right": 3
+              },
+              "then": [
+                {
+                  "op": "raise",
+                  "track": "infra",
+                  "amount": 1
+                }
+              ]
             }
           ]
         }
@@ -2721,13 +2742,34 @@
           "ability": "onPlay",
           "do": [
             {
-              "op": "gain",
-              "res": "goldProduction",
-              "amount": {
-                "count": "buildingsOfType:university",
-                "per": 1,
-                "times": 3
-              }
+              "op": "if",
+              "cond": {
+                "left": "buildingsOfType:university",
+                "op": ">=",
+                "right": 1
+              },
+              "then": [
+                {
+                  "op": "gain",
+                  "res": "goldProduction",
+                  "amount": 3
+                }
+              ]
+            },
+            {
+              "op": "if",
+              "cond": {
+                "left": "buildingsOfType:university",
+                "op": ">=",
+                "right": 3
+              },
+              "then": [
+                {
+                  "op": "gain",
+                  "res": "goldProduction",
+                  "amount": 3
+                }
+              ]
             }
           ]
         }
@@ -2758,13 +2800,34 @@
           "ability": "onPlay",
           "do": [
             {
-              "op": "raise",
-              "track": "military",
-              "amount": {
-                "count": "buildingsOfType:university",
-                "per": 1,
-                "times": 1
-              }
+              "op": "if",
+              "cond": {
+                "left": "buildingsOfType:university",
+                "op": ">=",
+                "right": 1
+              },
+              "then": [
+                {
+                  "op": "raise",
+                  "track": "military",
+                  "amount": 1
+                }
+              ]
+            },
+            {
+              "op": "if",
+              "cond": {
+                "left": "buildingsOfType:university",
+                "op": ">=",
+                "right": 3
+              },
+              "then": [
+                {
+                  "op": "raise",
+                  "track": "military",
+                  "amount": 1
+                }
+              ]
             }
           ]
         }
@@ -2780,7 +2843,7 @@
       "id": "050",
       "name": "研究成果",
       "cost": {
-        "gold": 10
+        "gold": 15
       },
       "tags": [
         "academic"
@@ -2817,7 +2880,7 @@
       "id": "051",
       "name": "街並み",
       "cost": {
-        "gold": 12
+        "gold": 18
       },
       "tags": [
         "academic"
@@ -2842,7 +2905,7 @@
               "res": "points",
               "amount": {
                 "count": "buildings",
-                "per": 3,
+                "per": 4,
                 "times": 1
               }
             }
@@ -2860,7 +2923,7 @@
       "id": "052",
       "name": "近未来建築",
       "cost": {
-        "gold": 15
+        "gold": 18
       },
       "tags": [
         "academic"
@@ -2955,7 +3018,7 @@
       "id": "054",
       "name": "先行研究",
       "cost": {
-        "gold": 9
+        "gold": 11
       },
       "tags": [
         "academic"
@@ -2994,7 +3057,7 @@
       "id": "055",
       "name": "引継ぎ",
       "cost": {
-        "gold": 4
+        "gold": 6
       },
       "tags": [
         "academic"
@@ -3039,7 +3102,7 @@
       "id": "056",
       "name": "印刷術",
       "cost": {
-        "gold": 8
+        "gold": 14
       },
       "tags": [
         "academic"
@@ -3072,7 +3135,7 @@
       "id": "057",
       "name": "学会",
       "cost": {
-        "gold": 3
+        "gold": 6
       },
       "tags": [
         "academic"
@@ -3112,7 +3175,7 @@
       "id": "058",
       "name": "天然資源",
       "cost": {
-        "gold": 10
+        "gold": 12
       },
       "tags": [
         "environment"
@@ -3138,7 +3201,16 @@
               "amount": {
                 "count": "freeLandTerrains",
                 "per": 1,
-                "times": 2
+                "times": 1
+              }
+            },
+            {
+              "op": "gain",
+              "res": "materials",
+              "amount": {
+                "count": "freeLandTerrains",
+                "per": 2,
+                "times": 1
               }
             }
           ]
@@ -3181,7 +3253,16 @@
               "amount": {
                 "count": "freeLandTerrains",
                 "per": 1,
-                "times": 4
+                "times": 3
+              }
+            },
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": {
+                "count": "freeLandTerrains",
+                "per": 2,
+                "times": 2
               }
             }
           ]
@@ -3228,8 +3309,8 @@
               "res": "goldProduction",
               "amount": {
                 "count": "freeLandTerrains",
-                "per": 1,
-                "times": 2
+                "per": 2,
+                "times": 3
               }
             }
           ]
@@ -3294,7 +3375,7 @@
       "id": "062",
       "name": "丘陵",
       "cost": {
-        "gold": 10
+        "gold": 14
       },
       "tags": [
         "environment"
@@ -3333,7 +3414,7 @@
       "id": "063",
       "name": "緑地化",
       "cost": {
-        "gold": 10
+        "gold": 14
       },
       "tags": [
         "environment"
@@ -3372,7 +3453,7 @@
       "id": "064",
       "name": "地均し",
       "cost": {
-        "gold": 11
+        "gold": 15
       },
       "tags": [
         "environment"
@@ -3411,7 +3492,7 @@
       "id": "065",
       "name": "治水工事",
       "cost": {
-        "gold": 11
+        "gold": 15
       },
       "tags": [
         "environment"
@@ -3450,7 +3531,7 @@
       "id": "066",
       "name": "中規模開拓",
       "cost": {
-        "gold": 14
+        "gold": 18
       },
       "tags": [
         "environment"
@@ -3576,7 +3657,7 @@
               "res": "points",
               "amount": {
                 "count": "militaryLevel",
-                "per": 1,
+                "per": 2,
                 "times": 1
               }
             }
@@ -3620,7 +3701,7 @@
               "amount": {
                 "count": "buildingsOfType:fort",
                 "per": 1,
-                "times": 2
+                "times": 1
               }
             }
           ]
@@ -3706,13 +3787,34 @@
           "ability": "onPlay",
           "do": [
             {
-              "op": "raise",
-              "track": "military",
-              "amount": {
-                "count": "regularWorkers",
-                "per": 3,
-                "times": 1
-              }
+              "op": "if",
+              "cond": {
+                "left": "regularWorkers",
+                "op": ">=",
+                "right": 7
+              },
+              "then": [
+                {
+                  "op": "raise",
+                  "track": "military",
+                  "amount": 1
+                }
+              ]
+            },
+            {
+              "op": "if",
+              "cond": {
+                "left": "regularWorkers",
+                "op": ">=",
+                "right": 10
+              },
+              "then": [
+                {
+                  "op": "raise",
+                  "track": "military",
+                  "amount": 1
+                }
+              ]
             }
           ]
         }
@@ -3865,7 +3967,7 @@
             {
               "op": "gain",
               "res": "gold",
-              "amount": 4
+              "amount": 3
             }
           ]
         }
@@ -3904,7 +4006,7 @@
             {
               "op": "gain",
               "res": "gold",
-              "amount": 10
+              "amount": 7
             },
             {
               "op": "playCard",
@@ -4254,8 +4356,8 @@
               "res": "materials",
               "amount": {
                 "count": "buildingTypes",
-                "per": 1,
-                "times": 1
+                "per": 3,
+                "times": 2
               }
             }
           ]
@@ -4298,7 +4400,7 @@
               "amount": {
                 "count": "buildingTypes",
                 "per": 1,
-                "times": 3
+                "times": 2
               }
             }
           ]
@@ -4403,7 +4505,7 @@
       "id": "088",
       "name": "住宅街",
       "cost": {
-        "gold": 8
+        "gold": 10
       },
       "tags": [
         "life"
@@ -4473,7 +4575,7 @@
             {
               "op": "gain",
               "res": "gold",
-              "amount": 8
+              "amount": 7
             }
           ]
         }
@@ -4554,13 +4656,34 @@
           "ability": "onPlay",
           "do": [
             {
-              "op": "raise",
-              "track": "infra",
-              "amount": {
-                "count": "buildingsOfType:office",
-                "per": 1,
-                "times": 1
-              }
+              "op": "if",
+              "cond": {
+                "left": "buildingsOfType:office",
+                "op": ">=",
+                "right": 1
+              },
+              "then": [
+                {
+                  "op": "raise",
+                  "track": "infra",
+                  "amount": 1
+                }
+              ]
+            },
+            {
+              "op": "if",
+              "cond": {
+                "left": "buildingsOfType:office",
+                "op": ">=",
+                "right": 3
+              },
+              "then": [
+                {
+                  "op": "raise",
+                  "track": "infra",
+                  "amount": 1
+                }
+              ]
             }
           ]
         }
@@ -4595,7 +4718,7 @@
               "track": "infra",
               "amount": {
                 "count": "houses",
-                "per": 2,
+                "per": 4,
                 "times": 1
               }
             }
@@ -4652,7 +4775,7 @@
       "id": "094",
       "name": "ボランティア",
       "cost": {
-        "gold": 16
+        "gold": 12
       },
       "tags": [
         "life"
@@ -4677,7 +4800,7 @@
               "res": "materials",
               "amount": {
                 "count": "regularWorkers",
-                "per": 1,
+                "per": 2,
                 "times": 1
               }
             }
@@ -4739,7 +4862,7 @@
       "id": "096",
       "name": "環境保全金",
       "cost": {
-        "gold": 5
+        "gold": 6
       },
       "tags": [
         "academic"
@@ -4803,7 +4926,7 @@
       "id": "097",
       "name": "軍資金",
       "cost": {
-        "gold": 5
+        "gold": 6
       },
       "tags": [
         "academic"
@@ -4910,7 +5033,7 @@
       "id": "099",
       "name": "給付金",
       "cost": {
-        "gold": 5
+        "gold": 6
       },
       "tags": [
         "academic"
@@ -4974,7 +5097,7 @@
       "id": "100",
       "name": "大規模開拓",
       "cost": {
-        "gold": 18
+        "gold": 23
       },
       "tags": [
         "environment"
@@ -5231,7 +5354,7 @@
       "id": "106",
       "name": "温故知新",
       "cost": {
-        "gold": 7
+        "gold": 12
       },
       "tags": [
         "academic"
@@ -5274,7 +5397,7 @@
       "id": "107",
       "name": "学術評価",
       "cost": {
-        "gold": 12
+        "gold": 15
       },
       "tags": [
         "academic"
@@ -5303,8 +5426,8 @@
               "op": "gain",
               "res": "points",
               "amount": {
-                "count": "playedCivCards",
-                "per": 3,
+                "count": "tagsOf:academic",
+                "per": 4,
                 "times": 1
               }
             }
@@ -5370,7 +5493,7 @@
       "id": "109",
       "name": "兵法",
       "cost": {
-        "gold": 6
+        "gold": 11
       },
       "tags": [
         "military"
@@ -5409,7 +5532,7 @@
       "id": "110",
       "name": "関税",
       "cost": {
-        "gold": 10
+        "gold": 5
       },
       "tags": [
         "economy"
@@ -5437,7 +5560,7 @@
             {
               "op": "gain",
               "res": "gold",
-              "amount": 2
+              "amount": 5
             }
           ]
         }
@@ -5453,7 +5576,7 @@
       "id": "111",
       "name": "建設業",
       "cost": {
-        "gold": 9
+        "gold": 13
       },
       "tags": [
         "economy"
@@ -5561,7 +5684,7 @@
       "id": "113",
       "name": "公務",
       "cost": {
-        "gold": 10
+        "gold": 12
       },
       "tags": [
         "life"
@@ -5604,7 +5727,7 @@
       "id": "114",
       "name": "開拓小屋",
       "cost": {
-        "gold": 12
+        "gold": 9
       },
       "tags": [
         "life"
@@ -5719,7 +5842,7 @@
       "id": "116",
       "name": "繁栄",
       "cost": {
-        "gold": 10
+        "gold": 12
       },
       "tags": [
         "life"
@@ -5763,7 +5886,7 @@
                   "res": "points",
                   "amount": {
                     "count": "houses",
-                    "per": 1,
+                    "per": 2,
                     "times": 1
                   }
                 }
@@ -5783,7 +5906,7 @@
       "id": "117",
       "name": "移動住宅",
       "cost": {
-        "gold": 6
+        "gold": 12
       },
       "tags": [
         "life"

@@ -320,7 +320,7 @@
             {
               "op": "gain",
               "res": "materials",
-              "amount": 3
+              "amount": 2
             }
           ]
         },
@@ -362,11 +362,6 @@
             {
               "op": "gain",
               "res": "materialProduction",
-              "amount": 1
-            },
-            {
-              "op": "gain",
-              "res": "materials",
               "amount": 1
             }
           ],
@@ -847,7 +842,7 @@
               "amount": {
                 "count": "spiritAdjacency",
                 "per": 1,
-                "times": 2
+                "times": 1
               },
               "axis": "other"
             }
