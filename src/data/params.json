@@ -319,28 +319,28 @@
     "export": {
       "normal": {
         "payMaterials": 1,
-        "gainGold": 5,
+        "gainGold": 4,
         "maxTimes": 3,
-        "bonusGold": 4
+        "bonusGold": 0
       },
       "upper": {
         "payMaterials": 1,
         "gainGold": 5,
-        "maxTimes": 5,
-        "bonusGold": 8
+        "maxTimes": 4,
+        "bonusGold": 3
       },
       "top": {
         "payMaterials": 1,
-        "gainGold": 5,
-        "maxTimes": 7,
-        "bonusGold": 12
+        "gainGold": 6,
+        "maxTimes": 5,
+        "bonusGold": 6
       }
     },
     "drill": {
       "normal": {
         "choices": [
           {
-            "payGold": 4,
+            "payGold": 3,
             "gainTokens": 3
           }
         ],
@@ -349,7 +349,7 @@
       "upper": {
         "choices": [
           {
-            "payGold": 8,
+            "payGold": 6,
             "gainTokens": 6
           }
         ],
@@ -363,11 +363,11 @@
           },
           {
             "payGold": 4,
-            "gainTokens": 6
+            "gainTokens": 5
           },
           {
             "payGold": 6,
-            "gainTokens": 9
+            "gainTokens": 7
           }
         ],
         "maxRaises": 3
@@ -562,7 +562,7 @@
           {
             "kind": "freeBuildOnTerrain",
             "terrain": "mountain",
-            "amount": 2
+            "amount": 1
           }
         ]
       }
