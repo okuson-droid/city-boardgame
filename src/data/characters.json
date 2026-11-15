@@ -228,9 +228,10 @@
             {
               "op": "gain",
               "res": "goldProduction",
-              "amount": 2
+              "amount": 3
             }
-          ]
+          ],
+          "every": 2
         }
       ]
     },
