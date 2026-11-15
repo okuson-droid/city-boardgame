@@ -16,6 +16,7 @@ import { Icon, IconRow } from './Icon.tsx';
 import { colorOf, WAITING_REASON, type UiModel } from './model.ts';
 import { TrackBar, trackChanges, type Speed } from './Motion.tsx';
 import { Tip } from './Tip.tsx';
+import { ProspectBadge } from './PlannedProspect.tsx';
 import type { CellId } from '../game/board.ts';
 
 const entry = (section: keyof typeof ICON_KEYS, key: string): { icon: string; label: string } =>
@@ -371,12 +372,17 @@ export const HandArea = ({
   isOwner,
   model,
   onChoose,
+  preview = null,
+  onPreview,
 }: {
   state: GameState;
   player: PlayerState;
   isOwner: boolean;
   model: UiModel;
   onChoose: Choose;
+  /** 盤面に置き場所を示している計画都市（ユーザー決定 2026-11-15）。 */
+  preview?: string | null;
+  onPreview?: (id: string) => void;
 }) => {
   const owned = abilitiesOf(GAME_DATA, player);
   const abilityOptions = (source: string) =>
@@ -412,6 +418,9 @@ export const HandArea = ({
                     </span>
                   ))}
                 </span>
+                {onPreview !== undefined ? (
+                  <ProspectBadge player={player} id={id} claimed={claims.includes(player.index)} active={preview === id} onPreview={onPreview} />
+                ) : null}
               </CardFrame>
             );
           })}

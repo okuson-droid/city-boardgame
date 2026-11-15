@@ -4,8 +4,8 @@ import { CELLS, type CellId } from '../game/board.ts';
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
 import type { Grant, Terrain } from '../data/types.ts';
 import type { PlayerState } from '../game/types.ts';
-import { describeBuilding, grantText } from '../game/queries.ts';
-import { ICON_ART } from './icon-art.ts';
+import { describeBuilding, grantText, type ProspectPlacement } from '../game/queries.ts';
+import { ANY_BUILDING_ART, ICON_ART } from './icon-art.ts';
 import { artOf } from './Icon.tsx';
 
 const R = 26;
@@ -59,6 +59,7 @@ export const Board = ({
   fresh = new Set(),
   explainCell,
   onCell,
+  overlay = null,
 }: {
   player: PlayerState;
   cellState: (cell: CellId) => CellState;
@@ -68,6 +69,8 @@ export const Board = ({
   fresh?: ReadonlySet<CellId>;
   explainCell: (cell: CellId) => string | null;
   onCell: (cell: CellId) => void;
+  /** 盤面に重ねる計画都市の配置（ユーザー決定 2026-11-15）。 */
+  overlay?: ProspectPlacement | null;
 }) => {
   const board = GAME_DATA.boards.find((b) => b.id === player.boardId);
   if (board === undefined) return <div className="board-empty">個人ボード未選択</div>;
@@ -164,10 +167,56 @@ export const Board = ({
               </g>
           );
         })}
+        {overlay !== null ? <PlannedOverlay placement={overlay} /> : null}
       </svg>
     </div>
   );
 };
+
+/**
+ * 計画都市の配置の印（ユーザー決定 2026-11-15）。形のマスを金の太い縁で囲み、済みのマスに緑の✓、
+ * 土地が要るマスに点線の六角形（要る種類の色）、建てる建物を薄いアイコンで描く。クリックは下のマスへ通す。
+ */
+const PlannedOverlay = ({ placement }: { placement: ProspectPlacement }) => (
+  <g className="pc-overlay" pointerEvents="none">
+    {placement.slots.map((slot) => {
+      const cell = CELLS.find((c) => c.id === slot.cell);
+      if (cell === undefined) return null;
+      const { cx, cy } = center(cell.x, cell.rowIndex);
+      const art = slot.building !== null ? (ICON_ART[`bld.${slot.building}`] ?? '') : ANY_BUILDING_ART;
+      return (
+        <g key={slot.cell} className={`pc-slot pc-slot-${slot.status}`}>
+          <polygon points={hexPoints(cx, cy, R - 2.5)} fill="none" stroke="#d4a017" strokeWidth={3.2} />
+          {slot.status === 'needLand' ? (
+            <polygon
+              points={hexPoints(cx, cy, R * 0.72)}
+              fill={slot.terrain !== null ? TERRAIN_COLORS[slot.terrain] : '#fff'}
+              fillOpacity={0.55}
+              stroke="#333"
+              strokeWidth={1.2}
+              strokeDasharray="3 2"
+            />
+          ) : null}
+          {slot.status === 'done' ? (
+            <g>
+              <circle cx={cx + R * 0.55} cy={cy - R * 0.5} r={7} fill="#2e8b4e" stroke="#fff" strokeWidth={1.2} />
+              <text x={cx + R * 0.55} y={cy - R * 0.5 + 3.5} className="pc-check">
+                ✓
+              </text>
+            </g>
+          ) : (
+            <svg x={cx - 10} y={cy - 10} width={20} height={20} viewBox="0 0 24 24" opacity={0.6} dangerouslySetInnerHTML={{ __html: art }} />
+          )}
+          {slot.mismatch ? (
+            <text x={cx - R * 0.55} y={cy - R * 0.3} className="pc-mismatch">
+              !
+            </text>
+          ) : null}
+        </g>
+      );
+    })}
+  </g>
+);
 
 /**
  * 個人ボードの地図だけを描く（ドラフトで選ぶ前に見せる）。マスの地形・マスボーナス・最初に土地タイルを置くマスを出す。

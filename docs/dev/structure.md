@@ -26,6 +26,7 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
 | `src/game/effects.ts` | 効果スクリプトの実行（`runCommands`）、指標、常時効果の反応 |
 | `src/game/effect-tasks.ts` | 効果由来の選択タスク、能力のフリーアクション・専用スペース、計画都市の達成宣言 |
 | `src/game/planned.ts` | 計画都市の形状の判定と自然公園の得点（最大の割り当て） |
+| `src/game/prospect.ts` | 計画都市の達成の見込み（全マス×6回転の配置ごとに、足りない土地・建物・つなぐ土地を数える。ユーザー決定 2026-11-15） |
 | `src/game/icons.ts` | `iconSequence`（アイコンと数字の並び）・`describeScript`（補足の文章） |
 | `src/game/index.ts` | `src/game/` の公開窓口 |
 | `src/data/script.ts` | 効果スクリプト（能力と命令）の型と検査 |
@@ -35,7 +36,7 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
 | `src/game/explain.ts` | `explain`・`explainUndo`：選べない理由 |
 | `src/game/deltas.ts` | 増減の出来事（`delta`）。選択1つの処理（cause＝move）と自動の処理（cause＝タスクの種類）ごとに記録する |
 | `src/game/queries.ts` | 画面のための派生値（場面の見出し、アクションスペースのアイコン、コストの見込み、ワーカーの内訳など） |
-| `src/ui/` | ローカル版の画面（React）。`Game.tsx`（全体）・`ActionBoard.tsx`・`Board.tsx`（SVG の個人ボード）・`Areas.tsx`（共有の場・手持ち・履歴・ドラフト・終了時の得点）・`PromptBar.tsx`・`Cards.tsx`・`Icon.tsx`（仮のアイコン素材）・`Tip.tsx`（補足表示と HoverTip）・`Legend.tsx`（アイコンの一覧）・`model.ts`（選択肢の振り分け） |
+| `src/ui/` | ローカル版の画面（React）。`Game.tsx`（全体）・`ActionBoard.tsx`・`Board.tsx`（SVG の個人ボード）・`Areas.tsx`（共有の場・手持ち・履歴・ドラフト・終了時の得点）・`PromptBar.tsx`・`Cards.tsx`・`Icon.tsx`（仮のアイコン素材）・`Tip.tsx`（補足表示と HoverTip）・`Legend.tsx`（アイコンの一覧）・`PlannedProspect.tsx`（計画都市の見込みの札と盤面の上の帯）・`CharacterEffects.tsx`（キャラクターの効果の文言）・`model.ts`（選択肢の振り分け） |
 | `e2e/accept.ts` | 受け入れ検査（Playwright の自動対戦） |
 | `src/tutorial/tutorial.ts` | チュートリアルの台本（手順の列）と進め方、自動の打ち手。画面に依存しない |
 | `src/ui/Tutorial.tsx` | チュートリアルの画面（ゲーム画面に案内の札を重ね、選ぶ所作を光らせる） |

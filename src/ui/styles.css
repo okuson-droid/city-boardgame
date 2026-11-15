@@ -805,6 +805,79 @@ h3 {
   font-size: 0.8em;
 }
 
+/* 計画都市の達成の見込み（ユーザー決定 2026-11-15）。カードの札と、盤面の上の帯・重ねる印。 */
+.pc-prospect {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 2px 4px;
+  border: 1px solid #b9a77a;
+  border-radius: 4px;
+  background: #fbf6e6;
+  color: #3d3424;
+  font-size: 0.78em;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.pc-prospect.active {
+  background: #d4a017;
+  border-color: #8a6a0c;
+  color: #fff;
+}
+
+.pc-prospect-achieved {
+  border-color: #2e8b4e;
+  color: #1f6b3a;
+  font-weight: 700;
+}
+
+.pc-prospect-claimed {
+  color: #6e6658;
+}
+
+.pc-prospect-blocked {
+  background: #eee;
+  color: #888;
+  cursor: default;
+}
+
+.pc-preview-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  border: 1px solid #d4a017;
+  border-radius: 6px;
+  background: #fff8e1;
+  color: #2a2418;
+  font-size: 0.85em;
+}
+
+.pc-preview-title {
+  font-weight: 700;
+}
+
+.pc-preview-bar button {
+  padding: 1px 8px;
+}
+
+.pc-check {
+  font-size: 10px;
+  font-weight: 700;
+  fill: #fff;
+  text-anchor: middle;
+}
+
+.pc-mismatch {
+  font-size: 12px;
+  font-weight: 700;
+  fill: #b5423b;
+  text-anchor: middle;
+}
+
 .panel-box {
   border: 1px solid var(--line);
   border-radius: 6px;
