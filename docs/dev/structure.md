@@ -36,7 +36,7 @@ CLAUDE.md から分けた開発の手引きの一部である（2026-11-11、指
 | `src/game/explain.ts` | `explain`・`explainUndo`：選べない理由 |
 | `src/game/deltas.ts` | 増減の出来事（`delta`）。選択1つの処理（cause＝move）と自動の処理（cause＝タスクの種類）ごとに記録する |
 | `src/game/queries.ts` | 画面のための派生値（場面の見出し、アクションスペースのアイコン、コストの見込み、ワーカーの内訳など） |
-| `src/ui/` | ローカル版の画面（React）。`Game.tsx`（全体）・`ActionBoard.tsx`・`Board.tsx`（SVG の個人ボード）・`Areas.tsx`（共有の場・手持ち・履歴・ドラフト・終了時の得点）・`PromptBar.tsx`・`Cards.tsx`・`Icon.tsx`（仮のアイコン素材）・`Tip.tsx`（補足表示と HoverTip）・`Legend.tsx`（アイコンの一覧）・`PlannedProspect.tsx`（計画都市・自然公園の見込みの札と盤面の上の帯）・`CharacterEffects.tsx`（キャラクターの効果の文言）・`model.ts`（選択肢の振り分け） |
+| `src/ui/` | ローカル版の画面（React）。`Game.tsx`（全体）・`ActionBoard.tsx`・`Board.tsx`（SVG の個人ボード）・`Areas.tsx`（共有の場・手持ち・履歴・ドラフト・終了時の得点）・`PromptBar.tsx`・`Cards.tsx`・`Icon.tsx`（仮のアイコン素材）・`Tip.tsx`（補足表示と HoverTip）・`Legend.tsx`（アイコンの一覧）・`PlannedProspect.tsx`（計画都市・自然公園の見込みの札と盤面の上の帯）・`CharacterEffects.tsx`（キャラクターの効果の文言）・`CellTagBar.tsx` と `cell-tags.ts`（マスのタグ）・`model.ts`（選択肢の振り分け） |
 | `e2e/accept.ts` | 受け入れ検査（Playwright の自動対戦） |
 | `src/tutorial/tutorial.ts` | チュートリアルの台本（手順の列）と進め方、自動の打ち手。画面に依存しない |
 | `src/ui/Tutorial.tsx` | チュートリアルの画面（ゲーム画面に案内の札を重ね、選ぶ所作を光らせる） |

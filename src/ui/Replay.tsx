@@ -109,6 +109,7 @@ export const ReplayViewer = ({
   const ctl: GameController = {
     state,
     seat: fixed,
+    tagKey: `replay:${state.seed}`,
     choose: () => {},
     undo: () => {},
     undoReason: '記録の再生中は取り消せない',

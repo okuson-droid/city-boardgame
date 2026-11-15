@@ -880,6 +880,55 @@ h3 {
   font-weight: 700;
 }
 
+/* マスのタグ（ユーザー決定 2026-11-15）。 */
+.tag-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  padding: 4px 8px;
+  border: 1px solid #b9a77a;
+  border-radius: 6px;
+  background: #fbf6e6;
+  color: #2a2418;
+  font-size: 0.82em;
+}
+
+.tag-bar.closed {
+  padding: 0;
+  border: none;
+  background: none;
+  justify-content: flex-end;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 8px;
+  border: 1.5px solid var(--tag-color, #888);
+  border-radius: 999px;
+  background: #fff;
+  color: #2a2418;
+  cursor: pointer;
+}
+
+.tag-chip.active {
+  background: var(--tag-color, #888);
+  color: #fff;
+}
+
+.tag-chip.erase {
+  --tag-color: #b5423b;
+}
+
+.cell-tag-more {
+  font-size: 8px;
+  font-weight: 700;
+  fill: #333;
+  text-anchor: middle;
+}
+
 .pc-preview-bar {
   display: flex;
   flex-wrap: wrap;

@@ -170,11 +170,14 @@ export const ProspectBar = ({
   preview,
   onNext,
   onClose,
+  onTag,
 }: {
   player: PlayerState;
   preview: ProspectPreview;
   onNext: () => void;
   onClose: () => void;
+  /** 示している配置をマスのタグに写す（ユーザー決定 2026-11-15）。 */
+  onTag?: (placement: ProspectPlacement) => void;
 }) => {
   const t = previewTarget(player, preview);
   if (t === null) return null;
@@ -204,6 +207,11 @@ export const ProspectBar = ({
       {n > 1 ? (
         <button type="button" data-ui="pc-preview-next" onClick={onNext}>
           次の候補
+        </button>
+      ) : null}
+      {onTag !== undefined && placement !== undefined ? (
+        <button type="button" data-ui="pc-preview-tag" onClick={() => onTag(placement)}>
+          タグに写す
         </button>
       ) : null}
       <button type="button" data-ui="pc-preview-close" onClick={onClose}>

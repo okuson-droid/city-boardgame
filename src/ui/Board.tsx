@@ -7,6 +7,7 @@ import type { PlayerState } from '../game/types.ts';
 import { describeBuilding, grantText, type ProspectPlacement } from '../game/queries.ts';
 import { ANY_BUILDING_ART, ICON_ART } from './icon-art.ts';
 import { artOf } from './Icon.tsx';
+import { cellTagArt, cellTagColor, cellTagLabel, type CellTag } from './cell-tags.ts';
 
 const R = 26;
 const W = Math.sqrt(3) * R;
@@ -60,6 +61,7 @@ export const Board = ({
   explainCell,
   onCell,
   overlay = null,
+  tags = {},
 }: {
   player: PlayerState;
   cellState: (cell: CellId) => CellState;
@@ -71,6 +73,8 @@ export const Board = ({
   onCell: (cell: CellId) => void;
   /** 盤面に重ねる計画都市の配置（ユーザー決定 2026-11-15）。 */
   overlay?: ProspectPlacement | null;
+  /** マスのタグ（自分用の印、ユーザー決定 2026-11-15）。 */
+  tags?: Readonly<Partial<Record<CellId, readonly CellTag[]>>>;
 }) => {
   const board = GAME_DATA.boards.find((b) => b.id === player.boardId);
   if (board === undefined) return <div className="board-empty">個人ボード未選択</div>;
@@ -97,7 +101,9 @@ export const Board = ({
             }`,
             ...(building !== undefined ? [describeBuilding(building)] : []),
             ...(reason !== null ? [reason] : []),
+            ...((tags[cell.id] ?? []).length > 0 ? [`タグ：${(tags[cell.id] ?? []).map(cellTagLabel).join('・')}`] : []),
           ].join('\n');
+          const cellTags = tags[cell.id] ?? [];
           return (
             <g
                 key={cell.id}
@@ -143,6 +149,36 @@ export const Board = ({
                       viewBox="0 0 24 24"
                       dangerouslySetInnerHTML={{ __html: ICON_ART[`bld.${building}`] ?? '' }}
                     />
+                  </g>
+                ) : null}
+                {cellTags.length > 0 ? (
+                  // タグ：内側に最初のタグの色の点線、左右に2つまでの図案（3つ目からは「+」）。
+                  <g className="cell-tags" pointerEvents="none">
+                    <polygon
+                      points={hexPoints(cx, cy, R - 5)}
+                      fill="none"
+                      stroke={cellTagColor(cellTags[0] as CellTag)}
+                      strokeWidth={2}
+                      strokeDasharray="4 2"
+                    />
+                    {cellTags.slice(0, 2).map((tag, i) => (
+                      <g key={tag}>
+                        <circle cx={cx + (i === 0 ? -R * 0.62 : R * 0.62)} cy={cy} r={6.5} fill="#fff" stroke={cellTagColor(tag)} strokeWidth={1.4} />
+                        <svg
+                          x={cx + (i === 0 ? -R * 0.62 : R * 0.62) - 5}
+                          y={cy - 5}
+                          width={10}
+                          height={10}
+                          viewBox="0 0 24 24"
+                          dangerouslySetInnerHTML={{ __html: cellTagArt(tag) }}
+                        />
+                      </g>
+                    ))}
+                    {cellTags.length > 2 ? (
+                      <text x={cx + R * 0.62} y={cy + R * 0.45} className="cell-tag-more">
+                        +{cellTags.length - 2}
+                      </text>
+                    ) : null}
                   </g>
                 ) : null}
                 {chips.has(cell.id) ? (
