@@ -13,6 +13,7 @@ import { explain } from '../game/explain.ts';
 import type { GameState, PlayerState } from '../game/types.ts';
 import { HandArea } from './Areas.tsx';
 import { BoardMap } from './Board.tsx';
+import { CharacterEffects } from './CharacterEffects.tsx';
 import { BonusTileView, ScriptView } from './Cards.tsx';
 import { IconRow } from './Icon.tsx';
 import { colorOf, WAITING_REASON, type UiModel } from './model.ts';
@@ -233,29 +234,7 @@ export const DraftScreen = ({
                     型：{c.label}／評価軸：{c.axis}
                   </p>
                   <ScriptView script={c.script} />
-                  <ul className="draft-effects">
-                    {c.effects.map((e, i) => (
-                      <li key={i}>
-                        {e.text}
-                        {e.items && e.items.length > 0 ? (
-                          <ul>
-                            {e.items.map((item, j) => (
-                              <li key={j}>{item}</li>
-                            ))}
-                          </ul>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                  {c.changes && c.changes.length > 0 ? (
-                    <ul className="char-changes">
-                      {c.changes.map((text, i) => (
-                        <li key={i}>
-                          <b>変更</b>：{text}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
+                  <CharacterEffects character={c} className="draft-effects" original={false} />
                 </Candidate>
               ) : null;
             })

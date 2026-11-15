@@ -344,7 +344,7 @@ export type CivilizationCard = ProvisionalMark & {
   readonly effectCondition: string | null;
   /** 固有得点（rules.md 17-3-1）。 */
   readonly points: number;
-  /** 原本の効果の文言。 */
+  /** 効果の文言。スクリプトの効果に合わせる（調整で効果を変えたら文言も直す。2026-11-15）。 */
   readonly text: string;
   readonly clarifications: readonly Clarification[];
   /** 効果スクリプト（docs/effect-commands.md）。 */
@@ -425,6 +425,11 @@ export type Character = ProvisionalMark & {
   readonly axis: string;
   readonly initial_bonus: readonly string[];
   readonly effects: readonly CharacterEffect[];
+  /**
+   * いまの効果の文言（スクリプトに合わせたもの。2026-11-15）。原本から変えたキャラクターだけが持ち、画面はこれを出して原本の文言を添える。
+   * 準備時の効果（初期ボーナス）も含める。
+   */
+  readonly revisedEffects?: readonly CharacterEffect[];
   readonly open_issues: readonly string[];
   readonly clarifications?: readonly string[];
   /** ユーザー決定で原本の効果から変えた点（原本の文言は effects のまま残し、画面ではこれを添える）。 */

@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { GAME_DATA } from '../data/index.ts';
 import { BoardMap } from './Board.tsx';
+import { CharacterEffects } from './CharacterEffects.tsx';
 import { BonusTileView, CivCardView, NatureParkView, PlannedCityView, ScriptView } from './Cards.tsx';
 import { bonusTotals } from './DraftScreen.tsx';
 import { describeRaidOutcomes, specialCitizenName } from '../game/queries.ts';
@@ -218,7 +219,7 @@ const CardList = ({ kind, q }: { kind: CardKind; q: string }) => {
 const CharacterList = ({ q }: { q: string }) => (
   <>
     {GAME_DATA.characters
-      .filter((c) => includes(q, c.name, c.label, c.axis, ...c.effects.map((e) => e.text)))
+      .filter((c) => includes(q, c.name, c.label, c.axis, ...(c.revisedEffects ?? c.effects).map((e) => e.text)))
       .map((c) => (
         <Item
           key={c.id}
@@ -236,30 +237,8 @@ const CharacterList = ({ q }: { q: string }) => (
           <p className="muted small">
             型：{c.label}／評価軸：{c.axis}
           </p>
-          {c.initial_bonus.length > 0 ? <p>初期ボーナス：{c.initial_bonus.join('・')}</p> : null}
-          <ul className="catalog-effects">
-            {c.effects.map((e, i) => (
-              <li key={i}>
-                {e.text}
-                {e.items && e.items.length > 0 ? (
-                  <ul>
-                    {e.items.map((item, j) => (
-                      <li key={j}>{item}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-          {c.changes && c.changes.length > 0 ? (
-            <ul className="char-changes">
-              {c.changes.map((text, i) => (
-                <li key={i}>
-                  <b>変更</b>：{text}
-                </li>
-              ))}
-            </ul>
-          ) : null}
+          {c.revisedEffects === undefined && c.initial_bonus.length > 0 ? <p>初期ボーナス：{c.initial_bonus.join('・')}</p> : null}
+          <CharacterEffects character={c} className="catalog-effects" original />
         </Item>
       ))}
   </>
