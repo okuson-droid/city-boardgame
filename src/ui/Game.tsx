@@ -50,6 +50,10 @@ export type GameController = {
   readonly saveReplay?: () => void;
   /** 記録の再生中：選択肢を出さず、取り消しと手番の音を使わない。 */
   readonly readOnly?: boolean;
+  /** 観戦：どの席の手札も描かない（公開情報だけ、ユーザー決定 2026-11-13）。 */
+  readonly hideHands?: boolean;
+  /** 終局の窓の「戻る」の文言（観戦・記録の再生）。 */
+  readonly leaveLabel?: string;
   /** 取り消せない選択の前に確かめるか（ローカル版・オンライン版。チュートリアルは案内に従うため使わない）。 */
   readonly confirmIrreversible?: boolean;
   /** 記録の再生中：どのタブでも手札の内容を見せる（終わった対局の記録のため、19-6-1 の対象外）。 */
@@ -102,7 +106,7 @@ export const Game = ({
   const owner = model.owner;
   const [view, setView] = useState<number>(ctl.seat ?? owner ?? decider(state) ?? 0);
   /** 手札を見せてよい席。ローカル版は選択待ちのプレイヤー、オンライン版は自分の席、記録の再生は表示中のタブ。 */
-  const handOwner = ctl.revealAll === true ? view : (ctl.seat ?? owner);
+  const handOwner = ctl.revealAll === true ? view : ctl.hideHands === true ? null : (ctl.seat ?? owner);
   // 席が替わったら（記録の再生でプレイヤーを固定し直したとき）、その席のタブにする。オンライン版の席は替わらない。
   useEffect(() => {
     if (ctl.seat !== null) setView(ctl.seat);
@@ -410,7 +414,7 @@ export const Game = ({
       />
 
       {summary !== null && !isGameOver(state) ? <RoundSummary state={state} round={summary} onClose={() => setSummary(null)} /> : null}
-      {isGameOver(state) ? <FinalScores state={state} onRestart={onRestart} {...(ctl.saveReplay !== undefined ? { onSaveReplay: ctl.saveReplay } : {})} {...(ctl.readOnly === true ? { restartLabel: '再生を閉じる' } : {})} /> : null}
+      {isGameOver(state) ? <FinalScores state={state} onRestart={onRestart} {...(ctl.saveReplay !== undefined ? { onSaveReplay: ctl.saveReplay } : {})} {...(ctl.leaveLabel !== undefined ? { restartLabel: ctl.leaveLabel } : ctl.readOnly === true ? { restartLabel: '再生を閉じる' } : {})} /> : null}
       <div className="rotate">横向きにしてください</div>
     </div>
   );

@@ -9,7 +9,17 @@ import type { ReplayRecord } from '../game/replay.ts';
 import type { RoomSummary } from './rooms.ts';
 import { openBroadcast } from './supabase-realtime.ts';
 
-export type Session = { readonly code: string; readonly seat: number; readonly key: string; readonly name: string };
+export type Session = {
+  readonly code: string;
+  readonly seat: number;
+  readonly key: string;
+  readonly name: string;
+  /** 観戦（席に座らず、公開情報だけを見る。ユーザー決定 2026-11-13）。seat は -1、key は空。 */
+  readonly spectator?: boolean;
+};
+
+/** 観戦の Session を作る。 */
+export const spectatorSession = (code: string): Session => ({ code: code.trim().toUpperCase(), seat: -1, key: '', name: '観戦', spectator: true });
 
 export type RoomMessage = { readonly summary: RoomSummary; readonly seat: number; readonly state: GameState | null };
 
@@ -94,7 +104,8 @@ export const serverTransport: Transport = {
   replay: (session) => post<ReplayRecord>(`/api/rooms/${session.code}/replay`, { key: session.key }),
   // EventSource は切れても自動で繋ぎ直す。
   subscribe: (session, onMessage, onStatus) => {
-    const source = new EventSource(`/api/rooms/${session.code}/stream?key=${encodeURIComponent(session.key)}`);
+    const query = session.spectator === true ? 'spectate=1' : `key=${encodeURIComponent(session.key)}`;
+    const source = new EventSource(`/api/rooms/${session.code}/stream?${query}`);
     source.onopen = () => onStatus(true);
     source.onerror = () => onStatus(false);
     source.onmessage = (event: MessageEvent<string>) => onMessage(JSON.parse(event.data) as RoomMessage);
@@ -160,7 +171,9 @@ export const supabaseTransport = (config: SupabaseClientConfig): Transport => {
         }
         inflight = true;
         try {
-          const view = await call<RoomMessage & { version: number }>({ action: 'view', code: session.code, key: session.key });
+          const view = await call<RoomMessage & { version: number }>(
+            session.spectator === true ? { action: 'spectate', code: session.code } : { action: 'view', code: session.code, key: session.key },
+          );
           if (!stopped) {
             onStatus(true);
             if (view.version !== version) {
