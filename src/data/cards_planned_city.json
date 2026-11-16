@@ -328,7 +328,7 @@
     {
       "id": "PC09",
       "name": "計画都市『最高学府』",
-      "shape": "賽の目5軒",
+      "shape": "釣り針5軒",
       "slots": [
         {
           "q": 0,
@@ -338,27 +338,27 @@
         },
         {
           "q": 0,
-          "r": 1,
-          "terrain": "plains",
-          "building": "university"
-        },
-        {
-          "q": 0,
           "r": 2,
-          "terrain": null,
-          "building": "office"
+          "terrain": "forest",
+          "building": null
         },
         {
           "q": 1,
           "r": 1,
-          "terrain": "forest",
-          "building": null
+          "terrain": null,
+          "building": "office"
         },
         {
           "q": -1,
           "r": 1,
           "terrain": null,
           "building": "house"
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "terrain": "plains",
+          "building": "university"
         }
       ],
       "benefits": [
@@ -420,7 +420,7 @@
     {
       "id": "PC11",
       "name": "計画都市『火薬庫』",
-      "shape": "釣り針5軒",
+      "shape": "賽の目5軒",
       "slots": [
         {
           "q": 0,
@@ -432,23 +432,23 @@
           "q": 0,
           "r": 1,
           "terrain": null,
-          "building": "house"
+          "building": "workshop"
         },
         {
           "q": 2,
           "r": 0,
-          "terrain": "mountain",
-          "building": "workshop"
+          "terrain": null,
+          "building": "house"
         },
         {
           "q": 2,
           "r": -1,
-          "terrain": null,
+          "terrain": "mountain",
           "building": "workshop"
         },
         {
           "q": 1,
-          "r": 1,
+          "r": 0,
           "terrain": "mountain",
           "building": "fort"
         }
