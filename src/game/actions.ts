@@ -564,13 +564,13 @@ export const applyExpedition = (state: GameState, d: GameData, task: TaskOf<'exp
   const commands: Command[] = [];
   for (const index of task.picks) {
     const entry = table[index];
-    // 遠征の得点は軍事・防衛に含める（17-6-2）。文明カード（017）で得た報酬の得点は文化・学術に含める（ユーザー決定 2026-11-16）。
-    for (const grant of entry?.grants ?? []) effects.push({ k: 'grant', grant, axis: task.mode === 'card' ? 'culture' : 'military', source: 'expedition' });
+    // 遠征の得点は軍事・防衛に含める（17-6-2）。効果で得た報酬は出どころを渡し、文明カード（017）なら文化・学術に数える（scoreAxisOf）。
+    for (const grant of entry?.grants ?? []) effects.push({ k: 'grant', grant, axis: 'military', source: task.source ?? 'expedition' });
     if (entry?.command) commands.push(entry.command);
   }
   const choices: ChoiceEffect[] = [];
   processEffects(state, d, player, effects, choices);
-  runCommands(state, d, player, commands, 'expedition', task.mode === 'card' ? 'culture' : 'military', choices);
+  runCommands(state, d, player, commands, task.source ?? 'expedition', 'military', choices);
   scheduleChoices(state, player.index, choices);
 };
 

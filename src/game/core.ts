@@ -271,7 +271,7 @@ const commandTask = (player: number, command: Command, source: string): Task => 
     case 'playCard':
       return { t: 'playCard', player, remaining: command.count, free: command.free, upTo: command.upTo === true };
     case 'expeditionRewards':
-      return { t: 'expeditionPick', player, tier: 'normal', picks: [], mode: 'card', count: command.count };
+      return { t: 'expeditionPick', player, tier: 'normal', picks: [], mode: 'card', count: command.count, source };
     case 'chooseOne':
       return { t: 'chooseOne', player, options: command.options, source };
     case 'copyAction':
@@ -350,7 +350,8 @@ const trackRewards = (
       claimed.push(reward.level);
       emit(state, d, { type: 'levelReward', player: player.index, track, level: reward.level });
       for (const grant of reward.grants) {
-        queue.push({ k: 'grant', grant, axis: track === 'military' ? 'military' : 'other', source: `${track}:${reward.level}` });
+        // 到達報酬の得点は、そのトラックの評価軸に含める（インフラは生活・福祉、ユーザー決定 2026-11-16。以前は「その他」）。
+        queue.push({ k: 'grant', grant, axis: track === 'military' ? 'military' : 'welfare', source: `${track}:${reward.level}` });
       }
     }
   }

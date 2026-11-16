@@ -163,4 +163,35 @@ describe('得点の評価軸（ユーザー決定 2026-11-16）', () => {
     s = play(s, 'card:068');
     expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ axis: 'culture', source: 'civ:068' });
   });
+
+  it('インフラの到達報酬の点は生活・福祉に数える', () => {
+    // rules.md v0.8 8-1、17-0-3 からの変更（ユーザー決定 2026-11-16。以前は「その他」）
+    const di: GameData = {
+      ...d,
+      params: { ...d.params, infra: { ...d.params.infra, rewards: [{ level: 1, grants: [{ kind: 'points', amount: 1 }] }, ...d.params.infra.rewards.filter((r) => r.level > 1)] } },
+    };
+    let s = edit(start(), (_, q) => {
+      q.materials = 10;
+      q.infraLevel = 0;
+      q.infraRewardsClaimed = [];
+    });
+    s = applyMove(s, 'act:welfare:normal', di);
+    expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ axis: 'welfare', points: 1, source: 'infra:1' });
+  });
+
+  it('文明カード017で得た遠征の報酬の点は文化・学術に数える', () => {
+    // rules.md v0.8 17-6-2 からの変更（ユーザー決定 2026-11-16）
+    let s = edit(start(), (_, q) => {
+      q.hand = ['017'];
+      q.gold = 30;
+      q.militaryLevel = 0;
+    });
+    s = play(s, 'act:spread:normal');
+    if (top(s).t === 'payWorkers') s = play(s, 'temp:0');
+    s = play(s, 'card:017');
+    expect(top(s)).toMatchObject({ t: 'expeditionPick', mode: 'card', source: 'civ:017' });
+    s = play(s, 'reward:3');
+    while (top(s).t === 'expeditionPick') s = play(s, ids(s).includes('done') ? 'done' : (ids(s)[0] ?? ''));
+    expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ axis: 'culture', points: 1, source: 'civ:017' });
+  });
 });

@@ -767,6 +767,8 @@ describe('計画都市（第13章、19-1-6、19-4-7）', () => {
     expect(me(s).gold).toBe(3);
     expect(me(s).materials).toBe(2);
     expect(me(s).score).toBe(7 + 1);
+    // 達成の報酬の得点も宣言の点と同じ自然・環境に数える（ユーザー決定 2026-11-16）。
+    expect(scoreEvents(s, me(s).index).at(-1)).toMatchObject({ axis: 'nature', points: 1 });
   });
 
   it('宣言できるのはプレイ人数−1人まで', () => {
