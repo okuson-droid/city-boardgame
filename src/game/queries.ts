@@ -180,7 +180,11 @@ export const actionSpaceIcons = (action: Action, tier: Tier, d: GameData = GAME_
         ...(a.migration[tier].materials > 0 ? [tok('resources', 'materials', a.migration[tier].materials)] : []),
       ];
     case 'research':
-      return [tok('resources', 'drawCivCards', a.research[tier].draw), ...(a.research[tier].playCards > 0 ? [tok('commands', 'playCard', a.research[tier].playCards)] : [])];
+      return [
+        tok('resources', 'drawCivCards', a.research[tier].draw),
+        ...((a.research[tier].discard ?? 0) > 0 ? [tok('symbols', 'discard', a.research[tier].discard ?? 0)] : []),
+        ...(a.research[tier].playCards > 0 ? [tok('commands', 'playCard', a.research[tier].playCards)] : []),
+      ];
     case 'spread':
       return [tok('commands', 'playCard', a.spread[tier].maxCards), ...(a.spread[tier].goldDiscount > 0 ? [tok('resources', 'gold', -a.spread[tier].goldDiscount)] : [])];
   }
@@ -230,7 +234,7 @@ export const describeActionSpace = (action: Action, tier: Tier, d: GameData = GA
     }
     case 'research': {
       const s = a.research[tier];
-      return `文明カードを${s.draw}枚引く。${s.playCards > 0 ? `その後、文明カードを${s.playCards}枚まで通常のコストでプレイしてよい。` : ''}`;
+      return `文明カードを${s.draw}枚引く。${(s.discard ?? 0) > 0 ? `その後、手札から文明カードを${s.discard}枚捨てる。` : ''}${s.playCards > 0 ? `その後、文明カードを${s.playCards}枚まで通常のコストでプレイしてよい。` : ''}`;
     }
     case 'spread': {
       const s = a.spread[tier];

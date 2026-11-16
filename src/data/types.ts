@@ -147,6 +147,11 @@ export type Params = ProvisionalMark & {
     readonly housesPerExtraRegular: number;
     readonly regularMax: number;
     readonly tempMax: number;
+    /**
+     * 臨時ワーカーを得た瞬間から使えるか（ユーザー決定 2026-11-16）。省略・false は rules.md 3-4-4-2 のとおり、
+     * 自分の手番中に得た臨時ワーカーはその手番中は使えない。
+     */
+    readonly tempUsableOnGain?: boolean;
   };
   readonly land: {
     readonly materialsPerTile: number;
@@ -238,7 +243,8 @@ export type Params = ProvisionalMark & {
       readonly materials: number;
     }>;
     /** playCards は引いた後に通常のコストでプレイしてよい枚数（ユーザー決定 2026-11-07）。 */
-    readonly research: TierTable<{ readonly draw: number; readonly playCards: number }>;
+    /** discard：引いた後に手札から捨てる枚数（ユーザー決定 2026-11-16、省略は0）。 */
+    readonly research: TierTable<{ readonly draw: number; readonly playCards: number; readonly discard?: number }>;
     readonly spread: TierTable<{
       readonly maxCards: number;
       readonly cardsIsMax: boolean;
@@ -291,6 +297,11 @@ export type Params = ProvisionalMark & {
     /** 精霊チップを回収するラウンド（その終了時、襲撃の後）。複数あればそれぞれで回収する（ユーザー決定 2026-11-13、以前は第3ラウンドだけ）。 */
     readonly spiritChipReturnRounds: readonly number[];
   };
+  /**
+   * 特別な市民カードの場の入れ替え（ユーザー決定 2026-11-16）。ラウンドの終わり（最終ラウンドを除く、襲撃の後）に、公開から最も古い
+   * roundEndRotate 枚を山札の下に入れ、山札の上から同じ枚数を公開する。省略は入れ替えない。
+   */
+  readonly specialCitizens?: { readonly roundEndRotate: number };
   readonly scoring: {
     readonly base: {
       readonly landTilesPerPoint: number;

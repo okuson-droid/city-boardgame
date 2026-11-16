@@ -202,11 +202,14 @@ export const gainRegularWorkers = (state: GameState, d: GameData, player: Player
   }
 };
 
-/** 臨時ワーカーを獲得する。上限を超えた分は破棄する（3-4-5）。自分の手番中の獲得は手番中は使えない（3-4-4-2）。 */
+/**
+ * 臨時ワーカーを獲得する。上限を超えた分は破棄する（3-4-5）。
+ * 自分の手番中の獲得は手番中は使えない（3-4-4-2）。ただし `workers.tempUsableOnGain` なら得た瞬間から使える（ユーザー決定 2026-11-16）。
+ */
 export const gainTempWorkers = (state: GameState, d: GameData, player: PlayerState, count: number): void => {
   const room = Math.max(0, d.params.workers.tempMax - player.tempWorkers);
   const gained = Math.min(room, count);
-  const lock = currentTurnPlayer(state) === player.index;
+  const lock = d.params.workers.tempUsableOnGain !== true && currentTurnPlayer(state) === player.index;
   for (let i = 0; i < gained; i += 1) {
     player.tempWorkers += 1;
     if (lock) {

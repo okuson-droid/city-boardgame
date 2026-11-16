@@ -52,7 +52,8 @@
     "regularBase": 5,
     "housesPerExtraRegular": 2,
     "regularMax": 10,
-    "tempMax": 3
+    "tempMax": 3,
+    "tempUsableOnGain": true
   },
   "land": {
     "materialsPerTile": 2,
@@ -385,6 +386,33 @@
           ]
         },
         {
+          "level": 0,
+          "grants": [
+            {
+              "kind": "goldProduction",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "level": 0,
+          "grants": [
+            {
+              "kind": "militaryTokens",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "level": 0,
+          "grants": [
+            {
+              "kind": "points",
+              "amount": 1
+            }
+          ]
+        },
+        {
           "level": 1,
           "grants": [
             {
@@ -497,7 +525,8 @@
     "research": {
       "normal": {
         "draw": 2,
-        "playCards": 0
+        "playCards": 0,
+        "discard": 1
       },
       "upper": {
         "draw": 3,
@@ -838,5 +867,8 @@
       2,
       4
     ]
+  },
+  "specialCitizens": {
+    "roundEndRotate": 2
   }
 }

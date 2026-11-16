@@ -602,7 +602,7 @@ const applyWelfareChoice = (state: GameState, d: GameData, player: PlayerState, 
   player.materials -= choice.payMaterials;
   // 変換は福祉アクションの後に行う（5-5-4-2）。変換の可否はこの時点の臨時ワーカーで決まる。
   if (welfareConvertible(d, player)) {
-    state.stack.push({ t: 'welfareConvert', player: player.index });
+    state.stack.push({ t: 'welfareConvert', player: player.index, tempBefore: usableTemp(player) });
   }
   const effects: Effect[] = [{ k: 'infra', n: choice.infra }];
   if (spec.tempWorkers > 0) {
@@ -652,8 +652,9 @@ const startChoiceAction = (state: GameState, d: GameData, player: PlayerState, a
 export const welfareConvertOptions = (d: GameData, state: GameState, task: TaskOf<'welfareConvert'>): Option[] => {
   const player = playerOf(state, task.player);
   const options = [opt(task.player, 'convert:0', '変換しない')];
-  // 同じ福祉で得た臨時ワーカーは変換に使えない（ユーザー決定 2026-11-03、3-4-4-2）。
-  if (welfareConvertible(d, player)) {
+  // 同じ福祉で得た臨時ワーカーは変換に使えない（ユーザー決定 2026-11-03、3-4-4-2）。得た瞬間から使える場合（2026-11-16）も、
+  // 福祉の前に使えた数までに限る。
+  if (welfareConvertible(d, player) && (task.tempBefore === undefined || task.tempBefore > 0)) {
     options.push(opt(task.player, 'convert:1', `臨時ワーカー1人を資材${d.params.buildings.effects.office.welfareConvertMaterialsByCount[buildingCount(player, 'office')] ?? 0}に変換する`));
   }
   return options;
@@ -884,9 +885,14 @@ export const startAction = (
     case 'research': {
       const spec = a.research[tier];
       drawCivCards(state, d, player, spec.draw);
-      // 研究では捨てない。最上位は引いた後に通常のコストで文明カードをプレイしてよい（ユーザー決定 2026-11-07）。
+      // 最上位は引いた後に通常のコストで文明カードをプレイしてよい（ユーザー決定 2026-11-07）。
       if (spec.playCards > 0 && playableCards(d, player).length > 0) {
         state.stack.push({ t: 'playCard', player: p, remaining: spec.playCards, free: false, upTo: true });
+      }
+      // 引いた後に手札から捨てる（ユーザー決定 2026-11-16、通常は2枚引いて1枚捨てる）。手札がなければ不発。プレイより先に捨てる。
+      const discard = spec.discard ?? 0;
+      if (discard > 0 && player.hand.length > 0) {
+        state.stack.push({ t: 'discard', player: p, remaining: discard });
       }
       return;
     }

@@ -349,11 +349,17 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
       at('initial'),
       p('initial'),
     ),
-    workers: readIntFields(
-      ['regularBase', 'housesPerExtraRegular', 'regularMax', 'tempMax'] as const,
-      at('workers'),
-      p('workers'),
-    ),
+    workers: {
+      ...readIntFields(['regularBase', 'housesPerExtraRegular', 'regularMax', 'tempMax'] as const, at('workers'), p('workers')),
+      ...(readObject(at('workers'), p('workers'))['tempUsableOnGain'] === undefined
+        ? {}
+        : {
+            tempUsableOnGain: readBoolean(
+              readObject(at('workers'), p('workers'))['tempUsableOnGain'],
+              `${p('workers')}.tempUsableOnGain`,
+            ),
+          }),
+    },
     land: readIntFields(['materialsPerTile', 'mismatchExtraMaterials', 'minTotalMaterials'] as const, at('land'), p('land')),
     buildings: {
       limits: readRecord(BUILDINGS, field(buildingsObj, 'limits', p('buildings')), bp('limits'), (v, q) => readInt(v, q)),
@@ -466,9 +472,13 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
           regularWorkersIsMax: readBoolean(field(o, 'regularWorkersIsMax', q), `${q}.regularWorkersIsMax`),
         };
       }),
-      research: readTierTable(action('research'), ap('research'), (v, q) =>
-        readIntFields(['draw', 'playCards'] as const, v, q),
-      ),
+      research: readTierTable(action('research'), ap('research'), (v, q) => {
+        const o = readObject(v, q);
+        return {
+          ...readIntFields(['draw', 'playCards'] as const, o, q),
+          ...(o['discard'] === undefined ? {} : { discard: readInt(o['discard'], `${q}.discard`) }),
+        };
+      }),
       spread: readTierTable(action('spread'), ap('spread'), (v, q) => {
         const o = readObject(v, q);
         return {
@@ -526,6 +536,16 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
         `${p('civCards')}.emptyDeckFallbackMaterials`,
       ),
     },
+    ...(obj['specialCitizens'] === undefined
+      ? {}
+      : {
+          specialCitizens: {
+            roundEndRotate: readInt(
+              field(readObject(at('specialCitizens'), p('specialCitizens')), 'roundEndRotate', p('specialCitizens')),
+              `${p('specialCitizens')}.roundEndRotate`,
+            ),
+          },
+        }),
     characters: {
       spiritChipReturnRounds: readArray(
         field(readObject(at('characters'), p('characters')), 'spiritChipReturnRounds', p('characters')),

@@ -265,7 +265,9 @@ export const STEPS: readonly Step[] = [
     kind: 'move',
     title: '文明カードを引く',
     body: ({ d }) =>
-      `文明カードは、プレイすると効果が出るカードである。「研究」の通常を選ぶと、${p(d).actions.research.normal.draw}枚引く。手札はほかの人には見えない。カードの左上の数がプレイに要る金である。`,
+      `文明カードは、プレイすると効果が出るカードである。「研究」の通常を選ぶと、${p(d).actions.research.normal.draw}枚引く${
+        (p(d).actions.research.normal.discard ?? 0) > 0 ? `。その後、手札から${p(d).actions.research.normal.discard}枚を選んで捨てる` : ''
+      }。手札はほかの人には見えない。カードの左上の数がプレイに要る金である。`,
     allow: ['act:research:normal'],
     highlight: ['act:research:normal'],
     when: myTaskIs('turn'),
@@ -275,7 +277,7 @@ export const STEPS: readonly Step[] = [
     optional: true,
     kind: 'move',
     title: '続きを選ぶ',
-    body: () => '研究の続きで選ぶものがあれば選ぶ。',
+    body: () => '研究の続きで選ぶものがあれば選ぶ（捨てるカードなど）。',
     allow: ['*'],
     highlight: ['card:*', 'temp:0'],
     when: (s) => myTask(s) !== undefined && myTask(s)?.t !== 'turn',
