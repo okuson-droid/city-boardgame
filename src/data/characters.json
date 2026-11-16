@@ -160,7 +160,8 @@
                 "command": {
                   "op": "gain",
                   "res": "points",
-                  "amount": 3
+                  "amount": 3,
+                  "axis": "military"
                 }
               }
             ]
@@ -511,7 +512,7 @@
               "op": "gain",
               "res": "points",
               "amount": 1,
-              "axis": "other"
+              "axis": "culture"
             }
           ]
         },
@@ -839,7 +840,7 @@
                 "per": 1,
                 "times": 1
               },
-              "axis": "other"
+              "axis": "nature"
             }
           ]
         }

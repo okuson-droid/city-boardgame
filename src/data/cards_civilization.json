@@ -741,7 +741,8 @@
                 "count": "tagsOf:literature",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "gain",
@@ -799,7 +800,8 @@
                 "count": "tagsOf:literature",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "gain",
@@ -857,7 +859,8 @@
                 "count": "tagsOf:literature",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "gain",
@@ -915,7 +918,8 @@
                 "count": "tagsOf:literature",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "gain",
@@ -978,7 +982,8 @@
                 "count": "tagsOf:literature",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "gain",
@@ -1036,7 +1041,8 @@
                 "count": "tagsOf:literature",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "gain",
@@ -1099,7 +1105,8 @@
                 "count": "tagsOf:literature",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "gain",
@@ -1162,7 +1169,8 @@
                 "count": "tagsOf:literature",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "gain",
@@ -1220,7 +1228,8 @@
                 "count": "tagsOf:art",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -1299,7 +1308,8 @@
                 "count": "tagsOf:art",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -1383,7 +1393,8 @@
                 "count": "tagsOf:art",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -1462,7 +1473,8 @@
                 "count": "tagsOf:art",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -1541,7 +1553,8 @@
                 "count": "tagsOf:art",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -1625,7 +1638,8 @@
                 "count": "tagsOf:art",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -1709,7 +1723,8 @@
                 "count": "tagsOf:art",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -1798,7 +1813,8 @@
                 "count": "tagsOf:art",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -1877,7 +1893,8 @@
                 "count": "tagsOf:music",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -1956,7 +1973,8 @@
                 "count": "tagsOf:music",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -2040,7 +2058,8 @@
                 "count": "tagsOf:music",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -2119,7 +2138,8 @@
                 "count": "tagsOf:music",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -2198,7 +2218,8 @@
                 "count": "tagsOf:music",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -2282,7 +2303,8 @@
                 "count": "tagsOf:music",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -2366,7 +2388,8 @@
                 "count": "tagsOf:music",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -2455,7 +2478,8 @@
                 "count": "tagsOf:music",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             },
             {
               "op": "if",
@@ -2907,7 +2931,8 @@
                 "count": "buildings",
                 "per": 4,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             }
           ]
         }
@@ -3627,7 +3652,7 @@
       "id": "068",
       "name": "式典の警護",
       "cost": {
-        "gold": 8
+        "gold": 15
       },
       "tags": [
         "military"
@@ -3659,7 +3684,8 @@
                 "count": "militaryLevel",
                 "per": 2,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             }
           ]
         }
@@ -3702,7 +3728,8 @@
                 "count": "buildingsOfType:fort",
                 "per": 1,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             }
           ]
         }
@@ -3766,7 +3793,7 @@
       "id": "071",
       "name": "民兵",
       "cost": {
-        "gold": 11
+        "gold": 13
       },
       "tags": [
         "military"
@@ -4271,7 +4298,7 @@
             {
               "op": "gain",
               "res": "goldProduction",
-              "amount": 2
+              "amount": 3
             }
           ]
         }
@@ -4417,7 +4444,7 @@
       "id": "086",
       "name": "大鉱床",
       "cost": {
-        "gold": 17
+        "gold": 15
       },
       "tags": [
         "economy"
@@ -4532,7 +4559,8 @@
             {
               "op": "gain",
               "res": "points",
-              "amount": 1
+              "amount": 1,
+              "axis": "culture"
             }
           ]
         }
@@ -4641,7 +4669,7 @@
       "id": "091",
       "name": "役所仕事",
       "cost": {
-        "gold": 10
+        "gold": 14
       },
       "tags": [
         "life"
@@ -5427,9 +5455,10 @@
               "res": "points",
               "amount": {
                 "count": "tagsOf:academic",
-                "per": 4,
+                "per": 3,
                 "times": 1
-              }
+              },
+              "axis": "culture"
             }
           ]
         }
@@ -5477,7 +5506,8 @@
             {
               "op": "gain",
               "res": "points",
-              "amount": 1
+              "amount": 1,
+              "axis": "culture"
             }
           ]
         }
@@ -5888,7 +5918,8 @@
                     "count": "houses",
                     "per": 2,
                     "times": 1
-                  }
+                  },
+                  "axis": "culture"
                 }
               ]
             }
