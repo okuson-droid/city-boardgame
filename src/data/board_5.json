@@ -9,7 +9,10 @@
   "squares": {
     "A1": {
       "terrain": "forest",
-      "bonus": null
+      "bonus": {
+        "kind": "landTiles",
+        "amount": 1
+      }
     },
     "A2": {
       "terrain": "plains",
@@ -27,7 +30,7 @@
       "terrain": "mountain",
       "bonus": {
         "kind": "gold",
-        "amount": 3
+        "amount": 2
       }
     },
     "A6": {
@@ -79,8 +82,8 @@
     "C1": {
       "terrain": "plains",
       "bonus": {
-        "kind": "gold",
-        "amount": 3
+        "kind": "drawCivCards",
+        "amount": 1
       }
     },
     "C2": {
@@ -103,7 +106,7 @@
       "terrain": "forest",
       "bonus": {
         "kind": "materials",
-        "amount": 2
+        "amount": 1
       }
     },
     "C7": {
@@ -125,8 +128,8 @@
     "D3": {
       "terrain": "mountain",
       "bonus": {
-        "kind": "drawCivCards",
-        "amount": 1
+        "kind": "gold",
+        "amount": 4
       }
     },
     "D4": {
@@ -143,7 +146,10 @@
     },
     "D7": {
       "terrain": "forest",
-      "bonus": null
+      "bonus": {
+        "kind": "drawCivCards",
+        "amount": 1
+      }
     },
     "E1": {
       "terrain": "forest",
@@ -175,10 +181,7 @@
     },
     "E8": {
       "terrain": "plains",
-      "bonus": {
-        "kind": "drawCivCards",
-        "amount": 1
-      }
+      "bonus": null
     },
     "F1": {
       "terrain": "forest",
@@ -190,21 +193,18 @@
     },
     "F3": {
       "terrain": "forest",
-      "bonus": {
-        "kind": "militaryTokens",
-        "amount": 2
-      }
+      "bonus": null
     },
     "F4": {
       "terrain": "forest",
-      "bonus": null
+      "bonus": {
+        "kind": "militaryTokens",
+        "amount": 3
+      }
     },
     "F5": {
       "terrain": "plains",
-      "bonus": {
-        "kind": "materials",
-        "amount": 1
-      }
+      "bonus": null
     },
     "F6": {
       "terrain": "plains",
@@ -212,7 +212,10 @@
     },
     "F7": {
       "terrain": "plains",
-      "bonus": null
+      "bonus": {
+        "kind": "materials",
+        "amount": 3
+      }
     }
   }
 }

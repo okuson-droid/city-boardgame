@@ -75,7 +75,11 @@
             {
               "op": "gain",
               "res": "points",
-              "amount": 2,
+              "amount": {
+                "count": "militaryLevel",
+                "per": 3,
+                "times": 1
+              },
               "axis": "military"
             }
           ]
@@ -111,9 +115,12 @@
           "text": "軍事レベルに基づく遠征の報酬に以下を追加する。",
           "items": [
             "レベル6：文明カード1枚ドロー",
-            "レベル9：臨時ワーカー1を獲得",
-            "レベル12：3点を得る"
+            "レベル9：臨時ワーカー1を獲得"
           ]
+        },
+        {
+          "text": "軍事レベルが12になった時、遠征の報酬を6つ得る。",
+          "items": []
         }
       ],
       "open_issues": [
@@ -154,18 +161,27 @@
                   "res": "tempWorkers",
                   "amount": 1
                 }
-              },
-              {
-                "level": 12,
-                "command": {
-                  "op": "gain",
-                  "res": "points",
-                  "amount": 3,
-                  "axis": "military"
-                }
               }
             ]
           }
+        },
+        {
+          "ability": "on",
+          "event": "trackRaised",
+          "filter": {
+            "cond": {
+              "left": "militaryLevel",
+              "op": ">=",
+              "right": 12
+            }
+          },
+          "do": [
+            {
+              "op": "expeditionRewards",
+              "count": 6
+            }
+          ],
+          "once": true
         }
       ]
     },
@@ -188,7 +204,7 @@
       ],
       "revisedEffects": [
         {
-          "text": "準備時：金の生産を5上げる。"
+          "text": "準備時：金の生産を5上げ、5金を得る。"
         },
         {
           "text": "商店の建設コストが1資材安くなる。"
@@ -202,7 +218,7 @@
           ]
         },
         {
-          "text": "建物を2軒建設するごとに、金の生産を3上げる。"
+          "text": "建物を2軒建設するごとに、金の生産を3上げ、3金を得る。"
         }
       ],
       "open_issues": [
@@ -215,12 +231,12 @@
           "do": [
             {
               "op": "gain",
-              "res": "gold",
+              "res": "goldProduction",
               "amount": 5
             },
             {
               "op": "gain",
-              "res": "goldProduction",
+              "res": "gold",
               "amount": 5
             }
           ]
@@ -275,6 +291,11 @@
               "op": "gain",
               "res": "goldProduction",
               "amount": 3
+            },
+            {
+              "op": "gain",
+              "res": "gold",
+              "amount": 3
             }
           ],
           "every": 2
@@ -299,16 +320,13 @@
       ],
       "revisedEffects": [
         {
-          "text": "準備時：3資材を得る。"
-        },
-        {
           "text": "工房の建設コストが1資材安くなる。"
         },
         {
           "text": "住宅以外の建物を3軒建設するごとに、資材の生産を2上げ、4資材を得る。"
         },
         {
-          "text": "住宅を2軒建設するごとに、資材の生産を1上げ、1資材を得る。"
+          "text": "住宅を2軒建設するごとに、資材の生産を1上げる。"
         }
       ],
       "open_issues": [
@@ -799,7 +817,7 @@
           "text": "精霊チップは第2ラウンドと第4ラウンドの終了時に回収され、再度使用可能になる。"
         },
         {
-          "text": "ゲーム終了時、精霊チップのある土地に隣接する同種の土地タイル1枚につき2点。"
+          "text": "ゲーム終了時、精霊チップのある土地に隣接する同種の土地タイル1枚につき1点。"
         }
       ],
       "open_issues": [
