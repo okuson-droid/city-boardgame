@@ -2,7 +2,7 @@
 // 固定したテストのデータ（tests/fixtures/data/）には設定がないため、設定を足したデータで検査する。
 import { describe, expect, it } from 'vitest';
 import { GAME_DATA, type GameData } from '../src/data/index.ts';
-import { usableTemp } from '../src/game/core.ts';
+import { scoreAxisOf, usableTemp } from '../src/game/core.ts';
 import { applyMove, getOptions, isGameOver } from '../src/game/engine.ts';
 import type { GameState } from '../src/game/types.ts';
 import { edit, firstTurn, me, top, withoutCharacters } from './helpers/game.ts';
@@ -52,8 +52,8 @@ describe('臨時ワーカーは得た瞬間から使える', () => {
     expect(me(s).tempLocked).toBe(0);
   });
 
-  it('同じ福祉で得た臨時ワーカーは、役所の変換には使えないまま', () => {
-    // rules.md v0.8 5-5-4-2、19-2-7（ユーザー決定 2026-11-03）
+  it('同じ福祉で得た臨時ワーカーを、そのまま役所の変換に使える', () => {
+    // rules.md v0.8 5-5-4-2、19-2-7 からの変更（ユーザー決定 2026-11-16。以前は同じ福祉で得た臨時ワーカーは使えなかった）
     const setup = (temp: number) =>
       edit(start(), (_, q) => {
         q.materials = 5;
@@ -61,8 +61,11 @@ describe('臨時ワーカーは得た瞬間から使える', () => {
         q.infraRewardsClaimed = [1, 2, 3];
         q.buildings.E1 = 'office';
       });
-    const none = play(setup(0), 'act:welfare:upper');
-    expect(top(none).t).not.toBe('welfareConvert');
+    let none = play(setup(0), 'act:welfare:upper');
+    expect(me(none).tempWorkers).toBe(1);
+    expect(ids(none)).toEqual(['convert:0', 'convert:1']);
+    none = play(none, 'convert:1');
+    expect(me(none).tempWorkers).toBe(0);
     let one = play(setup(1), 'act:welfare:upper');
     if (top(one).t === 'payWorkers') one = play(one, 'temp:0');
     expect(ids(one)).toEqual(['convert:0', 'convert:1']);
@@ -134,5 +137,30 @@ describe('遠征の軍事レベル0の報酬', () => {
     expect(me(s).goldProduction - before.goldProduction).toBe(2);
     expect(me(s).score - before.score).toBe(1);
     expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ axis: 'military', points: 1 });
+  });
+});
+
+describe('得点の評価軸（ユーザー決定 2026-11-16）', () => {
+  it('文明カードの効果の点は文化・学術、特別な市民カードの効果の点は生活・福祉に数える', () => {
+    // rules.md v0.8 17-0-2、17-0-3 からの変更（ユーザー決定 2026-11-16）
+    expect(scoreAxisOf('civ:088', 'other')).toBe('culture');
+    expect(scoreAxisOf('civ:069', 'military')).toBe('culture');
+    expect(scoreAxisOf('sc:03', 'other')).toBe('welfare');
+    expect(scoreAxisOf('sc:01', 'welfare')).toBe('welfare');
+    expect(scoreAxisOf('char:hero', 'military')).toBe('military');
+    expect(scoreAxisOf('expedition', 'military')).toBe('military');
+  });
+
+  it('文明カードの点はゲーム中の得点の出来事でも文化・学術になる', () => {
+    // rules.md v0.8 17-0-3（ユーザー決定 2026-11-16）
+    let s = edit(start(), (state, q) => {
+      q.hand = ['068'];
+      q.gold = 20;
+      q.militaryLevel = 2;
+    });
+    s = play(s, 'act:spread:normal');
+    if (top(s).t === 'payWorkers') s = play(s, 'temp:0');
+    s = play(s, 'card:068');
+    expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ axis: 'culture', source: 'civ:068' });
   });
 });

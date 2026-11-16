@@ -564,13 +564,13 @@ export const applyExpedition = (state: GameState, d: GameData, task: TaskOf<'exp
   const commands: Command[] = [];
   for (const index of task.picks) {
     const entry = table[index];
-    // 遠征の得点は軍事・防衛に含める（17-6-2）。
-    for (const grant of entry?.grants ?? []) effects.push({ k: 'grant', grant, axis: 'military', source: 'expedition' });
+    // 遠征の得点は軍事・防衛に含める（17-6-2）。文明カード（017）で得た報酬の得点は文化・学術に含める（ユーザー決定 2026-11-16）。
+    for (const grant of entry?.grants ?? []) effects.push({ k: 'grant', grant, axis: task.mode === 'card' ? 'culture' : 'military', source: 'expedition' });
     if (entry?.command) commands.push(entry.command);
   }
   const choices: ChoiceEffect[] = [];
   processEffects(state, d, player, effects, choices);
-  runCommands(state, d, player, commands, 'expedition', 'military', choices);
+  runCommands(state, d, player, commands, 'expedition', task.mode === 'card' ? 'culture' : 'military', choices);
   scheduleChoices(state, player.index, choices);
 };
 
@@ -600,9 +600,11 @@ const applyWelfareChoice = (state: GameState, d: GameData, player: PlayerState, 
   const choice = spec.choices[index];
   if (choice === undefined) throw new Error(`存在しない福祉の組である：${index}`);
   player.materials -= choice.payMaterials;
-  // 変換は福祉アクションの後に行う（5-5-4-2）。変換の可否はこの時点の臨時ワーカーで決まる。
-  if (welfareConvertible(d, player)) {
-    state.stack.push({ t: 'welfareConvert', player: player.index, tempBefore: usableTemp(player) });
+  // 変換は福祉アクションの後に行う（5-5-4-2）。役所があれば積み、変換の可否は福祉の処理を終えた時点の臨時ワーカーで決める。
+  // 臨時ワーカーを得た瞬間から使える場合（ユーザー決定 2026-11-16）は、同じ福祉で得た臨時ワーカーも変換に使える。
+  // 従来の扱い（手番中に得た臨時ワーカーは使えない、3-4-4-2）では、同じ福祉で得た分は使えない臨時ワーカーとして数えない。
+  if (buildingCount(player, 'office') > 0) {
+    state.stack.push({ t: 'welfareConvert', player: player.index });
   }
   const effects: Effect[] = [{ k: 'infra', n: choice.infra }];
   if (spec.tempWorkers > 0) {
@@ -651,13 +653,10 @@ const startChoiceAction = (state: GameState, d: GameData, player: PlayerState, a
 
 export const welfareConvertOptions = (d: GameData, state: GameState, task: TaskOf<'welfareConvert'>): Option[] => {
   const player = playerOf(state, task.player);
-  const options = [opt(task.player, 'convert:0', '変換しない')];
-  // 同じ福祉で得た臨時ワーカーは変換に使えない（ユーザー決定 2026-11-03、3-4-4-2）。得た瞬間から使える場合（2026-11-16）も、
-  // 福祉の前に使えた数までに限る。
-  if (welfareConvertible(d, player) && (task.tempBefore === undefined || task.tempBefore > 0)) {
-    options.push(opt(task.player, 'convert:1', `臨時ワーカー1人を資材${d.params.buildings.effects.office.welfareConvertMaterialsByCount[buildingCount(player, 'office')] ?? 0}に変換する`));
-  }
-  return options;
+  // 変換できる臨時ワーカーがいなければ尋ねない（選択肢のないタスクは不発として取り除く）。
+  if (!welfareConvertible(d, player)) return [];
+  const materials = d.params.buildings.effects.office.welfareConvertMaterialsByCount[buildingCount(player, 'office')] ?? 0;
+  return [opt(task.player, 'convert:0', '変換しない'), opt(task.player, 'convert:1', `臨時ワーカー1人を資材${materials}に変換する`)];
 };
 
 export const applyWelfareConvert = (state: GameState, d: GameData, task: TaskOf<'welfareConvert'>, id: string): void => {

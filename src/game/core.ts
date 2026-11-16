@@ -152,8 +152,15 @@ export const addScore = (
     return;
   }
   player.score += points;
-  emit(state, d, { type: 'score', player: player.index, points, axis, source });
+  emit(state, d, { type: 'score', player: player.index, points, axis: scoreAxisOf(source, axis), source });
 };
+
+/**
+ * 得点の評価軸（ユーザー決定 2026-11-16、わかりやすさを優先）：文明カードの効果で得た点はすべて文化・学術、
+ * 特別な市民カードの効果で得た点はすべて生活・福祉に数える。それ以外は呼び出し元が渡した評価軸のまま。
+ */
+export const scoreAxisOf = (source: string, axis: ScoreAxis): ScoreAxis =>
+  source.startsWith('civ:') ? 'culture' : source.startsWith('sc:') ? 'welfare' : axis;
 
 // ---------------------------------------------------------------------------
 // カード

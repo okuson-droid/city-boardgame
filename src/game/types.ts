@@ -145,12 +145,7 @@ export type Task =
       readonly mode: 'action' | 'card';
       readonly count: number;
     }
-  | {
-      readonly t: 'welfareConvert';
-      readonly player: number;
-      /** 福祉の前に使えた臨時ワーカーの数。同じ福祉で得た臨時ワーカーは変換に使えない（ユーザー決定 2026-11-03）。古い局面では欠ける。 */
-      readonly tempBefore?: number;
-    }
+  | { readonly t: 'welfareConvert'; readonly player: number }
   | { readonly t: 'migrationCount'; readonly player: number; readonly tier: Tier }
   | {
       readonly t: 'discard';
