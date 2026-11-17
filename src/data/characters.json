@@ -205,7 +205,7 @@
       ],
       "revisedEffects": [
         {
-          "text": "準備時：金の生産を5上げ、5金を得る。"
+          "text": "準備時：5金を得る。"
         },
         {
           "text": "商店の建設コストが1資材安くなる。"
@@ -219,7 +219,7 @@
           ]
         },
         {
-          "text": "建物を2軒建設するごとに、金の生産を3上げ、3金を得る。"
+          "text": "建物を2軒建設するごとに、金の生産を2上げ、3金を得る。"
         }
       ],
       "open_issues": [
@@ -230,11 +230,6 @@
         {
           "ability": "setup",
           "do": [
-            {
-              "op": "gain",
-              "res": "goldProduction",
-              "amount": 5
-            },
             {
               "op": "gain",
               "res": "gold",
@@ -267,12 +262,16 @@
                     "op": "gain",
                     "res": "materials",
                     "amount": 2
-                  },
+                  }
+                ],
+                [
                   {
                     "op": "placeTiles",
                     "count": 1,
                     "tile": "match"
-                  },
+                  }
+                ],
+                [
                   {
                     "op": "gain",
                     "res": "militaryTokens",
@@ -291,7 +290,7 @@
             {
               "op": "gain",
               "res": "goldProduction",
-              "amount": 3
+              "amount": 2
             },
             {
               "op": "gain",
@@ -362,7 +361,7 @@
             {
               "op": "gain",
               "res": "materials",
-              "amount": 4
+              "amount": 2
             }
           ],
           "every": 3
