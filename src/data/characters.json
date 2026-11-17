@@ -35,7 +35,7 @@
           "text": "準備時：軍事レベル1から始まり、軍事力トークン4つを得る。山岳に土地タイルを置き、砦1軒を無料で建設する。"
         },
         {
-          "text": "撃退成功時、2点を得る。"
+          "text": "撃退成功時、軍事レベル3につき1点を得る。"
         }
       ],
       "open_issues": [
@@ -169,6 +169,7 @@
           "ability": "on",
           "event": "trackRaised",
           "filter": {
+            "track": "military",
             "cond": {
               "left": "militaryLevel",
               "op": ">=",

@@ -19,14 +19,18 @@ const checkUniqueIds = (ids: readonly (string | number)[], path: string, report:
   });
 };
 
-const checkLevelRewards = (rewards: readonly LevelReward[], max: number, path: string, report: Report): void => {
+/**
+ * 到達報酬・遠征の報酬の表を確かめる。到達報酬はレベルごとに1つ（昇順で重複なし）。遠征の報酬は同じレベルに独立した報酬を
+ * 複数置ける（sameLevel、ユーザー決定 2026-11-16：軍事レベル0に4つ）ため、昇順（重複可）だけを求める。
+ */
+const checkLevelRewards = (rewards: readonly LevelReward[], max: number, path: string, report: Report, sameLevel = false): void => {
   rewards.forEach((reward, i) => {
     if (reward.level > max) {
       report(`${path}[${i}].level`, `レベルが上限 ${max} を超えている（${reward.level}）`);
     }
     const previous = rewards[i - 1];
-    if (previous !== undefined && previous.level >= reward.level) {
-      report(`${path}[${i}].level`, 'レベルは昇順で重複なく並べなければならない');
+    if (previous !== undefined && (sameLevel ? previous.level > reward.level : previous.level >= reward.level)) {
+      report(`${path}[${i}].level`, sameLevel ? 'レベルは昇順に並べなければならない' : 'レベルは昇順で重複なく並べなければならない');
     }
   });
 };
@@ -180,7 +184,7 @@ const checkParams = (data: GameData, report: Report): void => {
   // トラックの到達報酬（rules.md 7-1-2、8-1-2）と遠征の報酬（6-3-6-2）
   checkLevelRewards(params.military.rewards, params.military.max, 'params.military.rewards', report);
   checkLevelRewards(params.infra.rewards, params.infra.max, 'params.infra.rewards', report);
-  checkLevelRewards(params.actions.expedition.rewards, params.military.max, 'params.actions.expedition.rewards', report);
+  checkLevelRewards(params.actions.expedition.rewards, params.military.max, 'params.actions.expedition.rewards', report, true);
   if (params.actions.expedition.rewards[0]?.level !== 0) {
     report('params.actions.expedition.rewards', '軍事レベル0の報酬がない');
   }

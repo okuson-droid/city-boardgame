@@ -390,6 +390,15 @@ const roundEnd = (state: GameState, d: GameData): void => {
       player.spiritChips = {};
     }
   }
+  // 特別な市民カードの場の入れ替え（ユーザー決定 2026-11-16）：最終ラウンドを除くラウンドの終わりに、公開から最も古いカードを
+  // 山札の下に入れ、山札の上から同じ枚数を公開する。公開は古い順に並んでいる（補充は末尾に足す）。
+  const rotate = Math.min(d.params.specialCitizens?.roundEndRotate ?? 0, state.scRevealed.length);
+  if (rotate > 0 && state.round < d.params.rounds) {
+    const old = state.scRevealed.slice(0, rotate);
+    state.scRevealed = state.scRevealed.slice(rotate);
+    state.scDeck.push(...old);
+    state.scRevealed.push(...state.scDeck.splice(0, rotate));
+  }
   state.occupied = [];
   state.turnOrder = [...state.passOrder];
   state.passOrder = [];

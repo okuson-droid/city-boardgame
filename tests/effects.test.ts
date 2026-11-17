@@ -159,8 +159,8 @@ describe('命令：gain・raise・if（文明カード）', () => {
       p.played = ['020', '027'];
     });
     const owner = s.players.find((q) => q.played.includes('019'));
-    // 文学は 020 と 019 自身の2枚。027（美術）は数えない。
-    expect(scoreEvents(s, owner?.index ?? -1).at(-1)).toMatchObject({ points: 2, axis: 'other' });
+    // 文学は 020 と 019 自身の2枚。027（美術）は数えない。文明カードの点は文化・学術に数える（ユーザー決定 2026-11-16）。
+    expect(scoreEvents(s, owner?.index ?? -1).at(-1)).toMatchObject({ points: 2, axis: 'culture' });
   });
 
   it('010：軍事レベルを上げ、到達報酬を得る', () => {
@@ -767,6 +767,8 @@ describe('計画都市（第13章、19-1-6、19-4-7）', () => {
     expect(me(s).gold).toBe(3);
     expect(me(s).materials).toBe(2);
     expect(me(s).score).toBe(7 + 1);
+    // 達成の報酬の得点も宣言の点と同じ自然・環境に数える（ユーザー決定 2026-11-16）。
+    expect(scoreEvents(s, me(s).index).at(-1)).toMatchObject({ axis: 'nature', points: 1 });
   });
 
   it('宣言できるのはプレイ人数−1人まで', () => {

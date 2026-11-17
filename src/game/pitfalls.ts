@@ -153,7 +153,9 @@ const raidRepel: Rule = {
 /** 福祉の処理を、組の選択（actionChoice）を1つ選んだところまで進め、役所の変換（welfareConvert）が積まれたか。 */
 const convertOffered = (ctx: Context, s: GameState | null): boolean | null => {
   if (s === null) return null;
-  const has = (x: GameState): boolean => x.stack.some((t) => t.t === 'welfareConvert' && t.player === ctx.player.index);
+  // 変換のタスクは役所があれば積まれるため、変換に使える臨時ワーカーが残っているかも確かめる（選択肢がなければ不発になる）。
+  const has = (x: GameState): boolean =>
+    x.stack.some((t) => t.t === 'welfareConvert' && t.player === ctx.player.index) && usableTemp(x.players[ctx.player.index] ?? ctx.player) > 0;
   if (has(s)) return true;
   const top = topOf(s);
   if (top?.t === 'actionChoice' && top.action === 'welfare' && top.player === ctx.player.index) {

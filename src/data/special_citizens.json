@@ -750,6 +750,12 @@
           "text": "軍事トラックそ即座に3進め、4軍事トークンを得る"
         }
       ],
+      "revisedEffects": [
+        {
+          "timing": "獲得時",
+          "text": "軍事レベルを3上げ、軍事力トークンを7つ得る"
+        }
+      ],
       "open_issues": [
         "5"
       ],
@@ -811,7 +817,12 @@
       "id": "21",
       "name": "工場長 コオロギ",
       "effects": [],
-      "revisedEffects": [],
+      "revisedEffects": [
+        {
+          "timing": "ゲーム終了時",
+          "text": "金の生産5につき1点、資材の生産4につき2点を得る"
+        }
+      ],
       "open_issues": [],
       "provisional": true,
       "script": [
@@ -846,7 +857,12 @@
       "id": "22",
       "name": "刑事 ハヤブサ",
       "effects": [],
-      "revisedEffects": [],
+      "revisedEffects": [
+        {
+          "timing": "ゲーム終了時",
+          "text": "軍事レベル3につき2点、インフラレベル3につき2点を得る"
+        }
+      ],
       "open_issues": [],
       "provisional": true,
       "script": [
@@ -881,7 +897,12 @@
       "id": "23",
       "name": "議員 ハクチョウ",
       "effects": [],
-      "revisedEffects": [],
+      "revisedEffects": [
+        {
+          "timing": "ゲーム終了時",
+          "text": "10点を得る"
+        }
+      ],
       "open_issues": [],
       "provisional": true,
       "script": [
@@ -902,7 +923,12 @@
       "id": "24",
       "name": "仲介屋 ハチドリ",
       "effects": [],
-      "revisedEffects": [],
+      "revisedEffects": [
+        {
+          "timing": "常時",
+          "text": "臨時ワーカーを獲得する度に1点を得る"
+        }
+      ],
       "open_issues": [],
       "provisional": true,
       "script": [
@@ -927,7 +953,12 @@
       "id": "25",
       "name": "自然保護官 ゲンゴロウ",
       "effects": [],
-      "revisedEffects": [],
+      "revisedEffects": [
+        {
+          "timing": "常時",
+          "text": "自然公園カードの2枚・3枚・4枚のセットの得点を、5・10・15点に置き換える"
+        }
+      ],
       "open_issues": [],
       "provisional": true,
       "script": [
@@ -948,7 +979,12 @@
       "id": "26",
       "name": "土木作業員 フジツボ",
       "effects": [],
-      "revisedEffects": [],
+      "revisedEffects": [
+        {
+          "timing": "獲得時",
+          "text": "10金と6資材を得る。任意の土地タイル2枚を無料で配置する(マスと一致しなくてもよい)。臨時ワーカー1人を得る"
+        }
+      ],
       "open_issues": [],
       "provisional": true,
       "script": [
@@ -983,7 +1019,12 @@
       "id": "27",
       "name": "斥候 イナゴ",
       "effects": [],
-      "revisedEffects": [],
+      "revisedEffects": [
+        {
+          "timing": "1ワーカーの専用アクションスペース",
+          "text": "遠征報酬を3つ獲得する"
+        }
+      ],
       "open_issues": [],
       "provisional": true,
       "script": [
@@ -1003,7 +1044,12 @@
       "id": "28",
       "name": "地上げ屋 ムクドリ",
       "effects": [],
-      "revisedEffects": [],
+      "revisedEffects": [
+        {
+          "timing": "1ワーカーの専用アクションスペース",
+          "text": "任意の土地タイル1枚を無料で配置する(マスと一致しなくてもよい)。建物を1軒まで建設する(コストは払う)"
+        }
+      ],
       "open_issues": [],
       "provisional": true,
       "script": [

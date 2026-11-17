@@ -155,11 +155,12 @@ export const applyPlan = (state: GameState, d: GameData, player: PlayerState, id
   // 計画都市の得点は自然・環境に含める（17-5-1）。
   addScore(state, d, player, points, 'nature', `plannedCity:${id}`);
   // 達成宣言時に恩恵を得る（13-3-8）。複数あれば、選択を伴うものが2つ以上のとき処理の順番を尋ねる（decisions.md 3-4）。
+  // 恩恵の得点も宣言の点と同じ自然・環境に含める（ユーザー決定 2026-11-16。以前は「その他」）。
   processEffects(
     state,
     d,
     player,
-    card.benefits.map((grant) => ({ k: 'grant' as const, grant, source: `plannedCity:${id}` })),
+    card.benefits.map((grant) => ({ k: 'grant' as const, grant, axis: 'nature' as const, source: `plannedCity:${id}` })),
   );
 };
 
