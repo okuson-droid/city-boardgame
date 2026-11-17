@@ -144,8 +144,6 @@ export type Task =
       /** card は文明カード017（目標値とトークンなし、軍事レベル以下、異なる報酬を count 個まで）。 */
       readonly mode: 'action' | 'card';
       readonly count: number;
-      /** 報酬を得させた効果の出どころ（civ:017・char:commander など）。得点の評価軸を決める（ユーザー決定 2026-11-16）。古い局面では欠ける。 */
-      readonly source?: string;
     }
   | { readonly t: 'welfareConvert'; readonly player: number }
   | { readonly t: 'migrationCount'; readonly player: number; readonly tier: Tier }

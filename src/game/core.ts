@@ -271,7 +271,7 @@ const commandTask = (player: number, command: Command, source: string): Task => 
     case 'playCard':
       return { t: 'playCard', player, remaining: command.count, free: command.free, upTo: command.upTo === true };
     case 'expeditionRewards':
-      return { t: 'expeditionPick', player, tier: 'normal', picks: [], mode: 'card', count: command.count, source };
+      return { t: 'expeditionPick', player, tier: 'normal', picks: [], mode: 'card', count: command.count };
     case 'chooseOne':
       return { t: 'chooseOne', player, options: command.options, source };
     case 'copyAction':

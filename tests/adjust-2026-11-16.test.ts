@@ -179,8 +179,8 @@ describe('得点の評価軸（ユーザー決定 2026-11-16）', () => {
     expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ axis: 'welfare', points: 1, source: 'infra:1' });
   });
 
-  it('文明カード017で得た遠征の報酬の点は文化・学術に数える', () => {
-    // rules.md v0.8 17-6-2 からの変更（ユーザー決定 2026-11-16）
+  it('文明カード017で得た遠征の報酬の点も軍事・防衛に数える', () => {
+    // rules.md v0.8 17-6-2（効果で得た遠征の報酬も遠征の点、ユーザー決定 2026-11-17）
     let s = edit(start(), (_, q) => {
       q.hand = ['017'];
       q.gold = 30;
@@ -189,9 +189,9 @@ describe('得点の評価軸（ユーザー決定 2026-11-16）', () => {
     s = play(s, 'act:spread:normal');
     if (top(s).t === 'payWorkers') s = play(s, 'temp:0');
     s = play(s, 'card:017');
-    expect(top(s)).toMatchObject({ t: 'expeditionPick', mode: 'card', source: 'civ:017' });
+    expect(top(s)).toMatchObject({ t: 'expeditionPick', mode: 'card' });
     s = play(s, 'reward:3');
     while (top(s).t === 'expeditionPick') s = play(s, ids(s).includes('done') ? 'done' : (ids(s)[0] ?? ''));
-    expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ axis: 'culture', points: 1, source: 'civ:017' });
+    expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ axis: 'military', points: 1, source: 'expedition' });
   });
 });
