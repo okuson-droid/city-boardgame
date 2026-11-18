@@ -354,7 +354,7 @@
             "gainTokens": 6
           }
         ],
-        "maxRaises": 3
+        "maxRaises": 2
       },
       "top": {
         "choices": [
@@ -495,7 +495,7 @@
             "infra": 2
           },
           {
-            "payMaterials": 7,
+            "payMaterials": 8,
             "infra": 3
           }
         ],
@@ -510,16 +510,16 @@
         "materials": 1
       },
       "upper": {
-        "tempWorkers": 1,
+        "tempWorkers": 0,
         "regularWorkers": 2,
         "regularWorkersIsMax": true,
-        "materials": 1
+        "materials": 3
       },
       "top": {
         "tempWorkers": 1,
         "regularWorkers": 3,
         "regularWorkersIsMax": true,
-        "materials": 2
+        "materials": 1
       }
     },
     "research": {
@@ -551,12 +551,12 @@
       "top": {
         "maxCards": 4,
         "cardsIsMax": true,
-        "goldDiscount": 2
+        "goldDiscount": 1
       }
     }
   },
   "military": {
-    "max": 12,
+    "max": 15,
     "rewards": [
       {
         "level": 3,
@@ -594,12 +594,22 @@
             "amount": 1
           }
         ]
+      },
+      {
+        "level": 15,
+        "grants": [
+          {
+            "kind": "freeBuildOnTerrain",
+            "terrain": "mountain",
+            "amount": 1
+          }
+        ]
       }
     ],
     "overflowPointsPerRaise": 2
   },
   "infra": {
-    "max": 12,
+    "max": 15,
     "rewards": [
       {
         "level": 1,
@@ -704,12 +714,35 @@
         "level": 12,
         "grants": [
           {
+            "kind": "landTiles",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 13,
+        "grants": [
+          {
             "kind": "tempWorkers",
             "amount": 1
-          },
+          }
+        ]
+      },
+      {
+        "level": 14,
+        "grants": [
           {
             "kind": "drawCivCards",
-            "amount": 2
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "level": 15,
+        "grants": [
+          {
+            "kind": "specialCitizen",
+            "amount": 1
           }
         ]
       }
@@ -721,7 +754,7 @@
     "basePointsPerRound": {
       "defenseFailed": -1,
       "defended": 0,
-      "repelled": 0
+      "repelled": 1
     },
     "cardEffectKinds": {
       "defenseFailed": [],
