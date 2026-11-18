@@ -305,14 +305,14 @@
         "bonusMaterials": 1
       },
       "upper": {
-        "payGold": 5,
-        "gainMaterials": 3,
+        "payGold": 4,
+        "gainMaterials": 2,
         "maxTimes": 3,
         "bonusMaterials": 2
       },
       "top": {
-        "payGold": 6,
-        "gainMaterials": 4,
+        "payGold": 5,
+        "gainMaterials": 3,
         "maxTimes": 3,
         "bonusMaterials": 2
       }
@@ -320,20 +320,20 @@
     "export": {
       "normal": {
         "payMaterials": 1,
-        "gainGold": 4,
+        "gainGold": 3,
         "maxTimes": 3,
-        "bonusGold": 0
+        "bonusGold": 2
       },
       "upper": {
         "payMaterials": 1,
-        "gainGold": 5,
-        "maxTimes": 4,
-        "bonusGold": 3
+        "gainGold": 4,
+        "maxTimes": 3,
+        "bonusGold": 4
       },
       "top": {
         "payMaterials": 1,
-        "gainGold": 6,
-        "maxTimes": 5,
+        "gainGold": 5,
+        "maxTimes": 3,
         "bonusGold": 6
       }
     },
