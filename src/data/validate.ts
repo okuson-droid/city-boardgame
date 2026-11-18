@@ -187,7 +187,9 @@ export const readGrant = (value: unknown, path: string): Grant => {
   const kind = readOneOf(GRANT_KINDS, field(obj, 'kind', path), `${path}.kind`);
   const amount = readPositiveInt(field(obj, 'amount', path), `${path}.amount`);
   if (kind === 'freeBuildOnTerrain') {
-    return { kind, amount, terrain: readTerrain(field(obj, 'terrain', path), `${path}.terrain`) };
+    // null は土地の種類を問わない（ユーザー決定 2026-11-18）。
+    const terrain = field(obj, 'terrain', path);
+    return { kind, amount, terrain: terrain === null ? null : readTerrain(terrain, `${path}.terrain`) };
   }
   return { kind, amount };
 };

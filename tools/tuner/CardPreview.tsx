@@ -127,12 +127,13 @@ const BenefitsEditor = ({ benefits, onChange }: { benefits: readonly Grant[]; on
             ))}
           </select>
           {b.kind === 'freeBuildOnTerrain' ? (
-            <select aria-label="地形" value={b.terrain} onChange={(e) => replace(i, { ...b, terrain: e.target.value as Terrain })}>
+            <select aria-label="地形" value={b.terrain ?? ''} onChange={(e) => replace(i, { ...b, terrain: e.target.value === '' ? null : (e.target.value as Terrain) })}>
               {TERRAINS.map((t) => (
                 <option key={t} value={t}>
                   {valueLabel(t, 'terrain')}
                 </option>
               ))}
+              <option value="">（任意の土地）</option>
             </select>
           ) : null}
           <input

@@ -154,7 +154,7 @@ const keyEntry = (section: keyof typeof ICON_KEYS, key: string): { icon: string;
 export const grantTokens = (g: Grant): IconToken[] => {
   if (g.kind === 'landTiles') return [{ ...keyEntry('commands', 'placeTiles'), value: g.amount }];
   if (g.kind === 'buildRight') return [{ ...keyEntry('commands', 'build'), value: g.amount }];
-  if (g.kind === 'freeBuildOnTerrain') return [keyEntry('terrains', g.terrain), { ...keyEntry('commands', 'build'), value: g.amount }];
+  if (g.kind === 'freeBuildOnTerrain') return [keyEntry('terrains', g.terrain ?? 'any'), { ...keyEntry('commands', 'build'), value: g.amount }];
   return [{ ...keyEntry('resources', g.kind), value: g.amount }];
 };
 

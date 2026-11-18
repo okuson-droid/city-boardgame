@@ -50,7 +50,8 @@ export const enumFor = (key: string, path: Path): readonly (string | null)[] | n
   switch (key) {
     case 'terrain':
     case 'initialTerrain':
-      return inside('slots') ? [...TERRAINS, null] : TERRAINS;
+      // 計画都市のマスと、無料建設の報酬（grants・benefits）は「なし（任意）」も選べる（ユーザー決定 2026-11-18）。
+      return inside('slots') || inside('grants') || inside('benefits') ? [...TERRAINS, null] : TERRAINS;
     case 'building':
       return inside('slots') ? [...BUILDINGS, null] : BUILDINGS;
     case 'action':

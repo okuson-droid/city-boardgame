@@ -72,7 +72,8 @@ export type GrantKind = (typeof GRANT_KINDS)[number];
 
 export type Grant =
   | { readonly kind: Exclude<GrantKind, 'freeBuildOnTerrain'>; readonly amount: number }
-  | { readonly kind: 'freeBuildOnTerrain'; readonly terrain: Terrain; readonly amount: number };
+  /** terrain が null なら土地の種類を問わない（ユーザー決定 2026-11-18：軍事レベル12の到達報酬）。 */
+  | { readonly kind: 'freeBuildOnTerrain'; readonly terrain: Terrain | null; readonly amount: number };
 
 /** フリーアクションなどで支払うものの単位。 */
 export const PAYMENT_KINDS = ['gold', 'materials', 'militaryTokens', 'civCards', 'tempWorkers'] as const;

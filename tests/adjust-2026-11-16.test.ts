@@ -195,3 +195,33 @@ describe('得点の評価軸（ユーザー決定 2026-11-16）', () => {
     expect(s.events.filter((e) => e.type === 'score').at(-1)).toMatchObject({ axis: 'military', points: 1, source: 'expedition' });
   });
 });
+
+describe('軍事レベル12の到達報酬（ユーザー決定 2026-11-18）', () => {
+  it('無料建設は土地の種類を問わない', () => {
+    // rules.md v0.8 7-2 からの変更（ユーザー決定 2026-11-18。以前は開拓済みの山岳だけ）
+    const dm: GameData = {
+      ...d,
+      params: {
+        ...d.params,
+        military: {
+          ...d.params.military,
+          rewards: [...d.params.military.rewards.filter((r) => r.level !== 12), { level: 12, grants: [{ kind: 'freeBuildOnTerrain', terrain: null, amount: 1 }] }],
+        },
+      },
+    };
+    let s = edit(start(), (_, q) => {
+      q.militaryLevel = 11;
+      q.militaryRewardsClaimed = [];
+      q.militaryTokens = 10;
+      q.gold = 10;
+      q.land = { E1: 'plains', F1: 'forest' };
+      q.buildings = {};
+    });
+    s = applyMove(s, 'act:drill:normal', dm);
+    while (top(s).t !== 'build' && top(s).t !== 'turn') s = applyMove(s, getOptions(s, dm).filter((o) => o.id !== 'count:0').at(-1)?.id ?? '', dm);
+    expect(me(s).militaryLevel).toBe(12);
+    expect(top(s).t).toBe('build');
+    const cells = new Set(getOptions(s, dm).map((o) => o.id.split(':')[2]).filter((c) => c !== undefined));
+    expect(cells.has('E1') && cells.has('F1')).toBe(true);
+  });
+});

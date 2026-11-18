@@ -590,7 +590,7 @@
         "grants": [
           {
             "kind": "freeBuildOnTerrain",
-            "terrain": "mountain",
+            "terrain": null,
             "amount": 1
           }
         ]
