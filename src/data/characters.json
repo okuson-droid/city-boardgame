@@ -456,12 +456,16 @@
                     "op": "gain",
                     "res": "tempWorkers",
                     "amount": 1
-                  },
+                  }
+                ],
+                [
                   {
                     "op": "gain",
                     "res": "drawCivCards",
                     "amount": 1
-                  },
+                  }
+                ],
+                [
                   {
                     "op": "placeTiles",
                     "count": 2,
