@@ -19,7 +19,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "建物1軒を無料で建設する。",
+      "text": "プレイ時：建物1軒を無料で建設する。",
       "clarifications": [],
       "script": [
         {
@@ -56,7 +56,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "土地タイル2枚を置く。",
+      "text": "プレイ時：地形と同じ種類の土地タイル2枚を置く。",
       "clarifications": [
         {
           "text": "資材は支払わず、4-2 に従って配置する。",
@@ -95,7 +95,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "金を支払わずに建物を3軒まで建設する。",
+      "text": "プレイ時：金を払わずに建物を3軒まで建設する。",
       "clarifications": [
         {
           "text": "建設コストのうち金だけを免除し、資材は支払う。",
@@ -138,7 +138,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "5資材を得る。",
+      "text": "プレイ時：5資材を得る。",
       "clarifications": [],
       "script": [
         {
@@ -171,7 +171,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "金の生産を5上げる。",
+      "text": "プレイ時：金の生産力を5上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -210,7 +210,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "地形を無視して山岳土地タイルを置く。",
+      "text": "プレイ時：地形を無視して山岳の土地タイル1枚を置く。",
       "clarifications": [
         {
           "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
@@ -249,7 +249,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "地形を無視して水場土地タイルを置く。",
+      "text": "プレイ時：地形を無視して水場の土地タイル1枚を置く。",
       "clarifications": [
         {
           "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
@@ -288,7 +288,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "地形を無視して森林土地タイルを置く。",
+      "text": "プレイ時：地形を無視して森林の土地タイル1枚を置く。",
       "clarifications": [
         {
           "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
@@ -327,7 +327,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "地形を無視して平原土地タイルを置く。",
+      "text": "プレイ時：地形を無視して平原の土地タイル1枚を置く。",
       "clarifications": [
         {
           "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
@@ -366,7 +366,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "軍事レベルを1上げる。",
+      "text": "プレイ時：軍事レベルを1上げる。",
       "clarifications": [],
       "script": [
         {
@@ -399,7 +399,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "インフラレベルを1上げる。",
+      "text": "プレイ時：インフラレベルを1上げる。",
       "clarifications": [],
       "script": [
         {
@@ -432,7 +432,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "市民カード1枚を獲得する。",
+      "text": "プレイ時：特別な市民カード1枚を得る。",
       "clarifications": [
         {
           "text": "「市民カード」は特別な市民カードである。公開カードから1枚を選び、山札から1枚補充する（9-3-2-2）。",
@@ -471,7 +471,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "臨時ワーカーを2つ得る。",
+      "text": "プレイ時：臨時ワーカー2を得る。",
       "clarifications": [
         {
           "text": "ワーカーの「つ」は「人」と読み替える。",
@@ -510,7 +510,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "軍事トークンを5つ得る。",
+      "text": "プレイ時：軍事力トークン5を得る。",
       "clarifications": [
         {
           "text": "「軍事トークン」は軍事力トークンである。",
@@ -549,7 +549,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "資材の生産を2上げる。",
+      "text": "プレイ時：資材の生産力を2上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -588,7 +588,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "文明カードを2枚引く。",
+      "text": "プレイ時：文明カード2枚を引く。",
       "clarifications": [],
       "script": [
         {
@@ -621,7 +621,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "軍事トークンを2つ得る。遠征報酬を3つ獲得する。",
+      "text": "プレイ時：軍事力トークン2を得る。異なる遠征の報酬3つを得る。",
       "clarifications": [
         {
           "text": "「軍事トークン」は軍事力トークンである。",
@@ -672,7 +672,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "金の生産を1上げる。",
+      "text": "プレイ時：金の生産力を1上げる。",
       "clarifications": [
         {
           "text": "1枚が複数の分類を持つ場合も、音楽・文学・美術のいずれかを持てば1回だけ引く。",
@@ -712,7 +712,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している文学タグ1つにつき1点を得る。通常ワーカー1つにつき1金を得る。",
+      "text": "プレイ時：文学タグ1につき1点を得る。通常ワーカー1につき1金を得る。",
       "clarifications": [
         {
           "text": "ワーカーの「つ」は「人」と読み替える。",
@@ -776,7 +776,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している文学タグ1つにつき1点を得る。建物のない土地タイル1枚につき1金を得る。",
+      "text": "プレイ時：文学タグ1につき1点を得る。建物のない土地タイル1枚につき1金を得る。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -835,7 +835,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している文学タグ1つにつき1点を得る。インフラレベル1につき1金を得る。",
+      "text": "プレイ時：文学タグ1につき1点を得る。インフラレベル1につき1金を得る。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -894,7 +894,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している文学タグ1つにつき1点を得る。軍事力トークン1つにつき1金を得る。",
+      "text": "プレイ時：文学タグ1につき1点を得る。軍事力トークン1につき1金を得る。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -953,7 +953,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している文学タグ1つにつき1点を得る。資材の生産1につき1金を得る。",
+      "text": "プレイ時：文学タグ1につき1点を得る。資材の生産力1につき1金を得る。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -1017,7 +1017,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している文学タグ1つにつき1点を得る。建物1軒につき1金を得る。",
+      "text": "プレイ時：文学タグ1につき1点を得る。建物1軒につき1金を得る。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -1076,7 +1076,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している文学タグ1つにつき1点を得る。金の生産3につき1金を得る。",
+      "text": "プレイ時：文学タグ1につき1点を得る。金の生産力3につき1金を得る。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -1140,7 +1140,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している文学タグ1つにつき1点を得る。襲撃の撃退ライン1につき1金を得る。",
+      "text": "プレイ時：文学タグ1につき1点を得る。撃退ライン1につき1金を得る。",
       "clarifications": [
         {
           "text": "撃退ラインは、そのラウンドまでに累積した値である（034・042 と同じ扱い）。",
@@ -1204,7 +1204,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している美術タグ1つにつき1点を得る。軍事レベルが3以上なら、2資材を得る。6以上なら、もう1資材を得る。",
+      "text": "プレイ時：美術タグ1につき1点を得る。軍事レベルが3以上なら、2資材を得る。軍事レベルが6以上なら、1資材を得る。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -1284,7 +1284,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している美術タグ1つにつき1点を得る。インフラレベルが3以上なら、2資材を得る。6以上なら、もう1資材を得る。",
+      "text": "プレイ時：美術タグ1につき1点を得る。インフラレベルが3以上なら、2資材を得る。インフラレベルが6以上なら、1資材を得る。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -1364,7 +1364,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している美術タグ1つにつき1点を得る。金の生産が20以上なら、2資材を得る。30以上なら、もう1資材を得る。",
+      "text": "プレイ時：美術タグ1につき1点を得る。金の生産力が20以上なら、2資材を得る。金の生産力が30以上なら、1資材を得る。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -1449,7 +1449,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している美術タグ1つにつき1点を得る。土地タイルが7枚以上なら、2資材を得る。14枚以上なら、もう1資材を得る。",
+      "text": "プレイ時：美術タグ1につき1点を得る。土地タイルが7枚以上なら、2資材を得る。土地タイルが14枚以上なら、1資材を得る。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -1529,7 +1529,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している美術タグ1つにつき1点を得る。建物が5軒以上なら、2資材を得る。8軒以上なら、もう1資材を得る。",
+      "text": "プレイ時：美術タグ1につき1点を得る。建物が5軒以上なら、2資材を得る。建物が8軒以上なら、1資材を得る。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -1609,7 +1609,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している美術タグ1つにつき1点を得る。住宅が4軒以上なら、2資材を得る。通常ワーカーが8人以上なら、もう1資材を得る。",
+      "text": "プレイ時：美術タグ1につき1点を得る。住宅が4軒以上なら、2資材を得る。通常ワーカーが8以上なら、1資材を得る。",
       "clarifications": [
         {
           "text": "2段目は通常ワーカーが8人以上であれば満たし、1段目（住宅4軒以上）の成否を問わない。",
@@ -1694,7 +1694,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している美術タグ1つにつき1点を得る。資材の生産が5以上なら、2資材を得る。8以上なら、もう1資材を得る。",
+      "text": "プレイ時：美術タグ1につき1点を得る。資材の生産力が5以上なら、2資材を得る。資材の生産力が8以上なら、1資材を得る。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -1779,7 +1779,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している美術タグ1つにつき1点を得る。軍事力が撃退ラインより低いなら、2資材を得る。防衛ラインより低いなら、もう1資材を得る。",
+      "text": "プレイ時：美術タグ1につき1点を得る。軍事レベルが撃退ラインより低いなら、2資材を得る。軍事レベルが防衛ラインより低いなら、1資材を得る。",
       "clarifications": [
         {
           "text": "「軍事力」は軍事レベルである。",
@@ -1869,7 +1869,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している音楽タグ1つにつき1点を得る。軍事レベルが3以上なら、文明カードを1枚引く。6以上なら、もう1枚引く。",
+      "text": "プレイ時：音楽タグ1につき1点を得る。軍事レベルが3以上なら、文明カードを1枚引く。軍事レベルが6以上なら、文明カードを1枚引く。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -1949,7 +1949,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している音楽タグ1つにつき1点を得る。インフラレベルが3以上なら、文明カードを1枚引く。6以上なら、もう1枚引く。",
+      "text": "プレイ時：音楽タグ1につき1点を得る。インフラレベルが3以上なら、文明カードを1枚引く。インフラレベルが6以上なら、文明カードを1枚引く。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -2029,7 +2029,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している音楽タグ1つにつき1点を得る。金の生産が25以上なら、文明カードを1枚引く。30以上なら、もう1枚引く。",
+      "text": "プレイ時：音楽タグ1につき1点を得る。金の生産力が20以上なら、文明カードを1枚引く。金の生産力が30以上なら、文明カードを1枚引く。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -2066,7 +2066,7 @@
               "cond": {
                 "left": "goldProduction",
                 "op": ">=",
-                "right": 25
+                "right": 20
               },
               "then": [
                 {
@@ -2114,7 +2114,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している音楽タグ1つにつき1点を得る。土地タイルが7枚以上なら、文明カードを1枚引く。14枚以上なら、もう1枚引く。",
+      "text": "プレイ時：音楽タグ1につき1点を得る。土地タイルが7枚以上なら、文明カードを1枚引く。土地タイルが14枚以上なら、文明カードを1枚引く。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -2194,7 +2194,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している音楽タグ1つにつき1点を得る。建物が5軒以上なら、文明カードを1枚引く。8軒以上なら、もう1枚引く。",
+      "text": "プレイ時：音楽タグ1につき1点を得る。建物が5軒以上なら、文明カードを1枚引く。建物が8軒以上なら、文明カードを1枚引く。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -2274,7 +2274,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している音楽タグ1つにつき1点を得る。住宅が4軒以上なら、文明カードを1枚引く。通常ワーカーが8人以上なら、もう1枚引く。",
+      "text": "プレイ時：音楽タグ1につき1点を得る。住宅が4軒以上なら、文明カードを1枚引く。通常ワーカーが8以上なら、文明カードを1枚引く。",
       "clarifications": [
         {
           "text": "2段目は通常ワーカーが8人以上であれば満たし、1段目（住宅4軒以上）の成否を問わない。",
@@ -2359,7 +2359,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している音楽タグ1つにつき1点を得る。資材の生産が5以上なら、文明カードを1枚引く。8以上なら、もう1枚引く。",
+      "text": "プレイ時：音楽タグ1につき1点を得る。資材の生産力が5以上なら、文明カードを1枚引く。資材の生産力が8以上なら、文明カードを1枚引く。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -2444,7 +2444,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している音楽タグ1つにつき1点を得る。軍事力が撃退ラインより低いなら、文明カードを1枚引く。防衛ラインより低いなら、もう1枚引く。",
+      "text": "プレイ時：音楽タグ1につき1点を得る。軍事レベルが撃退ラインより低いなら、文明カードを1枚引く。軍事レベルが防衛ラインより低いなら、文明カードを1枚引く。",
       "clarifications": [
         {
           "text": "「軍事力」は軍事レベルである。",
@@ -2533,7 +2533,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "1ワーカーの専用アクションスペース：文明カードを1枚引き、文明カード1枚をプレイする。",
+      "text": "専用スペース（ワーカー1）：文明カードを1枚引く。文明カードを1枚プレイする。",
       "clarifications": [
         {
           "text": "研究アクションの処理を終えた後に、手札から文明カード1枚をコストを支払ってプレイできる（プレイしなくてもよい）。特別市民11 で写した研究も数える（特別市民02 の扱いに倣う）。",
@@ -2578,7 +2578,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "建設済みの大学1軒につき、資材の生産力を1上げる。",
+      "text": "プレイ時：大学1軒につき資材の生産力を1上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -2621,7 +2621,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "建設済みの大学1軒につき、2資材を得る。",
+      "text": "プレイ時：大学1軒につき2資材を得る。",
       "clarifications": [],
       "script": [
         {
@@ -2658,7 +2658,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "建設済みの大学1軒につき、7金を得る。",
+      "text": "プレイ時：大学1軒につき7金を得る。",
       "clarifications": [],
       "script": [
         {
@@ -2695,7 +2695,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "大学が1軒以上あるなら、インフラレベルを1上げる。3軒以上あるなら、もう1上げる。",
+      "text": "プレイ時：大学が1軒以上なら、インフラレベルを1上げる。大学が3軒以上なら、さらにインフラレベルを1上げる。",
       "clarifications": [],
       "script": [
         {
@@ -2753,7 +2753,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "大学が1軒以上あるなら、金の生産力を3上げる。3軒以上あるなら、もう3上げる。",
+      "text": "プレイ時：大学が1軒以上あるなら、金の生産力を3上げる。大学が3軒以上あるなら、さらに金の生産力を3上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -2817,7 +2817,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "大学が1軒以上あるなら、軍事レベルを1上げる。3軒以上あるなら、もう1上げる。",
+      "text": "プレイ時：大学が1軒以上あるなら、軍事レベルを1上げる。大学が3軒以上あるなら、さらに軍事レベルを1上げる。",
       "clarifications": [],
       "script": [
         {
@@ -2875,7 +2875,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "建設済みの大学1軒につき、文明カードを1枚引く。",
+      "text": "プレイ時：大学1軒につき文明カードを1枚引く。",
       "clarifications": [],
       "script": [
         {
@@ -2912,7 +2912,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "建設済みの建物4軒につき1点を得る。",
+      "text": "プレイ時：建物4軒につき1点を得る。",
       "clarifications": [
         {
           "text": "得点の評価軸は「その他」とする（17-0-2）。",
@@ -2956,7 +2956,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "資材を支払わずに建物を2軒まで建設する。",
+      "text": "プレイ時：資材を払わずに2軒まで建物を建設する。",
       "clarifications": [],
       "script": [
         {
@@ -2993,7 +2993,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "砦が2軒以上あるなら、軍事レベルを1上げる。役所が2軒以上あるなら、インフラレベルを1上げる。",
+      "text": "プレイ時：砦が2軒以上あるなら、軍事レベルを1上げる。役所が2軒以上あるなら、インフラレベルを1上げる。",
       "clarifications": [],
       "script": [
         {
@@ -3051,7 +3051,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "文明カード1枚を無料でプレイする。",
+      "text": "プレイ時：文明カードを無料で1枚プレイする。",
       "clarifications": [
         {
           "text": "手札から1枚を選び、コストを支払わずにプレイする。",
@@ -3090,7 +3090,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "文明カードを1枚引く。文明カード1枚をプレイできる。",
+      "text": "プレイ時：文明カードを1枚引く。文明カードを1枚までプレイする。",
       "clarifications": [
         {
           "text": "引いた後に、手札から文明カード1枚をコストを支払ってプレイできる（プレイしなくてもよい）。",
@@ -3135,7 +3135,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "文明カードを3枚引く。",
+      "text": "プレイ時：文明カードを3枚引く。",
       "clarifications": [],
       "script": [
         {
@@ -3168,7 +3168,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "文明カードを3枚までプレイする。",
+      "text": "プレイ時：文明カードを3枚までプレイする。",
       "clarifications": [
         {
           "text": "コストを支払ってプレイする。0〜3枚の間で終えられる。",
@@ -3208,7 +3208,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "建物がない土地タイル1種類につき1資材を得る。さらに2種類につき1資材を得る。",
+      "text": "プレイ時：建物のない土地タイルの種類1につき1資材を得る。建物のない土地タイルの種類2につき1資材を得る。",
       "clarifications": [
         {
           "text": "「1種類につき」は、建物のない土地タイルの地形の種類の数（0〜4）で数える。",
@@ -3260,7 +3260,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "建物がない土地タイル1種類につき3金を得る。さらに2種類につき2金を得る。",
+      "text": "プレイ時：建物のない土地タイルの種類1につき3金を得る。建物のない土地タイルの種類2につき2金を得る。",
       "clarifications": [
         {
           "text": "「1種類につき」は、建物のない土地タイルの地形の種類の数（0〜4）で数える。",
@@ -3312,7 +3312,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "建物が無い土地タイル2種類につき金の生産を3上げる。",
+      "text": "プレイ時：建物のない土地タイルの種類2につき金の生産力を3上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -3360,7 +3360,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "建物が無い土地タイル1種類につき資材の生産を1上げる。",
+      "text": "プレイ時：建物のない土地タイルの種類1につき資材の生産力を1上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -3408,7 +3408,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "地形を無視して山岳タイルを2枚置く。",
+      "text": "プレイ時：地形を無視して山岳の土地タイルを2枚置く。",
       "clarifications": [
         {
           "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
@@ -3447,7 +3447,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "地形を無視して森林タイルを2枚置く。",
+      "text": "プレイ時：地形を無視して森林の土地タイルを2枚置く。",
       "clarifications": [
         {
           "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
@@ -3486,7 +3486,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "地形を無視して平原タイルを2枚置く。",
+      "text": "プレイ時：地形を無視して平原の土地タイルを2枚置く。",
       "clarifications": [
         {
           "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
@@ -3525,7 +3525,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "地形を無視して水場タイルを2枚置く。",
+      "text": "プレイ時：地形を無視して水場の土地タイルを2枚置く。",
       "clarifications": [
         {
           "text": "資材は支払わない（19-1-1）。配置は 4-2-1 の隣接に従う。",
@@ -3564,7 +3564,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "土地タイル3枚を置く。",
+      "text": "プレイ時：地形と同じ種類の土地タイルを3枚置く。",
       "clarifications": [
         {
           "text": "資材は支払わず、4-2 に従って配置する。",
@@ -3603,7 +3603,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：防衛失敗時、軍事レベルを2上げる。撃退成功時、2資材を得る。",
+      "text": "常時（防衛失敗した時）：軍事レベルを2上げる。常時（撃退成功した時）：2資材を得る。",
       "clarifications": [
         {
           "text": "「防衛失敗」「撃退成功」は自分の襲撃の判定結果である（第7章）。",
@@ -3660,7 +3660,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "軍事レベルを1上げる。現在の軍事レベル2につき1点を得る。",
+      "text": "プレイ時：軍事レベルを1上げる。軍事レベル3につき1点を得る。",
       "clarifications": [
         {
           "text": "得点の評価軸は「その他」とする（17-0-2）。",
@@ -3682,7 +3682,7 @@
               "res": "points",
               "amount": {
                 "count": "militaryLevel",
-                "per": 2,
+                "per": 3,
                 "times": 1
               },
               "axis": "culture"
@@ -3709,7 +3709,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "建設済みの砦1軒につき1点を得る。",
+      "text": "プレイ時：砦1軒につき1点を得る。",
       "clarifications": [
         {
           "text": "得点の評価軸は「その他」とする（17-0-2）。",
@@ -3753,7 +3753,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "通常ワーカー1つにつき、軍事トークン1を得る。",
+      "text": "プレイ時：通常ワーカー1につき軍事力トークン1を得る。",
       "clarifications": [
         {
           "text": "ワーカーの「つ」は「人」と読み替える。",
@@ -3801,7 +3801,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "通常ワーカーが7人以上なら、軍事レベルを1上げる。10人以上なら、もう1上げる。",
+      "text": "プレイ時：通常ワーカーが7以上なら、軍事レベルを1上げる。通常ワーカーが10以上なら、さらに軍事レベルを1上げる。",
       "clarifications": [
         {
           "text": "ワーカーの「つ」は「人」と読み替える。",
@@ -3865,7 +3865,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "砦1軒を無料で建設する。軍事レベルを1上げる。",
+      "text": "プレイ時：砦を1軒無料で建設する。軍事レベルを1上げる。",
       "clarifications": [],
       "script": [
         {
@@ -3909,7 +3909,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：山岳タイルを置く度に、1枚につき1資材を得る。",
+      "text": "常時（山岳の土地タイルを置く度に）：1資材を得る。",
       "clarifications": [],
       "script": [
         {
@@ -3946,7 +3946,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：土地タイルを置く度に、1枚につき1金を得る。",
+      "text": "常時（土地タイルを置く度に）：1金を得る。",
       "clarifications": [],
       "script": [
         {
@@ -3981,7 +3981,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：水場タイルを置く度に、1枚につき3金を得る。",
+      "text": "常時（水場の土地タイルを置く度に）：3金を得る。",
       "clarifications": [],
       "script": [
         {
@@ -4018,7 +4018,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "7金を得る。文明カード1枚をプレイしてもよい。",
+      "text": "プレイ時：7金を得る。文明カードを1枚までプレイする。",
       "clarifications": [
         {
           "text": "15金を得た後に、手札から文明カード1枚をコストを支払ってプレイできる（プレイしなくてもよい）。",
@@ -4063,7 +4063,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "1資材を得る。金の生産力を3上げる。",
+      "text": "プレイ時：1資材を得る。金の生産力を3上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -4107,7 +4107,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "2資材を得る。金の生産力を2上げる。",
+      "text": "プレイ時：2資材を得る。金の生産力を2上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -4151,7 +4151,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "2資材を得る。金の生産力を5上げる。",
+      "text": "プレイ時：2資材を得る。金の生産力を5上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -4195,7 +4195,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "2資材を得る。資材の生産を1上げる。",
+      "text": "プレイ時：2資材を得る。資材の生産力を1上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -4239,7 +4239,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "3資材を得る。金の生産力を3上げる。",
+      "text": "プレイ時：3資材を得る。金の生産力を3上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -4283,7 +4283,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "金の生産力を3上げる。",
+      "text": "プレイ時：金の生産力を3上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -4322,7 +4322,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "金の生産を2上げる。資材の生産を1上げる。",
+      "text": "プレイ時：金の生産力を2上げる。資材の生産力を1上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -4366,7 +4366,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "建設済みの建物3種類につき2資材を得る。",
+      "text": "プレイ時：建設済みの建物の種類3につき2資材を得る。",
       "clarifications": [
         {
           "text": "「1種類につき」は、建設済みの建物の種類の数（0〜7）で数える。",
@@ -4409,7 +4409,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "建設済みの建物1種類につき2金を得る。",
+      "text": "プレイ時：建設済みの建物の種類1につき2金を得る。",
       "clarifications": [
         {
           "text": "「1種類につき」は、建設済みの建物の種類の数（0〜7）で数える。",
@@ -4452,7 +4452,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "資材の生産力を3上げる。",
+      "text": "プレイ時：資材の生産力を3上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -4491,7 +4491,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "臨時ワーカーを1つ得る。金の生産力を3上げる。",
+      "text": "プレイ時：臨時ワーカー1を得る。金の生産力を3上げる。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -4540,7 +4540,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：住宅を建設する度に1点を得る。",
+      "text": "常時（住宅を建設する度に）：1点を得る。",
       "clarifications": [
         {
           "text": "得点の評価軸は「その他」とする（17-0-2）。",
@@ -4584,7 +4584,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：通常ワーカーを得る度に、1つにつき7金を得る。",
+      "text": "常時（通常ワーカーを獲得する度に）：7金を得る。",
       "clarifications": [
         {
           "text": "ワーカーの「つ」は「人」と読み替える。",
@@ -4627,7 +4627,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "金の生産を2上げる。住宅1軒を無料で建設できる。",
+      "text": "プレイ時：金の生産力を2上げる。住宅を1軒まで無料で建設する。",
       "clarifications": [
         {
           "text": "「金の生産」「資材の生産」は金・資材の生産力である。",
@@ -4677,7 +4677,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "役所が1軒以上あるなら、インフラレベルを1上げる。3軒以上あるなら、もう1上げる。",
+      "text": "プレイ時：役所が1軒以上あるなら、インフラレベルを1上げる。役所が3軒以上あるなら、インフラレベルを1上げる。",
       "clarifications": [],
       "script": [
         {
@@ -4735,7 +4735,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "住宅4軒につき、インフラレベルを1上げる。",
+      "text": "プレイ時：住宅4軒につきインフラレベルを1上げる。",
       "clarifications": [],
       "script": [
         {
@@ -4772,7 +4772,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "住宅を4軒まで無料で建設する。",
+      "text": "プレイ時：住宅を4軒まで無料で建設する。",
       "clarifications": [],
       "script": [
         {
@@ -4803,7 +4803,7 @@
       "id": "094",
       "name": "ボランティア",
       "cost": {
-        "gold": 12
+        "gold": 8
       },
       "tags": [
         "life"
@@ -4811,7 +4811,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "通常ワーカー2つにつき1資材を得る。",
+      "text": "プレイ時：通常ワーカー2につき1資材を得る。",
       "clarifications": [
         {
           "text": "ワーカーの「つ」は「人」と読み替える。",
@@ -4854,7 +4854,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "役所1軒を無料で建設する。インフラレベルを1上げる。",
+      "text": "プレイ時：役所を1軒無料で建設する。インフラレベルを1上げる。",
       "clarifications": [],
       "script": [
         {
@@ -4898,7 +4898,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "環境タグがあるなら7金を得る。環境タグが3つ以上あるなら、更に7金を得る。",
+      "text": "プレイ時：環境タグが1以上あるなら、7金を得る。環境タグが3以上あるなら、さらに7金を得る。",
       "clarifications": [
         {
           "text": "「〇〇タグがある」「〇〇タグが3つ以上ある」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数で数え、プレイ中のこのカード自身を含む。",
@@ -4962,7 +4962,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "軍事タグがあるなら7金を得る。軍事タグが3つ以上あるなら、更に7金を得る。",
+      "text": "プレイ時：軍事タグが1以上あるなら、7金を得る。軍事タグが3以上あるなら、さらに7金を得る。",
       "clarifications": [
         {
           "text": "「〇〇タグがある」「〇〇タグが3つ以上ある」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数で数え、プレイ中のこのカード自身を含む。",
@@ -5026,7 +5026,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している学術タグ1つにつき1金を得る。",
+      "text": "プレイ時：学術タグ1につき1金を得る。",
       "clarifications": [
         {
           "text": "「所持している〇〇タグ」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数であり、プレイ中のこのカード自身を含む。",
@@ -5069,7 +5069,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "生活タグがあるなら7金を得る。生活タグが3つ以上あるなら、更に7金を得る。",
+      "text": "プレイ時：生活タグが1以上あるなら、7金を得る。生活タグが3以上あるなら、さらに7金を得る。",
       "clarifications": [
         {
           "text": "「〇〇タグがある」「〇〇タグが3つ以上ある」は、プレイ済みの文明カードのうちその分類のタグを持つ枚数で数え、プレイ中のこのカード自身を含む。",
@@ -5133,7 +5133,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "異なる種類の土地タイルを4枚まで置く",
+      "text": "プレイ時：地形と同じ種類の異なる土地タイルを4枚まで置く。",
       "clarifications": [
         {
           "text": "地形と同じ種類の土地タイルを、種類ごとに1枚まで、合わせて4枚まで置く。地形と異なる種類は置けない。置く順番は選べる。",
@@ -5179,7 +5179,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：遠征報酬の土地タイルは地形を無視して置くことができる。",
+      "text": "常時：遠征報酬の土地タイルは地形と異なる種類も置ける。",
       "clarifications": [
         {
           "text": "遠征報酬（遠征アクションと、文明カードの「遠征報酬を獲得する」）の土地タイルは、地形と異なる種類も置ける（4-2-2 に優先する）。",
@@ -5219,7 +5219,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "常時：軍事トークンを支払う時、代わりにトークン1につき2金を支払ってもよい。",
+      "text": "常時：軍事力トークンを支払う代わりにトークン1つにつき2金を支払うことができる。",
       "clarifications": [
         {
           "text": "「軍事トークン」は軍事力トークンである。",
@@ -5260,7 +5260,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "常時：自分の襲撃の処理をスキップしてもよい。",
+      "text": "常時：自分の襲撃の処理を行わないことを選べる。",
       "clarifications": [
         {
           "text": "襲撃の宣言のときに「処理を行わない」を選べる。選んだ場合、そのラウンドの自分の襲撃の処理（宣言・判定・基本得点・襲撃カードの効果・判定結果に反応する効果）をすべて行わない。",
@@ -5300,7 +5300,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：通常及び上位の遠征アクションで、同じ報酬を2回まで選んでよい。最上位の遠征アクションで、同じ報酬を3回まで選んでよい。",
+      "text": "常時：一度の遠征アクションで同じ報酬を選べる回数を変更する。(通常アクション：2回まで/上位アクション：2回まで/最上位アクション：3回まで)",
       "clarifications": [
         {
           "text": "遠征アクションの報酬の選択数（6-3-6-6）は変えず、同じ報酬を選べる回数だけを、通常・上位は2回まで、最上位は3回までにする。文明カードの「遠征報酬を獲得する」には適用しない。",
@@ -5345,7 +5345,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "1ワーカーの専用アクションスペース：文明カード1枚をプレイし、文明カードを1枚引く。",
+      "text": "専用スペース（ワーカー1）：文明カードを1枚プレイする。文明カードを1枚引く。",
       "clarifications": [
         {
           "text": "普及アクションの処理（途中で起きた効果を含む）をすべて終えた後に1枚引く。引いたカードはその普及ではプレイできない。特別市民11 で写した普及も数える。",
@@ -5390,7 +5390,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "プレイ済みの文明カード1枚につき1金を得る。",
+      "text": "プレイ時：プレイ済みの文明カード1枚につき1金を得る。",
       "clarifications": [
         {
           "text": "「プレイ済みの文明カード」はプレイ中のこのカード自身を含む。",
@@ -5433,7 +5433,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "所持している学術タグ3つにつき1点を得る。",
+      "text": "プレイ時：学術タグ3につき1点を得る。",
       "clarifications": [
         {
           "text": "「プレイ済みの文明カード」はプレイ中のこのカード自身を含む。",
@@ -5482,7 +5482,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：防衛成功時、1点を得る。",
+      "text": "常時（防衛成功した時）：1点を得る。",
       "clarifications": [
         {
           "text": "防衛成功（防衛ライン以上・撃退ライン未満）のたびに1点を得る。撃退成功・防衛失敗では得ない。",
@@ -5531,7 +5531,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "文明カードを3枚まで捨て、捨てた数だけ軍事レベルを上げる。",
+      "text": "プレイ時：文明カードを3枚まで捨て、捨てた枚数だけ軍事レベルを上げる。",
       "clarifications": [
         {
           "text": "手札から0〜3枚を選んで捨て、捨てた枚数だけ軍事レベルを上げる。到達報酬は得る。12 を超えた分の得点はない（教練に限る、ユーザー決定 2026-11-03）。",
@@ -5570,7 +5570,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：いずれかのプレイヤーが輸入アクションを実行する度に5金を得る。",
+      "text": "常時（いずれかのプレイヤーが輸入のアクションを実行する度に）：3金を得る。",
       "clarifications": [
         {
           "text": "自分を含むいずれかのプレイヤーが輸入アクションを実行する度に2金を得る。特別市民11 で写した輸入も数える。",
@@ -5590,7 +5590,7 @@
             {
               "op": "gain",
               "res": "gold",
-              "amount": 5
+              "amount": 3
             }
           ]
         }
@@ -5614,7 +5614,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：建物を建設する度に、住宅以外は1軒につき2金、住宅は1軒につき1金を得る。",
+      "text": "常時（住宅以外を建設する度に）：2金を得る。常時（住宅を建設する度に）：1金を得る。",
       "clarifications": [
         {
           "text": "建て方（建築アクション・無料建設・カードの効果など）を問わず、住宅以外の建物を1軒建てる度に2金、住宅を1軒建てる度に1金を得る。",
@@ -5671,7 +5671,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：1回のアクション中に住宅を2軒以上建設した時、臨時ワーカー1を得る。",
+      "text": "常時（住宅2軒以上を建てたアクション終了時）：臨時ワーカー1を得る。",
       "clarifications": [
         {
           "text": "1回のアクションの処理中（途中で起きた効果で建てた住宅を含む）に住宅を2軒以上建てたとき、そのアクションを終えた時に臨時ワーカー1人を得る。1回のアクションにつき1回だけ。アクションの外で建てた住宅は数えない。",
@@ -5722,7 +5722,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：インフラレベルが1上がる度に、1資材を得る。",
+      "text": "常時（インフラレベルが1上がる度に）：1資材を得る。",
       "clarifications": [
         {
           "text": "インフラレベルが実際に1上がる度に1資材を得る。上限で上がらなかった分は得ない。",
@@ -5765,7 +5765,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 1,
-      "text": "常時：建設アクションで住宅1軒のみを建設した時、土地タイル1枚を置く。",
+      "text": "常時（住宅1軒だけを建てた建築アクション終了時）：地形と同じ種類の土地タイルを1枚置く。",
       "clarifications": [
         {
           "text": "「建設アクション」は建築アクションである。1回の建築アクションで建てた建物が住宅1軒だけだったとき、アクションを終えた時に土地タイルを1枚置く。",
@@ -5819,7 +5819,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "山岳のマスに山岳タイル1枚を置く。住宅1軒を無料で建設できる。",
+      "text": "プレイ時：山岳の地形に山岳の土地タイルを1枚置く。住宅を1軒まで無料で建設する。",
       "clarifications": [
         {
           "text": "土地タイルは山岳のマスにだけ、地形と同じ種類で置く（「地形を無視して」がないため 4-2-2 に従う）。",
@@ -5880,7 +5880,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "住宅1軒を無料で建設する。建設済みの住宅2軒につき1点を得る。",
+      "text": "プレイ時：住宅を1軒無料で建設する。住宅2軒につき1点を得る。",
       "clarifications": [
         {
           "text": "先に住宅を建て、その住宅を含めて建設済みの住宅1軒につき1点を得る。",
@@ -5945,7 +5945,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "住宅2軒をこのカードの上に無料で建設する。",
+      "text": "プレイ時：住宅2軒をこのカードの上に無料で建設する。",
       "clarifications": [
         {
           "text": "このカードの上の住宅は盤面にない住宅として扱う。建物の数・住宅の数・住宅の上限・建設した時の効果には数え、計画都市・自然公園・建物のない土地・地形ごとの建物の数には数えない。住宅の上限に届く分は建てない。",
@@ -5984,7 +5984,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "森林のマスに森林タイル1枚を置く。住宅1軒を無料で建設できる。",
+      "text": "プレイ時：森林の地形に森林の土地タイルを1枚置く。住宅を1軒まで無料で建設する。",
       "clarifications": [
         {
           "text": "土地タイルは森林のマスにだけ、地形と同じ種類で置く（「地形を無視して」がないため 4-2-2 に従う）。",
@@ -6045,7 +6045,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "平原のマスに平原タイル1枚を置く。住宅1軒を無料で建設できる。",
+      "text": "プレイ時：平原の地形に平原の土地タイルを1枚置く。住宅を1軒まで無料で建設する。",
       "clarifications": [
         {
           "text": "土地タイルは平原のマスにだけ、地形と同じ種類で置く（「地形を無視して」がないため 4-2-2 に従う）。",
@@ -6106,7 +6106,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "水場のマスに水場タイル1枚を置く。住宅1軒を無料で建設できる。",
+      "text": "プレイ時：水場の地形に水場の土地タイルを1枚置く。住宅を1軒まで無料で建設する。",
       "clarifications": [
         {
           "text": "土地タイルは水場のマスにだけ、地形と同じ種類で置く（「地形を無視して」がないため 4-2-2 に従う）。",
