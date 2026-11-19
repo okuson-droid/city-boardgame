@@ -4,7 +4,7 @@
 
 - 席は部屋に入ったときに決まる。作業ディレクトリ <作業ディレクトリ>。`play` は `node <リポジトリ>/dist-play/cli.js`
 - 資格情報 `<資格情報>`（以下 `C`）。ノート `.play/notes/<名前>.md`
-- 読む：`knowledge-play.md`、ドラフトの前に `openings/draft.md`、キャラクターが決まったら自分の `openings/<キャラクター>.md` だけ
+- 読む：`knowledge-play.md`・`strategy.md`、ドラフトの前に `openings/draft.md`、キャラクターが決まったら自分の `openings/<キャラクター>.md` だけ
 
 ## 手順
 1. 最初に `play online show --creds C` を1回呼ぶ。ノートがあれば読む。
@@ -19,7 +19,7 @@
 `play online show --creds C --only <欄>`（progress・raid・actions・shared・self・hand・others・board・options）、効果文は `play online ref --creds C`（`--card <番号>`・`--only buildings` など）。局面全体は `online wait --state`。`--full` と自作の grep・sed・head・tail は使わない。
 
 ## ノート（ラウンドの終わりに上書き、1.5KB 以内）
-先頭に計画。方針・次の初手・狙い。局面の写しは書かない。
+定型は `strategy.md` の末尾。局面の写しは書かない。
 
 ## 知見（対局後、2KB 以内、`.play/insights/<名前>.md`）
 得点と内訳、効いたもの・誤った判断（各3つまで）、人の打ち方で気づいたこと、コマンドへの要望。
