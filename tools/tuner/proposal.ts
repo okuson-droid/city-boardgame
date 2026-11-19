@@ -1,7 +1,7 @@
 // 調整案（指示書 3-5）。元データ（src/data/）の写しを編集し、元の値と新しい値の組を変更点として持つ。
 // 画面に依存しない関数だけを置き、単体テストで確かめる。
 
-import { checkGameData, DataValidationError, parseGameData, rawFromFiles, type DataFiles, type DataIssue } from '../../src/data/index.ts';
+import { checkGameData, checkGameDataWarnings, DataValidationError, parseGameData, rawFromFiles, type DataFiles, type DataIssue } from '../../src/data/index.ts';
 import { selfPlayCheck } from '../../src/game/selfplay.ts';
 
 export type Path = readonly (string | number)[];
@@ -232,6 +232,54 @@ export const validateFiles = (files: DataFiles): DataIssue[] => {
     if (error instanceof Error) return [{ path: '（全体）', message: error.message }];
     throw error;
   }
+};
+
+/**
+ * 注意（ゲームは壊れないが調整の誤りかもしれない点、ユーザー決定 2026-11-19）。保存は止めず、知らせるだけにする。
+ * 型検査で止まるデータでは空を返す（問題のほうで知らせる）。
+ */
+export const warningsOfFiles = (files: DataFiles): DataIssue[] => {
+  try {
+    return checkGameDataWarnings(parseGameData(rawFromFiles(files)));
+  } catch {
+    return [];
+  }
+};
+
+/** 効果を変えたのに文言が元のままのカード（ユーザー決定 2026-11-19、見直し案2）。 */
+export type StaleText = { readonly file: string; readonly id: string; readonly name: string; readonly what: string };
+
+const listOf = (files: DataFiles, file: string, key: string): Record<string, unknown>[] => {
+  const root = files[file];
+  const list = typeof root === 'object' && root !== null ? (root as Record<string, unknown>)[key] : undefined;
+  return Array.isArray(list) ? (list as Record<string, unknown>[]) : [];
+};
+
+/**
+ * 効果（効果スクリプト・ボーナスタイルの効果）が元データから変わり、文言（文明カード・ボーナスタイルの text、
+ * 特別な市民カード・キャラクターの revisedEffects）が変わっていないものを返す。新しく作ったカードは数えない。
+ */
+export const staleTexts = (base: DataFiles, work: DataFiles): StaleText[] => {
+  const targets = [
+    { file: 'cards_civilization.json', key: 'cards', effect: ['script'], text: ['text'] },
+    { file: 'special_citizens.json', key: 'cards', effect: ['script'], text: ['revisedEffects'] },
+    { file: 'characters.json', key: 'characters', effect: ['script'], text: ['revisedEffects'] },
+    { file: 'bonus_tiles.json', key: 'tiles', effect: ['roundStart', 'passScore'], text: ['text'] },
+  ];
+  const result: StaleText[] = [];
+  for (const t of targets) {
+    const before = new Map(listOf(base, t.file, t.key).map((c) => [String(c['id']), c]));
+    for (const card of listOf(work, t.file, t.key)) {
+      const old = before.get(String(card['id']));
+      if (old === undefined) continue;
+      const effectChanged = t.effect.some((k) => !deepEqual(old[k], card[k]));
+      const textChanged = t.text.some((k) => !deepEqual(old[k], card[k]));
+      if (effectChanged && !textChanged) {
+        result.push({ file: t.file, id: String(card['id']), name: String(card['name'] ?? ''), what: t.text.join('・') });
+      }
+    }
+  }
+  return result;
 };
 
 /** 保存前の自動対戦の局数（3人・4人を交互に）。数秒で終わる数にする。 */

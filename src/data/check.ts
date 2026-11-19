@@ -5,9 +5,13 @@
 import { CELL_IDS, isConnectedAxial } from '../game/board.ts';
 import { BUILDINGS, CIV_TAGS, TERRAINS, type GameData, type LevelReward } from './types.ts';
 
-export type DataIssue = { readonly path: string; readonly message: string };
+/**
+ * 検査で見つかった点。level が warning のものは「注意」で、ゲームは壊れないが調整の誤りかもしれない点である
+ * （ユーザー決定 2026-11-19、チューナーの編集範囲の見直し案5）。注意は保存を止めない。
+ */
+export type DataIssue = { readonly path: string; readonly message: string; readonly level?: 'warning' };
 
-type Report = (path: string, message: string) => void;
+type Report = (path: string, message: string, level?: 'warning') => void;
 
 const checkUniqueIds = (ids: readonly (string | number)[], path: string, report: Report): void => {
   const seen = new Set<string | number>();
@@ -30,7 +34,7 @@ const checkLevelRewards = (rewards: readonly LevelReward[], max: number, path: s
     }
     const previous = rewards[i - 1];
     if (previous !== undefined && (sameLevel ? previous.level > reward.level : previous.level >= reward.level)) {
-      report(`${path}[${i}].level`, sameLevel ? 'レベルは昇順に並べなければならない' : 'レベルは昇順で重複なく並べなければならない');
+      report(`${path}[${i}].level`, sameLevel ? 'レベルは昇順に並べなければならない' : 'レベルは昇順で重複なく並べなければならない', sameLevel ? 'warning' : undefined);
     }
   });
 };
@@ -157,19 +161,19 @@ const checkParams = (data: GameData, report: Report): void => {
   // 最上位アクションの解放条件で参照する建物の上限（rules.md 6-3）
   for (const [action, unlock] of Object.entries(params.actions.unlockTop)) {
     if (unlock.metric === 'buildingsOfType' && unlock.atLeast > limits[unlock.building]) {
-      report(`params.actions.unlockTop.${action}.atLeast`, `${unlock.building} の建設上限を超えている`);
+      report(`params.actions.unlockTop.${action}.atLeast`, `${unlock.building} の建設上限を超えている`, 'warning');
     }
     if (unlock.metric === 'militaryLevel' && unlock.atLeast > params.military.max) {
-      report(`params.actions.unlockTop.${action}.atLeast`, '軍事レベルの上限を超えている');
+      report(`params.actions.unlockTop.${action}.atLeast`, '軍事レベルの上限を超えている', 'warning');
     }
     if (unlock.metric === 'totalBuildings') {
       const totalLimit = BUILDINGS.reduce((sum, b) => sum + limits[b], 0);
       if (unlock.atLeast > totalLimit) {
-        report(`params.actions.unlockTop.${action}.atLeast`, '建物の総数の上限を超えている');
+        report(`params.actions.unlockTop.${action}.atLeast`, '建物の総数の上限を超えている', 'warning');
       }
     }
     if (unlock.metric === 'landTiles' && unlock.atLeast > CELL_IDS.length) {
-      report(`params.actions.unlockTop.${action}.atLeast`, 'マス数を超えている');
+      report(`params.actions.unlockTop.${action}.atLeast`, 'マス数を超えている', 'warning');
     }
   }
 
@@ -177,7 +181,7 @@ const checkParams = (data: GameData, report: Report): void => {
   const sharedKeys = params.actions.shared.map((s) => `${s.action}.${s.tier}`);
   sharedKeys.forEach((key, i) => {
     if (sharedKeys.indexOf(key) !== i) {
-      report(`params.actions.shared[${i}]`, `${key} が重複している`);
+      report(`params.actions.shared[${i}]`, `${key} が重複している`, 'warning');
     }
   });
 
@@ -186,7 +190,7 @@ const checkParams = (data: GameData, report: Report): void => {
   checkLevelRewards(params.infra.rewards, params.infra.max, 'params.infra.rewards', report);
   checkLevelRewards(params.actions.expedition.rewards, params.military.max, 'params.actions.expedition.rewards', report, true);
   if (params.actions.expedition.rewards[0]?.level !== 0) {
-    report('params.actions.expedition.rewards', '軍事レベル0の報酬がない');
+    report('params.actions.expedition.rewards', '軍事レベル0の報酬がない', 'warning');
   }
 
   // 襲撃（rules.md 7-3）
@@ -235,7 +239,7 @@ const checkCards = (data: GameData, report: Report): void => {
   checkUniqueIds(data.civilizationCards.map((c) => c.id), 'civilizationCards', report);
   data.civilizationCards.forEach((card, i) => {
     if (card.tags.length === 0) {
-      report(`civilizationCards[${i}].tags`, 'タグが1つもない');
+      report(`civilizationCards[${i}].tags`, 'タグが1つもない', 'warning');
     }
   });
 
@@ -244,7 +248,7 @@ const checkCards = (data: GameData, report: Report): void => {
   data.plannedCityCards.forEach((card, i) => {
     const path = `plannedCityCards[${i}]`;
     if (card.slots.length < 3 || card.slots.length > 5) {
-      report(`${path}.slots`, `建物は3〜5軒でなければならない（${card.slots.length}軒）`);
+      report(`${path}.slots`, `建物は3〜5軒でなければならない（${card.slots.length}軒）`, 'warning');
     }
     card.slots.forEach((slot, k) => {
       if (slot.terrain === null && slot.building === null) {
@@ -266,7 +270,7 @@ const checkCards = (data: GameData, report: Report): void => {
   data.natureParkCards.forEach((card, i) => {
     const path = `natureParkCards[${i}]`;
     if (card.sets.length !== 3) {
-      report(`${path}.sets`, `セットは3つでなければならない（${card.sets.length}）`);
+      report(`${path}.sets`, `セットは3つでなければならない（${card.sets.length}）`, 'warning');
     }
     card.sets.forEach((set, k) => {
       const setPath = `${path}.sets[${k}]`;
@@ -274,7 +278,7 @@ const checkCards = (data: GameData, report: Report): void => {
         report(`${setPath}.cells`, `${set.cells.length}枚のセットの得点が scoring.natureParkPointsBySetSize にない`);
       }
       if (!set.cells.some((cell) => cell.terrain === 'forest')) {
-        report(`${setPath}.cells`, '森林を含まない（rules.md 14-1-4）');
+        report(`${setPath}.cells`, '森林を含まない（rules.md 14-1-4）', 'warning');
       }
       if (!isConnectedAxial(set.cells)) {
         report(`${setPath}.cells`, '形状がつながっていない、または同じ位置が重複している');
@@ -293,6 +297,11 @@ const checkCards = (data: GameData, report: Report): void => {
       if (ability.ability === 'on' && ability.filter.tag !== undefined && !CIV_TAGS.some((t) => t === ability.filter.tag)) {
         report(`${path}[${k}].filter.tag`, `存在しないタグである（${ability.filter.tag}）`);
       }
+      // 反応の種類ごとに要る指定（ユーザー決定 2026-11-19、見直し案6）。「トラックが上がった時」はどのトラックかを指定する
+      // （2026-11-16、指揮官の「軍事レベルが12になった時」で抜け、インフラが上がっても起きた）。
+      if (ability.ability === 'on' && ability.event === 'trackRaised' && ability.filter.track === undefined) {
+        report(`${path}[${k}].filter.track`, '「トラックが上がった時」の反応に、どのトラックかの指定がない');
+      }
     });
   }
 
@@ -302,13 +311,20 @@ const checkCards = (data: GameData, report: Report): void => {
   checkUniqueIds(data.bonusTiles.map((c) => c.id), 'bonusTiles', report);
 };
 
-export const checkGameData = (data: GameData): DataIssue[] => {
+/** 問題と注意をすべて返す。 */
+export const checkGameDataAll = (data: GameData): DataIssue[] => {
   const issues: DataIssue[] = [];
-  const report: Report = (path, message) => {
-    issues.push({ path, message });
+  const report: Report = (path, message, level) => {
+    issues.push(level === undefined ? { path, message } : { path, message, level });
   };
   checkParams(data, report);
   checkBoards(data, report);
   checkCards(data, report);
   return issues;
 };
+
+/** 問題（ゲームが壊れる・決まりに反する点）だけを返す。データを読み込むとき・保存の前に止める。 */
+export const checkGameData = (data: GameData): DataIssue[] => checkGameDataAll(data).filter((i) => i.level === undefined);
+
+/** 注意（ゲームは壊れないが、調整の誤りかもしれない点）だけを返す。 */
+export const checkGameDataWarnings = (data: GameData): DataIssue[] => checkGameDataAll(data).filter((i) => i.level === 'warning');

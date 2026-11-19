@@ -436,7 +436,7 @@ const rewardExecutable = (d: GameData, player: PlayerState, entry: ExpeditionEnt
       case 'buildRight':
         return canBuildRight(d, player);
       case 'freeBuildOnTerrain':
-        return freeLandCells(player).some((cell) => player.land[cell] === grant.terrain);
+        return freeLandCells(player).some((cell) => grant.terrain === null || player.land[cell] === grant.terrain);
       default:
         return true;
     }

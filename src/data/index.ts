@@ -24,7 +24,7 @@ import {
 } from './validate.ts';
 
 export * from './types.ts';
-export { checkGameData, type DataIssue } from './check.ts';
+export { checkGameData, checkGameDataAll, checkGameDataWarnings, type DataIssue } from './check.ts';
 export { DataValidationError } from './validate.ts';
 
 /** JSON から読んだままの、検査前のデータ一式。チューナーの調整案はこの形を編集する。 */

@@ -25,7 +25,7 @@ export const grantText = (g: Grant): string => {
     case 'buildRight':
       return `建物${g.amount}軒を建てる（建設の権利）`;
     case 'freeBuildOnTerrain':
-      return `${terrainLabel(g.terrain)}に建物${g.amount}軒を無料で建てる`;
+      return `${g.terrain === null ? '好きな土地' : terrainLabel(g.terrain)}に建物${g.amount}軒を無料で建てる`;
     case 'specialCitizen':
       return `特別な市民カード${g.amount}枚を獲得する`;
     case 'drawCivCards':
@@ -54,7 +54,7 @@ const grantShort = (g: Grant): string => {
     case 'buildRight':
       return `建設の権利${g.amount}`;
     case 'freeBuildOnTerrain':
-      return `${terrainLabel(g.terrain)}への無料建設${g.amount}`;
+      return `${g.terrain === null ? '任意の土地' : terrainLabel(g.terrain)}への無料建設${g.amount}`;
     default:
       return `${labelIn('resources', g.kind)}${g.amount}`;
   }
