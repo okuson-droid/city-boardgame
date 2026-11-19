@@ -153,7 +153,7 @@
           1,
           2,
           3,
-          3
+          4
         ]
       },
       "workshop": {
@@ -163,7 +163,7 @@
           2,
           4,
           6,
-          6
+          8
         ]
       },
       "fort": {
@@ -183,7 +183,7 @@
           2,
           3,
           4,
-          4
+          5
         ],
         "welfareConvertMaxWorkers": 1
       },
@@ -769,7 +769,7 @@
         "landTiles"
       ]
     },
-    "finalRoundRepelPoints": 5
+    "finalRoundRepelPoints": 2
   },
   "freeActions": {
     "conversions": [
@@ -866,16 +866,16 @@
     },
     "goldPerPointByShops": [
       20,
-      10,
       5,
       4,
-      3
+      3,
+      2
     ],
     "materialsPerPointByWorkshops": [
       10,
-      4,
       3,
       2,
+      1,
       1
     ],
     "civCardsPerPointByUniversities": [
