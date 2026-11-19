@@ -655,3 +655,12 @@ body,
     margin-left: 8px;
   }
 }
+
+/* 注意（保存を止めない、ユーザー決定 2026-11-19）と省略できる項目。 */
+.issues.warnings li {
+  color: #7a5a00;
+}
+
+.obj-row.optional-unset .readonly {
+  font-style: italic;
+}

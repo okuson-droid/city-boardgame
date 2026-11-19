@@ -4,7 +4,7 @@
 // 公開ページ（GitHub Pages の tuner/）では、開発サーバーへの書き出しの代わりに GitHub への保存（github.ts）を使う。
 
 import { useEffect, useMemo, useState } from 'react';
-import { DATA_FILES, DATA_VERSION, isBoardFileName, type DataFiles } from '../../src/data/index.ts';
+import { DATA_FILES, DATA_VERSION, isBoardFileName, parseGameData, rawFromFiles, type DataFiles } from '../../src/data/index.ts';
 import { BoardEditor } from './BoardEditor.tsx';
 import { CardPreview } from './CardPreview.tsx';
 import { ShapeEditor, type ShapeCellValue } from './ShapeEditor.tsx';
@@ -33,9 +33,13 @@ import {
   SELF_PLAY_GAMES,
   selfPlayFiles,
   toMarkdown,
+  staleTexts,
   validateFiles,
+  warningsOfFiles,
   type Change,
 } from './proposal.ts';
+import { describeScript } from '../../src/game/icons.ts';
+import { bonusTileText } from '../../src/game/labels.ts';
 import { ScriptEditor } from './ScriptEditor.tsx';
 
 type Kind = { id: string; label: string; file: string | null; listKey: string | null };
@@ -142,6 +146,9 @@ export const TunerApp = () => {
   useEffect(() => save(STORE_GITHUB, github), [github]);
 
   const changes = useMemo(() => diffFiles(base, work), [base, work]);
+  /** 注意（保存は止めない、ユーザー決定 2026-11-19）と、効果を変えたのに文言が元のままのカード。 */
+  const warnings = useMemo(() => warningsOfFiles(work), [work]);
+  const stale = useMemo(() => staleTexts(base, work), [base, work]);
   const proposal = useMemo(() => proposalFromWork(meta, base, work), [meta, base, work]);
 
   const fileOf = (k: Kind): string => (k.id === 'boards' ? boardFile : (k.file ?? 'params.json'));
@@ -586,7 +593,33 @@ export const TunerApp = () => {
                 onSet={onSetIn(file, prefix)}
                 skip={['script', ...(kind.id === 'planned' ? ['slots', 'benefits'] : []), ...(kind.id === 'nature' ? ['sets'] : [])]}
                 unlocked={itemIsNew}
+                file={file}
               />
+              {(kind.id === 'civ' || kind.id === 'bonus') && isObject(item) && 'text' in item ? (
+                <section>
+                  <h3>文言</h3>
+                  <p className="muted small">効果を変えたら文言も直す。下のボタンで、いまの効果から文言の下書きを作れる（作った後に整えてよい）。</p>
+                  <button
+                    type="button"
+                    className="btn small"
+                    data-ui="text-from-effect"
+                    onClick={() => {
+                      try {
+                        const d = parseGameData(rawFromFiles(work));
+                        const text =
+                          kind.id === 'civ'
+                            ? describeScript(d.civilizationCards.find((c) => c.id === item['id'])?.script ?? []).join('。')
+                            : bonusTileText(d, Number(item['id']));
+                        if (text !== '') onSetIn(file, prefix)(['text'], text.endsWith('。') ? text : `${text}。`);
+                      } catch {
+                        setMessage('データに問題があるため、文言を作れなかった。検査で問題を直してから使うこと。');
+                      }
+                    }}
+                  >
+                    効果から文言を作る
+                  </button>
+                </section>
+              ) : null}
               {isObject(item) && 'script' in item ? (
                 <section>
                   <h3>効果（命令と引数）</h3>
@@ -615,6 +648,32 @@ export const TunerApp = () => {
               ))}
             </ol>
           </section>
+          {stale.length > 0 ? (
+            <section data-ui="stale-texts">
+              <h3>文言を確かめる {stale.length}件</h3>
+              <p className="muted small">効果を変えたのに文言（説明文）が元のままである。直すか、そのままでよいか確かめること。</p>
+              <ul className="issues">
+                {stale.map((t) => (
+                  <li key={`${t.file}-${t.id}`}>
+                    <span className="muted small">{t.file}</span> {t.id} {t.name}（{t.what}）
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+          {warnings.length > 0 ? (
+            <section data-ui="warnings">
+              <h3>注意 {warnings.length}件</h3>
+              <p className="muted small">ゲームは壊れないが、調整の誤りかもしれない点である。保存は止めない。</p>
+              <ul className="issues warnings">
+                {warnings.map((w, i) => (
+                  <li key={i}>
+                    <code>{w.path}</code> {w.message}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
           <section>
             <h3>検査</h3>
             <button

@@ -8,6 +8,7 @@ import {
   RAW_GAME_DATA,
   TERRAINS,
   checkGameData,
+  checkGameDataAll,
   parseGameData,
   type GameData,
   type RawGameData,
@@ -32,7 +33,8 @@ const at = (value: unknown, ...keys: (string | number)[]): Record<string, unknow
   return current as Record<string, unknown>;
 };
 
-const issuesOf = (data: GameData): string[] => checkGameData(data).map((i) => `${i.path}：${i.message}`);
+// 問題と注意の両方を見る（注意はユーザー決定 2026-11-19 で問題から分けた）。
+const issuesOf = (data: GameData): string[] => checkGameDataAll(data).map((i) => `${i.path}：${i.message}`);
 
 describe('データの型検査', () => {
   it('同梱のデータはすべて型検査と整合検査を通る', () => {

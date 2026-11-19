@@ -7,10 +7,12 @@ import { deepEqual, type Path } from './proposal.ts';
 
 export type OnSet = (path: Path, value: unknown) => void;
 
-/** 読むだけの項目（識別子・原本の文言・注記）。識別子を変えると参照が切れるため編集させない。 */
+/**
+ * 読むだけの項目（識別子・注記・仮置きの印・条件）。識別子を変えると参照が切れるため編集させない。
+ * どのファイルでも読むだけにする項目である。
+ */
 const READ_ONLY = new Set([
   'id',
-  'text',
   'notes',
   'source',
   'clarifications',
@@ -19,12 +21,6 @@ const READ_ONLY = new Set([
   'schema',
   'version',
   'updated',
-  'on_defense_fail',
-  'on_repel',
-  'effects',
-  'initial_bonus',
-  'label',
-  'axis',
   'rulesRef',
   'generatedWithSeed',
   'rulesVersion',
@@ -37,12 +33,60 @@ const READ_ONLY = new Set([
 ]);
 
 /**
+ * ファイルごとに読むだけにする項目（原本の文言）。以前は項目名だけで決めていたため、パラメータの建物の効果
+ * （buildings.effects）までキャラクターの原本の文言（effects）と同じく読むだけになっていた（ユーザー決定 2026-11-19、
+ * 見直し案1）。文明カードとボーナスタイルの文言（text）は、効果に合わせて直せるよう編集できる（見直し案2）。
+ */
+const READ_ONLY_BY_FILE: Readonly<Record<string, ReadonlySet<string>>> = {
+  'characters.json': new Set(['effects', 'initial_bonus', 'label', 'axis', 'text']),
+  'special_citizens.json': new Set(['effects', 'text']),
+  'raid_cards.json': new Set(['text', 'on_defense_fail', 'on_repel']),
+};
+
+/**
  * 新しく作ったカード（元データにないカード）で編集できる、読むだけの項目。新しいカードには原本がないため、
  * 名前に加えて文言・分類・効果の説明などを自由に書けるようにする。識別子と仮置きの印は読むだけのままである。
  */
 const UNLOCKED_FOR_NEW = new Set(['text', 'label', 'axis', 'effects', 'initial_bonus', 'on_defense_fail', 'on_repel']);
 
-const isReadOnly = (key: string, unlocked: boolean): boolean => READ_ONLY.has(key) && !(unlocked && UNLOCKED_FOR_NEW.has(key));
+export const isReadOnly = (key: string, unlocked: boolean, file: string): boolean =>
+  (READ_ONLY.has(key) || (READ_ONLY_BY_FILE[file]?.has(key) ?? false)) && !(unlocked && UNLOCKED_FOR_NEW.has(key));
+
+/** 省略できる項目（データになくてもよい項目）。「（未設定）」として出し、設定・解除できる（ユーザー決定 2026-11-19、見直し案3）。 */
+export type OptionalField = { readonly key: string; readonly label: string; readonly initial: (obj: Record<string, unknown>) => unknown };
+
+const TIER_KEYS = new Set(['normal', 'upper', 'top']);
+
+/**
+ * いる位置（ファイルと、カードなら1枚の中、パラメータならファイルの根からの位置）ごとの、省略できる項目の一覧。
+ * src/data/types.ts の省略できる項目を足したらここにも足す（tests/tuner-optional.test.ts が既定値でデータが読めることを確かめる）。
+ */
+export const optionalFieldsAt = (file: string, path: Path): readonly OptionalField[] => {
+  const at = (...keys: (string | null)[]): boolean =>
+    path.length === keys.length && keys.every((k, i) => k === null ? typeof path[i] === 'string' && TIER_KEYS.has(path[i] as string) : path[i] === k);
+  if (file === 'params.json') {
+    if (at()) return [{ key: 'specialCitizens', label: '特別な市民カードの場の入れ替え', initial: () => ({ roundEndRotate: 2 }) }];
+    if (at('workers')) return [{ key: 'tempUsableOnGain', label: '臨時ワーカーを得た瞬間から使える', initial: () => false }];
+    if (at('actions', 'research', null)) return [{ key: 'discard', label: '引いた後に捨てる枚数', initial: () => 1 }];
+    if (at('raid')) return [{ key: 'finalRoundRepelPoints', label: '最終ラウンドの撃退の点', initial: () => 5 }];
+    return [];
+  }
+  if (path.length !== 0) return [];
+  if (file === 'characters.json') {
+    return [
+      { key: 'revisedEffects', label: 'いまの効果の文言', initial: (o) => structuredClone(o['effects'] ?? []) },
+      { key: 'changes', label: '原本からの変更', initial: () => [''] },
+    ];
+  }
+  if (file === 'special_citizens.json') {
+    return [{ key: 'revisedEffects', label: 'いまの効果の文言', initial: (o) => structuredClone(o['effects'] ?? []) }];
+  }
+  return [];
+};
+
+/** ラウンドの列（精霊チップの回収など）は、第1〜第5ラウンドのチェック欄で選ぶ（見直し案4）。 */
+const ROUND_LISTS = new Set(['spiritChipReturnRounds']);
+const ROUNDS = [1, 2, 3, 4, 5];
 
 /** 項目名と位置から、選べる値の一覧を決める。 */
 export const enumFor = (key: string, path: Path): readonly (string | null)[] | null => {
@@ -102,6 +146,7 @@ const Primitive = ({
   keyName,
   onSet,
   unlocked,
+  file,
 }: {
   value: unknown;
   base: unknown;
@@ -109,11 +154,12 @@ const Primitive = ({
   keyName: string;
   onSet: OnSet;
   unlocked: boolean;
+  file: string;
 }) => {
   const options = enumFor(keyName, path);
   const cls = `field-input${changedClass(value, base)}`;
   // いまの効果の文言（revisedEffects、2026-11-10）は原本ではないため、中の文言・時機も編集できる。
-  if (isReadOnly(keyName, unlocked) && !path.includes('revisedEffects')) return <span className="readonly">{readonlyText(value)}</span>;
+  if (isReadOnly(keyName, unlocked, file) && !path.includes('revisedEffects')) return <span className="readonly">{readonlyText(value)}</span>;
   if (options !== null && (typeof value === 'string' || value === null)) {
     return (
       <select className={cls} value={value === null ? '' : value} onChange={(e) => onSet(path, e.target.value === '' ? null : e.target.value)}>
@@ -152,6 +198,7 @@ export const JsonEditor = ({
   onSet,
   skip = [],
   unlocked = false,
+  file = '',
 }: {
   value: unknown;
   base: unknown;
@@ -161,11 +208,29 @@ export const JsonEditor = ({
   skip?: readonly string[];
   /** 新しく作ったカードなら true（文言などの読むだけの項目も編集できる）。 */
   unlocked?: boolean;
+  /** 編集しているファイル（読むだけの項目と省略できる項目を決める）。 */
+  file?: string;
 }) => {
-  if (isReadOnly(keyName, unlocked) && (Array.isArray(value) || isObject(value))) {
+  if (isReadOnly(keyName, unlocked, file) && !path.includes('revisedEffects') && (Array.isArray(value) || isObject(value))) {
     return <span className="readonly small">（読むだけ）</span>;
   }
   if (Array.isArray(value)) {
+    if (ROUND_LISTS.has(keyName) && value.every((v) => typeof v === 'number')) {
+      return (
+        <span className={`checks${changedClass(value, base)}`}>
+          {ROUNDS.map((r) => (
+            <label key={r}>
+              <input
+                type="checkbox"
+                checked={value.includes(r)}
+                onChange={(e) => onSet(path, e.target.checked ? [...value, r].sort((a, b) => Number(a) - Number(b)) : value.filter((v) => v !== r))}
+              />
+              第{r}ラウンド
+            </label>
+          ))}
+        </span>
+      );
+    }
     const listEnum = listEnumFor(keyName);
     if (listEnum !== null && value.every((v) => typeof v === 'string')) {
       return (
@@ -189,7 +254,7 @@ export const JsonEditor = ({
         {value.map((item, i) => (
           <div key={i} className="list-item">
             <span className="list-index">{i}</span>
-            <JsonEditor value={item} base={baseList[i]} path={[...path, i]} keyName={keyName} onSet={onSet} unlocked={unlocked} />
+            <JsonEditor value={item} base={baseList[i]} path={[...path, i]} keyName={keyName} onSet={onSet} unlocked={unlocked} file={file} />
             <button type="button" className="btn small" onClick={() => onSet(path, value.filter((_, j) => j !== i))}>
               削除
             </button>
@@ -205,6 +270,9 @@ export const JsonEditor = ({
   }
   if (isObject(value)) {
     const baseObj = isObject(base) ? base : {};
+    const optional = optionalFieldsAt(file, path);
+    const optionalKeys = new Set(optional.map((o) => o.key));
+    const without = (key: string): Record<string, unknown> => Object.fromEntries(Object.entries(value).filter(([k]) => k !== key));
     return (
       <div className="obj">
         {Object.entries(value)
@@ -214,11 +282,29 @@ export const JsonEditor = ({
               <span className="obj-key" title={k}>
                 {keyLabel(k)}
               </span>
-              <JsonEditor value={v} base={baseObj[k]} path={[...path, k]} keyName={k} onSet={onSet} unlocked={unlocked} />
+              <JsonEditor value={v} base={baseObj[k]} path={[...path, k]} keyName={k} onSet={onSet} unlocked={unlocked} file={file} />
+              {optionalKeys.has(k) ? (
+                <button type="button" className="btn small" data-ui="optional-unset" onClick={() => onSet(path, without(k))}>
+                  未設定に戻す
+                </button>
+              ) : null}
+            </div>
+          ))}
+        {optional
+          .filter((o) => !(o.key in value) && !skip.includes(o.key))
+          .map((o) => (
+            <div key={o.key} className={`obj-row optional-unset${o.key in baseObj ? ' changed' : ''}`}>
+              <span className="obj-key" title={o.key}>
+                {keyLabel(o.key)}
+              </span>
+              <span className="readonly">（未設定）</span>
+              <button type="button" className="btn small" data-ui="optional-set" onClick={() => onSet([...path, o.key], o.initial(value))}>
+                設定する
+              </button>
             </div>
           ))}
       </div>
     );
   }
-  return <Primitive value={value} base={base} path={path} keyName={keyName} onSet={onSet} unlocked={unlocked} />;
+  return <Primitive value={value} base={base} path={path} keyName={keyName} onSet={onSet} unlocked={unlocked} file={file} />;
 };
