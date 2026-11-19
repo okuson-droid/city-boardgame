@@ -453,29 +453,39 @@
               "options": [
                 [
                   {
-                    "op": "gain",
-                    "res": "tempWorkers",
-                    "amount": 1
-                  }
-                ],
-                [
-                  {
-                    "op": "gain",
-                    "res": "drawCivCards",
-                    "amount": 1
-                  }
-                ],
-                [
-                  {
                     "op": "placeTiles",
-                    "count": 2,
+                    "count": 1,
                     "tile": "match"
+                  }
+                ],
+                [
+                  {
+                    "op": "gain",
+                    "res": "materials",
+                    "amount": 2
+                  }
+                ],
+                [
+                  {
+                    "op": "if",
+                    "cond": {
+                      "left": "playedCivCards",
+                      "op": "<",
+                      "right": "landTiles"
+                    },
+                    "then": [
+                      {
+                        "op": "gain",
+                        "res": "drawCivCards",
+                        "amount": 1
+                      }
+                    ]
                   }
                 ]
               ]
             }
           ],
-          "every": 3
+          "every": 2
         }
       ]
     },

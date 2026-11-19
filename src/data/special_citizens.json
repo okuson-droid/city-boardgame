@@ -640,8 +640,8 @@
               "res": "gold",
               "amount": {
                 "count": "regularWorkers",
-                "per": 1,
-                "times": 1
+                "per": 2,
+                "times": 3
               }
             },
             {
@@ -690,6 +690,11 @@
               "op": "gain",
               "res": "goldProduction",
               "amount": 3
+            },
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 1
             }
           ]
         }
@@ -734,7 +739,7 @@
               "amount": {
                 "count": "tempWorkers",
                 "per": 1,
-                "times": 2
+                "times": 3
               }
             }
           ]
@@ -946,6 +951,24 @@
               "axis": "welfare"
             }
           ]
+        },
+        {
+          "ability": "on",
+          "event": "workerGained",
+          "filter": {
+            "kind": "regular"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tempWorkers",
+                "per": 1,
+                "times": 1
+              }
+            }
+          ]
         }
       ]
     },
@@ -994,12 +1017,12 @@
             {
               "op": "gain",
               "res": "gold",
-              "amount": 10
+              "amount": 4
             },
             {
               "op": "gain",
               "res": "materials",
-              "amount": 6
+              "amount": 4
             },
             {
               "op": "placeTiles",
@@ -1032,6 +1055,11 @@
           "ability": "actionSpace",
           "workers": 1,
           "do": [
+            {
+              "op": "raise",
+              "track": "military",
+              "amount": 1
+            },
             {
               "op": "expeditionRewards",
               "count": 3

@@ -51,7 +51,7 @@
     {
       "id": 2,
       "defense_increase": 1,
-      "repel_increase": 1,
+      "repel_increase": 2,
       "on_defense_fail": "次の収入後、襲撃ラウンド数×1資材を失う",
       "on_repel": "襲撃ラウンド数×1資材",
       "open_issues": [
@@ -85,7 +85,7 @@
     {
       "id": 3,
       "defense_increase": 1,
-      "repel_increase": 3,
+      "repel_increase": 4,
       "on_defense_fail": "金の生産力を襲撃ラウンド数分失う",
       "on_repel": "襲撃ラウンド数分の土地タイルを配置",
       "open_issues": [
@@ -121,7 +121,7 @@
     {
       "id": 4,
       "defense_increase": 2,
-      "repel_increase": 2,
+      "repel_increase": 3,
       "on_defense_fail": "次の収入後、襲撃ラウンド数×2金を失う",
       "on_repel": "襲撃ラウンド数×1金と同数の点",
       "open_issues": [
