@@ -4,6 +4,7 @@ import { checkGameData, checkGameDataWarnings, DATA_FILES, GAME_DATA, parseGameD
 import type { Script } from '../src/data/script.ts';
 import { isReadOnly, optionalFieldsAt } from '../tools/tuner/JsonEditor.tsx';
 import { getAt, setInFiles, staleTexts } from '../tools/tuner/proposal.ts';
+import { ratePoints } from '../src/game/scoring.ts';
 
 const base = DATA_FILES;
 
@@ -77,5 +78,24 @@ describe('文言を確かめる（見直し案2）', () => {
     expect(staleTexts(base, work).map((t) => t.id)).toContain(first?.id);
     work = setInFiles(work, 'cards_civilization.json', ['cards', 0, 'text'], '（効果なし）');
     expect(staleTexts(base, work).map((t) => t.id)).not.toContain(first?.id);
+  });
+});
+
+describe('終了時の換算率（ユーザー決定 2026-11-20）', () => {
+  it('N につき M 点で、1につき2点のような率も表せる。端数は切り捨てる', () => {
+    // rules.md v0.8 17-2、17-3、17-4 からの変更（ユーザー決定 2026-11-20）
+    expect(ratePoints(7, { per: 3, points: 2 })).toBe(4);
+    expect(ratePoints(5, { per: 1, points: 2 })).toBe(10);
+    expect(ratePoints(3, { per: 2, points: 1 })).toBe(1);
+    expect(ratePoints(3, { per: 1, points: 0.5 })).toBe(1);
+    expect(ratePoints(9, { per: 1, points: 0 })).toBe(0);
+  });
+
+  it('いまのデータの形（per・points の組）を読み、以前の形（数1つ）も同じ率に読む', () => {
+    // ユーザー決定 2026-11-20
+    const files = setInFiles(base, 'params.json', ['scoring', 'materialsPerPointByWorkshops', 1], { per: 1, points: 2 });
+    const d = parseGameData(rawFromFiles(files));
+    expect(d.params.scoring.materialsPerPointByWorkshops[1]).toEqual({ per: 1, points: 2 });
+    expect(checkGameData(d)).toEqual([]);
   });
 });

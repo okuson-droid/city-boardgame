@@ -16,9 +16,10 @@ describe('早見表と吹き出しの説明（ユーザー決定 2026-11-07）',
     }
     const shop = buildingInfo('shop');
     expect(shop.onBuild).toEqual([`金の生産力＋${d.params.buildings.effects.shop.goldProductionOnBuild}`]);
-    expect(shop.endScore).toContain('5・4・3');
+    // 換算率は「N につき M 点」で建物数ごとに出す（ユーザー決定 2026-11-20）。
+    expect(shop.endScore).toContain('1軒 5につき1点・2軒 4につき1点・3軒 3につき1点');
     expect(shop.unlocks).toEqual(['2軒で輸入の最上位を解放']);
-    expect(buildingInfo('office').endScore).toContain('0.5・1・2');
+    expect(buildingInfo('office').endScore).toContain('1軒 1人につき0.5点・2軒 1人につき1点・3軒 1人につき2点');
     expect(buildingInfo('fort').always[0]).toContain('3・2・1');
     expect(buildingInfo('university').terrainBonus).toEqual(['平原：3点を得る']);
     expect(buildingInfo('house').unlocks).toEqual(['5軒で移住の最上位を解放']);

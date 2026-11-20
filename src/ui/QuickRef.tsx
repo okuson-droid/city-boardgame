@@ -17,6 +17,7 @@ import {
   grantText,
   isTopUnlocked,
   ownedCount,
+  rateText,
   unlockText,
 } from '../game/queries.ts';
 import { finalScores } from '../game/scoring.ts';
@@ -292,10 +293,10 @@ const ScoringTab = ({ state, player }: { state: GameState; player: PlayerState |
       <p>
         <b>基礎得点</b>：土地タイル{s.base.landTilesPerPoint}枚・建物{s.base.buildingsPerPoint}軒・通常ワーカー{s.base.regularWorkersPerPoint}人につき1点（項目ごとに端数は切り捨て）。
       </p>
-      <CountTable head="経済・産業（商店）" values={s.goldPerPointByShops} owned={owned('shop')} unit="金の収入 N につき1点" />
-      <CountTable head="経済・産業（工房）" values={s.materialsPerPointByWorkshops} owned={owned('workshop')} unit="資材の収入 N につき1点" />
-      <CountTable head="文化・学術（大学）" values={s.civCardsPerPointByUniversities} owned={owned('university')} unit="プレイ済み N 枚につき1点" />
-      <CountTable head="生活・福祉（役所）" values={s.regularWorkerPointsByOffices} owned={owned('office')} unit="通常ワーカー1人の点" />
+      <CountTable head="経済・産業（商店）" values={s.goldPerPointByShops.map((r) => rateText(r))} owned={owned('shop')} unit="金の収入" />
+      <CountTable head="経済・産業（工房）" values={s.materialsPerPointByWorkshops.map((r) => rateText(r))} owned={owned('workshop')} unit="資材の収入" />
+      <CountTable head="文化・学術（大学）" values={s.civCardsPerPointByUniversities.map((r) => rateText(r, '枚'))} owned={owned('university')} unit="プレイ済みの文明カード" />
+      <CountTable head="生活・福祉（役所）" values={s.regularWorkerPointsByOffices.map((r) => rateText(r, '人'))} owned={owned('office')} unit="通常ワーカー" />
       <ul className="qr-notes">
         <li>文化・学術には、プレイ済みの文明カードに書かれた点も加える。</li>
         <li>自然・環境：自然公園の組 {parks.map(([n, pt]) => `${n}枚で${pt}点`).join('・')}。計画都市は宣言の先着順に {s.plannedCityPointsByRank.join('・')} 点（ゲーム中に得る）。</li>

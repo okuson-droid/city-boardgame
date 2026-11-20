@@ -36,6 +36,7 @@ import {
   type Tier,
   type TierTable,
   type UnlockCondition,
+  type ScoreRate,
 } from './types.ts';
 import { readScript, ScriptError } from './script.ts';
 
@@ -100,6 +101,20 @@ const readPositiveInt = (value: unknown, path: string): number => {
   const n = readInt(value, path);
   return n > 0 ? n : fail(path, `1以上でなければならない（実際は ${n}）`);
 };
+
+/**
+ * 終了時の換算率（per につき points 点、ユーザー決定 2026-11-20）。以前の形の数1つも読む：perPoint の表は「N につき1点」、
+ * pointsEach の表（役所）は「1人あたり N 点」と読む（固定したテストのデータと古い調整案のため）。
+ */
+const readScoreRate =
+  (legacy: 'perPoint' | 'pointsEach') =>
+  (value: unknown, path: string): ScoreRate => {
+    if (typeof value === 'number') {
+      return legacy === 'perPoint' ? { per: readPositiveInt(value, path), points: 1 } : { per: 1, points: readNonNegativeNumber(value, path) };
+    }
+    const obj = readObject(value, path);
+    return { per: readPositiveInt(field(obj, 'per', path), `${path}.per`), points: readNonNegativeNumber(field(obj, 'points', path), `${path}.points`) };
+  };
 
 export const readArray = <T>(value: unknown, path: string, item: (v: unknown, p: string) => T): T[] => {
   if (!Array.isArray(value)) {
@@ -564,22 +579,10 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
         scoring('base'),
         sp('base'),
       ),
-      goldPerPointByShops: readArray(scoring('goldPerPointByShops'), sp('goldPerPointByShops'), readPositiveInt),
-      materialsPerPointByWorkshops: readArray(
-        scoring('materialsPerPointByWorkshops'),
-        sp('materialsPerPointByWorkshops'),
-        readPositiveInt,
-      ),
-      civCardsPerPointByUniversities: readArray(
-        scoring('civCardsPerPointByUniversities'),
-        sp('civCardsPerPointByUniversities'),
-        readPositiveInt,
-      ),
-      regularWorkerPointsByOffices: readArray(
-        scoring('regularWorkerPointsByOffices'),
-        sp('regularWorkerPointsByOffices'),
-        readNonNegativeNumber,
-      ),
+      goldPerPointByShops: readArray(scoring('goldPerPointByShops'), sp('goldPerPointByShops'), readScoreRate('perPoint')),
+      materialsPerPointByWorkshops: readArray(scoring('materialsPerPointByWorkshops'), sp('materialsPerPointByWorkshops'), readScoreRate('perPoint')),
+      civCardsPerPointByUniversities: readArray(scoring('civCardsPerPointByUniversities'), sp('civCardsPerPointByUniversities'), readScoreRate('perPoint')),
+      regularWorkerPointsByOffices: readArray(scoring('regularWorkerPointsByOffices'), sp('regularWorkerPointsByOffices'), readScoreRate('pointsEach')),
       plannedCityPointsByRank: readIntArray(scoring('plannedCityPointsByRank'), sp('plannedCityPointsByRank')),
       natureParkPointsBySetSize: Object.fromEntries(
         Object.entries(natureObj).map(([size, v]) => [size, readInt(v, `${sp('natureParkPointsBySetSize')}.${size}`)]),
