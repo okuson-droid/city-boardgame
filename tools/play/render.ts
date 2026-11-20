@@ -294,13 +294,15 @@ export const showModel = (state: GameState, opts: ShowOptions = {}, d: GameData 
   const viewer = viewerOf(state, opts);
   const self = selfOf(state, viewer);
   const deciding = decider(state);
-  const options = getOptions(state, d);
+  const visibleOptions = deciding === null || canSee(viewer, deciding);
+  // 選択肢は選択待ちの持ち主の手札を含む。視点から見えないときは作らない（オンライン版の伏せた写しでは
+  // 他の席の手札が「?」のため、作ると「存在しない文明カードである：?」で失敗する。部屋 6FBUEF で見つかった）。
+  const options = visibleOptions ? getOptions(state, d) : [];
   const raidCard = queries.currentRaidCard(state, d);
   const selfPlayer = playerAt(state, self);
   const task = state.stack[state.stack.length - 1];
   const cells = targetCells(options);
   const showBoard = (opts.board === true || cells.size > 0) && selfPlayer.boardId !== null;
-  const visibleOptions = deciding === null || canSee(viewer, deciding);
   return {
     viewer,
     brief: opts.brief === true,

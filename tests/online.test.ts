@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DATA_VERSION } from '../src/data/index.ts';
 import { decider, getOptions, isGameOver } from '../src/game/engine.ts';
+import { showModel } from '../tools/play/render.ts';
 import { assertDataVersion, createRoom, joinRoom, loadRoom, moveInRoom, parseVariants, RoomError, summaryOf, undoInRoom, viewFor, type Room } from '../src/online/rooms.ts';
 
 const now = new Date('2026-11-03T00:00:00Z');
@@ -165,6 +166,22 @@ describe('伏せた写し（rules.md v0.8 19-6-1）', () => {
       // プレイ済みや捨て札など、公開された場所にある同じカードは除く。
       const publicCard = state.players.some((p) => p.played.includes(card)) || state.civDiscard.includes(card);
       if (!publicCard) expect(text.includes(`"${card}"`), card).toBe(false);
+    }
+  });
+
+  it('伏せた写しで、選択待ちでない席の局面を出せる（他の席の選択肢は作らない）', () => {
+    // rules.md v0.8 19-6-1。部屋 6FBUEF で、他の席の番に online show が「存在しない文明カードである：?」で失敗した。
+    const room = fullRoom();
+    for (let i = 0; i < 60; i += 1) {
+      const state = room.state;
+      if (state === null) break;
+      const deciding = decider(state);
+      if (deciding === null) break;
+      for (const seat of [0, 1, 2].filter((s) => s !== deciding)) {
+        const model = showModel(viewFor(state, seat), { as: seat });
+        expect(model.prompt.options).toBeNull();
+      }
+      step(room);
     }
   });
 
