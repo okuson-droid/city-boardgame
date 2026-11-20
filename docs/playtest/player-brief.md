@@ -4,7 +4,7 @@
 
 - 席 P<席>、作業ディレクトリ <作業ディレクトリ>。`play` は `node <リポジトリ>/dist-play/cli.js`
 - 記録 `.play/game.json`（共有）、ノート `.play/notes/P<席>.md`
-- 読む：`knowledge-play.md`、ドラフトの前に `openings/draft.md`、キャラクターが決まったら自分の `openings/<キャラクター>.md` だけ
+- 読む：`knowledge-play.md`・`strategy.md`、ドラフトの前に `openings/draft.md`、キャラクターが決まったら自分の `openings/<キャラクター>.md` だけ
 
 ## 手順
 1. `play resume --seat <席>` を1回呼ぶ。ノートがあれば読む。
@@ -26,7 +26,7 @@
 `play show --seat <席> --only <欄>`（欄は `--help`）、`play ref --seat <席>`（効果文、`--card <番号>`・`--only expedition`）、`play score`（見込み）。`--full` と自作の grep・sed・head・tail は使わない。
 
 ## ノート（ラウンドの終わりに上書き、1.5KB 以内）
-先頭に計画。方針・次の初手・狙い。局面の写しは書かない。
+定型は `strategy.md` の末尾。局面の写しは書かない。
 
 ## 知見（対局後、2KB 以内、`.play/insights/P<席>.md`）
 得点と内訳、効いたもの・誤った判断（各3つまで）、新しい発見、分かりにくいルール、コマンドへの要望。

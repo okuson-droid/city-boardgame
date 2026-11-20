@@ -507,11 +507,13 @@ describe('既存の記録（指示書 2026-11-12 4）', () => {
 
 describe('運用文書の上限（指示書 2026-11-12 3）', () => {
   const bytes = (path: string): number => readFileSync(path).length;
-  it('openings は10人分と draft.md があり、それぞれ1KB 以内。player-brief.md・knowledge-play.md は3KB 以内', () => {
+  it('openings は10人分と draft.md があり、それぞれ1KB 以内。player-brief.md・knowledge-play.md は3KB 以内、strategy.md は4KB 以内', () => {
     for (const c of GAME_DATA.characters) expect(bytes(`docs/playtest/openings/${c.id}.md`)).toBeLessThanOrEqual(1024);
     expect(GAME_DATA.characters).toHaveLength(10);
     expect(bytes('docs/playtest/openings/draft.md')).toBeLessThanOrEqual(1024);
     expect(bytes('docs/playtest/player-brief.md')).toBeLessThanOrEqual(3072);
     expect(bytes('docs/playtest/knowledge-play.md')).toBeLessThanOrEqual(3072);
+    // strategy.md は調査資料（strategy-principles.md）の要約で、打ち手が毎回読む（ユーザー決定 2026-11-19）
+    expect(bytes('docs/playtest/strategy.md')).toBeLessThanOrEqual(4096);
   });
 });
