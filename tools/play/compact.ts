@@ -357,10 +357,12 @@ const promptExtra = (m: ShowModel): string => {
 };
 
 /** 選択肢の欄。full なら1選択肢1行でラベルの全文、そうでなければ畳む。 */
-const optionSection = (state: GameState, m: ShowModel, full: boolean, d: GameData, unavailable: readonly string[] = unavailableLines(state, d)): string[] => {
+const optionSection = (state: GameState, m: ShowModel, full: boolean, d: GameData, given?: readonly string[]): string[] => {
   const p = m.prompt;
   if (isGameOver(state)) return ['== 選択肢: なし（ゲーム終了。score で得点を見る）'];
   if (p.options === null) return [`選択待ち：${p.player}（${p.heading}）`];
+  // 選べないものの判定は選択待ちの席の選択肢を作る。視点から選択肢が見えないときは作らない（伏せた写しでは他の席の手札が「?」で失敗する。部屋 6FBUEF）。
+  const unavailable = given ?? unavailableLines(state, d);
   const head = `== 選択肢（${p.player}：${p.heading}${promptExtra(m)}）`;
   if (full) return [head, ...p.options.map((o) => `${o.n}. ${o.id} — ${o.label}`)];
   const owner = state.players[decider(state) ?? 0];

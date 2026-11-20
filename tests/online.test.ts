@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DATA_VERSION } from '../src/data/index.ts';
 import { decider, getOptions, isGameOver } from '../src/game/engine.ts';
-import { showModel } from '../tools/play/render.ts';
+import { compactShow } from '../tools/play/compact.ts';
+import { renderShow, showModel } from '../tools/play/render.ts';
 import { assertDataVersion, createRoom, joinRoom, loadRoom, moveInRoom, parseVariants, RoomError, summaryOf, undoInRoom, viewFor, type Room } from '../src/online/rooms.ts';
 
 const now = new Date('2026-11-03T00:00:00Z');
@@ -178,8 +179,11 @@ describe('伏せた写し（rules.md v0.8 19-6-1）', () => {
       const deciding = decider(state);
       if (deciding === null) break;
       for (const seat of [0, 1, 2].filter((s) => s !== deciding)) {
-        const model = showModel(viewFor(state, seat), { as: seat });
-        expect(model.prompt.options).toBeNull();
+        const view = viewFor(state, seat);
+        expect(showModel(view, { as: seat }).prompt.options).toBeNull();
+        // 既定の短い形と全文も出せる（選べないものの判定で選択待ちの席の選択肢を作らない）。
+        expect(() => compactShow(view, { as: seat })).not.toThrow();
+        expect(() => renderShow(view, { as: seat })).not.toThrow();
       }
       step(room);
     }
