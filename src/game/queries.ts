@@ -369,6 +369,7 @@ export {
   expeditionRows,
   grantText,
   ownedCount,
+  rateText,
   unlockText,
   type BuildingInfo,
   type ExpeditionRow,

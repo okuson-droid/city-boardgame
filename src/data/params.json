@@ -865,32 +865,92 @@
       "regularWorkersPerPoint": 1
     },
     "goldPerPointByShops": [
-      20,
-      5,
-      4,
-      3,
-      2
+      {
+        "per": 20,
+        "points": 1
+      },
+      {
+        "per": 5,
+        "points": 1
+      },
+      {
+        "per": 4,
+        "points": 1
+      },
+      {
+        "per": 3,
+        "points": 1
+      },
+      {
+        "per": 2,
+        "points": 1
+      }
     ],
     "materialsPerPointByWorkshops": [
-      10,
-      3,
-      2,
-      1,
-      1
+      {
+        "per": 10,
+        "points": 1
+      },
+      {
+        "per": 3,
+        "points": 1
+      },
+      {
+        "per": 2,
+        "points": 1
+      },
+      {
+        "per": 1,
+        "points": 1
+      },
+      {
+        "per": 1,
+        "points": 1
+      }
     ],
     "civCardsPerPointByUniversities": [
-      5,
-      4,
-      3,
-      2,
-      1
+      {
+        "per": 5,
+        "points": 1
+      },
+      {
+        "per": 4,
+        "points": 1
+      },
+      {
+        "per": 3,
+        "points": 1
+      },
+      {
+        "per": 2,
+        "points": 1
+      },
+      {
+        "per": 1,
+        "points": 1
+      }
     ],
     "regularWorkerPointsByOffices": [
-      0,
-      0,
-      0.5,
-      1,
-      2
+      {
+        "per": 1,
+        "points": 0
+      },
+      {
+        "per": 1,
+        "points": 0
+      },
+      {
+        "per": 2,
+        "points": 1
+      },
+      {
+        "per": 1,
+        "points": 1
+      },
+      {
+        "per": 1,
+        "points": 2
+      }
     ],
     "plannedCityPointsByRank": [
       7,

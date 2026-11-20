@@ -3,7 +3,7 @@
 // 特別な市民カード・キャラクターの終了時の得点は、ゲーム終了時の能力（17-0-1 手順4）が得点トラックに加える。
 
 import { GAME_DATA } from '../data/index.ts';
-import { SCORE_AXES, type GameData, type ScoreAxis } from '../data/types.ts';
+import { SCORE_AXES, type GameData, type ScoreAxis, type ScoreRate } from '../data/types.ts';
 import { buildingCount, landCount } from './core.ts';
 import { modifiersOf } from './abilities.ts';
 import { natureParkScore } from './planned.ts';
@@ -35,6 +35,12 @@ const tableAt = <T>(table: readonly T[], index: number): T => {
   return value;
 };
 
+/**
+ * 換算率（per につき points 点、ユーザー決定 2026-11-20）で点にする。per に満たない端数は捨て、points の小数（以前の形の役所の
+ * 0.5点など）も最後に切り捨てる。浮動小数の誤差で1点落ちないよう、わずかに足してから切り捨てる。
+ */
+export const ratePoints = (count: number, rate: ScoreRate): number => Math.floor(Math.floor(count / rate.per) * rate.points + 1e-9);
+
 const scorePlayer = (state: GameState, d: GameData, player: PlayerState): Omit<FinalScore, 'rank'> => {
   const s = d.params.scoring;
   const axes: Record<ScoreAxis, number> = { economy: 0, culture: 0, welfare: 0, nature: 0, military: 0, other: 0 };
@@ -63,7 +69,7 @@ const scorePlayer = (state: GameState, d: GameData, player: PlayerState): Omit<F
     (value, m) => (m.kind === 'goldPointsMultiplier' ? value * m.value : value),
     1,
   );
-  axes.economy += Math.floor(player.goldProduction / goldRate) * goldMultiplier + Math.floor(player.materialProduction / materialRate);
+  axes.economy += ratePoints(player.goldProduction, goldRate) * goldMultiplier + ratePoints(player.materialProduction, materialRate);
   // 同点判定の1段目は、いまのルールどおり残った金で比べる（ユーザー決定 2026-11-06）。
   const leftoverGold = player.gold;
 
@@ -73,10 +79,10 @@ const scorePlayer = (state: GameState, d: GameData, player: PlayerState): Omit<F
     0,
   );
   const cardRate = tableAt(s.civCardsPerPointByUniversities, buildingCount(player, 'university'));
-  axes.culture += cardPoints + Math.floor(player.played.length / cardRate);
+  axes.culture += cardPoints + ratePoints(player.played.length, cardRate);
 
-  // 生活・福祉（17-4-1 からの変更、ユーザー決定 2026-11-07）：通常ワーカー1人あたり、役所の数による点を得る。端数は切り捨てる。
-  axes.welfare += Math.floor(player.regularWorkers * tableAt(s.regularWorkerPointsByOffices, buildingCount(player, 'office')));
+  // 生活・福祉（17-4-1 からの変更、ユーザー決定 2026-11-07）：通常ワーカーを、役所の数による換算率で点にする。端数は切り捨てる。
+  axes.welfare += ratePoints(player.regularWorkers, tableAt(s.regularWorkerPointsByOffices, buildingCount(player, 'office')));
 
   // 自然・環境（17-5）：自然公園カード（計画都市の得点はゲーム中の得点として記録済み）。
   axes.nature += natureParkScore(d, player);

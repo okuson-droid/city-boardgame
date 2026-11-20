@@ -4,7 +4,7 @@
 
 import { GAME_DATA } from '../data/index.ts';
 import { actionLabel, buildingLabel, grantText, labelIn } from './labels.ts';
-import { ACTIONS, BUILDINGS, type Building, type GameData, type UnlockCondition } from '../data/types.ts';
+import { ACTIONS, BUILDINGS, type Building, type GameData, type ScoreRate, type UnlockCondition } from '../data/types.ts';
 import type { Command } from '../data/script.ts';
 import { expeditionTable } from './actions.ts';
 import { buildingCount } from './core.ts';
@@ -36,6 +36,13 @@ export const unlockText = (u: UnlockCondition): string => {
       return `文明カード${u.atLeast}枚プレイ`;
   }
 };
+
+/** 換算率1つの文（例：「3につき2点」）。 */
+export const rateText = (r: ScoreRate, unit = ''): string => (r.points === 0 ? '点なし' : `${r.per}${unit}につき${r.points}点`);
+
+/** 建物数ごとの換算率の文（例：「0軒 20につき1点・1軒 5につき1点…（端数は切り捨て）」）。 */
+const rateLine = (table: readonly ScoreRate[], unit = ''): string =>
+  `${table.map((r, i) => `${i}軒 ${rateText(r, unit)}`).join('・')}（端数は切り捨て）`;
 
 const byCount = (values: readonly (number | string)[], unit: (v: number | string) => string): string =>
   values
@@ -80,12 +87,12 @@ export const buildingInfo = (b: Building, d: GameData = GAME_DATA): BuildingInfo
     case 'shop':
       onBuild.push(`金の生産力＋${e.shop.goldProductionOnBuild}`);
       always.push(`輸入の後、金の生産力＋${byCount(e.shop.goldProductionAfterImportByCount, String)}（商店1〜${p.buildings.limits.shop}軒）`);
-      endScore = `経済・産業：金の収入 ${byCount(s.goldPerPointByShops, String)} につき1点（商店1〜${p.buildings.limits.shop}軒。0軒は${s.goldPerPointByShops[0]}）`;
+      endScore = `経済・産業：金の収入 ${rateLine(s.goldPerPointByShops)}`;
       break;
     case 'workshop':
       onBuild.push(`資材の生産力＋${e.workshop.materialProductionOnBuild}`);
       always.push(`輸出の後、金${byCount(e.workshop.goldAfterExportByCount, String)}を得る（工房1〜${p.buildings.limits.workshop}軒）`);
-      endScore = `経済・産業：資材の収入 ${byCount(s.materialsPerPointByWorkshops, String)} につき1点（工房1〜${p.buildings.limits.workshop}軒。0軒は${s.materialsPerPointByWorkshops[0]}）`;
+      endScore = `経済・産業：資材の収入 ${rateLine(s.materialsPerPointByWorkshops)}`;
       break;
     case 'fort':
       onBuild.push(`軍事レベル＋${e.fort.militaryOnBuild}`);
@@ -96,12 +103,12 @@ export const buildingInfo = (b: Building, d: GameData = GAME_DATA): BuildingInfo
       always.push(
         `福祉の後、臨時ワーカー${e.office.welfareConvertMaxWorkers}人を資材${byCount(e.office.welfareConvertMaterialsByCount, String)}に換えられる（役所1〜${p.buildings.limits.office}軒）`,
       );
-      endScore = `生活・福祉：通常ワーカー1人につき ${byCount(s.regularWorkerPointsByOffices, String)} 点（役所1〜${p.buildings.limits.office}軒、端数は切り捨て）`;
+      endScore = `生活・福祉：通常ワーカー ${rateLine(s.regularWorkerPointsByOffices, '人')}`;
       break;
     case 'university':
       onBuild.push(`文明カードを${e.university.drawOnBuild}枚引く`);
       always.push(`1軒につき文明カードのコスト−${e.university.civCardGoldDiscountPerUniversity}金（最低0金）`);
-      endScore = `文化・学術：プレイ済みの文明カード ${byCount(s.civCardsPerPointByUniversities, String)} 枚につき1点（大学1〜${p.buildings.limits.university}軒。0軒は${s.civCardsPerPointByUniversities[0]}）`;
+      endScore = `文化・学術：プレイ済みの文明カード ${rateLine(s.civCardsPerPointByUniversities, '枚')}`;
       break;
     case 'camp':
       onBuild.push(`土地タイル${e.camp.landTilesOnBuild}枚を置く（資材なし）`);
