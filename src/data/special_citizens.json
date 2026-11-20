@@ -136,7 +136,7 @@
       "revisedEffects": [
         {
           "timing": "獲得時",
-          "text": "軍事レベルとインフラレベルをそれぞれ1上げる。"
+          "text": "軍事レベルかインフラレベルのどちらか一方を1上げる。"
         },
         {
           "timing": "1ワーカーのアクションスペース",
@@ -150,14 +150,23 @@
           "ability": "onAcquire",
           "do": [
             {
-              "op": "raise",
-              "track": "military",
-              "amount": 1
-            },
-            {
-              "op": "raise",
-              "track": "infra",
-              "amount": 1
+              "op": "chooseOne",
+              "options": [
+                [
+                  {
+                    "op": "raise",
+                    "track": "military",
+                    "amount": 1
+                  }
+                ],
+                [
+                  {
+                    "op": "raise",
+                    "track": "infra",
+                    "amount": 1
+                  }
+                ]
+              ]
             }
           ]
         },
@@ -1013,11 +1022,7 @@
             {
               "op": "gain",
               "res": "points",
-              "amount": {
-                "count": "tempWorkers",
-                "per": 1,
-                "times": 1
-              }
+              "amount": 2
             }
           ]
         }

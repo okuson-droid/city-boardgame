@@ -68,14 +68,8 @@
           },
           "do": [
             {
-              "op": "gain",
-              "res": "points",
-              "amount": {
-                "count": "militaryLevel",
-                "per": 5,
-                "times": 1
-              },
-              "axis": "military"
+              "op": "expeditionRewards",
+              "count": 3
             }
           ]
         }
@@ -504,17 +498,17 @@
             "cond": {
               "left": "tagsOf:academic",
               "op": "<",
-              "right": 21
+              "right": 16
             }
           },
           "do": [
             {
               "op": "gain",
               "res": "drawCivCards",
-              "amount": 1
+              "amount": 2
             }
           ],
-          "every": 2
+          "every": 3
         }
       ]
     },
@@ -802,24 +796,39 @@
           ]
         },
         {
-          "ability": "on",
-          "event": "trackRaised",
-          "filter": {
-            "cond": {
-              "left": "infraLevel",
-              "op": ">=",
-              "right": 15
-            },
-            "track": "infra"
+          "ability": "freeAction",
+          "pay": null,
+          "require": {
+            "left": "infraLevel",
+            "op": ">=",
+            "right": 12
           },
+          "oncePerRound": true,
           "do": [
             {
               "op": "gain",
-              "res": "specialCitizen",
-              "amount": 1
+              "res": "drawCivCards",
+              "amount": 1,
+              "axis": "welfare"
             }
-          ],
-          "once": true
+          ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": {
+            "left": "infraLevel",
+            "op": ">=",
+            "right": 15
+          },
+          "oncePerRound": true,
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 4
+            }
+          ]
         }
       ]
     },

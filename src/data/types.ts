@@ -88,6 +88,12 @@ export type ProvisionalMark = {
 
 export type TierTable<T> = { readonly normal: T; readonly upper: T; readonly top: T };
 
+/**
+ * 終了時の換算率：per につき points 点（ユーザー決定 2026-11-20）。端数は切り捨てる（floor(数 ÷ per) × points を、さらに切り捨て）。
+ * 以前は「N につき1点」（商店・工房・大学）と「1人あたり N 点」（役所）の数1つで、1につき2点のような率を表せなかった。
+ */
+export type ScoreRate = { readonly per: number; readonly points: number };
+
 // ---------------------------------------------------------------------------
 // params.json
 // ---------------------------------------------------------------------------
@@ -309,14 +315,14 @@ export type Params = ProvisionalMark & {
       readonly buildingsPerPoint: number;
       readonly regularWorkersPerPoint: number;
     };
-    /** 添字は商店数（rules.md 17-2-2）。 */
-    readonly goldPerPointByShops: readonly number[];
-    /** 添字は工房数（rules.md 17-2-3）。 */
-    readonly materialsPerPointByWorkshops: readonly number[];
-    /** 添字は大学数（rules.md 17-3-1）。 */
-    readonly civCardsPerPointByUniversities: readonly number[];
-    /** 添字は役所数。通常ワーカー1人あたりの点（端数は切り捨て。rules.md 17-4-1 からの変更、ユーザー決定 2026-11-07）。 */
-    readonly regularWorkerPointsByOffices: readonly number[];
+    /** 添字は商店数。金の収入 per につき points 点（rules.md 17-2-2）。 */
+    readonly goldPerPointByShops: readonly ScoreRate[];
+    /** 添字は工房数。資材の収入 per につき points 点（rules.md 17-2-3）。 */
+    readonly materialsPerPointByWorkshops: readonly ScoreRate[];
+    /** 添字は大学数。プレイ済みの文明カード per 枚につき points 点（rules.md 17-3-1）。 */
+    readonly civCardsPerPointByUniversities: readonly ScoreRate[];
+    /** 添字は役所数。通常ワーカー per 人につき points 点（rules.md 17-4-1 からの変更、ユーザー決定 2026-11-07）。 */
+    readonly regularWorkerPointsByOffices: readonly ScoreRate[];
     /** 先着順位ごとの得点（rules.md 13-3-4）。 */
     readonly plannedCityPointsByRank: readonly number[];
     /** セットの枚数ごとの得点（rules.md 14-2-1）。 */

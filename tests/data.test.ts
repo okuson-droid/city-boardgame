@@ -444,10 +444,12 @@ describe('params.json の値', () => {
 
   it('得点計算の換算表', () => {
     // rules.md v0.8 17-3-1、13-3-4。17-2-2、17-2-3、17-4-1、14-2-1 の値はユーザー決定 2026-11-07 で変えた。
-    expect(p.scoring.goldPerPointByShops).toEqual([20, 5, 4, 3]);
-    expect(p.scoring.materialsPerPointByWorkshops).toEqual([10, 3, 2, 1]);
-    expect(p.scoring.civCardsPerPointByUniversities).toEqual([5, 4, 3, 2]);
-    expect(p.scoring.regularWorkerPointsByOffices).toEqual([0, 0.5, 1, 2]);
+    // 固定したデータは以前の形（数1つ）で、「N につき1点」「1人あたり N 点」と読む（ユーザー決定 2026-11-20）。
+    const perPoint = (list: number[]) => list.map((per) => ({ per, points: 1 }));
+    expect(p.scoring.goldPerPointByShops).toEqual(perPoint([20, 5, 4, 3]));
+    expect(p.scoring.materialsPerPointByWorkshops).toEqual(perPoint([10, 3, 2, 1]));
+    expect(p.scoring.civCardsPerPointByUniversities).toEqual(perPoint([5, 4, 3, 2]));
+    expect(p.scoring.regularWorkerPointsByOffices).toEqual([0, 0.5, 1, 2].map((points) => ({ per: 1, points })));
     expect(p.scoring.plannedCityPointsByRank).toEqual([7, 5, 3]);
     expect(p.scoring.natureParkPointsBySetSize).toEqual({ '2': 3, '3': 5, '4': 7 });
   });
