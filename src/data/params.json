@@ -62,13 +62,13 @@
   },
   "buildings": {
     "limits": {
-      "shop": 3,
-      "workshop": 3,
-      "fort": 3,
-      "office": 3,
-      "university": 3,
+      "shop": 4,
+      "workshop": 4,
+      "fort": 4,
+      "office": 4,
+      "university": 4,
       "house": 10,
-      "camp": 3
+      "camp": 4
     },
     "cost": {
       "shop": {
@@ -147,12 +147,13 @@
     ],
     "effects": {
       "shop": {
-        "goldProductionOnBuild": 4,
+        "goldProductionOnBuild": 3,
         "goldProductionAfterImportByCount": [
           0,
           1,
           2,
-          3
+          3,
+          4
         ]
       },
       "workshop": {
@@ -161,7 +162,8 @@
           0,
           2,
           4,
-          6
+          6,
+          8
         ]
       },
       "fort": {
@@ -170,6 +172,7 @@
           4,
           3,
           2,
+          1,
           1
         ]
       },
@@ -179,12 +182,13 @@
           0,
           2,
           3,
-          4
+          4,
+          5
         ],
         "welfareConvertMaxWorkers": 1
       },
       "university": {
-        "drawOnBuild": 2,
+        "drawOnBuild": 1,
         "civCardGoldDiscountPerUniversity": 1
       },
       "camp": {
@@ -599,9 +603,9 @@
         "level": 15,
         "grants": [
           {
-            "kind": "freeBuildOnTerrain",
-            "terrain": "mountain",
-            "amount": 1
+            "kind": "points",
+            "terrain": null,
+            "amount": 7
           }
         ]
       }
@@ -765,7 +769,7 @@
         "landTiles"
       ]
     },
-    "finalRoundRepelPoints": 5
+    "finalRoundRepelPoints": 2
   },
   "freeActions": {
     "conversions": [
@@ -864,21 +868,25 @@
       20,
       5,
       4,
-      3
+      3,
+      2
     ],
     "materialsPerPointByWorkshops": [
       10,
       3,
       2,
+      1,
       1
     ],
     "civCardsPerPointByUniversities": [
       5,
       4,
       3,
-      2
+      2,
+      1
     ],
     "regularWorkerPointsByOffices": [
+      0,
       0,
       0.5,
       1,
