@@ -169,10 +169,10 @@
       "fort": {
         "militaryOnBuild": 1,
         "drillTokenCostByCount": [
+          5,
           4,
           3,
           2,
-          1,
           1
         ]
       },
@@ -866,8 +866,8 @@
     },
     "goldPerPointByShops": [
       {
-        "per": 20,
-        "points": 1
+        "per": 1,
+        "points": 0
       },
       {
         "per": 5,
@@ -888,8 +888,8 @@
     ],
     "materialsPerPointByWorkshops": [
       {
-        "per": 10,
-        "points": 1
+        "per": 1,
+        "points": 0
       },
       {
         "per": 3,
@@ -905,7 +905,7 @@
       },
       {
         "per": 1,
-        "points": 1
+        "points": 2
       }
     ],
     "civCardsPerPointByUniversities": [
@@ -936,20 +936,20 @@
         "points": 0
       },
       {
-        "per": 1,
-        "points": 0
-      },
-      {
         "per": 2,
         "points": 1
       },
       {
-        "per": 1,
-        "points": 1
+        "per": 2,
+        "points": 2
       },
       {
-        "per": 1,
-        "points": 2
+        "per": 2,
+        "points": 3
+      },
+      {
+        "per": 2,
+        "points": 4
       }
     ],
     "plannedCityPointsByRank": [

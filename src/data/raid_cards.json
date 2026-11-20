@@ -177,9 +177,9 @@
       ],
       "repelEffects": [
         {
-          "kind": "gold",
-          "amount": 3,
-          "perRound": true,
+          "kind": "landTiles",
+          "amount": 2,
+          "perRound": false,
           "afterNextIncome": false
         }
       ]
