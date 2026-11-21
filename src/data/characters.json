@@ -610,7 +610,7 @@
       ],
       "revisedEffects": [
         {
-          "text": "最初の手番開始時、特別な市民カード1枚を得る。"
+          "text": "準備時、特別な市民カード1枚を得る。"
         },
         {
           "text": "通常ワーカーを得る度に、1資材を得る。"
@@ -628,7 +628,7 @@
       "provisional": false,
       "script": [
         {
-          "ability": "firstTurnStart",
+          "ability": "setup",
           "do": [
             {
               "op": "gain",
