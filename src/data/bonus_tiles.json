@@ -46,7 +46,7 @@
     },
     {
       "id": 3,
-      "text": "資材2個獲得",
+      "text": "資材3個獲得",
       "rulesRef": "11-2-1",
       "clarifications": [],
       "provisional": false,
@@ -92,7 +92,7 @@
     },
     {
       "id": 6,
-      "text": "3金獲得／パス時、住宅2軒につき1点",
+      "text": "5金獲得／パス時、住宅2軒につき1点",
       "rulesRef": "11-2-1",
       "clarifications": [
         {
