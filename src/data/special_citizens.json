@@ -76,7 +76,7 @@
             {
               "op": "gain",
               "res": "points",
-              "amount": 2,
+              "amount": 3,
               "axis": "welfare"
             }
           ]
@@ -85,7 +85,7 @@
       "revisedEffects": [
         {
           "timing": "常時",
-          "text": "最上位アクションを実行する度に2点を得る。"
+          "text": "最上位アクションを実行する度に3点を得る。"
         }
       ]
     },

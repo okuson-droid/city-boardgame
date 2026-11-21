@@ -432,7 +432,7 @@
       "playCondition": null,
       "effectCondition": null,
       "points": 0,
-      "text": "プレイ時：特別な市民カード1枚を得る。",
+      "text": "プレイ時：建設済みの建物の種類が6以上なら、特別な市民カード1枚を得る。",
       "clarifications": [
         {
           "text": "「市民カード」は特別な市民カードである。公開カードから1枚を選び、山札から1枚補充する（9-3-2-2）。",
@@ -445,9 +445,19 @@
           "ability": "onPlay",
           "do": [
             {
-              "op": "gain",
-              "res": "specialCitizen",
-              "amount": 1
+              "op": "if",
+              "cond": {
+                "left": "buildingTypes",
+                "op": ">=",
+                "right": 6
+              },
+              "then": [
+                {
+                  "op": "gain",
+                  "res": "specialCitizen",
+                  "amount": 1
+                }
+              ]
             }
           ]
         }

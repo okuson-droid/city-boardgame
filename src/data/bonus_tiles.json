@@ -60,18 +60,18 @@
     },
     {
       "id": 4,
-      "text": "文明カード2枚を引き、手札全体から任意の1枚を捨てる",
+      "text": "文明カード3枚を引き、手札全体から任意の2枚を捨てる",
       "rulesRef": "11-2-1",
       "clarifications": [],
       "provisional": false,
       "roundStart": [
         {
           "kind": "drawCivCards",
-          "amount": 2
+          "amount": 3
         },
         {
           "kind": "discardCivCards",
-          "amount": 1
+          "amount": 2
         }
       ],
       "passScore": null
