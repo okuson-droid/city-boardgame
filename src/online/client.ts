@@ -6,7 +6,7 @@
 
 import type { GameState, GameVariants } from '../game/types.ts';
 import type { ReplayRecord } from '../game/replay.ts';
-import type { RoomSummary } from './rooms.ts';
+import { mergeView, sinceOf, type RoomSummary, type ViewDelta } from './rooms.ts';
 import { openBroadcast } from './supabase-realtime.ts';
 
 export type Session = {
@@ -160,6 +160,8 @@ export const supabaseTransport = (config: SupabaseClientConfig): Transport => {
     subscribe: (session, onMessage, onStatus) => {
       let stopped = false;
       let version = -1;
+      // 手元の写し（差分を受け取ってつなぐため、2026-11-21）。席が変わる・全体を受け取るたびに置き換える。
+      let held: { readonly summary: RoomSummary; readonly seat: number; readonly state: GameState } | null = null;
       let live = false;
       let timer: ReturnType<typeof setTimeout> | undefined;
       let inflight = false;
@@ -171,14 +173,25 @@ export const supabaseTransport = (config: SupabaseClientConfig): Transport => {
         }
         inflight = true;
         try {
-          const view = await call<RoomMessage & { version: number }>(
-            session.spectator === true ? { action: 'spectate', code: session.code } : { action: 'view', code: session.code, key: session.key },
-          );
+          // 手元の写しがあれば、その版と長さを添える。版が同じなら局面は送られず、違えば続きだけが送られる（2026-11-21）。
+          const since = held === null ? {} : { since: sinceOf(held.state, version) };
+          const view = await call<
+            (RoomMessage & { version: number; delta?: ViewDelta; unchanged?: undefined }) | { seat: number; version: number; unchanged: true }
+          >(session.spectator === true ? { action: 'spectate', code: session.code, ...since } : { action: 'view', code: session.code, key: session.key, ...since });
           if (!stopped) {
             onStatus(true);
-            if (view.version !== version) {
-              version = view.version;
-              onMessage({ summary: view.summary, seat: view.seat, state: view.state });
+            if (view.unchanged !== true && view.version !== version) {
+              const state =
+                view.state !== null && view.delta !== undefined && held !== null && held.seat === view.seat ? mergeView(held.state, view.state, view.delta) : view.state;
+              if (view.state !== null && view.delta !== undefined && state === view.state) {
+                // 手元の写しが無いのに差分が来た（起こらないはず）。次は全体を取りに行く。
+                held = null;
+                again = true;
+              } else {
+                version = view.version;
+                held = state === null ? null : { summary: view.summary, seat: view.seat, state };
+                onMessage({ summary: view.summary, seat: view.seat, state });
+              }
             }
           }
         } catch (error) {

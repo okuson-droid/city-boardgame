@@ -12,14 +12,18 @@ import {
   joinRoom,
   loadRoom,
   moveInRoom,
+  parseSince,
   RoomError,
   replayOfRoom,
   summaryOf,
+  trimView,
   undoInRoom,
   viewFor,
   type Room,
   type RoomRecord,
   type RoomSummary,
+  type ViewDelta,
+  type ViewSince,
 } from './rooms.ts';
 
 /** 保存する部屋。state は記録の再生結果の写しで、無ければ記録から作り直す。 */
@@ -31,6 +35,8 @@ export type RoomStore = {
   readonly insert: (room: StoredRoom) => Promise<boolean>;
   /** 版が expected のままなら置き換えて true、他の書き換えが先に入っていれば false。 */
   readonly update: (room: StoredRoom, expected: number) => Promise<boolean>;
+  /** 記録と版だけを読む（局面の写しを読まない）。画面の写しが最新かを確かめるのに使う。無い保存先は get で代える。 */
+  readonly peek?: (code: string) => Promise<{ readonly record: RoomRecord; readonly version: number } | null>;
 };
 
 export type Notify = (code: string, version: number) => Promise<void>;
@@ -42,7 +48,12 @@ export type RoomView = {
   readonly seat: number;
   readonly version: number;
   readonly state: GameState | null;
+  /** 差分で送ったとき、state の log・events から省いた先頭の長さ（2026-11-21）。無ければ state は全体。 */
+  readonly delta?: ViewDelta;
 };
+
+/** 画面の写しが最新のときの返事（局面を送らない、2026-11-21）。 */
+export type UnchangedView = { readonly seat: number; readonly version: number; readonly unchanged: true };
 
 /** 紛らわしい文字（0・O・1・I など）を除いた、ルームコードの文字。 */
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -107,12 +118,28 @@ const save = async (store: RoomStore, notify: Notify, room: Room, version: numbe
 /** 観戦者の席の番号（どの席でもない）。viewFor はこの席以外の手札をすべて伏せる。 */
 export const SPECTATOR_SEAT = -1;
 
-const viewOf = (room: Room, seat: number, version: number): RoomView => ({
-  summary: summaryOf(room),
-  seat,
-  version,
-  state: room.state === null ? null : viewFor(room.state, seat),
-});
+const viewOf = (room: Room, seat: number, version: number, since: ViewSince | null = null): RoomView => {
+  if (room.state === null) return { summary: summaryOf(room), seat, version, state: null };
+  const { state, delta } = trimView(viewFor(room.state, seat), since);
+  return { summary: summaryOf(room), seat, version, state, ...(delta === undefined ? {} : { delta }) };
+};
+
+/**
+ * view・spectate の返事。画面が最新の版を持っていれば局面を送らず、持っている写しの続きだけを送る（ユーザー決定 2026-11-21：
+ * 終盤は写しが 80〜150KB になり、各席が他の席の選択のたびと15秒ごと〔知らせが届かない間は2秒ごと〕に全体を取りに来ていた）。
+ */
+const viewAction = async (store: RoomStore, code: string, since: ViewSince | null, seatFor: (room: Room) => Promise<number>): Promise<RoomView | UnchangedView> => {
+  if (since !== null && store.peek !== undefined) {
+    const peeked = await store.peek(code);
+    if (peeked === null) throw new RoomError(404, '部屋が見つからない');
+    assertDataVersion(peeked.record);
+    if (peeked.version === since.version) return { seat: await seatFor({ record: peeked.record, state: null }), version: peeked.version, unchanged: true };
+  }
+  const { room, version } = await load(store, code);
+  const seat = await seatFor(room);
+  if (since !== null && since.version === version) return { seat, version, unchanged: true };
+  return viewOf(room, seat, version, since);
+};
 
 export type ServiceDeps = { readonly store: RoomStore; readonly notify: Notify; readonly now?: () => Date };
 
@@ -125,6 +152,7 @@ export type ServiceDeps = { readonly store: RoomStore; readonly notify: Notify; 
  * - undo {code, key, toTurnStart?} → {ok}（toTurnStart が真なら手番の最初まで戻す）
  * - replay {code, key} → ReplayRecord（終局後だけ。記録の保存、ユーザー決定 2026-11-10）
  * - spectate {code} → RoomView（観戦。鍵は要らず、全員の手札を伏せた写しを返す。seat は -1、ユーザー決定 2026-11-13）
+ * - view・spectate に since（ViewSince）を添えると、版が同じなら UnchangedView、違えば手元の写しの続きだけを返す（2026-11-21）
  */
 export const handleAction = async (body: Readonly<Record<string, unknown>>, deps: ServiceDeps): Promise<unknown> => {
   const { store, notify } = deps;
@@ -140,6 +168,9 @@ export const handleAction = async (body: Readonly<Record<string, unknown>>, deps
 
   const code = normalizeCode(body['code']);
   if (code === '') throw new RoomError(400, 'ルームコードがない');
+  if (action === 'view') return viewAction(store, code, parseSince(body['since']), (room) => seatOf(room, body['key']));
+  // 観戦は公開情報だけ（19-6-1）。どの席でもない -1 で伏せるため、全員の手札が伏せられる。
+  if (action === 'spectate') return viewAction(store, code, parseSince(body['since']), async () => SPECTATOR_SEAT);
   const { room, version } = await load(store, code);
   switch (action) {
     case 'join': {
@@ -148,8 +179,6 @@ export const handleAction = async (body: Readonly<Record<string, unknown>>, deps
       await save(store, notify, room, version);
       return { code, seat, key } satisfies Credentials;
     }
-    case 'view':
-      return viewOf(room, await seatOf(room, body['key']), version);
     case 'move':
       moveInRoom(room, await seatOf(room, body['key']), text(body['move']), Number(body['logLength']));
       await save(store, notify, room, version);
@@ -161,9 +190,6 @@ export const handleAction = async (body: Readonly<Record<string, unknown>>, deps
     case 'replay':
       await seatOf(room, body['key']);
       return replayOfRoom(room);
-    case 'spectate':
-      // 観戦は公開情報だけ（19-6-1）。どの席でもない -1 で伏せるため、全員の手札が伏せられる。
-      return viewOf(room, SPECTATOR_SEAT, version);
     default:
       throw new RoomError(400, `知らない操作である：${action}`);
   }
@@ -179,6 +205,10 @@ export const memoryStore = (initial: Iterable<StoredRoom> = []): RoomStore & { r
     get: async (code) => {
       const room = rooms.get(code);
       return room === undefined ? null : copy(room);
+    },
+    peek: async (code) => {
+      const room = rooms.get(code);
+      return room === undefined ? null : { record: structuredClone(room.record), version: room.version };
     },
     insert: async (room) => {
       if (rooms.has(room.record.code)) return false;

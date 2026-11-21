@@ -133,7 +133,7 @@ describe('PostgREST の保存先', () => {
     expect(await store.insert(room)).toBe(false);
     expect(await store.get('ABC234')).toBeNull();
     expect(calls[0]).toMatchObject({ method: 'PATCH', prefer: 'return=representation' });
-    expect(calls[0]?.url).toBe('https://p.supabase.co/rest/v1/rooms?code=eq.ABC234&version=eq.3');
+    expect(calls[0]?.url).toBe('https://p.supabase.co/rest/v1/rooms?code=eq.ABC234&version=eq.3&select=version');
   });
 });
 
@@ -163,5 +163,77 @@ describe('観戦（ユーザー決定 2026-11-13）', () => {
     const option = seat.state === null ? undefined : getOptions(seat.state)[0];
     await expect(env.act({ action: 'move', code: env.code, key: '', move: option?.id ?? '', logLength: 0 })).rejects.toThrow();
     await expect(env.act({ action: 'spectate', code: 'ZZZZZZ' })).rejects.toThrow('見つからない');
+  });
+});
+
+describe('局面の差分の取得（ユーザー決定 2026-11-21：終盤の通信を軽くする）', () => {
+  it('版が同じなら局面を送らず、違えば続きだけを送り、手元の写しとつなぐと全体と一致する', async () => {
+    // 段階5（各席には伏せた写しだけを返す）、rules.md v0.8 19-6-1
+    const { mergeView, sinceOf } = await import('../src/online/rooms.ts');
+    const env = await fullRoom();
+    const key = (seat: number) => env.seats[seat]?.key;
+    let held = await viewOf(env, 1);
+    let deltas = 0;
+    let undone = false;
+    for (let i = 0; i < 60; i += 1) {
+      const state = env.store.rooms.get(env.code)?.state;
+      if (state === null || state === undefined) throw new Error('始まっていない');
+      const seat = decider(state);
+      if (seat === null) break;
+      // 取り消しの後に別の選択をして、長さが同じでも中身の違う log を作る。
+      if (i >= 30 && !undone) {
+        const first = getOptions(state)[0]?.id ?? '';
+        await env.act({ action: 'move', code: env.code, key: key(seat), move: first, logLength: state.log.length });
+        undone = await env.act({ action: 'undo', code: env.code, key: key(seat) }).then(
+          () => true,
+          () => false,
+        );
+      }
+      const now = env.store.rooms.get(env.code)?.state;
+      if (now === null || now === undefined) throw new Error('始まっていない');
+      const options = getOptions(now);
+      const move = options[i % options.length]?.id ?? '';
+      await env.act({ action: 'move', code: env.code, key: key(decider(now) ?? 0), move, logLength: now.log.length });
+      if (held.state === null) throw new Error('写しがない');
+      const since = sinceOf(held.state, held.version);
+      const got = (await env.act({ action: 'view', code: env.code, key: key(1), since })) as RoomView & { unchanged?: true };
+      const full = await viewOf(env, 1);
+      expect(got.unchanged).toBeUndefined();
+      const merged = got.delta !== undefined && got.state !== null ? mergeView(held.state, got.state, got.delta) : got.state;
+      if (got.delta !== undefined) deltas += 1;
+      expect(merged).toEqual(full.state);
+      held = { ...full, state: merged };
+      const same = (await env.act({ action: 'view', code: env.code, key: key(1), since: sinceOf(held.state ?? full.state!, full.version) })) as { unchanged?: true; state?: unknown };
+      expect(same.unchanged).toBe(true);
+      expect(same.state).toBeUndefined();
+    }
+    expect(undone).toBe(true);
+    expect(deltas).toBeGreaterThan(30);
+    // 鍵が合わなければ、版が同じでも返さない。観戦も差分で取れる。
+    if (held.state === null) throw new Error('写しがない');
+    await expect(env.act({ action: 'view', code: env.code, key: 'wrong', since: sinceOf(held.state, held.version) })).rejects.toThrow('鍵が合わない');
+    const spect = (await env.act({ action: 'spectate', code: env.code, since: sinceOf(held.state, held.version) })) as { unchanged?: true };
+    expect(spect.unchanged).toBe(true);
+  });
+});
+
+describe('差分の先頭の確かめ（2026-11-21）', () => {
+  it('手元の log の中身が部屋と違えば（取り消しの後に別の選択をした）、長さが合っていても全体を送る', async () => {
+    // 段階5（取り消しは直前の選択をした席だけができる）
+    const { sinceOf, trimView } = await import('../src/online/rooms.ts');
+    const env = await fullRoom();
+    for (let i = 0; i < 5; i += 1) {
+      const now = env.store.rooms.get(env.code)?.state;
+      if (now === null || now === undefined) throw new Error('始まっていない');
+      const seat = decider(now) ?? 0;
+      await env.act({ action: 'move', code: env.code, key: env.seats[seat]?.key, move: getOptions(now)[0]?.id ?? '', logLength: now.log.length });
+    }
+    const state = env.store.rooms.get(env.code)?.state;
+    if (state === null || state === undefined) throw new Error('始まっていない');
+    expect(state.log.length).toBe(5);
+    const held = { ...state, log: state.log.map((e, i) => (i === state.log.length - 1 ? { ...e, move: `${e.move}x` } : e)) };
+    expect(trimView(state, sinceOf(held, 1)).delta).toBeUndefined();
+    expect(trimView(state, sinceOf(state, 1)).delta).toEqual({ log: state.log.length, events: state.events.length });
+    expect(trimView(state, { ...sinceOf(state, 1), log: state.log.length + 1 }).delta).toBeUndefined();
   });
 });
