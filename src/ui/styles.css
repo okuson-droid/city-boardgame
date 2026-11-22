@@ -2842,3 +2842,11 @@ h3 {
   margin: 0;
   color: #b5423b;
 }
+
+/* プレイ済みの文明カードと、その下の専用スペース・フリーアクションのボタン（2026-11-22）。 */
+.played-card {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 2px;
+}

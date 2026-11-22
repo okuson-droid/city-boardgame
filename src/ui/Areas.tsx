@@ -354,9 +354,12 @@ export const PersonalInfo = ({
             // 画面から使えなかった（2026-11-22）。同じカードを2枚持つことはないため、最初の1枚にだけ出す。
             const options = player.played.indexOf(card) === i ? playedChoices.filter((c) => 'source' in c.target && c.target.source === `civ:${card}`) : [];
             return (
-              <div key={`${card}-${i}`} className="card civ" data-played-card={card}>
-                <CivCardView card={card} player={player} />
-                <CardHouses count={housesOnCard(player, card)} />
+              // ボタンはカードの外（下）に置く。カードは大きさが一定で中身が溢れると中で巻き取るため、中に置くと隠れることがある。
+              <div key={`${card}-${i}`} className="played-card">
+                <div className="card civ" data-played-card={card}>
+                  <CivCardView card={card} player={player} />
+                  <CardHouses count={housesOnCard(player, card)} />
+                </div>
                 {options.length > 0 ? (
                   <div className="ability-buttons">
                     {options.map((c) => (
