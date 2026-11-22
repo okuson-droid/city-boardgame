@@ -31,14 +31,7 @@
         "撃退成功時の土地タイルは資材を支払わずに 4-2 に従って配置する（rules.md v0.8 19-1-1）。"
       ],
       "replacesBasePoints": false,
-      "defenseFailEffects": [
-        {
-          "kind": "loseGold",
-          "amount": 3,
-          "perRound": false,
-          "afterNextIncome": true
-        }
-      ],
+      "defenseFailEffects": [],
       "repelEffects": [
         {
           "kind": "landTiles",
@@ -65,14 +58,7 @@
         "「〜を失う」で保有量が足りない場合は、保有量を0にして終える（rules.md v0.8 19-3-4）。"
       ],
       "replacesBasePoints": false,
-      "defenseFailEffects": [
-        {
-          "kind": "loseMaterials",
-          "amount": 1,
-          "perRound": true,
-          "afterNextIncome": true
-        }
-      ],
+      "defenseFailEffects": [],
       "repelEffects": [
         {
           "kind": "materials",
@@ -101,14 +87,7 @@
         "撃退成功時の土地タイルは資材を支払わずに 4-2 に従って配置する（rules.md v0.8 19-1-1）。"
       ],
       "replacesBasePoints": false,
-      "defenseFailEffects": [
-        {
-          "kind": "loseGoldProduction",
-          "amount": 1,
-          "perRound": true,
-          "afterNextIncome": false
-        }
-      ],
+      "defenseFailEffects": [],
       "repelEffects": [
         {
           "kind": "landTiles",
@@ -135,14 +114,7 @@
         "「〜を失う」で保有量が足りない場合は、保有量を0にして終える（rules.md v0.8 19-3-4）。"
       ],
       "replacesBasePoints": false,
-      "defenseFailEffects": [
-        {
-          "kind": "loseGold",
-          "amount": 2,
-          "perRound": true,
-          "afterNextIncome": true
-        }
-      ],
+      "defenseFailEffects": [],
       "repelEffects": [
         {
           "kind": "gold",
@@ -166,15 +138,8 @@
         "「襲撃ラウンド数」は、その襲撃を判定するラウンドの番号（1〜5）である（rules.md v0.8 19-3-1）。",
         "得点は基本得点を含めた合算後の数値であり、7-5-1 の基本得点は加えない（rules.md v0.8 19-3-3）。"
       ],
-      "replacesBasePoints": true,
-      "defenseFailEffects": [
-        {
-          "kind": "loseGold",
-          "amount": 2,
-          "perRound": true,
-          "afterNextIncome": true
-        }
-      ],
+      "replacesBasePoints": false,
+      "defenseFailEffects": [],
       "repelEffects": [
         {
           "kind": "landTiles",

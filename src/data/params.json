@@ -953,9 +953,10 @@
       }
     ],
     "plannedCityPointsByRank": [
-      7,
-      5,
-      3
+      8,
+      4,
+      2,
+      1
     ],
     "natureParkPointsBySetSize": {
       "2": 3,
