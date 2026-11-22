@@ -567,10 +567,13 @@ export const FinalScores = ({
   state,
   onRestart,
   onSaveReplay,
+  onHide,
   restartLabel = '最初から',
 }: {
   state: GameState;
   onRestart: () => void;
+  /** 得点表を閉じて終了時の盤面を見る（ユーザー決定 2026-11-22）。 */
+  onHide?: () => void;
   /** 記録（リプレイ）の保存。無ければボタンを出さない。 */
   onSaveReplay?: () => void;
   restartLabel?: string;
@@ -631,6 +634,11 @@ export const FinalScores = ({
           </tbody>
         </table>
         <div className="start-row">
+          {onHide !== undefined ? (
+            <button type="button" className="btn" data-ui="final-hide" onClick={onHide}>
+              盤面を見る
+            </button>
+          ) : null}
           {onSaveReplay !== undefined ? (
             <button type="button" className="btn primary" data-ui="final-save-replay" onClick={onSaveReplay}>
               記録を保存
