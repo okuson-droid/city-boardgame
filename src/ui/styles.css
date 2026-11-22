@@ -2850,3 +2850,12 @@ h3 {
   flex-direction: column;
   gap: 2px;
 }
+
+/* ゲーム終了後、得点表を閉じて盤面を見ているときに出す、得点表に戻るボタン（2026-11-22）。 */
+.final-reopen {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}

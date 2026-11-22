@@ -134,6 +134,8 @@ export const Game = ({
   const [soundOn, setSoundOn] = useSoundEnabled();
   /** ドラフトの専用画面を畳んで盤面を見ているか。選ぶ人が変わると開き直す。 */
   const [draftFolded, setDraftFolded] = useState(false);
+  // ゲーム終了後に得点表を閉じて、終了時の盤面を見ている（ユーザー決定 2026-11-22）。
+  const [finalHidden, setFinalHidden] = useState(false);
   const drafting = state.stack[state.stack.length - 1]?.t === 'draftPick';
   // 手番（いま選ぶ人）の席。上部のタブと下の帯で目立たせる（ユーザー決定 2026-11-06）。
   const turnSeat = isGameOver(state) ? null : ctl.seat !== null || ctl.readOnly === true ? decider(state) : owner;
@@ -481,7 +483,12 @@ export const Game = ({
       />
 
       {summary !== null && !isGameOver(state) ? <RoundSummary state={state} round={summary} onClose={() => setSummary(null)} /> : null}
-      {isGameOver(state) ? <FinalScores state={state} onRestart={onRestart} {...(ctl.saveReplay !== undefined ? { onSaveReplay: ctl.saveReplay } : {})} {...(ctl.leaveLabel !== undefined ? { restartLabel: ctl.leaveLabel } : ctl.readOnly === true ? { restartLabel: '再生を閉じる' } : {})} /> : null}
+      {isGameOver(state) && finalHidden ? (
+        <button type="button" className="btn primary final-reopen" data-ui="final-reopen" onClick={() => setFinalHidden(false)}>
+          得点表に戻る
+        </button>
+      ) : null}
+      {isGameOver(state) && !finalHidden ? <FinalScores state={state} onRestart={onRestart} onHide={() => setFinalHidden(true)} {...(ctl.saveReplay !== undefined ? { onSaveReplay: ctl.saveReplay } : {})} {...(ctl.leaveLabel !== undefined ? { restartLabel: ctl.leaveLabel } : ctl.readOnly === true ? { restartLabel: '再生を閉じる' } : {})} /> : null}
       <div className="rotate">横向きにしてください</div>
     </div>
   );
