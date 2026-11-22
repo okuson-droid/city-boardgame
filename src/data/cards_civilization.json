@@ -424,7 +424,7 @@
       "id": "012",
       "name": "招聘",
       "cost": {
-        "gold": 28
+        "gold": 20
       },
       "tags": [
         "life"
