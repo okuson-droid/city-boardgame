@@ -92,6 +92,13 @@ export const metricValue = (state: GameState, d: GameData, player: PlayerState, 
       return player.played.filter((id) => d.civilizationCards.find((c) => c.id === id)?.tags.some((t) => t === arg) ?? false).length;
     case 'buildingsOnTerrain':
       return CELL_IDS.filter((c) => player.buildings[c] !== undefined && player.land[c] === TERRAINS.find((t) => t === arg)).length;
+    case 'handCards':
+      return player.hand.length;
+    case 'campsWithAdjacentBuildings':
+      // 隣接する6マスに建物が arg 軒以上ある飯場の数（ユーザー決定 2026-11-22、特別な市民カード「現場監督」）。
+      return CELL_IDS.filter(
+        (c) => player.buildings[c] === 'camp' && neighborsOf(c).filter((n) => player.buildings[n] !== undefined).length >= Number(arg),
+      ).length;
     default:
       throw new Error(`未知の指標である：${metric}`);
   }
@@ -114,7 +121,7 @@ export const conditionHolds = (state: GameState, d: GameData, player: PlayerStat
 
 /** 選択を伴う命令か。 */
 export const isChoiceCommand = (command: Command): boolean =>
-  ['placeTiles', 'build', 'playCard', 'expeditionRewards', 'chooseOne', 'copyAction', 'spiritPlace', 'heroStart', 'discardRaise'].includes(
+  ['placeTiles', 'build', 'playCard', 'expeditionRewards', 'chooseOne', 'copyAction', 'spiritPlace', 'heroStart', 'discardRaise', 'discard', 'exchange'].includes(
     command.op,
   ) ||
   (command.op === 'gain' && command.res === 'specialCitizen');

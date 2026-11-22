@@ -200,6 +200,44 @@ export const applyChooseOne = (state: GameState, d: GameData, task: TaskOf<'choo
   runCommands(state, d, playerOf(state, task.player), commands, task.source);
 };
 
+/** 交換（命令 exchange）で払う・得る資源の名前。 */
+const EXCHANGE_LABELS = { gold: '金', materials: '資材', militaryTokens: '軍事力トークン' } as const;
+
+/** 交換できる最大の回数（払える数まで、max があれば max 回まで）。 */
+const exchangeMax = (player: PlayerState, task: TaskOf<'exchange'>): number => {
+  const have = task.pay.res === 'gold' ? player.gold : task.pay.res === 'materials' ? player.materials : player.militaryTokens;
+  const affordable = Math.floor(have / task.pay.amount);
+  return task.max === undefined ? affordable : Math.min(affordable, task.max);
+};
+
+/** 交換の回数を選ぶ（0回を含む、ユーザー決定 2026-11-22）。 */
+export const exchangeOptions = (state: GameState, task: TaskOf<'exchange'>): Option[] => {
+  const n = exchangeMax(playerOf(state, task.player), task);
+  return Array.from({ length: n + 1 }, (_, k) =>
+    opt(
+      task.player,
+      `count:${k}`,
+      k === 0
+        ? '交換しない'
+        : `${EXCHANGE_LABELS[task.pay.res]}${task.pay.amount * k}を払い、${EXCHANGE_LABELS[task.gain.res]}${task.gain.amount * k}を得る（${k}回）`,
+    ),
+  );
+};
+
+export const applyExchange = (state: GameState, task: TaskOf<'exchange'>, id: string): void => {
+  removeTask(state, task);
+  const player = playerOf(state, task.player);
+  const k = Math.min(Number(id.slice('count:'.length)), exchangeMax(player, task));
+  if (!(k > 0)) return;
+  const add = (res: 'gold' | 'materials' | 'militaryTokens', n: number): void => {
+    if (res === 'gold') player.gold += n;
+    else if (res === 'materials') player.materials += n;
+    else player.militaryTokens += n;
+  };
+  add(task.pay.res, -task.pay.amount * k);
+  add(task.gain.res, task.gain.amount * k);
+};
+
 /** 特別市民11 が写せるのは10アクション×3段階の効果に限る（ユーザー決定 2026-11-03）。占有・解放・ワーカー数は問わない（19-2-11）。 */
 const copyCandidates = (d: GameData, player: PlayerState): { action: Action; tier: Tier }[] =>
   ACTIONS.flatMap((action) => TIERS.map((tier) => ({ action, tier }))).filter(({ action, tier }) =>

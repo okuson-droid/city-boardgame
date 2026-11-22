@@ -152,6 +152,7 @@ export const valueLabel = (value: string, key = ''): string => {
     if (metric === 'buildingsOfType') return `${argName}の数`;
     if (metric === 'tagsOf') return `${argName}タグ`;
     if (metric === 'buildingsOnTerrain') return `${argName}に建てた建物`;
+    if (metric === 'campsWithAdjacentBuildings') return `隣接する建物が${arg}軒以上の飯場`;
   }
   return value;
 };

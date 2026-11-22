@@ -5,7 +5,7 @@
 import type { CellId } from './board.ts';
 import type { RngState } from './rng.ts';
 import type { Action, Building, ScoreAxis, Terrain, Tier } from '../data/types.ts';
-import type { Command } from '../data/script.ts';
+import type { Command, ExchangeResource } from '../data/script.ts';
 
 /** ヴァリアントルール（ユーザー決定）。省略した項目は採用しない。古い記録との互換のため、項目はすべて省略可とする。 */
 export type GameVariants = {
@@ -166,6 +166,14 @@ export type Task =
       readonly upTo?: boolean;
     }
   | { readonly t: 'chooseOne'; readonly player: number; readonly options: readonly (readonly Command[])[]; readonly source: string }
+  /** 交換の回数を選ぶ（命令 exchange、ユーザー決定 2026-11-22）。 */
+  | {
+      readonly t: 'exchange';
+      readonly player: number;
+      readonly pay: { readonly res: ExchangeResource; readonly amount: number };
+      readonly gain: { readonly res: ExchangeResource; readonly amount: number };
+      readonly max?: number;
+    }
   | { readonly t: 'copyAction'; readonly player: number }
   | { readonly t: 'spiritPlace'; readonly player: number }
   | { readonly t: 'heroStart'; readonly player: number }

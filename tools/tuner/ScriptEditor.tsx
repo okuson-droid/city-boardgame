@@ -7,6 +7,7 @@ import {
   BUILDINGS,
   CIV_TAGS,
   COMMAND_OPS,
+  EXCHANGE_RESOURCES,
   EVENT_NAMES,
   GAIN_RESOURCES,
   MODIFIER_KINDS,
@@ -30,6 +31,7 @@ const METRICS: readonly string[] = [
   ...BUILDINGS.map((b) => `buildingsOfType:${b}`),
   ...TERRAINS.map((t) => `buildingsOnTerrain:${t}`),
   ...CIV_TAGS.map((t) => `tagsOf:${t}`),
+  ...[1, 2, 3, 4, 5, 6].map((n) => `campsWithAdjacentBuildings:${n}`),
 ];
 
 // ---------------------------------------------------------------------------
@@ -52,6 +54,8 @@ const COMMAND_TEMPLATES: Record<(typeof COMMAND_OPS)[number], Command> = {
   drawPlannedCity: { op: 'drawPlannedCity', count: 1 },
   spiritPlace: { op: 'spiritPlace' },
   heroStart: { op: 'heroStart' },
+  discard: { op: 'discard', count: 1 },
+  exchange: { op: 'exchange', pay: { res: 'materials', amount: 1 }, gain: { res: 'gold', amount: 7 } },
 };
 
 const ABILITY_TEMPLATES: Record<(typeof ABILITY_NAMES)[number], Ability> = {
@@ -79,6 +83,7 @@ const MODIFIER_TEMPLATES: Record<(typeof MODIFIER_KINDS)[number], J> = {
   skipRaid: { kind: 'skipRaid' },
   noRaidPointLoss: { kind: 'noRaidPointLoss' },
   expeditionSameReward: { kind: 'expeditionSameReward', maxSame: { normal: 2, upper: 2, top: 3 } },
+  terrainBonusMultiplier: { kind: 'terrainBonusMultiplier', value: 2, exceptBuilding: 'house' },
 };
 
 // ---------------------------------------------------------------------------
@@ -279,6 +284,27 @@ const CommandEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
           <Check label="無料" value={value['free']} onChange={(b) => set('free', b)} />
         </>
       ) : null}
+      {op === 'discard' ? (
+        <Field label="捨てる枚数">
+          <Int value={value['count']} onChange={(n) => set('count', n)} />
+        </Field>
+      ) : null}
+      {op === 'exchange'
+        ? (['pay', 'gain'] as const).map((side) => {
+            const s = (value[side] as J | undefined) ?? {};
+            return (
+              <Field key={side} label={side === 'pay' ? '払う' : '得る'}>
+                <Select value={String(s['res'])} kind="res" options={EXCHANGE_RESOURCES} onChange={(r) => set(side, { ...s, res: r })} />
+                <Int value={s['amount']} onChange={(n) => set(side, { ...s, amount: n })} />
+              </Field>
+            );
+          })
+        : null}
+      {op === 'exchange' ? (
+        <Field label="回数の上限">
+          <Int value={value['max'] ?? 0} onChange={(n) => (n > 0 ? set('max', n) : unset('max'))} />
+        </Field>
+      ) : null}
       {op === 'expeditionRewards' || op === 'drawPlannedCity' ? (
         <Field label="数">
           <Int value={value['count']} onChange={(n) => set('count', n)} />
@@ -432,6 +458,25 @@ const ModifierEditor = ({ value, onChange }: { value: J; onChange: (v: J) => voi
         <Field label="値">
           <Int value={value['value']} onChange={(n) => set('value', n)} />
         </Field>
+      ) : null}
+      {kind === 'terrainBonusMultiplier' ? (
+        <>
+          <Field label="倍率">
+            <Int value={value['value']} onChange={(n) => set('value', n)} />
+          </Field>
+          <Field label="除く建物">
+            <Select
+              value={value['exceptBuilding'] as string | undefined}
+              kind="building"
+              options={BUILDINGS}
+              empty="（なし）"
+              onChange={(b) => {
+                const { exceptBuilding: _old, ...rest } = value;
+                onChange(b === null ? rest : { ...rest, exceptBuilding: b });
+              }}
+            />
+          </Field>
+        </>
       ) : null}
       {kind === 'natureParkPoints' ? (
         <JsonEditor value={value['table']} base={value['table']} path={[]} onSet={(_, v) => set('table', v)} />

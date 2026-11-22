@@ -660,7 +660,11 @@
             {
               "op": "gain",
               "res": "drawCivCards",
-              "amount": 2
+              "amount": 4
+            },
+            {
+              "op": "discard",
+              "count": 2
             }
           ]
         }
@@ -668,7 +672,7 @@
       "revisedEffects": [
         {
           "timing": "1ラウンドにつき1回のフリーアクション",
-          "text": "文明カードを2枚引く。"
+          "text": "文明カードを4枚引き、手札から2枚捨てる。"
         }
       ]
     },
@@ -1159,6 +1163,220 @@
               "terrain": null,
               "payGold": true,
               "payMaterials": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "29",
+      "name": "地質学者 カタツムリ",
+      "effects": [],
+      "revisedEffects": [
+        {
+          "timing": "常時",
+          "text": "住宅以外の建物を建設した時の地形ボーナスを2倍獲得する。"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "modifier",
+          "modifier": {
+            "kind": "terrainBonusMultiplier",
+            "value": 2,
+            "exceptBuilding": "house"
+          }
+        }
+      ]
+    },
+    {
+      "id": "30",
+      "name": "手品師 ナナフシ",
+      "effects": [],
+      "revisedEffects": [
+        {
+          "timing": "獲得時",
+          "text": "文明カードを3枚引く。"
+        },
+        {
+          "timing": "フリーアクション",
+          "text": "手札1枚を捨て、5金または2資材を得る。"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": 3
+            }
+          ]
+        },
+        {
+          "ability": "freeAction",
+          "pay": null,
+          "require": {
+            "left": "handCards",
+            "op": ">=",
+            "right": 1
+          },
+          "oncePerRound": false,
+          "do": [
+            {
+              "op": "discard",
+              "count": 1
+            },
+            {
+              "op": "later",
+              "do": [
+                {
+                  "op": "chooseOne",
+                  "options": [
+                    [
+                      {
+                        "op": "gain",
+                        "res": "gold",
+                        "amount": 5
+                      }
+                    ],
+                    [
+                      {
+                        "op": "gain",
+                        "res": "materials",
+                        "amount": 2
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "31",
+      "name": "現場監督 ツバメ",
+      "effects": [],
+      "revisedEffects": [
+        {
+          "timing": "常時",
+          "text": "飯場を建設したとき、追加で土地タイル2枚を配置する。"
+        },
+        {
+          "timing": "ゲーム終了時",
+          "text": "建物5軒以上が隣接する飯場1軒につき3点。"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "on",
+          "event": "built",
+          "filter": {
+            "building": "camp"
+          },
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 2,
+              "tile": "match"
+            }
+          ]
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "campsWithAdjacentBuildings:5",
+                "per": 1,
+                "times": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "32",
+      "name": "水先案内人 カモメ",
+      "effects": [],
+      "revisedEffects": [
+        {
+          "timing": "獲得時",
+          "text": "地形を無視して水場の土地タイルを6枚まで置く。"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "placeTiles",
+              "count": 6,
+              "tile": "water",
+              "upTo": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "33",
+      "name": "宝石商 カラス",
+      "effects": [],
+      "revisedEffects": [
+        {
+          "timing": "獲得時",
+          "text": "資材を好きなだけ、1資材につき7金に変換できる。"
+        },
+        {
+          "timing": "常時",
+          "text": "輸出アクションの実行後、臨時ワーカー1人を得る。"
+        }
+      ],
+      "open_issues": [],
+      "provisional": false,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "exchange",
+              "pay": {
+                "res": "materials",
+                "amount": 1
+              },
+              "gain": {
+                "res": "gold",
+                "amount": 7
+              }
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "actionFinished",
+          "filter": {
+            "action": "export"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
             }
           ]
         }
