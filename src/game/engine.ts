@@ -63,12 +63,14 @@ import {
   applyAbilityFree,
   applyChooseOne,
   applyCopyAction,
+  applyExchange,
   applyHeroStart,
   applyPlan,
   applyPlayCard,
   applySpiritPlace,
   chooseOneOptions,
   copyActionOptions,
+  exchangeOptions,
   heroStartOptions,
   planOptions,
   playCardOptions,
@@ -864,6 +866,8 @@ const optionsFor = (state: GameState, d: GameData, task: Task): Option[] => {
       return playCardOptions(d, state, task);
     case 'chooseOne':
       return chooseOneOptions(task);
+    case 'exchange':
+      return exchangeOptions(state, task);
     case 'copyAction':
       return copyActionOptions(d, state, task);
     case 'spiritPlace':
@@ -922,6 +926,8 @@ const applyTask = (state: GameState, d: GameData, task: Task, id: string): void 
       return applyPlayCard(state, d, task, id);
     case 'chooseOne':
       return applyChooseOne(state, d, task, id);
+    case 'exchange':
+      return applyExchange(state, task, id);
     case 'copyAction':
       return applyCopyAction(state, d, task, id);
     case 'spiritPlace':

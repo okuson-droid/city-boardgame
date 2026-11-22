@@ -258,6 +258,10 @@ const commandTask = (player: number, command: Command, source: string): Task => 
       };
     case 'discardRaise':
       return { t: 'discard', player, remaining: command.max, raise: command.track, discarded: 0 };
+    case 'discard':
+      return { t: 'discard', player, remaining: command.count };
+    case 'exchange':
+      return { t: 'exchange', player, pay: command.pay, gain: command.gain, ...(command.max !== undefined ? { max: command.max } : {}) };
     case 'build':
       return buildTask(player, {
         min: command.upTo ? 0 : command.max,
@@ -590,9 +594,14 @@ export const buildEffects = (d: GameData, player: PlayerState, picks: readonly {
         break;
     }
     const tile = player.land[cell];
+    // 地形ボーナスの倍率（特別な市民カード「地質学者」、ユーザー決定 2026-11-22）。除く建物には掛けない。
+    const multiplier = modifiersOf(d, player).reduce(
+      (value, m) => (m.kind === 'terrainBonusMultiplier' && m.exceptBuilding !== building ? value * m.value : value),
+      1,
+    );
     for (const bonus of d.params.buildings.terrainBonus) {
       if (bonus.terrain === tile && bonus.buildings.includes(building)) {
-        effects.push({ k: 'grant', grant: bonus.grant, source: `terrainBonus:${building}` });
+        effects.push({ k: 'grant', grant: { ...bonus.grant, amount: bonus.grant.amount * multiplier }, source: `terrainBonus:${building}` });
       }
     }
   }

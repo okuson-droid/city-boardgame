@@ -35,6 +35,8 @@ const metricEntry = (keys: IconKeys, metric: Metric): IconEntry => {
   const [name = '', arg] = metric.split(':');
   const base = entry(keys, 'metrics', name);
   if (arg === undefined) return base;
+  // 隣接する建物の数で絞った飯場（ユーザー決定 2026-11-22）。引数は数のため、名前に書き込む。
+  if (name === 'campsWithAdjacentBuildings') return { icon: base.icon, label: `隣接する建物が${arg}軒以上の飯場` };
   const section: IconSection = name === 'buildingsOfType' ? 'buildings' : name === 'tagsOf' ? 'tags' : 'terrains';
   const target = entry(keys, section, arg);
   return { icon: `${base.icon}:${target.icon}`, label: `${target.label}${base.label}` };
@@ -101,6 +103,16 @@ const commandTokens = (keys: IconKeys, command: Command): IconToken[] => {
       return [token(keys, 'commands', 'buildOnCard', command.count), token(keys, 'buildings', command.building), token(keys, 'symbols', 'free')];
     case 'discardRaise':
       return [token(keys, 'symbols', 'discard'), token(keys, 'symbols', 'upTo'), { icon: 'num', value: command.max, label: String(command.max) }, token(keys, 'symbols', 'then'), token(keys, 'commands', 'discardRaise'), token(keys, 'tracks', command.track)];
+    case 'discard':
+      return [token(keys, 'commands', 'discard', command.count)];
+    case 'exchange':
+      // 支払いは矢の左、獲得は右（4-3-1）。回数は好きなだけ（上限があれば ≤）。
+      return [
+        token(keys, 'resources', command.pay.res, command.pay.amount),
+        token(keys, 'symbols', 'then'),
+        token(keys, 'resources', command.gain.res, command.gain.amount),
+        ...(command.max !== undefined ? [token(keys, 'symbols', 'upTo', `×${command.max}`)] : []),
+      ];
     case 'playCard':
       return command.upTo === true
         ? [
@@ -181,6 +193,8 @@ const modifierTokens = (keys: IconKeys, modifier: Modifier): IconToken[] => {
       return [head, token(keys, 'resources', 'gold', modifier.gold), token(keys, 'symbols', 'then'), token(keys, 'resources', 'militaryTokens', 1)];
     case 'expeditionSameReward':
       return [head, ...(['normal', 'upper', 'top'] as const).map((t) => token(keys, 'tiers', t, `×${modifier.maxSame[t]}`))];
+    case 'terrainBonusMultiplier':
+      return [{ ...head, value: `×${modifier.value}` }, ...(modifier.exceptBuilding !== undefined ? [token(keys, 'symbols', 'except'), token(keys, 'buildings', modifier.exceptBuilding)] : [])];
     default:
       return [head];
   }
@@ -263,6 +277,10 @@ const describeCommand = (keys: IconKeys, command: Command): string => {
       return `${label(keys, 'buildings', command.building)}${command.count}軒を${label(keys, 'commands', 'buildOnCard')}（${label(keys, 'symbols', 'free')}）`;
     case 'discardRaise':
       return `文明カードを${command.max}枚${label(keys, 'symbols', 'upTo')}捨て、${label(keys, 'commands', 'discardRaise')}（${label(keys, 'tracks', command.track)}）`;
+    case 'discard':
+      return `手札から文明カードを${command.count}枚捨てる`;
+    case 'exchange':
+      return `${label(keys, 'resources', command.pay.res)}${command.pay.amount}を${label(keys, 'resources', command.gain.res)}${command.gain.amount}に、${command.max !== undefined ? `${command.max}回まで` : '好きな回数'}交換する`;
     case 'playCard':
       return `${label(keys, 'commands', 'playCard')}（${command.count}枚${command.upTo === true ? label(keys, 'symbols', 'upTo') : ''}${command.free ? `、${label(keys, 'symbols', 'free')}` : ''}）`;
     case 'expeditionRewards':
@@ -295,6 +313,8 @@ const describeModifier = (keys: IconKeys, modifier: Modifier): string => {
       return `${head}（トークン1つにつき${modifier.gold}金）`;
     case 'expeditionSameReward':
       return `${head}：${(['normal', 'upper', 'top'] as const).map((t) => `${label(keys, 'tiers', t)}は${modifier.maxSame[t]}回まで`).join('、')}`;
+    case 'terrainBonusMultiplier':
+      return `${modifier.exceptBuilding !== undefined ? `${label(keys, 'buildings', modifier.exceptBuilding)}以外の建物を建てた時の` : '建物を建てた時の'}地形ボーナスを${modifier.value}倍にする`;
     case 'expeditionRewards':
       return `${head}：${modifier.add
         .map((a) => `${label(keys, 'tracks', 'military')}${a.level}で${describeCommand(keys, a.command)}`)

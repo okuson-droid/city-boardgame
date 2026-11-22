@@ -102,6 +102,14 @@
     "discardRaise": {
       "icon": "cmd.discardRaise",
       "label": "捨てた枚数だけ上げる"
+    },
+    "discard": {
+      "icon": "sym.discard",
+      "label": "手札を捨てる"
+    },
+    "exchange": {
+      "icon": "sym.then",
+      "label": "交換する"
     }
   },
   "resources": {
@@ -334,6 +342,14 @@
     "tagsOf": {
       "icon": "met.tagsOf",
       "label": "タグ"
+    },
+    "handCards": {
+      "icon": "res.civCard",
+      "label": "手札"
+    },
+    "campsWithAdjacentBuildings": {
+      "icon": "bld.camp",
+      "label": "建物に囲まれた飯場"
     }
   },
   "events": {
@@ -418,6 +434,10 @@
     "noRaidPointLoss": {
       "icon": "mod.noRaidPointLoss",
       "label": "防衛失敗で点数を失わない"
+    },
+    "terrainBonusMultiplier": {
+      "icon": "ter.any",
+      "label": "地形ボーナスの倍率"
     }
   },
   "results": {

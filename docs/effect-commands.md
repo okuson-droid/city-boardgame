@@ -41,6 +41,7 @@
 | `tokensByGold` | `gold` | 傭兵団（軍事力トークン1つの代わりに払う金、2026-11-06） |
 | `skipRaid` | なし | 雲隠れ（襲撃の処理を行わないことを選べる、2026-11-06） |
 | `expeditionSameReward` | `maxSame`（段階ごと） | 特別任務（遠征で同じ報酬を選べる回数、2026-11-06） |
+| `terrainBonusMultiplier` | `value`、`exceptBuilding?` | 特別市民29 地質学者（住宅以外の地形ボーナスを2倍、2026-11-22） |
 | `noRaidPointLoss` | なし | 名誉ある犠牲（防衛失敗で点数を失わない、2026-11-06） |
 
 ## 2. 命令
@@ -61,13 +62,15 @@
 | `discardRaise` | `max`、`track` | 手札を max 枚まで捨て、捨てた枚数だけトラックを上げる（兵法、2026-11-06） |
 | `drawPlannedCity` | `count` | 専用の計画都市カードを引く（デザイナー、19-5-3） |
 | `spiritPlace` | なし | 精霊チップと土地タイルを置く（精霊使い、19-5-7） |
+| `discard` | `count` | 手札から count 枚を選んで捨てる。手札が足りなければあるだけ捨てる（特別市民15・30、2026-11-22） |
+| `exchange` | `pay`（`res`・`amount`）、`gain`（同）、`max?` | pay を払って gain を得る交換を好きな回数（0回を含む）行う。`res` は gold・materials・militaryTokens（特別市民33、2026-11-22） |
 | `heroStart` | なし | 英雄の初期配置。初期配置のタイル（E1・F1）を置かず、任意の山岳マスに山岳タイルと砦を置く（ユーザー決定 2026-11-06、19-5-1 からの変更） |
 
 `amount` は数値か、`{ count: 指標, per: n, times: m }`（指標 n につき m）とする。019〜026・特別市民05〜07・16・18・資本家の終了時効果に使う。
 
 `cond` は `{ left: 指標, op: '>=' | '<', right: 数値または指標 }` とする。034・042 は右辺に撃退ライン・防衛ラインの指標を置く。
 
-指標の一覧：regularWorkers、tempWorkers、landTiles、freeLandTiles、buildings、buildingsOfType:建物、buildingsOnTerrain:地形、maxedBuildingTypes、houses、militaryLevel、infraLevel、militaryTokens、goldProduction、materialProduction、repelLine、defenseLine、repelShortfall（撃退ライン−軍事レベル、0未満は0）、playedCivCards、buildingTypes（建設済みの建物の種類の数）、freeLandTerrains（建物のない土地タイルの地形の種類の数）、tagsOf:分類（プレイ済みの文明カードのうちその分類のタグを持つ枚数、プレイ中の自身を含む）。後の3つは 2026-11-06 に追加した（docs/civ-cards-xlsx.md）。
+指標の一覧：regularWorkers、tempWorkers、landTiles、freeLandTiles、buildings、buildingsOfType:建物、buildingsOnTerrain:地形、maxedBuildingTypes、houses、militaryLevel、infraLevel、militaryTokens、goldProduction、materialProduction、repelLine、defenseLine、repelShortfall（撃退ライン−軍事レベル、0未満は0）、playedCivCards、buildingTypes（建設済みの建物の種類の数）、freeLandTerrains（建物のない土地タイルの地形の種類の数）、tagsOf:分類（プレイ済みの文明カードのうちその分類のタグを持つ枚数、プレイ中の自身を含む）。後の3つは 2026-11-06 に追加した（docs/civ-cards-xlsx.md）。handCards（手札の枚数、特別市民30）と campsWithAdjacentBuildings:N（隣接する6マスに建物が N 軒以上ある飯場の数、特別市民31）は 2026-11-22 に追加した。
 
 `on` の出来事と絞り込み：
 

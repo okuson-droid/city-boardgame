@@ -28,6 +28,8 @@ export const SIMPLE_METRICS = [
   'spiritAdjacency',
   'buildingTypes',
   'freeLandTerrains',
+  /** 手札の枚数（ユーザー決定 2026-11-22、特別な市民カード「手品師」）。 */
+  'handCards',
 ] as const;
 export type SimpleMetric = (typeof SIMPLE_METRICS)[number];
 
@@ -35,7 +37,15 @@ export type SimpleMetric = (typeof SIMPLE_METRICS)[number];
  * 指標。建物の種類・地形・分類を伴う指標は「名前:引数」で書く。
  * tagsOf はプレイ済みの文明カードのうちその分類のタグを持つ枚数で、プレイ中の自身を含む（ユーザー決定 2026-11-06）。
  */
-export type Metric = SimpleMetric | `buildingsOfType:${Building}` | `buildingsOnTerrain:${Terrain}` | `tagsOf:${CivTag}`;
+/**
+ * campsWithAdjacentBuildings:N は、隣接する6マスに建物が N 軒以上ある飯場の数（ユーザー決定 2026-11-22、特別な市民カード「現場監督」）。
+ */
+export type Metric =
+  | SimpleMetric
+  | `buildingsOfType:${Building}`
+  | `buildingsOnTerrain:${Terrain}`
+  | `tagsOf:${CivTag}`
+  | `campsWithAdjacentBuildings:${number}`;
 
 export type Amount = number | { readonly count: Metric; readonly per: number; readonly times: number };
 
@@ -106,7 +116,23 @@ export type Command =
   | { readonly op: 'discardRaise'; readonly max: number; readonly track: 'military' | 'infra' }
   | { readonly op: 'drawPlannedCity'; readonly count: number }
   | { readonly op: 'spiritPlace' }
-  | { readonly op: 'heroStart' };
+  | { readonly op: 'heroStart' }
+  /** 手札から count 枚を選んで捨てる（ユーザー決定 2026-11-22、特別な市民カード「司書」「手品師」）。手札が足りなければあるだけ捨てる。 */
+  | { readonly op: 'discard'; readonly count: number }
+  /**
+   * pay を払って gain を得る交換を、好きな回数（0回を含む）行う（ユーザー決定 2026-11-22、特別な市民カード「宝石商」）。
+   * 回数は払える数まで。max があれば max 回まで。
+   */
+  | {
+      readonly op: 'exchange';
+      readonly pay: { readonly res: ExchangeResource; readonly amount: number };
+      readonly gain: { readonly res: ExchangeResource; readonly amount: number };
+      readonly max?: number;
+    };
+
+/** 交換（exchange）で払う・得る資源。 */
+export const EXCHANGE_RESOURCES = ['gold', 'materials', 'militaryTokens'] as const;
+export type ExchangeResource = (typeof EXCHANGE_RESOURCES)[number];
 
 export const COMMAND_OPS = [
   'gain',
@@ -124,6 +150,8 @@ export const COMMAND_OPS = [
   'drawPlannedCity',
   'spiritPlace',
   'heroStart',
+  'discard',
+  'exchange',
 ] as const;
 export type CommandOp = (typeof COMMAND_OPS)[number];
 
@@ -189,7 +217,12 @@ export type Modifier =
   /** 防衛失敗で点数を失わない（文明カード「名誉ある犠牲」）。 */
   | { readonly kind: 'noRaidPointLoss' }
   /** 遠征アクションで同じ報酬を選べる回数の上限（文明カード「特別任務」）。 */
-  | { readonly kind: 'expeditionSameReward'; readonly maxSame: Readonly<Record<'normal' | 'upper' | 'top', number>> };
+  | { readonly kind: 'expeditionSameReward'; readonly maxSame: Readonly<Record<'normal' | 'upper' | 'top', number>> }
+  /**
+   * 建物を建てた時の地形ボーナス（params.buildings.terrainBonus）を value 倍にする。exceptBuilding の建物は除く
+   * （ユーザー決定 2026-11-22、特別な市民カード「地質学者」）。
+   */
+  | { readonly kind: 'terrainBonusMultiplier'; readonly value: number; readonly exceptBuilding?: Building };
 
 export const MODIFIER_KINDS = [
   'buildCost',
@@ -204,6 +237,7 @@ export const MODIFIER_KINDS = [
   'skipRaid',
   'noRaidPointLoss',
   'expeditionSameReward',
+  'terrainBonusMultiplier',
 ] as const;
 
 export type Ability =
@@ -292,6 +326,11 @@ export const readMetric = (v: unknown, path: string): Metric => {
   }
   if (name === 'tagsOf') {
     oneOf(CIV_TAGS, arg, path);
+    return v as Metric;
+  }
+  if (name === 'campsWithAdjacentBuildings') {
+    const n = Number(arg);
+    if (!Number.isInteger(n) || n < 1 || n > 6) fail(path, '隣接する建物の数は1〜6でなければならない');
     return v as Metric;
   }
   return oneOf(SIMPLE_METRICS, v, path);
@@ -384,6 +423,18 @@ export const readCommand = (v: unknown, path: string): Command => {
       return { op, building: oneOf(BUILDINGS, o['building'], p('building')), count: int(o['count'], p('count')) };
     case 'discardRaise':
       return { op, max: int(o['max'], p('max')), track: oneOf(['military', 'infra'] as const, o['track'], p('track')) };
+    case 'discard':
+      return { op, count: int(o['count'], p('count')) || fail(p('count'), '1以上でなければならない') };
+    case 'exchange': {
+      const side = (key: 'pay' | 'gain') => {
+        const s = obj(o[key], p(key));
+        return {
+          res: oneOf(EXCHANGE_RESOURCES, s['res'], `${p(key)}.res`),
+          amount: int(s['amount'], `${p(key)}.amount`) || fail(`${p(key)}.amount`, '1以上でなければならない'),
+        };
+      };
+      return { op, pay: side('pay'), gain: side('gain'), ...optional(o, 'max', int, path) };
+    }
     case 'copyAction':
     case 'spiritPlace':
     case 'heroStart':
@@ -459,6 +510,12 @@ const readModifier = (v: unknown, path: string): Modifier => {
       const tier = (t: 'normal' | 'upper' | 'top'): number => int(table[t], `${path}.maxSame.${t}`) || fail(`${path}.maxSame.${t}`, '1以上でなければならない');
       return { kind, maxSame: { normal: tier('normal'), upper: tier('upper'), top: tier('top') } };
     }
+    case 'terrainBonusMultiplier':
+      return {
+        kind,
+        value: int(o['value'], `${path}.value`) || fail(`${path}.value`, '1以上でなければならない'),
+        ...optional(o, 'exceptBuilding', (x, q) => oneOf(BUILDINGS, x, q), path),
+      };
     case 'regularWorkersImmediate':
     case 'noBuildOnSpiritLand':
     case 'expeditionTilesAnyTerrain':
