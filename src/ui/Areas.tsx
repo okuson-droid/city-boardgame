@@ -248,6 +248,10 @@ export const PersonalInfo = ({
   const options = isOwner && character
     ? model.choices.filter((c) => (c.target.kind === 'ability' || c.target.kind === 'specialSpace') && c.target.source === `char:${character.id}`)
     : [];
+  // プレイ済みの文明カードの専用スペース・フリーアクション（2026-11-22）。
+  const playedChoices = isOwner
+    ? model.choices.filter((c) => (c.target.kind === 'ability' || c.target.kind === 'specialSpace') && c.target.source.startsWith('civ:'))
+    : [];
   return (
     <div className="status personal-info" data-info={player.index}>
       <h3 className="info-name">
@@ -342,14 +346,29 @@ export const PersonalInfo = ({
         name="played"
         label={`プレイ済み ${player.played.length}枚`}
         summary={<IconRow tokens={[...tagCounts.entries()].map(([tag, n]) => tok('tags', tag, n))} size="sm" />}
+        force={playedChoices.length > 0}
       >
         <div className="cards-row">
-          {player.played.map((card, i) => (
-            <div key={`${card}-${i}`} className="card civ" data-played-card={card}>
-              <CivCardView card={card} player={player} />
-              <CardHouses count={housesOnCard(player, card)} />
-            </div>
-          ))}
+          {player.played.map((card, i) => {
+            // プレイ済みの文明カードの専用スペース・フリーアクション（開発サイクル・発明王など）。以前はボタンを出す場所がなく、
+            // 画面から使えなかった（2026-11-22）。同じカードを2枚持つことはないため、最初の1枚にだけ出す。
+            const options = player.played.indexOf(card) === i ? playedChoices.filter((c) => 'source' in c.target && c.target.source === `civ:${card}`) : [];
+            return (
+              <div key={`${card}-${i}`} className="card civ" data-played-card={card}>
+                <CivCardView card={card} player={player} />
+                <CardHouses count={housesOnCard(player, card)} />
+                {options.length > 0 ? (
+                  <div className="ability-buttons">
+                    {options.map((c) => (
+                      <button key={c.option.id} type="button" className="btn selectable" data-target={c.option.id} onClick={() => onChoose(c.option.id)}>
+                        {c.target.kind === 'specialSpace' ? '専用スペース' : 'フリーアクション'}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       </Fold>
     </div>
