@@ -514,14 +514,19 @@
           "ability": "gameEnd",
           "do": [
             {
-              "op": "gain",
-              "res": "points",
-              "amount": {
-                "count": "buildingsOfType:house",
-                "per": 1,
-                "times": 1
+              "op": "if",
+              "cond": {
+                "left": "houses",
+                "op": ">=",
+                "right": 10
               },
-              "axis": "welfare"
+              "then": [
+                {
+                  "op": "gain",
+                  "res": "points",
+                  "amount": 7
+                }
+              ]
             }
           ]
         }
