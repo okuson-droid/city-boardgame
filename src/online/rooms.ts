@@ -192,3 +192,66 @@ export const viewFor = (state: GameState, seat: number): GameState => {
     players: view.players.map((p) => (p.index === seat ? p : { ...p, hand: p.hand.map(() => hidden) })),
   };
 };
+
+// ---------------------------------------------------------------------------
+// 局面の差分の取得（ユーザー決定 2026-11-21：ゲーム終盤の通信を軽くする）
+// ---------------------------------------------------------------------------
+
+/**
+ * 選択の記録（log）の指紋。画面が持っている写しの log と部屋の log の前半が一致するかを、
+ * 中身を送らずに確かめるために使う（取り消しの後に別の選択をすると、長さが同じでも中身が変わるため）。FNV-1a（32ビット）。
+ */
+export const logDigest = (log: readonly { readonly move: string; readonly checkpoint: boolean }[]): string => {
+  let h = 0x811c9dc5;
+  for (const entry of log) {
+    const s = `${entry.move}${entry.checkpoint ? '!' : '.'}`;
+    for (let i = 0; i < s.length; i += 1) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+  }
+  return h.toString(16);
+};
+
+/** 画面がすでに持っている写し（版と、log・events の長さと、log の指紋）。 */
+export type ViewSince = { readonly version: number; readonly log: number; readonly events: number; readonly digest: string };
+
+/** 差分で送ったときの、省いた先頭の長さ。画面は手元の写しの先頭とつなぐ。 */
+export type ViewDelta = { readonly log: number; readonly events: number };
+
+/** 送られてきた ViewSince を確かめる。形が違えば null（全体を送る）。 */
+export const parseSince = (value: unknown): ViewSince | null => {
+  if (typeof value !== 'object' || value === null) return null;
+  const v = value as Record<string, unknown>;
+  const n = (x: unknown): number | null => (typeof x === 'number' && Number.isInteger(x) && x >= 0 ? x : null);
+  const version = n(v['version']);
+  const log = n(v['log']);
+  const events = n(v['events']);
+  const digest = typeof v['digest'] === 'string' ? v['digest'] : null;
+  return version === null || log === null || events === null || digest === null ? null : { version, log, events, digest };
+};
+
+/**
+ * 伏せた写しのうち、画面がすでに持っている log・events の先頭を省く。先頭が一致しない（取り消しで縮んだ・別の選択に変わった）なら全体を送る。
+ * log と events は対局が進むほど長くなり、終盤の写しの大半を占める（3〜4人の終局で 80〜150KB のうち約9割）。
+ */
+export const trimView = (view: GameState, since: ViewSince | null): { state: GameState; delta?: ViewDelta } => {
+  if (since === null || since.log > view.log.length || since.events > view.events.length) return { state: view };
+  if (logDigest(view.log.slice(0, since.log)) !== since.digest) return { state: view };
+  return { state: { ...view, log: view.log.slice(since.log), events: view.events.slice(since.events) }, delta: { log: since.log, events: since.events } };
+};
+
+/** 差分で受け取った写しを、手元の写しの先頭とつないで全体に戻す。 */
+export const mergeView = (previous: GameState, state: GameState, delta: ViewDelta): GameState => ({
+  ...state,
+  log: [...previous.log.slice(0, delta.log), ...state.log],
+  events: [...previous.events.slice(0, delta.events), ...state.events],
+});
+
+/** 画面が手元の写しから作る ViewSince。 */
+export const sinceOf = (state: GameState, version: number): ViewSince => ({
+  version,
+  log: state.log.length,
+  events: state.events.length,
+  digest: logDigest(state.log),
+});

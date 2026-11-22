@@ -44,6 +44,13 @@ export const postgrestStore = (config: SupabaseConfig, fetcher: typeof fetch = f
       const row = rows[0];
       return row === undefined ? null : { record: row.record, state: row.state, version: row.version };
     },
+    // 記録と版だけを読む（局面の写しは終盤に大きくなるため、画面の写しが最新かを確かめるときは読まない。2026-11-21）。
+    peek: async (code) => {
+      const res = await fetcher(`${base}?code=eq.${encodeURIComponent(code)}&select=record,version`, { headers: headersFor(config) });
+      if (!res.ok) return failed(res, '部屋の読み込み');
+      const row = ((await res.json()) as Pick<Row, 'record' | 'version'>[])[0];
+      return row === undefined ? null : { record: row.record, version: row.version };
+    },
     insert: async (room) => {
       const res = await fetcher(base, {
         method: 'POST',
@@ -55,7 +62,8 @@ export const postgrestStore = (config: SupabaseConfig, fetcher: typeof fetch = f
       return true;
     },
     update: async (room, expected) => {
-      const res = await fetcher(`${base}?code=eq.${encodeURIComponent(room.record.code)}&version=eq.${expected}`, {
+      // 書き換えた行は版だけを返させる（全体を返させると、終盤は局面の写しを丸ごと受け取り直すことになる。2026-11-21）。
+      const res = await fetcher(`${base}?code=eq.${encodeURIComponent(room.record.code)}&version=eq.${expected}&select=version`, {
         method: 'PATCH',
         headers: { ...headersFor(config), Prefer: 'return=representation' },
         body: JSON.stringify({ record: room.record, state: room.state, version: room.version, updated_at: new Date().toISOString() }),

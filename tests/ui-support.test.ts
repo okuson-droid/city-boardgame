@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { applyMove, createGame, getOptions, isGameOver } from '../src/game/engine.ts';
 import { explain, explainUndo } from '../src/game/explain.ts';
 import { describeActionSpace, pendingBuildCost, sceneOf } from '../src/game/queries.ts';
@@ -204,6 +204,8 @@ describe('取り消せない選択の前の確かめ（ユーザー決定 2026-1
         if (o.id === 'pass') {
           expect(text).toMatch(/^パスします/);
           seenPass = true;
+        } else if (o.id === 'end' && options.some((x) => x.id.startsWith('plan:'))) {
+          expect(text).toMatch(/を達成していて、まだ宣言していません/);
         } else if (top?.t !== 'draftPick' && hiddenFuture(state, next) !== null) {
           expect(text).toMatch(/取り消せません/);
           seenHidden = true;
@@ -217,5 +219,30 @@ describe('取り消せない選択の前の確かめ（ユーザー決定 2026-1
       state = applyMove(state, pick.id);
     }
     expect([seenPass, seenHidden, seenPlain]).toEqual([true, true, true]);
+  });
+
+  it('宣言できる計画都市が残っているときは、手番の終了とパスの前に確かめる（ユーザー決定 2026-11-21）', async () => {
+    // rules.md v0.8 13-3-2（宣言は手番中のアクションの前後）、12-1（パス）
+    vi.resetModules();
+    vi.doMock('../src/game/engine.ts', async (importOriginal) => {
+      const real = await importOriginal<typeof import('../src/game/engine.ts')>();
+      return {
+        ...real,
+        getOptions: () => [
+          { id: 'end', player: 0, label: '手番を終える' },
+          { id: 'pass', player: 0, label: 'パスする' },
+          { id: 'plan:PC01', player: 0, label: '宣言する' },
+        ],
+      };
+    });
+    const { irreversibleNotice } = await import('../src/ui/confirm.ts');
+    const { GAME_DATA } = await import('../src/data/index.ts');
+    const { plannedCityName } = await import('../src/game/labels.ts');
+    const state = firstTurn();
+    const name = plannedCityName(GAME_DATA, 'PC01');
+    expect(irreversibleNotice(state, 'end')).toBe(`${name}を達成していて、まだ宣言していません。宣言せずに手番を終えますか？（他の人が先に宣言すると、得られる点が下がります）`);
+    expect(irreversibleNotice(state, 'pass')).toContain(`パスします。このラウンドはもう手番が来ず、取り消せません。${name}を達成していて`);
+    vi.doUnmock('../src/game/engine.ts');
+    vi.resetModules();
   });
 });
