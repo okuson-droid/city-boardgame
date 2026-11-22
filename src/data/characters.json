@@ -220,11 +220,10 @@
           "text": "商店の建設コストが1資材安くなる。"
         },
         {
-          "text": "フリーアクション（何度でも）：8金を支払い、以下から1つを得る。",
+          "text": "フリーアクション（何度でも）：7金を支払い、以下から1つを得る。",
           "items": [
             "2資材を得る。",
-            "地形と同じ種類の土地タイルを1枚置く。",
-            "軍事力トークン5を得る。"
+            "軍事力トークン4を得る。"
           ]
         },
         {
@@ -263,7 +262,7 @@
           "ability": "freeAction",
           "pay": {
             "res": "gold",
-            "amount": 8
+            "amount": 7
           },
           "require": null,
           "oncePerRound": false,
@@ -280,16 +279,9 @@
                 ],
                 [
                   {
-                    "op": "placeTiles",
-                    "count": 1,
-                    "tile": "match"
-                  }
-                ],
-                [
-                  {
                     "op": "gain",
                     "res": "militaryTokens",
-                    "amount": 5
+                    "amount": 4
                   }
                 ]
               ]

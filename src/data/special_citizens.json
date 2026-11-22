@@ -150,23 +150,14 @@
           "ability": "onAcquire",
           "do": [
             {
-              "op": "chooseOne",
-              "options": [
-                [
-                  {
-                    "op": "raise",
-                    "track": "military",
-                    "amount": 1
-                  }
-                ],
-                [
-                  {
-                    "op": "raise",
-                    "track": "infra",
-                    "amount": 1
-                  }
-                ]
-              ]
+              "op": "raise",
+              "track": "military",
+              "amount": 1
+            },
+            {
+              "op": "raise",
+              "track": "infra",
+              "amount": 1
             }
           ]
         },
@@ -175,23 +166,14 @@
           "workers": 1,
           "do": [
             {
-              "op": "chooseOne",
-              "options": [
-                [
-                  {
-                    "op": "raise",
-                    "track": "military",
-                    "amount": 2
-                  }
-                ],
-                [
-                  {
-                    "op": "raise",
-                    "track": "infra",
-                    "amount": 2
-                  }
-                ]
-              ]
+              "op": "raise",
+              "track": "military",
+              "amount": 1
+            },
+            {
+              "op": "raise",
+              "track": "infra",
+              "amount": 1
             }
           ]
         }
@@ -777,7 +759,7 @@
       "revisedEffects": [
         {
           "timing": "1ラウンドにつき1回のフリーアクション",
-          "text": "臨時ワーカー1人につき1資材と3金を得る。"
+          "text": "臨時ワーカー1人につき1資材と3金と1点を得る。"
         }
       ],
       "open_issues": [],
@@ -805,6 +787,15 @@
                 "count": "tempWorkers",
                 "per": 1,
                 "times": 3
+              }
+            },
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tempWorkers",
+                "per": 1,
+                "times": 1
               }
             }
           ]

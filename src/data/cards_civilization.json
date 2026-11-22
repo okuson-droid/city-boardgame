@@ -170,7 +170,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：金の生産力を5上げる。",
       "clarifications": [
         {
@@ -365,7 +365,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：軍事レベルを1上げる。",
       "clarifications": [],
       "script": [
@@ -398,7 +398,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：インフラレベルを1上げる。",
       "clarifications": [],
       "script": [
@@ -558,7 +558,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：資材の生産力を2上げる。",
       "clarifications": [
         {
@@ -2587,7 +2587,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：大学1軒につき資材の生産力を1上げる。",
       "clarifications": [
         {
@@ -2762,7 +2762,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：大学が1軒以上あるなら、金の生産力を3上げる。大学が3軒以上あるなら、さらに金の生産力を3上げる。",
       "clarifications": [
         {
@@ -3321,7 +3321,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：建物のない土地タイルの種類2につき金の生産力を3上げる。",
       "clarifications": [
         {
@@ -3369,7 +3369,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：建物のない土地タイルの種類1につき資材の生産力を1上げる。",
       "clarifications": [
         {
@@ -3612,7 +3612,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（防衛失敗した時）：軍事レベルを2上げる。常時（撃退成功した時）：2資材を得る。",
       "clarifications": [
         {
@@ -3810,7 +3810,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：通常ワーカーが7以上なら、軍事レベルを1上げる。通常ワーカーが10以上なら、さらに軍事レベルを1上げる。",
       "clarifications": [
         {
@@ -3918,7 +3918,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（山岳の土地タイルを置く度に）：1資材を得る。",
       "clarifications": [],
       "script": [
@@ -3955,7 +3955,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（土地タイルを置く度に）：1金を得る。",
       "clarifications": [],
       "script": [
@@ -3990,7 +3990,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（水場の土地タイルを置く度に）：3金を得る。",
       "clarifications": [],
       "script": [
@@ -4072,7 +4072,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：1資材を得る。金の生産力を3上げる。",
       "clarifications": [
         {
@@ -4116,7 +4116,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：2資材を得る。金の生産力を2上げる。",
       "clarifications": [
         {
@@ -4160,7 +4160,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：2資材を得る。金の生産力を5上げる。",
       "clarifications": [
         {
@@ -4204,7 +4204,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：2資材を得る。資材の生産力を1上げる。",
       "clarifications": [
         {
@@ -4248,7 +4248,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：3資材を得る。金の生産力を3上げる。",
       "clarifications": [
         {
@@ -4292,7 +4292,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：金の生産力を3上げる。",
       "clarifications": [
         {
@@ -4331,7 +4331,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：金の生産力を2上げる。資材の生産力を1上げる。",
       "clarifications": [
         {
@@ -4461,7 +4461,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：資材の生産力を3上げる。",
       "clarifications": [
         {
@@ -4500,7 +4500,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：臨時ワーカー1を得る。金の生産力を3上げる。",
       "clarifications": [
         {
@@ -4549,7 +4549,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（住宅を建設する度に）：1点を得る。",
       "clarifications": [
         {
@@ -4593,7 +4593,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（通常ワーカーを獲得する度に）：7金を得る。",
       "clarifications": [
         {
@@ -4636,7 +4636,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "プレイ時：金の生産力を2上げる。住宅を1軒まで無料で建設する。",
       "clarifications": [
         {
@@ -5188,7 +5188,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時：遠征報酬の土地タイルは地形と異なる種類も置ける。",
       "clarifications": [
         {
@@ -5309,7 +5309,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時：一度の遠征アクションで同じ報酬を選べる回数を変更する。(通常アクション：2回まで/上位アクション：2回まで/最上位アクション：3回まで)",
       "clarifications": [
         {
@@ -5491,7 +5491,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（防衛成功した時）：1点を得る。",
       "clarifications": [
         {
@@ -5579,7 +5579,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（いずれかのプレイヤーが輸入のアクションを実行する度に）：3金を得る。",
       "clarifications": [
         {
@@ -5623,7 +5623,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（住宅以外を建設する度に）：2金を得る。常時（住宅を建設する度に）：1金を得る。",
       "clarifications": [
         {
@@ -5680,7 +5680,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（住宅2軒以上を建てたアクション終了時）：臨時ワーカー1を得る。",
       "clarifications": [
         {
@@ -5731,7 +5731,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（インフラレベルが1上がる度に）：1資材を得る。",
       "clarifications": [
         {
@@ -5774,7 +5774,7 @@
       ],
       "playCondition": null,
       "effectCondition": null,
-      "points": 1,
+      "points": 0,
       "text": "常時（住宅1軒だけを建てた建築アクション終了時）：地形と同じ種類の土地タイルを1枚置く。",
       "clarifications": [
         {
