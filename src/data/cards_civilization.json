@@ -5374,9 +5374,14 @@
               "free": false
             },
             {
-              "op": "gain",
-              "res": "drawCivCards",
-              "amount": 1
+              "op": "later",
+              "do": [
+                {
+                  "op": "gain",
+                  "res": "drawCivCards",
+                  "amount": 1
+                }
+              ]
             }
           ]
         }
