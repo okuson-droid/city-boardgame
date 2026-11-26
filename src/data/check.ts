@@ -134,7 +134,17 @@ const checkParams = (data: GameData, report: Report): void => {
   const e = params.buildings.effects;
   checkByCountTable(e.shop.goldProductionAfterImportByCount, limits.shop, 'params.buildings.effects.shop.goldProductionAfterImportByCount', report);
   checkByCountTable(e.workshop.goldAfterExportByCount, limits.workshop, 'params.buildings.effects.workshop.goldAfterExportByCount', report);
-  checkByCountTable(e.fort.drillTokenCostByCount, limits.fort, 'params.buildings.effects.fort.drillTokenCostByCount', report);
+  if (e.fort.drillTokenCost === null) {
+    checkByCountTable(e.fort.drillTokenCostByCount, limits.fort, 'params.buildings.effects.fort.drillTokenCostByCount', report);
+  } else if (e.fort.drillTokenCost <= 0) {
+    report('params.buildings.effects.fort.drillTokenCost', '1以上でなければならない');
+  }
+  if (e.fort.militaryOnBuildByNth.length === 0) {
+    report('params.buildings.effects.fort.militaryOnBuildByNth', '1つ以上の値が要る');
+  }
+  e.fort.militaryOnBuildByNth.forEach((n, i) => {
+    if (n < 0) report(`params.buildings.effects.fort.militaryOnBuildByNth[${i}]`, '0以上でなければならない');
+  });
   checkByCountTable(e.office.welfareConvertMaterialsByCount, limits.office, 'params.buildings.effects.office.welfareConvertMaterialsByCount', report);
   checkByCountTable(params.scoring.goldPerPointByShops, limits.shop, 'params.scoring.goldPerPointByShops', report);
   checkByCountTable(params.scoring.materialsPerPointByWorkshops, limits.workshop, 'params.scoring.materialsPerPointByWorkshops', report);

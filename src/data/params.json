@@ -167,14 +167,13 @@
         ]
       },
       "fort": {
-        "militaryOnBuild": 1,
-        "drillTokenCostByCount": [
-          5,
-          4,
-          3,
+        "militaryOnBuildByNth": [
+          1,
           2,
-          1
-        ]
+          3,
+          4
+        ],
+        "drillTokenCost": 3
       },
       "office": {
         "infraOnBuild": 1,

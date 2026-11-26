@@ -411,11 +411,16 @@ export const parseParams = (value: unknown, path = 'params'): Params => {
           ),
         },
         fort: {
-          militaryOnBuild: readInt(field(fort, 'militaryOnBuild', ep('fort')), `${ep('fort')}.militaryOnBuild`),
-          drillTokenCostByCount: readIntArray(
-            field(fort, 'drillTokenCostByCount', ep('fort')),
-            `${ep('fort')}.drillTokenCostByCount`,
-          ),
+          // 2026-11-26 から軒目ごとの表と一律のトークン数を持つ。旧データ（一律の上昇・砦の数ごとのトークン）も読む。
+          militaryOnBuildByNth:
+            fort['militaryOnBuildByNth'] !== undefined
+              ? readIntArray(fort['militaryOnBuildByNth'], `${ep('fort')}.militaryOnBuildByNth`)
+              : [readInt(field(fort, 'militaryOnBuild', ep('fort')), `${ep('fort')}.militaryOnBuild`)],
+          drillTokenCost: fort['drillTokenCost'] !== undefined ? readInt(fort['drillTokenCost'], `${ep('fort')}.drillTokenCost`) : null,
+          drillTokenCostByCount:
+            fort['drillTokenCost'] !== undefined && fort['drillTokenCostByCount'] === undefined
+              ? []
+              : readIntArray(field(fort, 'drillTokenCostByCount', ep('fort')), `${ep('fort')}.drillTokenCostByCount`),
         },
         office: {
           infraOnBuild: readInt(field(office, 'infraOnBuild', ep('office')), `${ep('office')}.infraOnBuild`),

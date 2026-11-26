@@ -566,10 +566,18 @@ const emitTrackRaised = (
   }
 };
 
+/** N軒目の砦を建てたときの軍事レベルの上昇（ユーザー決定 2026-11-26）。表より多い軒目は最後の値を使う。 */
+export const fortMilitaryOnBuild = (d: GameData, nth: number): number => {
+  const table = d.params.buildings.effects.fort.militaryOnBuildByNth;
+  return table[nth - 1] ?? table[table.length - 1] ?? 0;
+};
+
 /** 建設時効果と地形ボーナス（5-4、5-5）。地形は土地タイルの種類を参照する（4-1-3-2）。 */
 export const buildEffects = (d: GameData, player: PlayerState, picks: readonly { building: Building; cell: CellId }[]): Effect[] => {
   const e = d.params.buildings.effects;
   const effects: Effect[] = [];
+  // 砦は何軒目かで上昇が変わる（ユーザー決定 2026-11-26）。picks はまだ置いていないため、建てる前の軒数から数える。
+  let fortsBefore = buildingCount(player, 'fort');
   for (const { building, cell } of picks) {
     switch (building) {
       case 'shop':
@@ -579,7 +587,8 @@ export const buildEffects = (d: GameData, player: PlayerState, picks: readonly {
         effects.push({ k: 'materialProduction', n: e.workshop.materialProductionOnBuild });
         break;
       case 'fort':
-        effects.push({ k: 'military', n: e.fort.militaryOnBuild, overflowPoints: false, source: 'build:fort' });
+        effects.push({ k: 'military', n: fortMilitaryOnBuild(d, fortsBefore + 1), overflowPoints: false, source: 'build:fort' });
+        fortsBefore += 1;
         break;
       case 'office':
         effects.push({ k: 'infra', n: e.office.infraOnBuild });

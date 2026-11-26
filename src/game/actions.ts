@@ -376,7 +376,9 @@ export const applyExportCount = (state: GameState, d: GameData, task: TaskOf<'ex
 // ---------------------------------------------------------------------------
 
 const drillTokenCost = (d: GameData, player: PlayerState): number => {
-  const table = d.params.buildings.effects.fort.drillTokenCostByCount;
+  const fort = d.params.buildings.effects.fort;
+  if (fort.drillTokenCost !== null) return fort.drillTokenCost;
+  const table = fort.drillTokenCostByCount;
   return table[buildingCount(player, 'fort')] ?? table[table.length - 1] ?? 1;
 };
 
