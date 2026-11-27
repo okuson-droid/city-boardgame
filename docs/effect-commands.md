@@ -20,7 +20,7 @@
 | `onAcquire` | `do` | 特別な市民カードを獲得したとき | 特別市民13・14・19・20 |
 | `setup` | `do` | 準備の終わり（追加初期資源） | キャラクターの追加初期資源 |
 | `firstTurnStart` | `do` | 自分の最初の手番の開始時 | 芸術家・聖女・デザイナー |
-| `on` | `event`、`filter`、`do`、`every?`、`once?` | 出来事への反応（常時効果、16-1-4 の1単位ごと） | 018、特別市民01〜03、英雄・指揮官・資本家・学者・芸術家・聖女・官僚 |
+| `on` | `event`、`filter`、`do`、`every?`、`once?`、`oncePerRound?` | 出来事への反応（常時効果、16-1-4 の1単位ごと）。`oncePerRound` は1ラウンドに1回だけ発動する（2026-11-27、フリーアクションと同じく usedThisRound で数える） | 018、特別市民01〜03、英雄・指揮官・資本家・学者・芸術家・聖女・官僚 |
 | `freeAction` | `pay?`、`require?`、`limit`（`oncePerRound`）、`do` | フリーアクション | 特別市民15〜18、豪商、官僚、精霊使い |
 | `actionSpace` | `workers`、`do` | 持ち主専用の占有型スペース（6-2-4、6-2-5） | 特別市民09・10・11・14 |
 | `gameEnd` | `do` | 17-0-1 手順4（ゲーム終了時判定の処理） | 資本家、特別市民05〜07 |
@@ -70,7 +70,7 @@
 
 `cond` は `{ left: 指標, op: '>=' | '<', right: 数値または指標 }` とする。034・042 は右辺に撃退ライン・防衛ラインの指標を置く。
 
-指標の一覧：regularWorkers、tempWorkers、landTiles、freeLandTiles、buildings、buildingsOfType:建物、buildingsOnTerrain:地形、maxedBuildingTypes、houses、militaryLevel、infraLevel、militaryTokens、goldProduction、materialProduction、repelLine、defenseLine、repelShortfall（撃退ライン−軍事レベル、0未満は0）、playedCivCards、buildingTypes（建設済みの建物の種類の数）、freeLandTerrains（建物のない土地タイルの地形の種類の数）、tagsOf:分類（プレイ済みの文明カードのうちその分類のタグを持つ枚数、プレイ中の自身を含む）。後の3つは 2026-11-06 に追加した（docs/civ-cards-xlsx.md）。handCards（手札の枚数、特別市民30）と campsWithAdjacentBuildings:N（隣接する6マスに建物が N 軒以上ある飯場の数、特別市民31）は 2026-11-22 に追加した。
+指標の一覧：regularWorkers、tempWorkers、landTiles、freeLandTiles、buildings、buildingsOfType:建物、buildingsOnTerrain:地形、maxedBuildingTypes、houses、militaryLevel、infraLevel、militaryTokens、goldProduction、materialProduction、repelLine、defenseLine、repelShortfall（撃退ライン−軍事レベル、0未満は0）、playedCivCards、buildingTypes（建設済みの建物の種類の数）、freeLandTerrains（建物のない土地タイルの地形の種類の数）、tagsOf:分類（プレイ済みの文明カードのうちその分類のタグを持つ枚数、プレイ中の自身を含む）。後の3つは 2026-11-06 に追加した（docs/civ-cards-xlsx.md）。handCards（手札の枚数、特別市民30）と campsWithAdjacentBuildings:N（隣接する6マスに建物が N 軒以上ある飯場の数、特別市民31）は 2026-11-22 に追加した。specialCitizens（持っている特別な市民カードの枚数）と plannedCitiesAchieved（自分が達成を宣言した計画都市の数）は 2026-11-27 に追加した。
 
 `on` の出来事と絞り込み：
 

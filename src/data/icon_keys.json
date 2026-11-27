@@ -350,6 +350,14 @@
     "campsWithAdjacentBuildings": {
       "icon": "bld.camp",
       "label": "建物に囲まれた飯場"
+    },
+    "specialCitizens": {
+      "icon": "res.specialCitizen",
+      "label": "持っている特別な市民カード"
+    },
+    "plannedCitiesAchieved": {
+      "icon": "cmd.drawPlannedCity",
+      "label": "達成した計画都市"
     }
   },
   "events": {
