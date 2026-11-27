@@ -1372,6 +1372,237 @@
           ]
         }
       ]
+    },
+    {
+      "id": "34",
+      "name": "批評家 カマキリ",
+      "effects": [],
+      "revisedEffects": [
+        {
+          "timing": "1ワーカーの専用アクションスペース",
+          "text": "文明カードを1枚引く。その後、文明カード1枚をプレイしてもよい。"
+        },
+        {
+          "timing": "ゲーム終了時",
+          "text": "文学タグ、美術タグ、音楽タグ1につき2点を得る。"
+        }
+      ],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "actionSpace",
+          "workers": 1,
+          "do": [
+            {
+              "op": "gain",
+              "res": "drawCivCards",
+              "amount": 1
+            },
+            {
+              "op": "playCard",
+              "count": 1,
+              "free": false
+            }
+          ]
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:literature",
+                "per": 1,
+                "times": 2
+              },
+              "axis": "welfare"
+            },
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:art",
+                "per": 1,
+                "times": 2
+              },
+              "axis": "welfare"
+            },
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "tagsOf:music",
+                "per": 1,
+                "times": 2
+              },
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "35",
+      "name": "一番槍 カブト",
+      "effects": [],
+      "revisedEffects": [
+        {
+          "timing": "獲得時",
+          "text": "このカードの上に砦1軒を無料で建設する。"
+        },
+        {
+          "timing": "常時",
+          "text": "遠征アクション実行する度に遠征の報酬を1つ得る。"
+        }
+      ],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "onAcquire",
+          "do": [
+            {
+              "op": "buildOnCard",
+              "building": "fort",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "ability": "on",
+          "event": "actionFinished",
+          "filter": {
+            "action": "expedition"
+          },
+          "do": [
+            {
+              "op": "expeditionRewards",
+              "count": 1
+            },
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 1,
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "36",
+      "name": "看護師 サヨナキドリ",
+      "effects": [],
+      "revisedEffects": [
+        {
+          "timing": "常時",
+          "text": "ゲーム中1度だけ、撃退成功時に軍事レベルが撃退ライン以上なら、特別な市民カード1枚を得る。"
+        },
+        {
+          "timing": "ゲーム終了時",
+          "text": "役所1軒につき2点を得る。"
+        }
+      ],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "on",
+          "event": "raid",
+          "filter": {
+            "result": "repelled",
+            "cond": {
+              "left": "militaryLevel",
+              "op": ">=",
+              "right": "repelLine"
+            }
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "specialCitizen",
+              "amount": 1
+            }
+          ],
+          "once": true
+        },
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "buildingsOfType:office",
+                "per": 1,
+                "times": 2
+              },
+              "axis": "welfare"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "37",
+      "name": "郵便屋 カワラバト",
+      "effects": [],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "on",
+          "event": "actionExecuted",
+          "filter": {
+            "action": "research"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": 1
+            },
+            {
+              "op": "chooseOne",
+              "options": [
+                [
+                  {
+                    "op": "gain",
+                    "res": "gold",
+                    "amount": 7
+                  }
+                ],
+                [
+                  {
+                    "op": "playCard",
+                    "count": 1,
+                    "free": false
+                  }
+                ],
+                [
+                  {
+                    "op": "discard",
+                    "count": 2
+                  },
+                  {
+                    "op": "raise",
+                    "track": "infra",
+                    "amount": 1
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "常時",
+          "text": "研究アクションを実行する度に1点を得て、次のいずれかを選ぶ。7金を得る/文明カード1枚をプレイする/手札を2枚捨ててインフラレベルを1上げる"
+        }
+      ]
     }
   ]
 }
