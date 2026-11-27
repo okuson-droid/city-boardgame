@@ -4,7 +4,6 @@
 
 import { CELL_IDS, isConnectedAxial } from '../game/board.ts';
 import { BUILDINGS, CIV_TAGS, TERRAINS, type GameData, type LevelReward } from './types.ts';
-import type { Command } from './script.ts';
 
 /**
  * 検査で見つかった点。level が warning のものは「注意」で、ゲームは壊れないが調整の誤りかもしれない点である
@@ -304,20 +303,7 @@ const checkCards = (data: GameData, report: Report): void => {
     ...data.characters.map((c, i) => ({ path: `characters[${i}].script`, script: c.script })),
   ];
   for (const { path, script } of scripts) {
-    // カードの上に建てる命令（buildOnCard）は、ゲームが住宅にしか対応していない。他の建物を選ぶと、獲得・プレイの時点で
-    // 処理が止まる（2026-11-27、特別な市民カード35「一番槍」の砦で公開ページの検査が落ちた）。保存の前に止める。
-    const visit = (commands: readonly Command[], at: string): void =>
-      commands.forEach((c, i) => {
-        const here = `${at}[${i}]`;
-        if (c.op === 'buildOnCard' && c.building !== 'house') {
-          report(`${here}.building`, `カードの上に建てられるのは住宅だけである（${c.building}）。ゲームが対応していない`);
-        }
-        if (c.op === 'later') visit(c.do, `${here}.do`);
-        if (c.op === 'if') visit(c.then, `${here}.then`);
-        if (c.op === 'chooseOne') c.options.forEach((o, j) => visit(o, `${here}.options[${j}]`));
-      });
     script.forEach((ability, k) => {
-      if ('do' in ability) visit(ability.do, `${path}[${k}].do`);
       if (ability.ability === 'on' && ability.filter.tag !== undefined && !CIV_TAGS.some((t) => t === ability.filter.tag)) {
         report(`${path}[${k}].filter.tag`, `存在しないタグである（${ability.filter.tag}）`);
       }

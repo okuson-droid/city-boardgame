@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { GAME_DATA, ICON_KEYS } from '../data/index.ts';
-import { BUILDINGS, SCORE_AXES, type RaidCard, type ScoreAxis } from '../data/types.ts';
+import { BUILDINGS, SCORE_AXES, type Building, type RaidCard, type ScoreAxis } from '../data/types.ts';
 import { explain } from '../game/explain.ts';
+import { buildingLabel } from '../game/labels.ts';
 import type { IconToken } from '../game/icons.ts';
 import { abilitiesOf } from '../game/abilities.ts';
-import { buildingBreakdown, buildingCount, describeRaidOutcomes, housesOnCard, isTopUnlocked, playDiscount, specialCitizenName, workerSummary } from '../game/queries.ts';
+import { buildingBreakdown, buildingCount, buildingsOnCard, describeRaidOutcomes, isTopUnlocked, playDiscount, specialCitizenName, workerSummary } from '../game/queries.ts';
 import { finalScores } from '../game/scoring.ts';
 import type { GameEvent, GameState, PlayerState } from '../game/types.ts';
 import { ACTIONS } from '../data/types.ts';
@@ -358,7 +359,7 @@ export const PersonalInfo = ({
               <div key={`${card}-${i}`} className="played-card">
                 <div className="card civ" data-played-card={card}>
                   <CivCardView card={card} player={player} />
-                  <CardHouses count={housesOnCard(player, card)} />
+                  <CardBuildings items={buildingsOnCard(player, `civ:${card}`)} />
                 </div>
                 {options.length > 0 ? (
                   <div className="ability-buttons">
@@ -378,31 +379,34 @@ export const PersonalInfo = ({
   );
 };
 
-/** 建物の数。カードの上の住宅（移動住宅）があれば、住宅の吹き出しに盤面とカードの上の内訳を出す。 */
+/** 建物の数。カードの上の建物（移動住宅・一番槍の砦など）があれば、吹き出しに盤面とカードの上の内訳を出す。 */
 const BuildingCounts = ({ player }: { player: PlayerState }) => {
-  const house = buildingBreakdown(player, 'house');
+  const onCards = BUILDINGS.map((b) => ({ b, ...buildingBreakdown(player, b) })).filter((x) => x.onCards > 0);
   const counts = <IconRow size="sm" tokens={BUILDINGS.map((b) => tok('buildings', b, `${buildingCount(player, b)}/${GAME_DATA.params.buildings.limits[b]}`))} />;
-  if (house.onCards === 0) return counts;
+  if (onCards.length === 0) return counts;
+  const total = onCards.reduce((n, x) => n + x.onCards, 0);
   return (
-    <Tip text={`住宅：盤面に${house.board}軒、カードの上に${house.onCards}軒（どちらも住宅の数と上限に数える）`}>
-      <span className="building-counts" data-card-houses={house.onCards}>
+    <Tip text={`${onCards.map((x) => `${buildingLabel(x.b)}：盤面に${x.board}軒、カードの上に${x.onCards}軒`).join('\n')}（どちらもその種類の軒数と上限に数える）`}>
+      <span className="building-counts" data-card-houses={total}>
         {counts}
       </span>
     </Tip>
   );
 };
 
-/** 文明カードの上に建てた住宅（移動住宅）。カードの面の下側に住宅の駒を並べる。 */
-const CardHouses = ({ count }: { count: number }) =>
-  count === 0 ? null : (
-    <Tip text={`このカードの上の住宅：${count}軒（盤面にはないが、住宅の数と上限に数える）`}>
-      <div className="card-houses" data-card-houses={count} aria-label={`カードの上の住宅 ${count}軒`}>
-        {Array.from({ length: count }, (_, i) => (
-          <Icon key={i} token={tok('buildings', 'house')} size="sm" />
-        ))}
+/** カードの上に建てた建物（移動住宅・一番槍の砦など）。カードの面の下側に建物の駒を並べる。 */
+const CardBuildings = ({ items }: { items: readonly { building: Building; count: number }[] }) => {
+  const total = items.reduce((n, x) => n + x.count, 0);
+  if (total === 0) return null;
+  const text = items.map((x) => `${buildingLabel(x.building)}${x.count}軒`).join('・');
+  return (
+    <Tip text={`このカードの上の建物：${text}（盤面にはないが、建物の数とその種類の軒数・上限に数える）`}>
+      <div className="card-houses" data-card-houses={total} aria-label={`カードの上の建物 ${text}`}>
+        {items.flatMap((x) => Array.from({ length: x.count }, (_, i) => <Icon key={`${x.building}-${i}`} token={tok('buildings', x.building)} size="sm" />))}
       </div>
     </Tip>
   );
+};
 
 // ---------------------------------------------------------------------------
 // 手持ち（下帯、5-2）
@@ -500,6 +504,7 @@ export const HandArea = ({
               return (
                 <AbilityCard key={id} className="sc" title={`${specialCitizenName(id)}${used ? '（使用済み）' : ''}`} options={abilityOptions(`sc:${id}`)} onChoose={onChoose}>
                   {card ? <ScriptView script={card.script} /> : null}
+                  <CardBuildings items={buildingsOnCard(player, `sc:${id}`)} />
                 </AbilityCard>
               );
             })}
