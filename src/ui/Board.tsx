@@ -121,7 +121,7 @@ export const Board = ({
                 {landTag !== undefined && tile === undefined ? (
                   <polygon
                     className="cell-land-tag"
-                    points={hexPoints(cx, cy, R - 7)}
+                    points={hexPoints(cx, cy, R - 11)}
                     fill={landTagColor(landTag)}
                     stroke="#555"
                     strokeWidth={1}
