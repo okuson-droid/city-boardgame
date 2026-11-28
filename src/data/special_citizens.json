@@ -716,7 +716,7 @@
       "revisedEffects": [
         {
           "timing": "1ラウンドにつき1回のフリーアクション",
-          "text": "臨時ワーカー1人を得る。金の生産を3上げる。1点を得る。"
+          "text": "臨時ワーカー2人を得る。"
         }
       ],
       "open_issues": [],
@@ -731,17 +731,7 @@
             {
               "op": "gain",
               "res": "tempWorkers",
-              "amount": 1
-            },
-            {
-              "op": "gain",
-              "res": "goldProduction",
-              "amount": 3
-            },
-            {
-              "op": "gain",
-              "res": "points",
-              "amount": 1
+              "amount": 2
             }
           ]
         }
@@ -1335,7 +1325,11 @@
         },
         {
           "timing": "常時",
-          "text": "輸出アクションの実行後、臨時ワーカー1人を得る。"
+          "text": "1ラウンドに1回、輸入アクションの実行後、臨時ワーカー1人を得る。"
+        },
+        {
+          "timing": "常時",
+          "text": "1ラウンドに1回、輸出アクションの実行後、臨時ワーカー1人を得る。"
         }
       ],
       "open_issues": [],
@@ -1361,6 +1355,21 @@
           "ability": "on",
           "event": "actionFinished",
           "filter": {
+            "action": "import"
+          },
+          "do": [
+            {
+              "op": "gain",
+              "res": "tempWorkers",
+              "amount": 1
+            }
+          ],
+          "oncePerRound": true
+        },
+        {
+          "ability": "on",
+          "event": "actionFinished",
+          "filter": {
             "action": "export"
           },
           "do": [
@@ -1369,7 +1378,8 @@
               "res": "tempWorkers",
               "amount": 1
             }
-          ]
+          ],
+          "oncePerRound": true
         }
       ]
     },
@@ -1502,7 +1512,7 @@
         },
         {
           "timing": "ゲーム終了時",
-          "text": "役所1軒につき2点を得る。"
+          "text": "特別な市民カード1枚につき2点を得る。"
         }
       ],
       "open_issues": [],
@@ -1535,7 +1545,7 @@
               "op": "gain",
               "res": "points",
               "amount": {
-                "count": "buildingsOfType:office",
+                "count": "specialCitizens",
                 "per": 1,
                 "times": 2
               },
@@ -1601,6 +1611,64 @@
         {
           "timing": "常時",
           "text": "研究アクションを実行する度に1点を得て、次のいずれかを選ぶ。7金を得る/文明カード1枚をプレイする/手札を2枚捨ててインフラレベルを1上げる"
+        }
+      ]
+    },
+    {
+      "id": "38",
+      "name": "地主 ハシビロコウ",
+      "effects": [],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "landTiles",
+                "per": 2,
+                "times": 1
+              }
+            }
+          ]
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "ゲーム終了時",
+          "text": "土地タイル2枚につき1点を得る。"
+        }
+      ]
+    },
+    {
+      "id": "39",
+      "name": "町長 モンシロチョウ",
+      "effects": [],
+      "open_issues": [],
+      "provisional": true,
+      "script": [
+        {
+          "ability": "gameEnd",
+          "do": [
+            {
+              "op": "gain",
+              "res": "points",
+              "amount": {
+                "count": "plannedCitiesAchieved",
+                "per": 1,
+                "times": 5
+              }
+            }
+          ]
+        }
+      ],
+      "revisedEffects": [
+        {
+          "timing": "ゲーム終了時",
+          "text": "達成した計画都市1つにつき5点を得る。"
         }
       ]
     }
