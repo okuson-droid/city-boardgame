@@ -9,17 +9,17 @@
   "setupByPlayerCount": {
     "3": {
       "specialCitizensRevealed": 5,
-      "plannedCityRevealed": 2,
+      "plannedCityRevealed": 3,
       "bonusTilesOnBoard": 6,
-      "plannedCityMaxDeclarers": 2,
+      "plannedCityMaxDeclarers": 3,
       "draftBoardCandidates": 5,
       "draftCharacterCandidates": 10
     },
     "4": {
       "specialCitizensRevealed": 6,
-      "plannedCityRevealed": 3,
+      "plannedCityRevealed": 4,
       "bonusTilesOnBoard": 7,
-      "plannedCityMaxDeclarers": 3,
+      "plannedCityMaxDeclarers": 4,
       "draftBoardCandidates": 5,
       "draftCharacterCandidates": 10
     }
