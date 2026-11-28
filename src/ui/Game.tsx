@@ -412,6 +412,8 @@ export const Game = ({
                     cellTags.addMany(viewed.index, placement.slots.map((x) => x.cell), tag);
                     for (const slot of placement.slots) {
                       if (slot.building !== null) cellTags.addMany(viewed.index, [slot.cell], slot.building);
+                      // 土地タイルがまだなく、種類の決まったマスには土地のタグも付ける（ユーザー決定 2026-11-28）。
+                      if (slot.terrain !== null && slot.status === 'needLand') cellTags.addMany(viewed.index, [slot.cell], `land:${slot.terrain}`);
                     }
                   }}
                 />

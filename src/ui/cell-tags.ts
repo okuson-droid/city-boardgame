@@ -3,24 +3,50 @@
 // ブラウザ（localStorage の `cellTags:<対局の鍵>`）に、盤面の持ち主の席ごとに保存する。保存できない環境ではその画面の間だけ持つ。
 
 import { useCallback, useEffect, useState } from 'react';
-import { BUILDINGS, type Building } from '../data/types.ts';
+import { BUILDINGS, TERRAINS, type Building, type Terrain } from '../data/types.ts';
 import type { CellId } from '../game/board.ts';
 import { buildingLabel } from '../game/queries.ts';
+import { terrainLabel } from '../game/labels.ts';
 import { ICON_ART } from './icon-art.ts';
 
-export type CellTag = 'park' | 'planned' | Building;
+/** 土地のタグ（その マスに置く予定の土地タイルの種類、ユーザー決定 2026-11-28）。1マスに1つだけ付く。 */
+export type LandTag = `land:${Terrain}`;
 
-export const CELL_TAGS: readonly CellTag[] = ['park', 'planned', ...BUILDINGS];
+export type CellTag = 'park' | 'planned' | Building | LandTag;
+
+export const LAND_TAGS: readonly LandTag[] = TERRAINS.map((t) => `land:${t}` as const);
+
+export const CELL_TAGS: readonly CellTag[] = ['park', 'planned', ...BUILDINGS, ...LAND_TAGS];
+
+export const isLandTag = (tag: CellTag): tag is LandTag => tag.startsWith('land:');
+
+export const landTagTerrain = (tag: LandTag): Terrain => tag.slice('land:'.length) as Terrain;
+
+/** 地形の色。盤面（Board.tsx）もこれを使う。 */
+export const TERRAIN_COLORS: Record<Terrain, string> = { plains: '#e9d66b', forest: '#4f9a4f', mountain: '#9a9a9a', water: '#7fc4e8' };
+
+export const landTagColor = (tag: LandTag): string => TERRAIN_COLORS[landTagTerrain(tag)];
 
 export const cellTagLabel = (tag: CellTag): string =>
-  tag === 'park' ? '自然公園' : tag === 'planned' ? '計画都市' : buildingLabel(tag);
+  tag === 'park' ? '自然公園' : tag === 'planned' ? '計画都市' : isLandTag(tag) ? `${terrainLabel(landTagTerrain(tag))}の土地` : buildingLabel(tag);
 
 /** タグの図案（icon-art.ts の SVG の中身、24×24）。 */
 export const cellTagArt = (tag: CellTag): string =>
-  tag === 'park' ? (ICON_ART['mod.natureParkPoints'] ?? '') : tag === 'planned' ? (ICON_ART['cmd.drawPlannedCity'] ?? '') : (ICON_ART[`bld.${tag}`] ?? '');
+  tag === 'park'
+    ? (ICON_ART['mod.natureParkPoints'] ?? '')
+    : tag === 'planned'
+      ? (ICON_ART['cmd.drawPlannedCity'] ?? '')
+      : isLandTag(tag)
+        ? (ICON_ART[`ter.${landTagTerrain(tag)}`] ?? '')
+        : (ICON_ART[`bld.${tag}`] ?? '');
 
-/** タグの色（マスの内側の縁と札の色）。 */
-export const cellTagColor = (tag: CellTag): string => (tag === 'park' ? '#2e8b4e' : tag === 'planned' ? '#d4a017' : '#6b4f9a');
+/** タグの色（マスの内側の縁と札の色）。土地のタグは地形の色。 */
+export const cellTagColor = (tag: CellTag): string =>
+  tag === 'park' ? '#2e8b4e' : tag === 'planned' ? '#d4a017' : isLandTag(tag) ? landTagColor(tag) : '#6b4f9a';
+
+/** タグを足した後の並び。土地のタグは1マスに1つなので、別の土地のタグを外す。 */
+const withTag = (list: readonly CellTag[], tag: CellTag): CellTag[] =>
+  list.includes(tag) ? [...list] : [...(isLandTag(tag) ? list.filter((x) => !isLandTag(x)) : list), tag];
 
 /** 席ごとの、マスごとのタグ。 */
 export type CellTags = Readonly<Record<number, Readonly<Partial<Record<CellId, readonly CellTag[]>>>>>;
@@ -74,7 +100,7 @@ export const useCellTags = (key: string | undefined) => {
       update((t) => {
         const board = { ...(t[seat] ?? {}) };
         const list = board[cell] ?? [];
-        const next = list.includes(tag) ? list.filter((x) => x !== tag) : [...list, tag];
+        const next = list.includes(tag) ? list.filter((x) => x !== tag) : withTag(list, tag);
         if (next.length === 0) delete board[cell];
         else board[cell] = next;
         return { ...t, [seat]: board };
@@ -87,8 +113,7 @@ export const useCellTags = (key: string | undefined) => {
       update((t) => {
         const board = { ...(t[seat] ?? {}) };
         for (const cell of cells) {
-          const list = board[cell] ?? [];
-          if (!list.includes(tag)) board[cell] = [...list, tag];
+          board[cell] = withTag(board[cell] ?? [], tag);
         }
         return { ...t, [seat]: board };
       }),
