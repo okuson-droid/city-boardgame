@@ -46,7 +46,18 @@ export const buildingCells = (player: PlayerState): CellId[] =>
 /** 建物の数。文明カードの上の住宅（移動住宅）も数える（ユーザー決定 2026-11-06）。盤面の建物だけは buildingCells で数える。 */
 export const buildingCount = (player: PlayerState, building?: Building): number =>
   buildingCells(player).filter((id) => building === undefined || player.buildings[id] === building).length +
-  (building === undefined || building === 'house' ? cardHouseCount(player) : 0);
+  cardBuildingCount(player, building);
+
+/** カードの上の建物の数（住宅は cardHouses、他は cardBuildings）。種類・出どころを指定すれば絞り込む。 */
+export const cardBuildingCount = (player: PlayerState, building?: Building, source?: string): number =>
+  (building === undefined || building === 'house' ? cardHouseCount(player, source) : 0) +
+  Object.entries(player.cardBuildings ?? {}).reduce(
+    (sum, [key, counts]) =>
+      source === undefined || key === source
+        ? sum + Object.entries(counts).reduce((s, [b, n]) => (building === undefined || b === building ? s + (n ?? 0) : s), 0)
+        : sum,
+    0,
+  );
 
 /** 文明カードの上の住宅の数（移動住宅）。出どころを指定すればそのカードの上だけを数える。 */
 export const cardHouseCount = (player: PlayerState, source?: string): number =>
@@ -542,13 +553,18 @@ export const buildOnCard = (
   if (n < count) {
     emit(state, d, { type: 'fizzle', player: player.index, what: `buildOnCard:${count - n}` });
   }
-  if (building !== 'house') {
-    throw new Error(`カードの上に建てられるのは住宅だけである：${building}`);
-  }
   for (let i = 0; i < n; i += 1) {
-    player.cardHouses = { ...player.cardHouses, [source]: cardHouseCount(player, source) + 1 };
+    // 建設時効果は建てる前の軒数で決める（砦は何軒目かで変わる、ユーザー決定 2026-11-27）。
+    const effects = onBuildEffects(d, building, buildingCount(player, building) + 1);
+    if (building === 'house') {
+      player.cardHouses = { ...player.cardHouses, [source]: cardHouseCount(player, source) + 1 };
+    } else {
+      const onCard = player.cardBuildings?.[source] ?? {};
+      player.cardBuildings = { ...player.cardBuildings, [source]: { ...onCard, [building]: (onCard[building] ?? 0) + 1 } };
+    }
     noteBuiltDuringAction(state, player, building);
     emit(state, d, { type: 'built', player: player.index, cell: null, building });
+    processEffects(state, d, player, effects);
   }
 };
 
@@ -566,33 +582,50 @@ const emitTrackRaised = (
   }
 };
 
-/** 建設時効果と地形ボーナス（5-4、5-5）。地形は土地タイルの種類を参照する（4-1-3-2）。 */
-export const buildEffects = (d: GameData, player: PlayerState, picks: readonly { building: Building; cell: CellId }[]): Effect[] => {
+/** N軒目の砦を建てたときの軍事レベルの上昇（ユーザー決定 2026-11-26）。表より多い軒目は最後の値を使う。 */
+export const fortMilitaryOnBuild = (d: GameData, nth: number): number => {
+  const table = d.params.buildings.effects.fort.militaryOnBuildByNth;
+  return table[nth - 1] ?? table[table.length - 1] ?? 0;
+};
+
+/** 建設時効果（5-5）。地形ボーナスは含まない。nth はその種類の何軒目か（砦の軍事レベルの上昇に使う）。 */
+export const onBuildEffects = (d: GameData, building: Building, nth: number): Effect[] => {
   const e = d.params.buildings.effects;
   const effects: Effect[] = [];
+  switch (building) {
+    case 'shop':
+      effects.push({ k: 'goldProduction', n: e.shop.goldProductionOnBuild });
+      break;
+    case 'workshop':
+      effects.push({ k: 'materialProduction', n: e.workshop.materialProductionOnBuild });
+      break;
+    case 'fort':
+      effects.push({ k: 'military', n: fortMilitaryOnBuild(d, nth), overflowPoints: false, source: 'build:fort' });
+      break;
+    case 'office':
+      effects.push({ k: 'infra', n: e.office.infraOnBuild });
+      break;
+    case 'university':
+      effects.push({ k: 'grant', grant: { kind: 'drawCivCards', amount: e.university.drawOnBuild }, source: 'build:university' });
+      break;
+    case 'camp':
+      effects.push({ k: 'grant', grant: { kind: 'landTiles', amount: e.camp.landTilesOnBuild }, source: 'build:camp' });
+      break;
+    case 'house':
+      break;
+  }
+  return effects;
+};
+
+/** 建設時効果と地形ボーナス（5-4、5-5）。地形は土地タイルの種類を参照する（4-1-3-2）。 */
+export const buildEffects = (d: GameData, player: PlayerState, picks: readonly { building: Building; cell: CellId }[]): Effect[] => {
+  const effects: Effect[] = [];
+  // 砦は何軒目かで上昇が変わる（ユーザー決定 2026-11-26）。picks はまだ置いていないため、建てる前の軒数から数える。
+  const before: Partial<Record<Building, number>> = {};
   for (const { building, cell } of picks) {
-    switch (building) {
-      case 'shop':
-        effects.push({ k: 'goldProduction', n: e.shop.goldProductionOnBuild });
-        break;
-      case 'workshop':
-        effects.push({ k: 'materialProduction', n: e.workshop.materialProductionOnBuild });
-        break;
-      case 'fort':
-        effects.push({ k: 'military', n: e.fort.militaryOnBuild, overflowPoints: false, source: 'build:fort' });
-        break;
-      case 'office':
-        effects.push({ k: 'infra', n: e.office.infraOnBuild });
-        break;
-      case 'university':
-        effects.push({ k: 'grant', grant: { kind: 'drawCivCards', amount: e.university.drawOnBuild }, source: 'build:university' });
-        break;
-      case 'camp':
-        effects.push({ k: 'grant', grant: { kind: 'landTiles', amount: e.camp.landTilesOnBuild }, source: 'build:camp' });
-        break;
-      case 'house':
-        break;
-    }
+    const nth = (before[building] ?? buildingCount(player, building)) + 1;
+    before[building] = nth;
+    effects.push(...onBuildEffects(d, building, nth));
     const tile = player.land[cell];
     // 地形ボーナスの倍率（特別な市民カード「地質学者」、ユーザー決定 2026-11-22）。除く建物には掛けない。
     const multiplier = modifiersOf(d, player).reduce(

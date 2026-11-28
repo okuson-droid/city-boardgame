@@ -94,6 +94,11 @@ export const metricValue = (state: GameState, d: GameData, player: PlayerState, 
       return CELL_IDS.filter((c) => player.buildings[c] !== undefined && player.land[c] === TERRAINS.find((t) => t === arg)).length;
     case 'handCards':
       return player.hand.length;
+    case 'specialCitizens':
+      return player.specialCitizens.length;
+    case 'plannedCitiesAchieved':
+      // 達成を宣言した計画都市カードの数（13-3-4）。
+      return Object.values(state.plannedCityClaims).filter((order) => order.includes(player.index)).length;
     case 'campsWithAdjacentBuildings':
       // 隣接する6マスに建物が arg 軒以上ある飯場の数（ユーザー決定 2026-11-22、特別な市民カード「現場監督」）。
       return CELL_IDS.filter(
@@ -318,6 +323,11 @@ const reactFor = (state: GameState, d: GameData, event: GameEvent, player: Playe
     if (ability.once === true) {
       if (player.onceFired.includes(owned.key)) continue;
       player.onceFired.push(owned.key);
+    }
+    // 1ラウンドに1回（ユーザー決定 2026-11-27）。フリーアクションと同じく、ラウンドの初めに空にする usedThisRound で数える。
+    if (ability.oncePerRound === true) {
+      if (player.usedThisRound.includes(owned.key)) continue;
+      player.usedThisRound.push(owned.key);
     }
     if (ability.every !== undefined) {
       const count = (player.abilityCounters[owned.key] ?? 0) + 1;

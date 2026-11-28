@@ -208,7 +208,7 @@ const TrackList = ({ track, player }: { track: 'military' | 'infra'; player: Pla
       </table>
       <p className="small">
         {track === 'military'
-          ? `教練で${table.max}を超えて上げると、1段につき${table.overflowPointsPerRaise}点（軍事・防衛）。`
+          ? `${GAME_DATA.params.buildings.effects.fort.drillTokenCost !== null ? `教練の上昇1回は軍事力トークン${GAME_DATA.params.buildings.effects.fort.drillTokenCost}個。` : ''}教練で${table.max}を超えて上げると、1段につき${table.overflowPointsPerRaise}点（軍事・防衛）。`
           : `${table.max}を超えて上げると、出どころを問わず1段につき${table.overflowPointsPerRaise}点（生活・福祉）。`}
         各報酬はゲーム中1回。一度に何段も上がったら通過分もすべて得る。
       </p>

@@ -185,7 +185,14 @@ export type Params = ProvisionalMark & {
         readonly goldAfterExportByCount: readonly number[];
       };
       readonly fort: {
-        readonly militaryOnBuild: number;
+        /**
+         * N軒目の砦を建てたときの軍事レベルの上昇（添字0が1軒目、ユーザー決定 2026-11-26）。
+         * 上限を超える軒目は最後の値を使う。旧データの militaryOnBuild（一律の値）は1要素の表として読む。
+         */
+        readonly militaryOnBuildByNth: readonly number[];
+        /** 教練の上昇1回に払う軍事力トークン（砦の数によらず一律、ユーザー決定 2026-11-26）。旧データでは null。 */
+        readonly drillTokenCost: number | null;
+        /** 砦の数ごとの教練の上昇1回の軍事力トークン（旧データ）。drillTokenCost があるときは空でよく、使わない。 */
         readonly drillTokenCostByCount: readonly number[];
       };
       readonly office: {

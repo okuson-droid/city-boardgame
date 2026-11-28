@@ -36,6 +36,11 @@ export type PlayerState = {
    * 盤面にはないが、建物の数・住宅の数・上限に数える（ユーザー決定 2026-11-06）。
    */
   cardHouses: Record<string, number>;
+  /**
+   * カードの上に建てた住宅以外の建物の数（特別な市民カード35「一番槍」の砦など、ユーザー決定 2026-11-27）。鍵は出どころ。
+   * 住宅と同じく、建物の数・その種類の軒数・上限に数える。この項目のない旧い局面は空とみなす。
+   */
+  cardBuildings?: Record<string, Partial<Record<Building, number>>>;
   gold: number;
   materials: number;
   goldProduction: number;

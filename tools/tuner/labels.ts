@@ -249,6 +249,8 @@ const KEY_LABELS: Table = {
   materialProductionOnBuild: '建設時の資材の生産力',
   goldAfterExportByCount: '輸出後の金（工房の数ごと）',
   militaryOnBuild: '建設時の軍事レベル',
+  militaryOnBuildByNth: '建設時の軍事レベル（0が1軒目、1が2軒目…）',
+  drillTokenCost: '教練の上昇1回の軍事力トークン',
   drillTokenCostByCount: '教練の上昇1回の軍事力トークン（砦の数ごと）',
   infraOnBuild: '建設時のインフラレベル',
   welfareConvertMaterialsByCount: '福祉の変換の資材（役所の数ごと）',

@@ -7,7 +7,7 @@ import { actionLabel, buildingLabel, grantText, labelIn } from './labels.ts';
 import { ACTIONS, BUILDINGS, type Building, type GameData, type ScoreRate, type UnlockCondition } from '../data/types.ts';
 import type { Command } from '../data/script.ts';
 import { expeditionTable } from './actions.ts';
-import { buildingCount } from './core.ts';
+import { buildingCount, fortMilitaryOnBuild } from './core.ts';
 import type { PlayerState } from './types.ts';
 
 export { actionLabel, buildingLabel, grantText } from './labels.ts';
@@ -95,8 +95,14 @@ export const buildingInfo = (b: Building, d: GameData = GAME_DATA): BuildingInfo
       endScore = `経済・産業：資材の収入 ${rateLine(s.materialsPerPointByWorkshops)}`;
       break;
     case 'fort':
-      onBuild.push(`軍事レベル＋${e.fort.militaryOnBuild}`);
-      always.push(`教練の上昇1回に払う軍事力トークン ${byCount(e.fort.drillTokenCostByCount, String)}（砦1〜${p.buildings.limits.fort}軒。0軒は${e.fort.drillTokenCostByCount[0]}）`);
+      onBuild.push(
+        new Set(e.fort.militaryOnBuildByNth).size <= 1
+          ? `軍事レベル＋${e.fort.militaryOnBuildByNth[0] ?? 0}`
+          : `軍事レベル＋${Array.from({ length: p.buildings.limits.fort }, (_, i) => fortMilitaryOnBuild(d, i + 1)).join('/')}（1〜${p.buildings.limits.fort}軒目）`,
+      );
+      if (e.fort.drillTokenCost === null) {
+        always.push(`教練の上昇1回に払う軍事力トークン ${byCount(e.fort.drillTokenCostByCount, String)}（砦1〜${p.buildings.limits.fort}軒。0軒は${e.fort.drillTokenCostByCount[0]}）`);
+      }
       break;
     case 'office':
       onBuild.push(`インフラレベル＋${e.office.infraOnBuild}`);

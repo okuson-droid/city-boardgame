@@ -545,6 +545,7 @@ const AbilityEditor = ({ value, onChange }: { value: J; onChange: (v: J) => void
               />
             </Field>
             <Check label="ゲーム中1回" value={value['once']} onChange={(b) => (b ? set('once', true) : unset('once'))} />
+            <Check label="1ラウンドに1回" value={value['oncePerRound']} onChange={(b) => (b ? set('oncePerRound', true) : unset('oncePerRound'))} />
           </>
         ) : null}
         {ability === 'freeAction' ? (

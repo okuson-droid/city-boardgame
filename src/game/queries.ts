@@ -2,12 +2,12 @@
 
 import { GAME_DATA } from '../data/index.ts';
 import { ICON_KEYS } from '../data/icon-keys.ts';
-import { ACTIONS, TIERS, type Action, type Building, type GameData, type RaidCard, type RaidEffect, type Terrain, type Tier, type UnlockCondition } from '../data/types.ts';
+import { ACTIONS, BUILDINGS, TIERS, type Action, type Building, type GameData, type RaidCard, type RaidEffect, type Terrain, type Tier, type UnlockCondition } from '../data/types.ts';
 import { axisLabel as axisLabelOf, grantText as grantTextOf, sourceName as sourceNameOf } from './labels.ts';
 import { natureParkScore } from './planned.ts';
 import { buildTotalCost, civCardCost, expeditionNotes as expeditionNotesOf, expeditionTable, unavailableBuildReasons } from './actions.ts';
 import { explain } from './explain.ts';
-import { buildingCount, cardHouseCount, landCount, playerOf, regularWorkerCap, usableRegular, usableTemp } from './core.ts';
+import { buildingCount, cardBuildingCount, cardHouseCount, landCount, playerOf, regularWorkerCap, usableRegular, usableTemp } from './core.ts';
 import { decider, isTopUnlocked } from './engine.ts';
 import type { IconToken } from './icons.ts';
 import type { GameState, PlayerState, Task } from './types.ts';
@@ -316,9 +316,13 @@ export { buildingCount, landCount, playerOf };
 /** プレイ済みの文明カードの上に建てた住宅の数（移動住宅、ユーザー決定 2026-11-06）。 */
 export const housesOnCard = (player: PlayerState, card: string): number => cardHouseCount(player, `civ:${card}`);
 
+/** カードの上の建物（住宅を含む）を種類ごとに数える。source は出どころ（`civ:<カード>`・`sc:<カード>`）。 */
+export const buildingsOnCard = (player: PlayerState, source: string): { building: Building; count: number }[] =>
+  BUILDINGS.map((building) => ({ building, count: cardBuildingCount(player, building, source) })).filter((x) => x.count > 0);
+
 /** 建物の数の内訳：盤面に建てた数と、文明カードの上に建てた数（住宅だけ）。合計は buildingCount と同じ。 */
 export const buildingBreakdown = (player: PlayerState, building: Building): { board: number; onCards: number } => {
-  const onCards = building === 'house' ? cardHouseCount(player) : 0;
+  const onCards = cardBuildingCount(player, building);
   return { board: buildingCount(player, building) - onCards, onCards };
 };
 

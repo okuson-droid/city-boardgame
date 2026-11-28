@@ -30,6 +30,10 @@ export const SIMPLE_METRICS = [
   'freeLandTerrains',
   /** 手札の枚数（ユーザー決定 2026-11-22、特別な市民カード「手品師」）。 */
   'handCards',
+  /** 持っている特別な市民カードの枚数（ユーザー決定 2026-11-27）。 */
+  'specialCitizens',
+  /** 自分が達成を宣言した計画都市の数（ユーザー決定 2026-11-27）。 */
+  'plannedCitiesAchieved',
 ] as const;
 export type SimpleMetric = (typeof SIMPLE_METRICS)[number];
 
@@ -251,6 +255,8 @@ export type Ability =
       readonly every?: number;
       /** ゲーム中1回だけ発動する。 */
       readonly once?: boolean;
+      /** 1ラウンドに1回だけ発動する（ユーザー決定 2026-11-27）。 */
+      readonly oncePerRound?: boolean;
     }
   | {
       readonly ability: 'freeAction';
@@ -544,6 +550,7 @@ export const readAbility = (v: unknown, path: string): Ability => {
         do: readCommands(o['do'], p('do')),
         ...optional(o, 'every', (x, q) => int(x, q), path),
         ...optional(o, 'once', bool, path),
+        ...optional(o, 'oncePerRound', bool, path),
       };
     case 'freeAction': {
       const pay = o['pay'];

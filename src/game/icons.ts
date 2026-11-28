@@ -209,6 +209,7 @@ const abilityTokens = (keys: IconKeys, ability: Ability): IconToken[] => {
         ...group('loop', [token(keys, 'events', ability.event), ...filterTokens(keys, ability.filter)]),
         ...(ability.every !== undefined ? [token(keys, 'symbols', 'every', `×${ability.every}`)] : []),
         ...(ability.once === true ? [token(keys, 'symbols', 'once')] : []),
+        ...(ability.oncePerRound === true ? [token(keys, 'symbols', 'oncePerRound')] : []),
         token(keys, 'symbols', 'colon'),
         ...ability.do.flatMap((c) => commandTokens(keys, c)),
       ];
@@ -341,7 +342,7 @@ const describeAbility = (keys: IconKeys, ability: Ability): string => {
       const eventText = filter === '' ? event.replace(/^[のを]/, '') : `${filter}${event}`;
       const every = ability.every !== undefined ? `、${ability.every}${label(keys, 'symbols', 'every')}` : '';
       const when = cond !== undefined ? `、${describeCondition(keys, cond)}のとき` : '';
-      const once = ability.once === true ? `、${label(keys, 'symbols', 'once')}` : '';
+      const once = `${ability.once === true ? `、${label(keys, 'symbols', 'once')}` : ''}${ability.oncePerRound === true ? `、${label(keys, 'symbols', 'oncePerRound')}` : ''}`;
       const self = excludeSelf === true ? `、${label(keys, 'symbols', 'excludeSelf')}` : '';
       return `${head}（${who}${eventText}${self}${every}${when}${once}）：${describeDo(keys, ability.do)}`;
     }
