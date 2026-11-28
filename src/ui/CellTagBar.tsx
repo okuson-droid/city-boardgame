@@ -1,7 +1,7 @@
 // 個人ボードのマスのタグを付ける帯（ユーザー決定 2026-11-15）。盤面の上に置く。
 // 「タグ」を押すと帯が開き、タグを選んでからマスを押すと付け外しする。帯が開いている間、マスを押してもゲームは進まない。
 
-import { CELL_TAGS, cellTagArt, cellTagColor, cellTagLabel, type CellTag } from './cell-tags.ts';
+import { CELL_TAGS, cellTagArt, cellTagColor, cellTagLabel, isLandTag, type CellTag } from './cell-tags.ts';
 
 /** 選んでいる道具：付けるタグか、マスのタグを消す消しゴム。 */
 export type TagTool = CellTag | 'erase';
@@ -34,19 +34,22 @@ export const CellTagBar = ({
   return (
     <div className="tag-bar" data-ui="tag-bar">
       <span className="tag-bar-note muted small">{tool === null ? 'タグを選んでからマスを押す' : tool === 'erase' ? 'マスを押すとタグを消す' : 'マスを押すと付け外しする'}</span>
-      {CELL_TAGS.map((tag) => (
-        <button
-          key={tag}
-          type="button"
-          className={`tag-chip${tool === tag ? ' active' : ''}`}
-          style={{ ['--tag-color' as string]: cellTagColor(tag) }}
-          data-ui={`tag-${tag}`}
-          aria-pressed={tool === tag}
-          onClick={() => onTool(tool === tag ? null : tag)}
-        >
-          <svg width={14} height={14} viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: cellTagArt(tag) }} />
-          {cellTagLabel(tag)}
-        </button>
+      {CELL_TAGS.map((tag, i) => (
+        <span key={tag} className="tag-chip-wrap">
+          {/* 土地のタグの前で区切る（ユーザー決定 2026-11-28）。 */}
+          {isLandTag(tag) && !isLandTag(CELL_TAGS[i - 1] ?? 'park') ? <span className="tag-bar-sep muted small">土地：</span> : null}
+          <button
+            type="button"
+            className={`tag-chip${tool === tag ? ' active' : ''}`}
+            style={{ ['--tag-color' as string]: cellTagColor(tag) }}
+            data-ui={`tag-${tag}`}
+            aria-pressed={tool === tag}
+            onClick={() => onTool(tool === tag ? null : tag)}
+          >
+            <svg width={14} height={14} viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: cellTagArt(tag) }} />
+            {cellTagLabel(tag)}
+          </button>
+        </span>
       ))}
       <button type="button" className={`tag-chip erase${tool === 'erase' ? ' active' : ''}`} data-ui="tag-erase" aria-pressed={tool === 'erase'} onClick={() => onTool(tool === 'erase' ? null : 'erase')}>
         消しゴム

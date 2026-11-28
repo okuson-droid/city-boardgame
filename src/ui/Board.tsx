@@ -7,18 +7,13 @@ import type { PlayerState } from '../game/types.ts';
 import { describeBuilding, grantText, type ProspectPlacement } from '../game/queries.ts';
 import { ANY_BUILDING_ART, ICON_ART } from './icon-art.ts';
 import { artOf } from './Icon.tsx';
-import { cellTagArt, cellTagColor, cellTagLabel, type CellTag } from './cell-tags.ts';
+import { cellTagArt, cellTagColor, cellTagLabel, isLandTag, landTagColor, TERRAIN_COLORS, type CellTag } from './cell-tags.ts';
 
 const R = 26;
 const W = Math.sqrt(3) * R;
 const PAD = 22;
 
-export const TERRAIN_COLORS: Record<Terrain, string> = {
-  plains: '#e9d66b',
-  forest: '#4f9a4f',
-  mountain: '#9a9a9a',
-  water: '#7fc4e8',
-};
+export { TERRAIN_COLORS };
 
 const center = (x: number, rowIndex: number): { cx: number; cy: number } => ({
   cx: PAD + W / 2 + x * W,
@@ -103,7 +98,10 @@ export const Board = ({
             ...(reason !== null ? [reason] : []),
             ...((tags[cell.id] ?? []).length > 0 ? [`タグ：${(tags[cell.id] ?? []).map(cellTagLabel).join('・')}`] : []),
           ].join('\n');
-          const cellTags = tags[cell.id] ?? [];
+          const allTags = tags[cell.id] ?? [];
+          // 土地のタグは図案の枠を使わず、まだ土地タイルのないマスの内側をその地形の色で塗る（ユーザー決定 2026-11-28）。
+          const landTag = allTags.find(isLandTag);
+          const cellTags = allTags.filter((t) => !isLandTag(t));
           return (
             <g
                 key={cell.id}
@@ -120,6 +118,17 @@ export const Board = ({
                   stroke={tile === undefined ? '#bbb' : '#555'}
                   strokeWidth={tile === undefined ? 1 : 1.6}
                 />
+                {landTag !== undefined && tile === undefined ? (
+                  <polygon
+                    className="cell-land-tag"
+                    points={hexPoints(cx, cy, R - 7)}
+                    fill={landTagColor(landTag)}
+                    stroke="#555"
+                    strokeWidth={1}
+                    strokeDasharray="3 2"
+                    pointerEvents="none"
+                  />
+                ) : null}
                 {tile !== undefined && tile !== terrain ? (
                   <circle cx={cx + R * 0.55} cy={cy + R * 0.45} r={4} fill={TERRAIN_COLORS[terrain]} stroke="#555" />
                 ) : null}
